@@ -7,8 +7,8 @@
 /**
  * @file plugins/generic/dataverse/index.php
  *
- * Copyright (c) 2013-2019 Simon Fraser University
- * Copyright (c) 2003-2019 John Willinsky
+ * Copyright (c) 2019-2021 Lepidus Tecnologia
+ * Copyright (c) 2020-2021 SciELO
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @ingroup plugins_generic_dataverse
