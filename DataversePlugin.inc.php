@@ -13,6 +13,7 @@
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
+import('classes.notification.NotificationManager');
 
 class DataversePlugin extends GenericPlugin {
 
@@ -36,6 +37,65 @@ class DataversePlugin extends GenericPlugin {
 	 */
 	public function getDescription() {
 		return __('plugins.generic.dataverse.description');
+	}
+	
+	/**
+	 * @see Plugin::getActions()
+	 */
+	function getActions($request, $actionArgs) {
+		$router = $request->getRouter();
+		import('lib.pkp.classes.linkAction.request.AjaxModal');
+		return array_merge(
+			$this->getEnabled() ? array(
+				new LinkAction(
+					'settings',
+					new AjaxModal(
+						$router->url(
+							$request,
+							null,
+							null,
+							'manage',
+							null,
+							array(
+								'verb' => 'settings',
+								'plugin' => $this->getName(),
+								'category' => 'generic'
+							)
+						),
+						$this->getDisplayName()
+					),
+					__('manager.plugins.settings'),
+					null
+				),
+			) : array(),
+			parent::getActions($request, $actionArgs)
+		);
+	}
+
+	/**
+	 * @see Plugin::manage()
+	 */
+	function manage($args, $request) {
+		switch ($request->getUserVar('verb')) {
+			case 'settings':
+				$context = $request->getContext();
+				$contextId = ($context == null) ? 0 : $context->getId();
+
+				$this->import('classes.form.DataverseAuthForm');
+				$form = new DataverseAuthForm($this, $contextId);
+				if ($request->getUserVar('save')) {
+					$form->readInputData();
+					if ($form->validate()) {
+						$form->execute();
+						return new JSONMessage(true);
+					}
+				} else {
+					$form->initData();
+				}
+				
+				return new JSONMessage(true, $form->fetch($request));
+		}
+		return parent::manage($args, $request);
 	}
 }
 

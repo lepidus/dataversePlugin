@@ -16,3 +16,18 @@ msgstr "Dataverse Plugin"
 
 msgid "plugins.generic.dataverse.description"
 msgstr "Deposit data sets and/or other supplementary files to a Dataverse."
+
+msgid "plugins.generic.dataverse.settings.dvnUri"
+msgstr "Root Dataverse URL"
+
+msgid "plugins.generic.dataverse.settings.usernameDescription"
+msgstr "Username or API token"
+
+msgid "plugins.generic.dataverse.settings.passwordDescription"
+msgstr "Password. Not required for API token."
+
+msgid "plugins.generic.dataverse.settings.username"
+msgstr "User Name"
+
+msgid "plugins.generic.dataverse.settings.password"
+msgstr "Password"

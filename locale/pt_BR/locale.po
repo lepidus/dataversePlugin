@@ -16,3 +16,45 @@ msgstr "Plugin Dataverse"
 
 msgid "plugins.generic.dataverse.description"
 msgstr "Deposita conjuntos de dados e/ou outros documentos suplementares no Dataverse."
+
+msgid "plugins.generic.dataverse.settings.connect"
+msgstr "Conectar"
+
+msgid "plugins.generic.dataverse.settings.dvnUri"
+msgstr "URL Dataverse"
+
+msgid "plugins.generic.dataverse.settings.dvnUriDescription"
+msgstr "URL raíz do Dataverse"
+
+msgid "plugins.generic.dataverse.settings.usernameDescription"
+msgstr "Login ou token de API"
+
+msgid "plugins.generic.dataverse.settings.passwordDescription"
+msgstr "Senha. Não obrigatória para token de API."
+
+msgid "plugins.generic.dataverse.settings.dvnUriRequired"
+msgstr "Endereço do Dataverse é obrigatório."
+
+msgid "plugins.generic.dataverse.settings.dvnUriNotValid"
+msgstr "Impossível conectar ao Dataverse."
+
+msgid "plugins.generic.dataverse.settings.usernameRequired"
+msgstr "Informe um nome de usuário Dataverse."
+
+msgid "plugins.generic.dataverse.settings.selectDataverse"
+msgstr "Selecione Dataverse"
+
+msgid "plugins.generic.dataverse.settings.dvnUriRequired"
+msgstr "Endereço do Dataverse é obrigatório."
+
+msgid "plugins.generic.dataverse.settings.dvnUriNotValid"
+msgstr "Impossível conectar ao Dataverse."
+
+msgid "plugins.generic.dataverse.settings.usernameRequired"
+msgstr "Informe um nome de usuário Dataverse."
+
+msgid "plugins.generic.dataverse.settings.username"
+msgstr "Nome de Usuário"
+
+msgid "plugins.generic.dataverse.settings.password"
+msgstr "Senha"
