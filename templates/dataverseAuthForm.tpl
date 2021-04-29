@@ -8,46 +8,31 @@
  * Dataverse plugin auth form
  *
  *}
-
-<script>
+<script type="text/javascript">
 	$(function() {ldelim}
 		// Attach the form handler.
 		$('#dataverseAuthForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
 	{rdelim});
 </script>
-
-<form class="pkp_form" id="dataverseAuthForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" plugin=$pluginName verb="settings" save=true}">
-	<div id="authForm">
-
-		<table width="100%" class="data">
-            <tr valign="top">
-				<td class="label">{fieldLabel name="dvnUri" required="true" key="plugins.generic.dataverse.settings.dvnUri"}</td>
-                <td class="value"><input type="text" name="dvnUri" id="dvnUri" value="{$dvnUri|escape}" size="40" maxlength="90" class="textField"/></td>
-			</tr>
-            <tr valign="top">
-				<td>&nbsp;</td>
-				<td>{translate key="plugins.generic.dataverse.settings.dvnUriDescription"}</td>
-			</tr>
-            <tr valign="top">
-                <td class="label">{fieldLabel name="username" required="true" key="plugins.generic.dataverse.settings.username"}</td>
-				<td class="value"><input type="text" name="username" id="username" value="{$username|escape}" size="20" maxlength="90" class="textField" /></td>
-			</tr>
-            <tr valign="top">
-				<td>&nbsp;</td>
-				<td>{translate key="plugins.generic.dataverse.settings.usernameDescription"}</td>
-			</tr>
-            <tr valign="top">
-				<td class="label">{fieldLabel name="password" required="true" key="plugins.generic.dataverse.settings.password"}</td>
-				<td class="value">
-					<input type="password" name="password" id="password" value="{$password|escape}" size="20" maxlength="90" class="textField"/>
-				</td>
-			</tr>
-            <tr valign="top">
-				<td>&nbsp;</td>
-				<td>{translate key="plugins.generic.dataverse.settings.passwordDescription"}</td>
-			</tr>
-        </table>
-        {fbvFormButtons}
-        <p><span class="formRequired">{translate key="common.requiredField"}</span></p>
-	</div>
+<form class="pkp_form" id="dataverseAuthForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" 
+	plugin=$pluginName verb="settings" save=true}">
+	<div id="description">{translate key="plugins.generic.dataverse.description"}</div>
+	{fbvFormArea id="authForm"}
+		<div id="authForm">
+			{fbvFormSection list=true}
+			<label class="label">{fieldLabel name="dvnUri" required="true" key="plugins.generic.dataverse.settings.dvnUri"}</label>
+			{fbvElement type="url" id="dvnUri" value=$dvnUri|escape size=$fbvStyles.size.MEDIUM}
+			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dvnUriDescription"}</label>
+			
+			<label class="label">{fieldLabel name="username" required="true" key="plugins.generic.dataverse.settings.username"}</label>
+			{fbvElement type="text" id="username" value=$username|escape size=$fbvStyles.size.MEDIUM}
+			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.usernameDescription"}</label>
+			
+			<label class="label">{fieldLabel name="password" required="true" key="plugins.generic.dataverse.settings.password"}</label>
+			{fbvElement type="text" id="password" value=$password|escape size=$fbvStyles.size.MEDIUM}
+			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.passwordDescription"}</label>
+			{/fbvFormSection}
+			{fbvFormButtons}
+		</div>
+	{/fbvFormArea}
 </form>

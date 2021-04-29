@@ -14,10 +14,13 @@ msgstr ""
 msgid "plugins.generic.dataverse.displayName"
 msgstr "Dataverse Plugin"
 
+msgid "plugins.generic.dataverse.settings.dvnUri"
+msgstr "Dataverse URL"
+
 msgid "plugins.generic.dataverse.description"
 msgstr "Deposit data sets and/or other supplementary files to a Dataverse."
 
-msgid "plugins.generic.dataverse.settings.dvnUri"
+msgid "plugins.generic.dataverse.settings.dvnUriDescription"
 msgstr "Root Dataverse URL"
 
 msgid "plugins.generic.dataverse.settings.usernameDescription"
