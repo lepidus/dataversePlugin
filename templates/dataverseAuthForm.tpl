@@ -17,6 +17,7 @@
 <form class="pkp_form" id="dataverseAuthForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" 
 	plugin=$pluginName verb="settings" save=true}">
 	<div id="description">{translate key="plugins.generic.dataverse.description"}</div>
+	{include file="controllers/notification/inPlaceNotification.tpl" notificationId="translationAndGlossarySettingsFormNotification"}
 	{fbvFormArea id="authForm"}
 		<div id="authForm">
 			{fbvFormSection list=true}

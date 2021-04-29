@@ -50,18 +50,7 @@ class DataversePlugin extends GenericPlugin {
 				new LinkAction(
 					'settings',
 					new AjaxModal(
-						$router->url(
-							$request,
-							null,
-							null,
-							'manage',
-							null,
-							array(
-								'verb' => 'settings',
-								'plugin' => $this->getName(),
-								'category' => 'generic'
-							)
-						),
+						$router->url($request, null, null, 'manage', null, array('verb' => 'settings', 'plugin' => $this->getName(), 'category' => 'generic')),
 						$this->getDisplayName()
 					),
 					__('manager.plugins.settings'),
@@ -87,6 +76,8 @@ class DataversePlugin extends GenericPlugin {
 					$form->readInputData();
 					if ($form->validate()) {
 						$form->execute();
+						$notificationManager = new NotificationManager();
+						$notificationManager->createTrivialNotification($request->getUser()->getId());
 						return new JSONMessage(true);
 					}
 				} else {
@@ -97,6 +88,7 @@ class DataversePlugin extends GenericPlugin {
 		}
 		return parent::manage($args, $request);
 	}
+
 }
 
 ?>
