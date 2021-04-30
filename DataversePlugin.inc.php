@@ -113,6 +113,34 @@ class DataversePlugin extends GenericPlugin {
 		return new SWORDAPPClient($options);
 	}
 
+	/**
+	 * Check service document for deprecation warnings returned in requests made
+	 * against outdated versions of Dataverse SWORD API.
+	 * @param $serviceDocument SWORDAPPServiceDocument Service document
+	 * @return string Current API version parsed from deprecation warning
+	 */
+	function checkAPIVersion($serviceDocument) {
+		// Look for current version in deprecation message in warning attribute on workspace		
+		$newAPIVersion = '';		
+		$pattern = 'current\s+version.+?'. preg_quote('/dvn/api/data-deposit/', '/') .'v(\d+(\.\d+)?)';
+
+		$sd_xml = new SimpleXMLElement($serviceDocument->sac_xml);
+		$workspaces = $sd_xml->children('http://www.w3.org/2007/app')->workspace;
+		if ($workspaces) {
+			foreach ($workspaces[0]->attributes() as $attr => $value) {
+				if ($attr == 'warning' && preg_match("/deprecated/i", $value)) {
+					if (preg_match("/$pattern/i", $value, $matches)) {
+						// New version available
+						$newAPIVersion = $matches[1];
+						break;
+					}
+				}
+			}
+		}		
+		return $newAPIVersion;
+	}
+  
+
 }
 
 ?>
