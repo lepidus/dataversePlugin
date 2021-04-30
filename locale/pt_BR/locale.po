@@ -58,3 +58,6 @@ msgstr "Nome de Usuário"
 
 msgid "plugins.generic.dataverse.settings.password"
 msgstr "Senha"
+
+msgid "plugins.generic.dataverse.settings.dvnUriNotValid"
+msgstr "Impossível conectar ao Dataverse."
