@@ -25,13 +25,9 @@
 			{fbvElement type="url" id="dvnUri" value=$dvnUri|escape size=$fbvStyles.size.MEDIUM}
 			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dvnUriDescription"}</label>
 			
-			<label class="label">{fieldLabel name="username" required="true" key="plugins.generic.dataverse.settings.username"}</label>
-			{fbvElement type="text" id="username" value=$username|escape size=$fbvStyles.size.MEDIUM}
-			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.usernameDescription"}</label>
-			
-			<label class="label">{fieldLabel name="password" required="true" key="plugins.generic.dataverse.settings.password"}</label>
-			{fbvElement type="text" id="password" value=$password|escape size=$fbvStyles.size.MEDIUM}
-			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.passwordDescription"}</label>
+			<label class="label">{fieldLabel name="apiToken" required="true" key="plugins.generic.dataverse.settings.token"}</label>
+			{fbvElement type="text" id="apiToken" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}
+			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.tokenDescription"}</label>
 			{/fbvFormSection}
 			{fbvFormButtons}
 		</div>

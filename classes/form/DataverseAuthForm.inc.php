@@ -12,7 +12,6 @@
  *
  * @brief Plugin settings: connect to a Dataverse Network 
  */
-define('DATAVERSE_PLUGIN_PASSWORD_SLUG', '********');
 import('lib.pkp.classes.form.Form');
 class DataverseAuthForm extends Form {
 
@@ -34,7 +33,7 @@ class DataverseAuthForm extends Form {
 
 		parent::__construct($plugin->getTemplateResource('dataverseAuthForm.tpl'));
 		$this->addCheck(new FormValidatorUrl($this, 'dvnUri', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dvnUriRequired'));
-		$this->addCheck(new FormValidator($this, 'username', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.usernameRequired'));
+		$this->addCheck(new FormValidator($this, 'apiToken', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.tokenRequired'));
 		$this->addCheck(new FormValidatorCustom($this, '', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dvnUriNotValid', array(&$this, '_getServiceDocument')));
 		$this->addCheck(new FormValidatorPost($this));
 	}
@@ -47,34 +46,15 @@ class DataverseAuthForm extends Form {
 
 		// Initialize from plugin settings
 		$this->setData('dvnUri', $plugin->getSetting($this->_journalId, 'dvnUri'));		 
-		$this->setData('username', $plugin->getSetting($this->_journalId, 'username'));				 
-		
-		// If password has already been set, echo back slug
-		$password = $plugin->getSetting($this->_journalId, 'password');
-		if (!empty($password)) {
-			$password === DATAVERSE_PLUGIN_PASSWORD_SLUG ? 
-							$this->setData('password', '') : // Leave unset if slug stored for API token
-							$this->setData('password', DATAVERSE_PLUGIN_PASSWORD_SLUG);
-		}
+		$this->setData('apiToken', $plugin->getSetting($this->_journalId, 'apiToken'));
 	}
 
 	/**
 	 * @see Form::readInputData()
 	 */
 	function readInputData() {
-		$this->readUserVars(array('dvnUri', 'username', 'password'));
+		$this->readUserVars(array('dvnUri', 'apiToken'));
 		$request =& PKPApplication::getRequest();
-		$password = $request->getUserVar('password');
-		if ($password === DATAVERSE_PLUGIN_PASSWORD_SLUG) {
-			$plugin =& $this->_plugin;
-			$password = $plugin->getSetting($this->_journalId, 'password');
-		}
-		if (!$password) {
-			// Password not required when API token provided, but SWORDAPPClient 
-			// requires a non-null password. 
-			$password = DATAVERSE_PLUGIN_PASSWORD_SLUG;
-		}
-		$this->setData('password', $password);
 		$this->setData('dvnUri', preg_replace("/\/+$/", '', $this->getData('dvnUri')));
 	}
 
@@ -91,8 +71,7 @@ class DataverseAuthForm extends Form {
 	function execute(...$functionArgs) {
 		$plugin =& $this->_plugin;
 		$plugin->updateSetting($this->_journalId, 'dvnUri', $this->getData('dvnUri'), 'string');
-		$plugin->updateSetting($this->_journalId, 'username', $this->getData('username'), 'string');
-		$plugin->updateSetting($this->_journalId, 'password', $this->getData('password'), 'string'); 
+		$plugin->updateSetting($this->_journalId, 'apiToken', $this->getData('apiToken'), 'string');
 		$plugin->updateSetting($this->_journalId, 'apiVersion', $this->getData('apiVersion'), 'string');
 		parent::execute(...$functionArgs);
 	}
@@ -115,8 +94,8 @@ class DataverseAuthForm extends Form {
 		$client = $this->_plugin->_initSwordClient();
 		$sd = $client->servicedocument(
 			$this->getData('dvnUri') . $sdRequest,
-			$this->getData('username'),
-			$this->getData('password'),
+			$this->getData('apiToken'),
+			'********',
 			''); // on behalf of
 		
 		// Recover from errors where user has entered 'http' instead of 'https'
@@ -124,8 +103,8 @@ class DataverseAuthForm extends Form {
 			$this->setData('dvnUri', preg_replace('/^http\:/', 'https:', $this->getData('dvnUri')));
 			$sd = $client->servicedocument(
 							$this->getData('dvnUri') . $sdRequest,
-							$this->getData('username'), 
-							$this->getData('password'), 
+							$this->getData('apiToken'),
+							'********',
 							''); // on behalf of
 		}
 		
