@@ -54,7 +54,7 @@ class DataverseAuthForm extends Form {
 	 */
 	function readInputData() {
 		$this->readUserVars(array('dvnUri', 'apiToken'));
-		$request =& PKPApplication::getRequest();
+		$request = PKPApplication::getRequest();
 		$this->setData('dvnUri', preg_replace("/\/+$/", '', $this->getData('dvnUri')));
 	}
 
@@ -114,6 +114,12 @@ class DataverseAuthForm extends Form {
 			if ($newVersion) $this->setData('apiVersion', $newVersion);
 		}
 		
+		if (isset($sd) && $sd->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
+			$pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
+			$pluginSettingsDao->updateSetting($this->_journalId, 'dataverse', 'dvnUri', $this->getData('dvnUri'));
+			$pluginSettingsDao->updateSetting($this->_journalId, 'dataverse', 'apiToken', $this->getData('apiToken'));
+		}
+
 		return (isset($sd) && $sd->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
 		
 	}
