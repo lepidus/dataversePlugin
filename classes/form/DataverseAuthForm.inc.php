@@ -13,6 +13,8 @@
  * @brief Plugin settings: connect to a Dataverse Network 
  */
 import('lib.pkp.classes.form.Form');
+import('plugins.generic.dataverse.classes.DataverseDAO');
+
 class DataverseAuthForm extends Form {
 
 	/** @var $_plugin DataversePlugin */
@@ -112,12 +114,10 @@ class DataverseAuthForm extends Form {
 		if (isset($sd) && $sd->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
 			$newVersion = $this->_plugin->checkAPIVersion($sd);
 			if ($newVersion) $this->setData('apiVersion', $newVersion);
-		}
-		
-		if (isset($sd) && $sd->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
-			$pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
-			$pluginSettingsDao->updateSetting($this->_journalId, 'dataverse', 'dvnUri', $this->getData('dvnUri'));
-			$pluginSettingsDao->updateSetting($this->_journalId, 'dataverse', 'apiToken', $this->getData('apiToken'));
+
+			//add the credentials on database.
+			$dataverseDAO = new DataverseDAO();
+			$dataverseDAO->insertCredentialsOnDatabase($this->_journalId, $this->getData('dvnUri'), $this->getData('apiToken'));
 		}
 
 		return (isset($sd) && $sd->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
