@@ -1,7 +1,7 @@
 describe('Starts the plugin', function() {
 
-    var admin = 'admin';
-	var adminPassword = 'admin';
+    var admin = Cypress.env('adminUser');
+	var adminPassword = Cypress.env('adminPassword');
 
     it('Activate Plugin', function() {
 
