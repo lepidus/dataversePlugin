@@ -90,29 +90,29 @@ class DataverseAuthForm extends Form {
 						$this->_plugin->getSetting($this->_journalId, 'apiVersion') : '1');
 		
 		// Fetch service document
-		$sdRequest = preg_match('/\/dvn$/', $this->getData('dvnUri')) ? '' : '/dvn';
-		$sdRequest .= '/api/data-deposit/v'. $this->getData('apiVersion') . '/swordv2/service-document';
+		$serviceDocumentRequest = preg_match('/\/dvn$/', $this->getData('dvnUri')) ? '' : '/dvn';
+		$serviceDocumentRequest .= '/api/data-deposit/v'. $this->getData('apiVersion') . '/swordv2/service-document';
 		
 		$client = $this->_plugin->_initSwordClient();
-		$sd = $client->servicedocument(
-			$this->getData('dvnUri') . $sdRequest,
+		$serviceDocumentClient = $client->servicedocument(
+			$this->getData('dvnUri') . $serviceDocumentRequest,
 			$this->getData('apiToken'),
 			'********',
 			''); // on behalf of
 		
 		// Recover from errors where user has entered 'http' instead of 'https'
-		if (isset($sd) && $sd->sac_status != DATAVERSE_PLUGIN_HTTP_STATUS_OK && preg_match('/^http\:/', $this->getData('dvnUri'))) {
+		if (isset($serviceDocumentClient) && $serviceDocumentClient->sac_status != DATAVERSE_PLUGIN_HTTP_STATUS_OK && preg_match('/^http\:/', $this->getData('dvnUri'))) {
 			$this->setData('dvnUri', preg_replace('/^http\:/', 'https:', $this->getData('dvnUri')));
-			$sd = $client->servicedocument(
-							$this->getData('dvnUri') . $sdRequest,
+			$serviceDocumentClient = $client->servicedocument(
+							$this->getData('dvnUri') . $serviceDocumentRequest,
 							$this->getData('apiToken'),
 							'********',
 							''); // on behalf of
 		}
 		
 		// Check service doc for deprecation warnings & update API.
-		if (isset($sd) && $sd->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
-			$newVersion = $this->_plugin->checkAPIVersion($sd);
+		if (isset($serviceDocumentClient) && $serviceDocumentClient->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
+			$newVersion = $this->_plugin->checkAPIVersion($serviceDocumentClient);
 			if ($newVersion) $this->setData('apiVersion', $newVersion);
 
 			//add the credentials on database.
@@ -120,7 +120,7 @@ class DataverseAuthForm extends Form {
 			$dataverseDAO->insertCredentialsOnDatabase($this->_journalId, $this->getData('dvnUri'), $this->getData('apiToken'));
 		}
 
-		return (isset($sd) && $sd->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
+		return (isset($serviceDocumentClient) && $serviceDocumentClient->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
 		
 	}
 }

@@ -1,17 +1,37 @@
 <?php
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.DataverseDAO');
+import('lib.pkp.classes.db.DAO');
 
 class DataverseDAOTest extends PKPTestCase {
 
-    public function testCredentialsAddedInDB(){
-        $contextId = 1;
-        $dvnUri = 'https://demo.dataverse.org';
-        $apiToken = 'randomToken';
+    private $contextId;
+    private $dvnUri;
+    private $apiToken;
+    private $dataverseDAO;
 
-        $dataverseDAO = new DataverseDAO();
-        $this->assertTrue($dataverseDAO->insertCredentialsOnDatabase($contextId, $dvnUri, $apiToken));
-        $this->assertEquals([$apiToken, $dvnUri], $dataverseDAO->getCredentialsFromDatabase($contextId));
+    protected function setUp() : void {
+        
+        $this->contextId = 1;
+        $this->dvnUri = 'https://demo.dataverse.org';
+        $this->apiToken = 'davi';
+        $this->dataverseDAO =  new DataverseDAO();
+
+        parent::setUp();
     }
+
+    public function testCredentialsAddedInDB(){
+
+        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
+        $pluginSettingsDao->updateSetting($this->contextId, 'dataverse', 'dvnUri', $this->dvnUri);
+        $pluginSettingsDao->updateSetting($this->contextId, 'dataverse', 'apiToken', $this->apiToken);
+        $this->assertEquals([$this->apiToken, $this->dvnUri], $this->dataverseDAO->getCredentialsFromDatabase($this->contextId));
+    }
+
+    public function testInsertCredentialsOnDatabase(){
+        
+        $this->assertTrue($this->dataverseDAO->insertCredentialsOnDatabase($this->contextId, $this->dvnUri, $this->apiToken));
+    }
+
 }
 ?>
