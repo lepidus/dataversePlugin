@@ -1,1 +1,1 @@
-### Implementation of the dataverse plugin for OJS 3.3 or higher.
+### Implementation of the dataverse plugin for OPS and OJS 3.3 or higher.
