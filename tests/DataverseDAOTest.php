@@ -14,7 +14,7 @@ class DataverseDAOTest extends PKPTestCase {
         
         $this->contextId = 1;
         $this->dvnUri = 'https://demo.dataverse.org';
-        $this->apiToken = 'davi';
+        $this->apiToken = 'randomToken';
         $this->dataverseDAO =  new DataverseDAO();
 
         parent::setUp();

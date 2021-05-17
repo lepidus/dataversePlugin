@@ -110,12 +110,7 @@ class DataverseAuthForm extends Form {
 							''); // on behalf of
 		}
 		
-		// Check service doc for deprecation warnings & update API.
 		if (isset($serviceDocumentClient) && $serviceDocumentClient->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
-			$newVersion = $this->_plugin->checkAPIVersion($serviceDocumentClient);
-			if ($newVersion) $this->setData('apiVersion', $newVersion);
-
-			//add the credentials on database.
 			$dataverseDAO = new DataverseDAO();
 			$dataverseDAO->insertCredentialsOnDatabase($this->_journalId, $this->getData('dvnUri'), $this->getData('apiToken'));
 		}
