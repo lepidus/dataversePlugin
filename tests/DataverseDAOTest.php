@@ -25,7 +25,8 @@ class DataverseDAOTest extends PKPTestCase {
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
         $pluginSettingsDao->updateSetting($this->contextId, 'dataverse', 'dvnUri', $this->dvnUri);
         $pluginSettingsDao->updateSetting($this->contextId, 'dataverse', 'apiToken', $this->apiToken);
-        $this->assertEquals([$this->apiToken, $this->dvnUri], $this->dataverseDAO->getCredentialsFromDatabase($this->contextId));
+        $expectedCredentials = [$this->apiToken, $this->dvnUri];
+        $this->assertEquals($expectedCredentials, $this->dataverseDAO->getCredentialsFromDatabase($this->contextId));
     }
 
     public function testInsertCredentialsOnDatabase(){
@@ -34,7 +35,8 @@ class DataverseDAOTest extends PKPTestCase {
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
         $result = $pluginSettingsDao->getPluginSettings($this->contextId, 'dataverse');
         $credentials = [$result['apiToken'], $result['dvnUri']];
-        $this->assertEquals([$this->apiToken, $this->dvnUri], $credentials);
+        $expectedCredentials = [$this->apiToken, $this->dvnUri];
+        $this->assertEquals($expectedCredentials, $credentials);
     }
 
 }
