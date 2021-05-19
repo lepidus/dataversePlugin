@@ -14,7 +14,7 @@
 
 import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
-require('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
+require('plugins/generic/dataversePlugin/libs/swordappv2-php-library/swordappclient.php');
 
 // HTTP status codes
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK',         200);

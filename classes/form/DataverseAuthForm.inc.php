@@ -13,7 +13,7 @@
  * @brief Plugin settings: connect to a Dataverse Network 
  */
 import('lib.pkp.classes.form.Form');
-import('plugins.generic.dataverse.classes.DataverseDAO');
+import('plugins.generic.dataversePlugin.classes.DataverseDAO');
 
 class DataverseAuthForm extends Form {
 
