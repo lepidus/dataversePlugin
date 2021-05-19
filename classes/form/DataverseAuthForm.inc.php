@@ -85,9 +85,7 @@ class DataverseAuthForm extends Form {
 	 */
 	function _getServiceDocument() {
 		// Dataverse SWORD API version. Assume v1 if not set.
-		$this->setData('apiVersion', 
-						$apiVersion = $this->_plugin->getSetting($this->_journalId, 'apiVersion') ?
-						$this->_plugin->getSetting($this->_journalId, 'apiVersion') : '1');
+		$this->setData('apiVersion', '1');
 		
 		// Fetch service document
 		$serviceDocumentRequest = preg_match('/\/dvn$/', $this->getData('dvnUri')) ? '' : '/dvn';
