@@ -14,6 +14,7 @@
  */
 import('lib.pkp.classes.form.Form');
 import('plugins.generic.dataversePlugin.classes.DataverseDAO');
+import('plugins.generic.dataversePlugin.classes.DataverseRepository');
 
 class DataverseAuthForm extends Form {
 
@@ -84,36 +85,19 @@ class DataverseAuthForm extends Form {
 	 * @return boolean 
 	 */
 	function _getServiceDocument() {
-		// Dataverse SWORD API version. Assume v1 if not set.
 		$this->setData('apiVersion', '1');
 		
-		// Fetch service document
 		$serviceDocumentRequest = preg_match('/\/dvn$/', $this->getData('dvnUri')) ? '' : '/dvn';
 		$serviceDocumentRequest .= '/api/data-deposit/v'. $this->getData('apiVersion') . '/swordv2/service-document';
+
+		$dataverseRepository = new DataverseRepository();
+		$dataverseConnectionStatus = $dataverseRepository->validateCredentials($this, $serviceDocumentRequest);
 		
-		$client = $this->_plugin->_initSwordClient();
-		$serviceDocumentClient = $client->servicedocument(
-			$this->getData('dvnUri') . $serviceDocumentRequest,
-			$this->getData('apiToken'),
-			'********',
-			''); // on behalf of
-		
-		// Recover from errors where user has entered 'http' instead of 'https'
-		if (isset($serviceDocumentClient) && $serviceDocumentClient->sac_status != DATAVERSE_PLUGIN_HTTP_STATUS_OK && preg_match('/^http\:/', $this->getData('dvnUri'))) {
-			$this->setData('dvnUri', preg_replace('/^http\:/', 'https:', $this->getData('dvnUri')));
-			$serviceDocumentClient = $client->servicedocument(
-							$this->getData('dvnUri') . $serviceDocumentRequest,
-							$this->getData('apiToken'),
-							'********',
-							''); // on behalf of
-		}
-		
-		if (isset($serviceDocumentClient) && $serviceDocumentClient->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
+		if ($dataverseConnectionStatus) {
 			$dataverseDAO = new DataverseDAO();
 			$dataverseDAO->insertCredentialsOnDatabase($this->_journalId, $this->getData('dvnUri'), $this->getData('apiToken'));
 		}
 
-		return (isset($serviceDocumentClient) && $serviceDocumentClient->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
-		
+		return ($dataverseConnectionStatus);
 	}
 }
