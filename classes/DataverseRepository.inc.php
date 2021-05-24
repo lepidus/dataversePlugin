@@ -4,17 +4,17 @@ define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 
 class DataverseRepository {
     private $apiToken;
-    private $dvnURI;
+    private $dataverseServer;
 
-    public function __construct($apiToken, $dvnURI) {
+    public function __construct($apiToken, $dataverseServer) {
         $this->apiToken = $apiToken;
-        $this->dvnURI = $dvnURI;
+        $this->dataverseServer = $dataverseServer;
     }
     
     private function validateCredentials($serviceDocumentRequest) {
         $client = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
 		$serviceDocumentClient = $client->servicedocument(
-			$this->dvnURI . $serviceDocumentRequest,
+			$this->dataverseServer . $serviceDocumentRequest,
 			$this->apiToken,
 			'********',
 			'');
@@ -24,7 +24,7 @@ class DataverseRepository {
     }
 
     public function checkConnectionWithDataverseInstance($apiVersion) {
-		$serviceDocumentRequest = preg_match('/\/dvn$/', $this->dvnUri) ? '' : '/dvn';
+		$serviceDocumentRequest = preg_match('/\/dvn$/', $this->dataverseServer) ? '' : '/dvn';
 		$serviceDocumentRequest .= '/api/data-deposit/v'. $apiVersion . '/swordv2/service-document';
 
 		$dataverseConnectionStatus = $this->validateCredentials($serviceDocumentRequest);

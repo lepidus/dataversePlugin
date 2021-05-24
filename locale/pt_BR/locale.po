@@ -20,10 +20,10 @@ msgstr "Deposita conjuntos de dados e/ou outros documentos suplementares no Data
 msgid "plugins.generic.dataverse.settings.connect"
 msgstr "Conectar"
 
-msgid "plugins.generic.dataverse.settings.dvnUri"
+msgid "plugins.generic.dataverse.settings.dataverseServer"
 msgstr "URL Dataverse"
 
-msgid "plugins.generic.dataverse.settings.dvnUriDescription"
+msgid "plugins.generic.dataverse.settings.dataverseServerDescription"
 msgstr "URL raíz do Dataverse"
 
 msgid "plugins.generic.dataverse.settings.tokenDescription"
@@ -32,16 +32,16 @@ msgstr "Token de API"
 msgid "plugins.generic.dataverse.settings.passwordDescription"
 msgstr "Senha. Não obrigatória para token de API."
 
-msgid "plugins.generic.dataverse.settings.dvnUriRequired"
+msgid "plugins.generic.dataverse.settings.dataverseServerRequired"
 msgstr "Endereço do Dataverse é obrigatório."
 
-msgid "plugins.generic.dataverse.settings.dvnUriNotValid"
+msgid "plugins.generic.dataverse.settings.dataverseServerNotValid"
 msgstr "Impossível conectar ao Dataverse."
 
 msgid "plugins.generic.dataverse.settings.selectDataverse"
 msgstr "Selecione Dataverse"
 
-msgid "plugins.generic.dataverse.settings.dvnUriNotValid"
+msgid "plugins.generic.dataverse.settings.dataverseServerNotValid"
 msgstr "Impossível conectar ao Dataverse."
 
 msgid "plugins.generic.dataverse.settings.token"
@@ -50,7 +50,7 @@ msgstr "Token de API"
 msgid "plugins.generic.dataverse.settings.password"
 msgstr "Senha"
 
-msgid "plugins.generic.dataverse.settings.dvnUriNotValid"
+msgid "plugins.generic.dataverse.settings.dataverseServerNotValid"
 msgstr "Impossível conectar ao Dataverse."
 
 msgid "plugins.generic.dataverse.settings.tokenRequired"

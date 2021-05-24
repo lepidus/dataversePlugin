@@ -21,9 +21,9 @@
 	{fbvFormArea id="authForm"}
 		<div id="authForm">
 			{fbvFormSection list=true}
-			<label class="label">{fieldLabel name="dvnUri" required="true" key="plugins.generic.dataverse.settings.dvnUri"}</label>
-			{fbvElement type="url" id="dvnUri" value=$dvnUri|escape size=$fbvStyles.size.MEDIUM}
-			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dvnUriDescription"}</label>
+			<label class="label">{fieldLabel name="dataverseServer" required="true" key="plugins.generic.dataverse.settings.dataverseServer"}</label>
+			{fbvElement type="url" id="dataverseServer" value=$dataverseServer|escape size=$fbvStyles.size.MEDIUM}
+			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dataverseServerDescription"}</label>
 			
 			<label class="label">{fieldLabel name="apiToken" required="true" key="plugins.generic.dataverse.settings.token"}</label>
 			{fbvElement type="text" id="apiToken" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}
