@@ -1,8 +1,8 @@
 <?php
 
 import('lib.pkp.classes.form.Form');
-import('plugins.generic.dataversePlugin.classes.DataverseDAO');
 import('plugins.generic.dataversePlugin.classes.DataverseRepository');
+import('plugins.generic.dataversePlugin.classes.DataverseDAO');
 
 class DataverseAuthForm extends Form {
 
@@ -17,7 +17,7 @@ class DataverseAuthForm extends Form {
 		parent::__construct($plugin->getTemplateResource('dataverseAuthForm.tpl'));
 		$this->addCheck(new FormValidatorUrl($this, 'dvnUri', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dvnUriRequired'));
 		$this->addCheck(new FormValidator($this, 'apiToken', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.tokenRequired'));
-		$this->addCheck(new FormValidatorCustom($this, '', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dvnUriNotValid', array($this, 'checkConnectionWithDataverseInstance')));
+		$this->addCheck(new FormValidatorCustom($this, '', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dvnUriNotValid', array($this, 'validateCredentials')));
 		$this->addCheck(new FormValidatorPost($this));
 	}
 
@@ -30,7 +30,11 @@ class DataverseAuthForm extends Form {
 	function readInputData() {
 		$this->readUserVars(array('dvnUri', 'apiToken'));
 		$request = PKPApplication::getRequest();
-		$this->setData('dvnUri', preg_replace("/\/+$/", '', $this->getData('dvnUri')));
+		$this->setData('dvnUri', $this->normalizeURI($this->getData('dvnUri')));
+	}
+
+	private function normalizeURI($uri) {
+		return preg_replace("/\/+$/", '', $uri);
 	}
 
 	function fetch($request, $template = NULL, $display = false) {
@@ -47,20 +51,15 @@ class DataverseAuthForm extends Form {
 		parent::execute(...$functionArgs);
 	}
 
-	public function checkConnectionWithDataverseInstance() {
-		$this->setData('apiVersion', '1');
-		
-		$serviceDocumentRequest = preg_match('/\/dvn$/', $this->getData('dvnUri')) ? '' : '/dvn';
-		$serviceDocumentRequest .= '/api/data-deposit/v'. $this->getData('apiVersion') . '/swordv2/service-document';
+	function validateCredentials() {
+		$repository = new DataverseRepository($this->getData("apiToken"), $this->getData("dvnUri"));
+		$connectionSuccessful = $repository->checkConnectionWithDataverseInstance("1.1");
 
-		$dataverseRepository = new DataverseRepository();
-		$dataverseConnectionStatus = $dataverseRepository->validateCredentials($this, $serviceDocumentRequest);
-		
-		if ($dataverseConnectionStatus) {
+		if ($connectionSuccessful) {
 			$dataverseDAO = new DataverseDAO();
-			$dataverseDAO->insertCredentialsOnDatabase($this->contextId, $this->getData('dvnUri'), $this->getData('apiToken'));
+			$dataverseDAO->insertCredentialsOnDatabase($this->contextId, $this->getData("dvnUri"), $this->getData("apiToken"));
 		}
 
-		return ($dataverseConnectionStatus);
+		return $connectionSuccessful;
 	}
 }
