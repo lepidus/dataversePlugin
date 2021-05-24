@@ -16,11 +16,6 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
 require('plugins/generic/dataversePlugin/libs/swordappv2-php-library/swordappclient.php');
 
-// HTTP status codes
-define('DATAVERSE_PLUGIN_HTTP_STATUS_OK',         200);
-define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED',    201);
-define('DATAVERSE_PLUGIN_HTTP_STATUS_NO_CONTENT', 204);
-
 class DataversePlugin extends GenericPlugin {
 
 	/**
@@ -94,23 +89,6 @@ class DataversePlugin extends GenericPlugin {
 				return new JSONMessage(true, $form->fetch($request));
 		}
 		return parent::manage($args, $request);
-	}
-
-	/**
-	 * Wrapper function initializes SWORDv2 client with cURL option to allow
-	 * connections to servers with self-signed certificates.
-	 * @param $options array
-	 * @return SWORDAPPClient
-	 */
-	function _initSwordClient($options = array(CURLOPT_SSL_VERIFYPEER => FALSE)) {
-		if ($httpProxyHost = Config::getVar('proxy', 'http_host')) {
-			$options[CURLOPT_PROXY] = $httpProxyHost;
-			$options[CURLOPT_PROXYPORT] = Config::getVar('proxy', 'http_port', '80');
-			if ($username = Config::getVar('proxy', 'username')) {
-				$options[CURLOPT_PROXYUSERPWD] = $username . ':' . Config::getVar('proxy', 'password');
-			}
-		}
-		return new SWORDAPPClient($options);
 	}
 }
 
