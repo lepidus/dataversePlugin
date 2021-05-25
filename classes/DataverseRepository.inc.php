@@ -1,6 +1,7 @@
 <?php 
 
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
+define('DATAVERSE_API_VERSION', "v1.1");
 
 class DataverseRepository {
     private $apiToken;
@@ -23,9 +24,9 @@ class DataverseRepository {
         return $dataverseConnectionStatus;
     }
 
-    public function checkConnectionWithDataverseInstance($apiVersion) {
+    public function checkConnectionWithDataverse() {
 		$serviceDocumentRequest = preg_match('/\/dvn$/', $this->dataverseServer) ? '' : '/dvn';
-		$serviceDocumentRequest .= '/api/data-deposit/v'. $apiVersion . '/swordv2/service-document';
+		$serviceDocumentRequest .= '/api/data-deposit/'. DATAVERSE_API_VERSION . '/swordv2/service-document';
 
 		$dataverseConnectionStatus = $this->validateCredentials($serviceDocumentRequest);
 		return ($dataverseConnectionStatus);

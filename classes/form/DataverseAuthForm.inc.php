@@ -53,7 +53,7 @@ class DataverseAuthForm extends Form {
 
 	function validateCredentials() {
 		$repository = new DataverseRepository($this->getData("apiToken"), $this->getData("dataverseServer"));
-		$connectionSuccessful = $repository->checkConnectionWithDataverseInstance("1.1");
+		$connectionSuccessful = $repository->checkConnectionWithDataverse();
 
 		if ($connectionSuccessful) {
 			$dataverseDAO = new DataverseDAO();
