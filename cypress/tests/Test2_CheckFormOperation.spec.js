@@ -12,14 +12,15 @@ describe('Check form operation', function() {
         cy.get('button[id="plugins-button"]').click();
 		cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > .first_column > .show_extras').click();
         cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-control-row"] > td > :nth-child(1)').click();
-        cy.get('input[name="dataverseServer"]').invoke('val', Cypress.env('dataverseURI'));
+        cy.get('input[name="dataverseServer"]').invoke('val', Cypress.env('dataverseServerURI'));
+        cy.get('input[name="dataverseIntent"]').invoke('val', Cypress.env('dataverseIntentURI'));
         cy.get('input[name="apiToken"]').invoke('val', Cypress.env('dataverseAPIToken'));
         cy.get('form[id="dataverseAuthForm"] button[name="submitFormButton"]').click();
         cy.get('div:contains(\'Your changes have been saved.\')');
         cy.logout();
     });
 
-    it('Dataverse URL not filled', function() {
+    it('Dataverse Server URL not filled', function() {
 
         cy.login(admin, adminPassword);
         cy.get('a:contains(' + admin + '):visible').click();
@@ -29,13 +30,14 @@ describe('Check form operation', function() {
 		cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > .first_column > .show_extras').click();
         cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-control-row"] > td > :nth-child(1)').click();
         cy.get('input[name="dataverseServer"]').invoke('val', '');
+        cy.get('input[name="dataverseIntent"]').invoke('val', Cypress.env('dataverseIntentURI'));
         cy.get('input[name="apiToken"]').invoke('val', Cypress.env('dataverseAPIToken'));
         cy.get('form[id="dataverseAuthForm"] button[name="submitFormButton"]').click();
         cy.contains('This field is required.');
         cy.logout();
     });
 
-    it('Invalid URL', function() {
+    it('Invalid Server URL', function() {
 
         cy.login(admin, adminPassword);
         cy.get('a:contains(' + admin + '):visible').click();
@@ -45,6 +47,41 @@ describe('Check form operation', function() {
 		cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > .first_column > .show_extras').click();
         cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-control-row"] > td > :nth-child(1)').click();
         cy.get('input[name="dataverseServer"]').invoke('val', 'invalidURL');
+        cy.get('input[name="dataverseIntent"]').invoke('val', Cypress.env('dataverseIntentURI'));
+        cy.get('input[name="apiToken"]').invoke('val', Cypress.env('dataverseAPIToken'));
+        cy.get('form[id="dataverseAuthForm"] button[name="submitFormButton"]').click();
+        cy.contains('Please enter a valid URL.');
+        cy.logout();
+    });
+
+    it('Dataverse Intent URL not filled', function() {
+
+        cy.login(admin, adminPassword);
+        cy.get('a:contains(' + admin + '):visible').click();
+        cy.get('a:contains("Dashboard"):visible').click();
+        cy.get('.app__nav a').contains('Website').click();
+        cy.get('button[id="plugins-button"]').click();
+		cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > .first_column > .show_extras').click();
+        cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-control-row"] > td > :nth-child(1)').click();
+        cy.get('input[name="dataverseServer"]').invoke('val', Cypress.env('dataverseServerURI'));
+        cy.get('input[name="dataverseIntent"]').invoke('val', '');
+        cy.get('input[name="apiToken"]').invoke('val', Cypress.env('dataverseAPIToken'));
+        cy.get('form[id="dataverseAuthForm"] button[name="submitFormButton"]').click();
+        cy.contains('This field is required.');
+        cy.logout();
+    });
+
+    it('Invalid Intent URL', function() {
+
+        cy.login(admin, adminPassword);
+        cy.get('a:contains(' + admin + '):visible').click();
+        cy.get('a:contains("Dashboard"):visible').click();
+        cy.get('.app__nav a').contains('Website').click();
+        cy.get('button[id="plugins-button"]').click();
+		cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > .first_column > .show_extras').click();
+        cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-control-row"] > td > :nth-child(1)').click();
+        cy.get('input[name="dataverseServer"]').invoke('val', Cypress.env('dataverseServerURI'));
+        cy.get('input[name="dataverseIntent"]').invoke('val', 'invalidURL');
         cy.get('input[name="apiToken"]').invoke('val', Cypress.env('dataverseAPIToken'));
         cy.get('form[id="dataverseAuthForm"] button[name="submitFormButton"]').click();
         cy.contains('Please enter a valid URL.');
@@ -60,7 +97,7 @@ describe('Check form operation', function() {
         cy.get('button[id="plugins-button"]').click();
 		cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > .first_column > .show_extras').click();
         cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-control-row"] > td > :nth-child(1)').click();
-        cy.get('input[name="dataverseServer"]').invoke('val', Cypress.env('dataverseURI'));
+        cy.get('input[name="dataverseServer"]').invoke('val', Cypress.env('dataverseServerURI'));
         cy.get('input[name="apiToken"]').invoke('val', '');
         cy.get('form[id="dataverseAuthForm"] button[name="submitFormButton"]').click();
         cy.contains('This field is required.');
@@ -76,7 +113,7 @@ describe('Check form operation', function() {
         cy.get('button[id="plugins-button"]').click();
 		cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > .first_column > .show_extras').click();
         cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-control-row"] > td > :nth-child(1)').click();
-        cy.get('input[name="dataverseServer"]').invoke('val', Cypress.env('dataverseURI'));
+        cy.get('input[name="dataverseServer"]').invoke('val', Cypress.env('dataverseServerURI'));
         cy.get('input[name="apiToken"]').invoke('val', 'invalidToken');
         cy.get('form[id="dataverseAuthForm"] button[name="submitFormButton"]').click();
         cy.contains('Can\'t connect to Dataverse');
