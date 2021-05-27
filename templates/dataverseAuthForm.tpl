@@ -24,6 +24,10 @@
 			<label class="label">{fieldLabel name="dataverseServer" required="true" key="plugins.generic.dataverse.settings.dataverseServer"}</label>
 			{fbvElement type="url" id="dataverseServer" value=$dataverseServer|escape size=$fbvStyles.size.MEDIUM}
 			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dataverseServerDescription"}</label>
+
+			<label class="label">{fieldLabel name="dataverseIntent" required="true" key="plugins.generic.dataverse.settings.dataverseIntent"}</label>
+			{fbvElement type="url" id="dataverseIntent" value=$dataverseIntent|escape size=$fbvStyles.size.MEDIUM}
+			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dataverseIntentDescription"}</label>
 			
 			<label class="label">{fieldLabel name="apiToken" required="true" key="plugins.generic.dataverse.settings.token"}</label>
 			{fbvElement type="text" id="apiToken" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}

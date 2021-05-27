@@ -23,8 +23,14 @@ msgstr "Conectar"
 msgid "plugins.generic.dataverse.settings.dataverseServer"
 msgstr "URL Dataverse"
 
+msgid "plugins.generic.dataverse.settings.dataverseIntent"
+msgstr "Instância do Dataverse"
+
 msgid "plugins.generic.dataverse.settings.dataverseServerDescription"
 msgstr "URL raíz do Dataverse"
+
+msgid "plugins.generic.dataverse.settings.dataverseIntentDescription"
+msgstr "URL da instância do Dataverse"
 
 msgid "plugins.generic.dataverse.settings.tokenDescription"
 msgstr "Token de API"
