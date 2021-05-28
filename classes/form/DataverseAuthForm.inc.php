@@ -16,7 +16,7 @@ class DataverseAuthForm extends Form {
 
 		parent::__construct($plugin->getTemplateResource('dataverseAuthForm.tpl'));
 		$this->addCheck(new FormValidatorUrl($this, 'dataverseServer', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseServerRequired'));
-		$this->addCheck(new FormValidatorUrl($this, 'dataverseIntent', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseIntent'));
+		$this->addCheck(new FormValidatorUrl($this, 'dataverse', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverse'));
 		$this->addCheck(new FormValidator($this, 'apiToken', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.tokenRequired'));
 		$this->addCheck(new FormValidatorCustom($this, '', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseServerNotValid', array($this, 'validateCredentials')));
 		$this->addCheck(new FormValidatorPost($this));
@@ -25,16 +25,16 @@ class DataverseAuthForm extends Form {
 	function initData() {
 		$plugin = $this->plugin;
 		$this->setData('dataverseServer', $plugin->getSetting($this->contextId, 'dataverseServer'));
-		$this->setData('dataverseIntent', $plugin->getSetting($this->contextId, 'dataverseIntent'));
+		$this->setData('dataverse', $plugin->getSetting($this->contextId, 'dataverse'));
 		$this->setData('apiToken', $plugin->getSetting($this->contextId, 'apiToken'));
 
 	}
 
 	function readInputData() {
-		$this->readUserVars(array('dataverseServer', 'dataverseIntent', 'apiToken'));
+		$this->readUserVars(array('dataverseServer', 'dataverse', 'apiToken'));
 		$request = PKPApplication::getRequest();
 		$this->setData('dataverseServer', $this->normalizeURI($this->getData('dataverseServer')));
-		$this->setData('dataverseIntent', $this->normalizeURI($this->getData('dataverseIntent')));
+		$this->setData('dataverse', $this->normalizeURI($this->getData('dataverse')));
 	}
 
 	private function normalizeURI($uri) {
@@ -50,7 +50,7 @@ class DataverseAuthForm extends Form {
 	function execute(...$functionArgs) {
 		$plugin = $this->plugin;
 		$plugin->updateSetting($this->contextId, 'dataverseServer', $this->getData('dataverseServer'), 'string');
-		$plugin->updateSetting($this->contextId, 'dataverseIntent', $this->getData('dataverseIntent'), 'string');
+		$plugin->updateSetting($this->contextId, 'dataverse', $this->getData('dataverse'), 'string');
 		$plugin->updateSetting($this->contextId, 'apiToken', $this->getData('apiToken'), 'string');
 		$plugin->updateSetting($this->contextId, 'apiVersion', $this->getData('apiVersion'), 'string');
 		parent::execute(...$functionArgs);
@@ -62,7 +62,7 @@ class DataverseAuthForm extends Form {
 
 		if ($connectionSuccessful) {
 			$dataverseDAO = new DataverseDAO();
-			$dataverseDAO->insertCredentialsOnDatabase($this->contextId, $this->getData("dataverseServer"), $this->getData("dataverseIntent"), $this->getData("apiToken"));
+			$dataverseDAO->insertCredentialsOnDatabase($this->contextId, $this->getData("dataverseServer"), $this->getData("dataverse"), $this->getData("apiToken"));
 		}
 
 		return $connectionSuccessful;

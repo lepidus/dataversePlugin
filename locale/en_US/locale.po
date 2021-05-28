@@ -17,8 +17,8 @@ msgstr "Dataverse Plugin"
 msgid "plugins.generic.dataverse.settings.dataverseServer"
 msgstr "Dataverse URL"
 
-msgid "plugins.generic.dataverse.settings.dataverseIntent"
-msgstr "Dataverse Intent"
+msgid "plugins.generic.dataverse.settings.dataverse"
+msgstr "Dataverse"
 
 msgid "plugins.generic.dataverse.description"
 msgstr "Deposit data sets and/or other supplementary files to a Dataverse."
@@ -26,8 +26,8 @@ msgstr "Deposit data sets and/or other supplementary files to a Dataverse."
 msgid "plugins.generic.dataverse.settings.dataverseServerDescription"
 msgstr "Root Dataverse URL"
 
-msgid "plugins.generic.dataverse.settings.dataverseIntentDescription"
-msgstr "Dataverse Intent URL"
+msgid "plugins.generic.dataverse.settings.dataverseDescription"
+msgstr "Dataverse URL"
 
 msgid "plugins.generic.dataverse.settings.tokenDescription"
 msgstr "API token"
