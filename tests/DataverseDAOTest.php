@@ -1,6 +1,6 @@
 <?php
 import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataversePlugin.classes.DataverseDAO');
+import('plugins.generic.dataverse.classes.DataverseDAO');
 import('lib.pkp.classes.db.DAO');
 
 class DataverseDAOTest extends PKPTestCase {
