@@ -7,7 +7,7 @@ class DataverseDAO extends DAO
     public function getCredentialsFromDatabase($contextId)
     {
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
-        $result = $pluginSettingsDao->getPluginSettings($contextId, 'dataverse');
+        $result = $pluginSettingsDao->getPluginSettings($contextId, 'dataverseplugin');
         $credentials = [$result['apiToken'], $result['dataverse'], $result['dataverseServer']];
         return $credentials;
     }

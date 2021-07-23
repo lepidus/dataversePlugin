@@ -7,7 +7,6 @@ class DataversePackageCreator extends PackagerAtomTwoStep
     private $outPath;
     private $fileDir = 'files';
     private $files = array();
-    private $packageFileName = 'deposit.zip';
 
     public function DataversePackageCreator()
     {
@@ -22,5 +21,15 @@ class DataversePackageCreator extends PackagerAtomTwoStep
     public function createAtomEntry(): void
     {
         $this->create();
+    }
+
+    public function getAtomEntryPath()
+    {
+        return $this->outPath . '/' . $this->fileDir . '/atom';
+    }
+
+    public function getOutPath()
+    {
+        return $this->outPath;
     }
 }

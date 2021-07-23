@@ -25,9 +25,9 @@ class DataverseDAOTest extends PKPTestCase
     public function testCredentialsAddedInDB()
     {
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
-        $pluginSettingsDao->updateSetting($this->contextId, 'dataverse', 'dataverseServer', $this->dataverseServer);
-        $pluginSettingsDao->updateSetting($this->contextId, 'dataverse', 'dataverse', $this->dataverse);
-        $pluginSettingsDao->updateSetting($this->contextId, 'dataverse', 'apiToken', $this->apiToken);
+        $pluginSettingsDao->updateSetting($this->contextId, 'dataverseplugin', 'dataverseServer', $this->dataverseServer);
+        $pluginSettingsDao->updateSetting($this->contextId, 'dataverseplugin', 'dataverse', $this->dataverse);
+        $pluginSettingsDao->updateSetting($this->contextId, 'dataverseplugin', 'apiToken', $this->apiToken);
         $expectedCredentials = [$this->apiToken, $this->dataverse, $this->dataverseServer];
         $this->assertEquals($expectedCredentials, $this->dataverseDAO->getCredentialsFromDatabase($this->contextId));
     }
@@ -36,7 +36,7 @@ class DataverseDAOTest extends PKPTestCase
     {
         $this->dataverseDAO->insertCredentialsOnDatabase($this->contextId, $this->dataverseServer, $this->dataverse, $this->apiToken);
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
-        $result = $pluginSettingsDao->getPluginSettings($this->contextId, 'dataverse');
+        $result = $pluginSettingsDao->getPluginSettings($this->contextId, 'dataverseplugin');
         $credentials = [$result['apiToken'], $result['dataverse'] , $result['dataverseServer']];
         $expectedCredentials = [$this->apiToken, $this->dataverse, $this->dataverseServer];
         $this->assertEquals($expectedCredentials, $credentials);

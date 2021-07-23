@@ -9,18 +9,30 @@ class DataversePackageCreatorTest extends PKPTestCase
 
     public function setUp(): void
     {
+        $this->packageCreator = new DataversePackageCreator();
         parent::setUp();
     }
 
-    public function testCreateAtomEntryInLocalTempFiles(): void
+    public function tearDown(): void
     {
-        $this->packageCreator = new DataversePackageCreator();
-        $this->packageCreator->addMetadata('title', 'Test title');
-        $this->packageCreator->addMetadata('description', 'Test description');
-        $this->packageCreator->addMetadata('creator', 'The tester');
-        $this->packageCreator->addMetadata('subject', 'Testing Entries');
-        $this->packageCreator->addMetadata('contributor', 'test@lepidus.com.br');
+        if (file_exists($this->packageCreator->getAtomEntryPath())) {
+            unlink($this->packageCreator->getAtomEntryPath());
+        }
+        rmdir($this->packageCreator->getOutPath() . '/files');
+        rmdir($this->packageCreator->getOutPath());
+        parent::tearDown();
+    }
+
+    public function testCreateExampleAtomEntryInLocalTempFiles(): void
+    {
+        $this->packageCreator->addMetadata('title', 'Example Title');
+        $this->packageCreator->addMetadata('description', 'Example description');
+        $this->packageCreator->addMetadata('creator', 'Exemple Creator');
+        $this->packageCreator->addMetadata('subject', 'Example subject');
+        $this->packageCreator->addMetadata('contributor', 'example@lepidus.com.br');
         $this->packageCreator->createAtomEntry();
-        $this->assertTrue(true);
+
+        $this->assertEquals($this->packageCreator->getOutPath() . '/files/atom', $this->packageCreator->getAtomEntryPath());
+        $this->assertTrue(file_exists($this->packageCreator->getAtomEntryPath()));
     }
 }
