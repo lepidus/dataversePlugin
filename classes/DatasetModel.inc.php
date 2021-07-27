@@ -1,6 +1,6 @@
 <?php
 
-class Dataset
+class DatasetModel
 {
     private $title;
     private $creator;

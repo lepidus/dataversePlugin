@@ -1,9 +1,9 @@
 <?php
 
 import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataverse.classes.Dataset');
+import('plugins.generic.dataverse.classes.DatasetModel');
 
-class DatasetTest extends PKPTestCase
+class DatasetModelTest extends PKPTestCase
 {
     private $title;
     private $creator;
@@ -28,7 +28,7 @@ class DatasetTest extends PKPTestCase
         $this->subject = "Computer and Information Science";
         $this->description = "An example abstract";
         $this->contributor = "iris@lepidus.com.br";
-        $this->dataset = new Dataset($this->title, $this->creator, $this->subject, $this->description, null, $this->contributor, null, null, null, null, null, null,null, null);
+        $this->dataset = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, null, $this->contributor, null, null, null, null, null, null,null, null);
         parent::setUp();
     }
 
