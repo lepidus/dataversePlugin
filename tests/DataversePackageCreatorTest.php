@@ -42,7 +42,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         $this->packageCreator->createAtomEntry();
     }
 
-    public function testCreateExampleAtomEntryInLocalTempFiles(): void
+    public function testCreateAtomEntryInLocalTempFiles(): void
     {
         $this->createDefaultTestAtomEntry();
 
@@ -64,7 +64,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         $this->assertEquals($xmlnsDcTerms, self::ATOM_ENTRY_XML_DCTERMS);
     }
 
-    public function testValidateAtomEntryMetadata(): void
+    public function testValidateAtomEntryRequiredMetadata(): void
     {
         $this->createDefaultTestAtomEntry();
 
@@ -92,34 +92,6 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntry();
 
-        $atom = DOMDocument::load($this->packageCreator->getAtomEntryPath());
-        $atomEntry = $atom->getElementsByTagName('entry')->item(0);
-
-        $doc = new DOMDocument('1.0', 'utf-8');
-        $doc->formatOutput = true;
-
-        $entryElement = $doc->createElementNS(self::ATOM_ENTRY_XML_NAMESPACE, 'entry');
-        $entryElement->setAttribute('xmlns:dcterms', self::ATOM_ENTRY_XML_DCTERMS);
-        $doc->appendChild($entryElement);
-
-        $entryTitleElement = $doc->createElement('dcterms:title', $this->title);
-        $entryDescriptionElement = $doc->createElement('dcterms:description',$this->description);
-        $entryCreatorElement = $doc->createElement('dcterms:creator', $this->creator);
-        $entrySubject = $doc->createElement('dcterms:subject', $this->subject);
-        $entryContributor = $doc->createElement('dcterms:contributor', $this->contributor);
-
-        $entryElement->appendChild($entryTitleElement);
-        $entryElement->appendChild($entryDescriptionElement);
-        $entryElement->appendChild($entryCreatorElement);
-        $entryElement->appendChild($entrySubject);
-        $entryElement->appendChild($entryContributor);
-
-        $expectedEntry = $doc->getElementsByTagName('entry')->item(0);
-
-        self::assertXmlStringEqualsXmlString(
-			$doc->saveXML($expectedEntry),
-			$atom->saveXML($atomEntry),
-			"actual xml is equal to expected xml"
-		);
+        $this->assertXmlFileEqualsXmlFile($this->packageCreator->getAtomEntryPath(), dirname(__FILE__) . '/atomEntryExampleForTesting.xml');
     }
 }
