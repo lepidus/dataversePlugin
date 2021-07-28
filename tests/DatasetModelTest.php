@@ -19,7 +19,7 @@ class DatasetModelTest extends PKPTestCase
     private $license;
     private $rights;
     private $isReferencedBy;
-    private $dataset;
+    private $datasetModel;
 
     public function setUp(): void
     {
@@ -28,11 +28,11 @@ class DatasetModelTest extends PKPTestCase
         $this->subject = "Computer and Information Science";
         $this->description = "An example abstract";
         $this->contributor = "iris@lepidus.com.br";
-        $this->dataset = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, null, $this->contributor, null, null, null, null, null, null,null, null);
+        $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, null, $this->contributor, null, null, null, null, null, null, null, null);
         parent::setUp();
     }
 
-    public function testValidateDatasetTitle() : void
+    public function testValidateDatasetTitle(): void
     {
         $expectedTitle = $this->title;
         $resultTitle = $this->dataset->getTitle();
@@ -40,15 +40,15 @@ class DatasetModelTest extends PKPTestCase
         self::assertEquals($expectedTitle, $resultTitle);
     }
 
-    public function testValidateDatasetCreator() : void
+    public function testValidateDatasetCreator(): void
     {
         $expectedCreator = $this->creator;
         $resultCreator = $this->dataset->getCreator();
 
         self::assertEquals($expectedCreator, $resultCreator);
     }
-    
-    public function testValidateDatasetSubject() : void
+
+    public function testValidateDatasetSubject(): void
     {
         $expectedSubject = $this->subject;
         $resultSubject = $this->dataset->getSubject();
@@ -56,7 +56,7 @@ class DatasetModelTest extends PKPTestCase
         self::assertEquals($expectedSubject, $resultSubject);
     }
 
-    public function testValidateDatasetDescription() : void
+    public function testValidateDatasetDescription(): void
     {
         $expectedDescription = $this->description;
         $resultDescription = $this->dataset->getDescription();
@@ -64,11 +64,25 @@ class DatasetModelTest extends PKPTestCase
         self::assertEquals($expectedDescription, $resultDescription);
     }
 
-    public function testValidateDatasetContributor() : void
+    public function testValidateDatasetContributor(): void
     {
         $expectedContributor = $this->contributor;
         $resultContributor = $this->dataset->getContributor();
 
         self::assertEquals($expectedContributor, $resultContributor);
+    }
+
+    public function testAllValidMetadata(): void
+    {
+        $datasetMetadata = $this->dataset->getMetadataValues();
+
+        $expectedMetadata = array(
+            'title' => $this->title,
+            'creator' => $this->creator,
+            'subject' => $this->subject,
+            'description' => $this->description,
+            'contributor' => $this->contributor );
+
+            $this->assertEquals($expectedMetadata, $datasetMetadata);
     }
 }

@@ -19,7 +19,6 @@ class DatasetModel
 
     public function __construct($title, $creator, $subject, $description, $publisher = null, $contributor, $date = null, $type = null, $source = null, $relation = null, $coverage = null, $license = null, $rights = null, $isReferencedBy = null)
     {
-
         $this->title = $title;
         $this->creator = $creator;
         $this->subject = $subject;
@@ -34,6 +33,17 @@ class DatasetModel
         $this->license = $license;
         $this->rights = $rights;
         $this->isReferencedBy = $isReferencedBy;
+    }
+
+    public function getMetadataValues(): array
+    {
+        $validMetadata = array();
+        foreach (get_object_vars($this) as $label => $value) {
+            if (isset($value)) {
+                $validMetadata += [$label => $value];
+            }
+        }
+        return $validMetadata;
     }
 
     public function getTitle()
