@@ -6,8 +6,8 @@ class DatasetModel
     private $description;
     private $creator;
     private $subject;
-    private $publisher;
     private $contributor;
+    private $publisher;
     private $date;
     private $type;
     private $source;
