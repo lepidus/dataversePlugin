@@ -14,7 +14,7 @@ class DataversePackageCreator extends PackagerAtomTwoStep
         $this->outPath = tempnam('/tmp', 'dataverse');
         unlink($this->outPath);
         mkdir($this->outPath);
-        mkdir($this->outPath .'/'. $this->fileDir);
+        mkdir($this->outPath .DIRECTORY_SEPARATOR. $this->fileDir);
         parent::__construct($this->outPath, $this->fileDir, $this->outPath, "");
     }
 
@@ -25,11 +25,19 @@ class DataversePackageCreator extends PackagerAtomTwoStep
 
     public function getAtomEntryPath()
     {
-        return $this->outPath . '/' . $this->fileDir . '/atom';
+        return $this->outPath . DIRECTORY_SEPARATOR . $this->fileDir . DIRECTORY_SEPARATOR . 'atom';
     }
 
     public function getOutPath()
     {
         return $this->outPath;
+    }
+
+    public function loadMetadataFromDatasetModel(DatasetModel $dataset): void
+    {
+        $datasetMetadata = $dataset->getMetadataValues();
+        foreach ($datasetMetadata as $key => $value) {
+            $this->addMetadata($key, $value);
+        }
     }
 }

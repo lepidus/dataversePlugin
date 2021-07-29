@@ -2,6 +2,7 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.DataversePackageCreator');
+import('plugins.generic.dataverse.classes.DatasetModel');
 
 class DataversePackageCreatorTest extends PKPTestCase
 {
@@ -34,11 +35,8 @@ class DataversePackageCreatorTest extends PKPTestCase
 
     private function createDefaultTestAtomEntry(): void
     {
-        $this->packageCreator->addMetadata('title', $this->title);
-        $this->packageCreator->addMetadata('description', $this->description);
-        $this->packageCreator->addMetadata('creator', $this->creator);
-        $this->packageCreator->addMetadata('subject', $this->subject);
-        $this->packageCreator->addMetadata('contributor', $this->contributor);
+        $datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
+        $this->packageCreator->loadMetadataFromDatasetModel($datasetModel);
         $this->packageCreator->createAtomEntry();
     }
 
@@ -50,7 +48,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         $this->assertTrue(file_exists($this->packageCreator->getAtomEntryPath()));
     }
 
-    public function testValidateAtomEntryAttributes(): void
+    public function testValidateAtomEntryNamespaceAttributes(): void
     {
         $this->createDefaultTestAtomEntry();
 

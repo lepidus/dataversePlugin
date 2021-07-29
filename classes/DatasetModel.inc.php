@@ -3,9 +3,9 @@
 class DatasetModel
 {
     private $title;
+    private $description;
     private $creator;
     private $subject;
-    private $description;
     private $publisher;
     private $contributor;
     private $date;
@@ -17,12 +17,12 @@ class DatasetModel
     private $rights;
     private $isReferencedBy;
 
-    public function __construct($title, $creator, $subject, $description, $publisher = null, $contributor, $date = null, $type = null, $source = null, $relation = null, $coverage = null, $license = null, $rights = null, $isReferencedBy = null)
+    public function __construct($title, $creator, $subject, $description, $contributor, $publisher = null, $date = null, $type = null, $source = null, $relation = null, $coverage = null, $license = null, $rights = null, $isReferencedBy = null)
     {
         $this->title = $title;
+        $this->description = $description;
         $this->creator = $creator;
         $this->subject = $subject;
-        $this->description = $description;
         $this->publisher = $publisher;
         $this->contributor = $contributor;
         $this->date = $date;
