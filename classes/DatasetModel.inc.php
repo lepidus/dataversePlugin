@@ -4,20 +4,20 @@ class DatasetModel
 {
     private $title;
     private $description;
-    private $creator;
-    private $subject;
-    private $contributor;
+    private $creator = array();
+    private $subject = array();
+    private $contributor = array();
     private $publisher;
     private $date;
-    private $type;
+    private $type = array();
     private $source;
     private $relation;
-    private $coverage;
+    private $coverage = array();
     private $license;
     private $rights;
     private $isReferencedBy;
 
-    public function __construct($title, $creator, $subject, $description, $contributor, $publisher = null, $date = null, $type = null, $source = null, $relation = null, $coverage = null, $license = null, $rights = null, $isReferencedBy = null)
+    public function __construct(string $title, array $creator, array $subject, string $description, array $contributor, string $publisher = null, string $date = null, array $type = null, string $source = null, string $relation = null, array $coverage = null, string $license = null, string $rights = null, string $isReferencedBy = null)
     {
         $this->title = $title;
         $this->description = $description;
@@ -25,7 +25,7 @@ class DatasetModel
         $this->subject = $subject;
         $this->publisher = $publisher;
         $this->contributor = $contributor;
-        $this->date = $date;
+        $this->date = $date ? strftime('%Y-%m-%d', strtotime($date)) : $date;
         $this->type = $type;
         $this->source = $source;
         $this->relation = $relation;

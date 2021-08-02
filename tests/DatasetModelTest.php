@@ -6,16 +6,16 @@ import('plugins.generic.dataverse.classes.DatasetModel');
 class DatasetModelTest extends PKPTestCase
 {
     private $title;
-    private $creator;
-    private $subject;
     private $description;
-    private $contributor;
+    private $creator = array();
+    private $subject = array();
+    private $contributor = array();
     private $publisher;
     private $date;
-    private $type;
+    private $type = array();
     private $source;
     private $relation;
-    private $coverage;
+    private $coverage = array();
     private $license;
     private $rights;
     private $isReferencedBy;
@@ -23,12 +23,30 @@ class DatasetModelTest extends PKPTestCase
 
     public function setUp(): void
     {
-        $this->title = "The Rise of The Machine Empire";
-        $this->creator = "Irís Castanheiras";
-        $this->subject = "Computer and Information Science";
-        $this->description = "An example abstract";
-        $this->contributor = "iris@lepidus.com.br";
+        $this->setRequiredMetadata();
         parent::setUp();
+    }
+
+    private function setRequiredMetadata(): void
+    {
+        $this->title = "The Rise of The Machine Empire";
+        $this->description = "An example abstract";
+        array_push($this->creator, array("Irís Castanheiras"));
+        array_push($this->subject, "Computer and Information Science");
+        array_push($this->contributor, array("iris@lepidus.com.br", "Contact"));
+    }
+
+    private function setOptionalMetadata(): void
+    {
+        $this->publisher = 'Lepidus Tecnologia Ltda.';
+        $this->date = '2021-07-22';
+        array_push($this->type, 'test data');
+        $this->source = 'The Guide to SWORD API, Dataverse Project';
+        $this->relation = 'Peets, John. 2010. Roasting Coffee at the Coffee Shop. Coffeemill Press';
+        array_push($this->coverage, 'South America', 'North America');
+        $this->license = 'CC';
+        $this->rights = 'BY-NC-ND';
+        $this->isReferencedBy = 'None';
     }
 
     public function testValidateDatasetModelTitle(): void
@@ -76,7 +94,7 @@ class DatasetModelTest extends PKPTestCase
         self::assertEquals($expectedContributor, $resultContributor);
     }
 
-    public function testAllValidMetadata(): void
+    public function testValidMetadata(): void
     {
         $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
         $datasetModelMetadata = $this->datasetModel->getMetadataValues();
@@ -88,12 +106,10 @@ class DatasetModelTest extends PKPTestCase
             'description' => $this->description,
             'contributor' => $this->contributor);
 
-
-
         $this->assertEquals($expectedMetadata, $datasetModelMetadata);
     }
 
-    public function testOptionalMetadata(): void
+    public function testAddingOptionalMetadata(): void
     {
         $this->publisher = 'Lepidus Tecnologia Ltda.';
         $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor, $this->publisher);
@@ -105,15 +121,7 @@ class DatasetModelTest extends PKPTestCase
 
     public function testAllMetadataFields(): void
     {
-        $this->publisher = 'Lepidus Tecnologia Ltda.';
-        $this->date = '2021';
-        $this->type = 'test data';
-        $this->source = 'The Guide to SWORD API, Dataverse Project';
-        $this->relation = 'Peets, John. 2010. Roasting Coffee at the Coffee Shop. Coffeemill Press';
-        $this->coverage = 'South America';
-        $this->license = 'CC';
-        $this->rights = 'BY-NC-ND';
-        $this->isReferencedBy = 'None';
+        $this->setOptionalMetadata();
 
         $expectedMetadata = array(
             'title' => $this->title,

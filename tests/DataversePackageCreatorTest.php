@@ -8,14 +8,14 @@ class DataversePackageCreatorTest extends PKPTestCase
 {
     private $packageCreator;
 
-    const ATOM_ENTRY_XML_NAMESPACE = "http://www.w3.org/2005/Atom";
-    const ATOM_ENTRY_XML_DCTERMS = "http://purl.org/dc/terms/";
+    public const ATOM_ENTRY_XML_NAMESPACE = "http://www.w3.org/2005/Atom";
+    public const ATOM_ENTRY_XML_DCTERMS = "http://purl.org/dc/terms/";
 
     private $title       = 'The Rise of The Machine Empire';
     private $description = 'An example abstract';
-    private $creator     = 'Irís Castanheiras';
-    private $subject     = 'Computer and Information Science';
-    private $contributor = 'iris@lepidus.com.br';
+    private $creator     = array("Irís Castanheiras");
+    private $subject     = array("Computer and Information Science");
+    private $contributor = array("contact" => "iris@lepidus.com.br");
 
     public function setUp(): void
     {
@@ -48,6 +48,13 @@ class DataversePackageCreatorTest extends PKPTestCase
         $this->assertTrue(file_exists($this->packageCreator->getAtomEntryPath()));
     }
 
+    public function testValidateAtomEntryXmlFileStructure(): void
+    {
+        $this->createDefaultTestAtomEntry();
+
+        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__) . '/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
+    }
+
     public function testValidateAtomEntryNamespaceAttributes(): void
     {
         $this->createDefaultTestAtomEntry();
@@ -57,7 +64,7 @@ class DataversePackageCreatorTest extends PKPTestCase
 
         $xmlns = $entry->getAttribute('xmlns');
         $xmlnsDcTerms = $entry->getAttribute('xmlns:dcterms');
-        
+
         $this->assertEquals($xmlns, self::ATOM_ENTRY_XML_NAMESPACE);
         $this->assertEquals($xmlnsDcTerms, self::ATOM_ENTRY_XML_DCTERMS);
     }
@@ -67,7 +74,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         $this->createDefaultTestAtomEntry();
 
         $atom = DOMDocument::load($this->packageCreator->getAtomEntryPath());
-        
+
         $atomEntryMetadata = array(
             'atomEntryTitle' => $atom->getElementsByTagName('title')->item(0)->nodeValue,
             'atomEntryDescription' => $atom->getElementsByTagName('description')->item(0)->nodeValue,
@@ -78,18 +85,11 @@ class DataversePackageCreatorTest extends PKPTestCase
         $expectedMetadata = array(
             'atomEntryTitle' => $this->title,
             'atomEntryDescription' => $this->description,
-            'atomEntryCreator' => $this->creator,
-            'atomEntrySubject' => $this->subject,
-            'atomEntryContributor' => $this->contributor
+            'atomEntryCreator' => $this->creator[0],
+            'atomEntrySubject' => $this->subject[0],
+            'atomEntryContributor' => $this->contributor['contact']
         );
 
-        $this->assertEquals($atomEntryMetadata, $expectedMetadata);
-    }
-
-    public function testValidateAtomEntryXmlFileStructure(): void
-    {
-        $this->createDefaultTestAtomEntry();
-
-        $this->assertXmlFileEqualsXmlFile($this->packageCreator->getAtomEntryPath(), dirname(__FILE__) . '/atomEntryExampleForTesting.xml');
+        $this->assertEquals($expectedMetadata, $atomEntryMetadata);
     }
 }

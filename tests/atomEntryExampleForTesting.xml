@@ -4,5 +4,5 @@
 	<dcterms:description>An example abstract</dcterms:description>
 	<dcterms:creator>Irís Castanheiras</dcterms:creator>
 	<dcterms:subject>Computer and Information Science</dcterms:subject>
-	<dcterms:contributor>iris@lepidus.com.br</dcterms:contributor>
+	<dcterms:contributor type="contact">iris@lepidus.com.br</dcterms:contributor>
 </entry>
