@@ -4,8 +4,9 @@ require_once('plugins/generic/dataverse/libs/swordappv2-php-library/packager_ato
 
 class DataversePackageCreator extends PackagerAtomTwoStep
 {
+    public const FILE_DIR = "files";
+    public const PACKAGE_FILE_NAME = "deposit.zip";
     private $outPath;
-    private $fileDir = 'files';
     private $files = array();
 
     public function DataversePackageCreator()
@@ -14,8 +15,8 @@ class DataversePackageCreator extends PackagerAtomTwoStep
         $this->outPath = tempnam('/tmp', 'dataverse');
         unlink($this->outPath);
         mkdir($this->outPath);
-        mkdir($this->outPath .DIRECTORY_SEPARATOR. $this->fileDir);
-        parent::__construct($this->outPath, $this->fileDir, $this->outPath, "");
+        mkdir($this->outPath .DIRECTORY_SEPARATOR. self::FILE_DIR);
+        parent::__construct($this->outPath, self::FILE_DIR, $this->outPath, "");
     }
 
     public function createAtomEntry(): void
@@ -23,9 +24,9 @@ class DataversePackageCreator extends PackagerAtomTwoStep
         $this->create();
     }
 
-    public function getAtomEntryPath()
+    public function getAtomEntryPath(): string
     {
-        return $this->outPath . DIRECTORY_SEPARATOR . $this->fileDir . DIRECTORY_SEPARATOR . 'atom';
+        return $this->outPath . DIRECTORY_SEPARATOR . self::FILE_DIR . DIRECTORY_SEPARATOR . 'atom';
     }
 
     public function getOutPath()
@@ -49,5 +50,25 @@ class DataversePackageCreator extends PackagerAtomTwoStep
                 $this->addMetadata($key, $value);
             }
         }
+    }
+
+    public function createPackage(): void
+    {
+        $package = new ZipArchive();
+        $package->open($this->getPackageFilePath(), ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
+        foreach ($this->files as $fileName => $filePath) {
+            $package->addFile($filePath, $fileName);
+        }
+        $package->close();
+    }
+
+    public function getPackageFilePath(): string
+    {
+        return $this->outPath . DIRECTORY_SEPARATOR . self::FILE_DIR . DIRECTORY_SEPARATOR . self::PACKAGE_FILE_NAME;
+    }
+
+    public function addFileToPackage($filePath, $fileName)
+    {
+        $this->files[$fileName] = $filePath;
     }
 }

@@ -28,6 +28,9 @@ class DataversePackageCreatorTest extends PKPTestCase
         if (file_exists($this->packageCreator->getAtomEntryPath())) {
             unlink($this->packageCreator->getAtomEntryPath());
         }
+        if (file_exists($this->packageCreator->getPackageFilePath())) {
+            unlink($this->packageCreator->getPackageFilePath());
+        }
         rmdir($this->packageCreator->getOutPath() . '/files');
         rmdir($this->packageCreator->getOutPath());
         parent::tearDown();
@@ -91,5 +94,15 @@ class DataversePackageCreatorTest extends PKPTestCase
         );
 
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);
+    }
+
+    public function testCreatePackageWithSampleFile()
+    {
+        $this->createDefaultTestAtomEntry();
+
+        $this->packageCreator->addFileToPackage(dirname(__FILE__) . '/testSample.csv', "sampleFileForTests.csv");
+        $this->packageCreator->createPackage();
+
+        $this->assertTrue(file_exists($this->packageCreator->getPackageFilePath()));
     }
 }
