@@ -39,7 +39,7 @@ class DataversePackageCreatorTest extends PKPTestCase
     private function createDefaultTestAtomEntry(): void
     {
         $datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
-        $this->packageCreator->loadMetadataFromDatasetModel($datasetModel);
+        $this->packageCreator->loadMetadata($datasetModel);
         $this->packageCreator->createAtomEntry();
     }
 

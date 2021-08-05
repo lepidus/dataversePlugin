@@ -37,82 +37,12 @@ class DatasetModel
 
     public function getMetadataValues(): array
     {
-        $validMetadata = array();
+        $metadata = array();
         foreach (get_object_vars($this) as $label => $value) {
             if (isset($value)) {
-                $validMetadata += [$label => $value];
+                $metadata += [$label => $value];
             }
         }
-        return $validMetadata;
-    }
-
-    public function getTitle()
-    {
-        return $this->title;
-    }
-
-    public function getDescription()
-    {
-        return $this->description;
-    }
-
-    public function getCreator()
-    {
-        return $this->creator;
-    }
-
-    public function getSubject()
-    {
-        return $this->subject;
-    }
-
-    public function getPublisher()
-    {
-        return $this->publisher;
-    }
-
-    public function getContributor()
-    {
-        return $this->contributor;
-    }
-
-    public function getDate()
-    {
-        return $this->date;
-    }
-
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    public function getSource()
-    {
-        return $this->source;
-    }
-
-    public function getRelation()
-    {
-        return $this->relation;
-    }
-
-    public function getCoverage()
-    {
-        return $this->coverage;
-    }
-
-    public function getLicense()
-    {
-        return $this->license;
-    }
-
-    public function getRights()
-    {
-        return $this->contributor;
-    }
-
-    public function getIsReferencedBy()
-    {
-        return $this->isReferencedBy;
+        return $metadata;
     }
 }
