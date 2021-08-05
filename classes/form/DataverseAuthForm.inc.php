@@ -1,8 +1,8 @@
 <?php
 
 import('lib.pkp.classes.form.Form');
-import('plugins.generic.dataversePlugin.classes.DataverseRepository');
-import('plugins.generic.dataversePlugin.classes.DataverseDAO');
+import('plugins.generic.dataverse.classes.DataverseRepository');
+import('plugins.generic.dataverse.classes.DataverseDAO');
 
 class DataverseAuthForm extends Form {
 

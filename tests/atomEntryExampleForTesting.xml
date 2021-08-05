@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:dcterms="http://purl.org/dc/terms/">
+	<dcterms:title>The Rise of The Machine Empire</dcterms:title>
+	<dcterms:description>An example abstract</dcterms:description>
+	<dcterms:creator>Irís Castanheiras</dcterms:creator>
+	<dcterms:subject>Computer and Information Science</dcterms:subject>
+	<dcterms:contributor type="contact">iris@lepidus.com.br</dcterms:contributor>
+</entry>

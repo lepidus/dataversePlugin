@@ -14,7 +14,7 @@
 
 import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
-require('plugins/generic/dataversePlugin/libs/swordappv2-php-library/swordappclient.php');
+require('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
 
 class DataversePlugin extends GenericPlugin {
 
