@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataverse.classes.DataversePackageCreator');
+import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.DatasetModel');
 
 class DataversePackageCreatorTest extends PKPTestCase
@@ -55,7 +55,7 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntry();
 
-        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__) . '/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
+        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
     }
 
     public function testValidateAtomEntryNamespaceAttributes(): void
@@ -100,7 +100,7 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntry();
 
-        $this->packageCreator->addFileToPackage(dirname(__FILE__) . '/testSample.csv', "sampleFileForTests.csv");
+        $this->packageCreator->addFileToPackage(dirname(__FILE__) . '/assets/testSample.csv', "sampleFileForTests.csv");
         $this->packageCreator->createPackage();
 
         $this->assertTrue(file_exists($this->packageCreator->getPackageFilePath()));
