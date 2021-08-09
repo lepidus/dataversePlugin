@@ -15,7 +15,7 @@ class SubmissionAdapterCreatorTest extends DatabaseTestCase
     private $submissionTitle = "The Rise of The Machine Empire";
     private $authors = array();
     private $description = "This is an abstract / description";
-    private $keywords = array("Testing Subject");
+    private $keywords = ["en_US" => array("computer science", "testing")];
     private $locale = 'en_US';
 
     private $dateSubmitted = '2021-05-31 15:38:24';
@@ -96,7 +96,7 @@ class SubmissionAdapterCreatorTest extends DatabaseTestCase
         $publication->setData('title', $this->submissionTitle, $this->locale);
         $publication->setData('relationStatus', '1');
         $publication->setData('status', $this->statusCode);
-        $publication->setData('subjects', "assunto da publicação", $this->locale);
+        $publication->setData('keywords', $this->keywords);
 
         return $publicationDao->insertObject($publication);
     }
@@ -119,5 +119,10 @@ class SubmissionAdapterCreatorTest extends DatabaseTestCase
     public function testRetrieveSubmissionDescription(): void
     {
         $this->assertEquals($this->description, $this->submissionAdapter->getDescription());
+    }
+    
+    public function testRetrieveSubmissionKeywords(): void
+    {
+        $this->assertEquals($this->keywords[$this->locale], $this->submissionAdapter->getKeywords());
     }
 }

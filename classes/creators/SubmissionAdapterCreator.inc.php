@@ -3,7 +3,6 @@
 class SubmissionAdapterCreator
 {
     private $locale = "en_US";
-    private $subject = "Testing Subject";
 
     public function createSubmissionAdapter($submissionId): SubmissionAdapter
     {
@@ -13,13 +12,12 @@ class SubmissionAdapterCreator
         $title = $publication->getLocalizedData('title', $this->locale);
         $authors = $this->retrieveAuthors($publication);
         $description = $publication->getLocalizedData('abstract', $this->locale);
-
-        $keywords = [$this->subject];
+        $keywords = $publication->getData('keywords')[$this->locale];
 
         return new SubmissionAdapter($title, $authors, $description, $keywords);
     }
 
-    protected function retrieveAuthors($publication)
+    private function retrieveAuthors($publication)
     {
         $authors =  $publication->getData('authors');
         $authorAdapters = [];
