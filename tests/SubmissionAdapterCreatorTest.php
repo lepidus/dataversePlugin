@@ -61,7 +61,7 @@ class SubmissionAdapterCreatorTest extends DatabaseTestCase
 
         $authorDao->insertObject($author);
 
-        return [new AuthorAdapter("Ana Alice Caldas Novas", "Harvard University")];
+        return [new AuthorAdapter("Ana Alice Caldas Novas", "Harvard University", "anaalice@harvard.com")];
     }
 
     private function addCurrentPublicationToSubmission(): void

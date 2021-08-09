@@ -25,9 +25,11 @@ class SubmissionAdapterCreator
         foreach ($authors as $author) {
             $fullName = $author->getFullName($this->locale);
             $affiliation = $author->getLocalizedData('affiliation', $this->locale);
+            $email = $author->getData('email');
 
             $affiliation = !is_null($affiliation) ? $affiliation : "";
-            $authorAdapters[] = new AuthorAdapter($fullName, $affiliation);
+            $email = !is_null($email) ? $email : "";
+            $authorAdapters[] = new AuthorAdapter($fullName, $affiliation, $email);
         }
 
         return $authorAdapters;

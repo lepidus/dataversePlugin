@@ -8,10 +8,11 @@ final class AuthorAdapterTest extends PKPTestCase
     private $author;
     private $fullName = "Atila Iamarino";
     private $affiliation = "Universidade de São Paulo";
+    private $email = "atila@usp.edu.br";
 
     public function setUp(): void
     {
-        $this->author = new AuthorAdapter($this->fullName, $this->affiliation);
+        $this->author = new AuthorAdapter($this->fullName, $this->affiliation, $this->email);
     }
 
     public function testHasFullName(): void
@@ -22,5 +23,10 @@ final class AuthorAdapterTest extends PKPTestCase
     public function testHasAffiliation(): void
     {
         $this->assertEquals($this->affiliation, $this->author->getAffiliation());
+    }
+
+    public function testHasEmail(): void
+    {
+        $this->assertEquals($this->email, $this->author->getAuthorEmail());
     }
 }
