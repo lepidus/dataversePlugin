@@ -5,12 +5,13 @@ abstract class DatasetBuilder
     public function build(SubmissionAdapter $submissionAdapter): DatasetModel
     {
         $title = $submissionAdapter->getTitle();
-        $creator = $submissionAdapter->getAuthors();
+        $authors = $submissionAdapter->getAuthors();
         $description = $submissionAdapter->getDescription();
         $subject = $submissionAdapter->getKeywords();
         
-        foreach ($creator as $author) {
-            $contributors[] = $author->getAuthorEmail();
+        foreach ($authors as $author) {
+            $contributors = array('contact' => $author->getAuthorEmail());
+            $creator[] = $author->getFullName();
         }
         
         return new DatasetModel($title, $creator, $subject, $description, $contributors);

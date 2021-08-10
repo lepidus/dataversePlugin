@@ -30,12 +30,17 @@ class DatasetBuilderTest extends PKPTestCase
 
     public function testValidateData()
     {
+        foreach ($this->authors as $author)
+        {
+            $creator[] = $author->getFullName();
+            $contributor = array('contact' => $author->getAuthorEmail());
+        }
         $expectedData = array(
             'title' => $this->title,
             'description' => $this->description,
-            'creator' => $this->authors,
+            'creator' => $creator,
             'subject' => $this->keywords,
-            'contributor' => $this->authorsEmails
+            'contributor' => $contributor,
         );
 
         $this->assertEquals($expectedData, $this->dataset->getMetadataValues());
