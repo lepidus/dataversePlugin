@@ -19,9 +19,8 @@ class DatasetBuilderTest extends PKPTestCase
         parent::setUp();
         $this->authors = array(new AuthorAdapter("Irís Castanheiras", "Lepidus", $this->authorsEmails[0]));
         
-        $this->datasetBuilder = new DatasetBuilder();
         $submissionAdapter = new SubmissionAdapter($this->title, $this->authors, $this->description, $this->keywords);
-        $this->dataset = $this->datasetBuilder->build($submissionAdapter);
+        $this->dataset = DatasetBuilder::build($submissionAdapter);
     }
 
     public function testBuildDatasetModel(): void

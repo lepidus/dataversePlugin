@@ -1,6 +1,6 @@
 <?php
 
-class DatasetBuilder
+abstract class DatasetBuilder
 {
     public function build(SubmissionAdapter $submissionAdapter): DatasetModel
     {
