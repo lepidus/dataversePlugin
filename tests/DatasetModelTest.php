@@ -49,7 +49,7 @@ class DatasetModelTest extends PKPTestCase
         $this->isReferencedBy = 'None';
     }
 
-    public function testValidMetadata(): void
+    public function testMetadataValuesContainsData(): void
     {
         $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
         $datasetModelMetadata = $this->datasetModel->getMetadataValues();

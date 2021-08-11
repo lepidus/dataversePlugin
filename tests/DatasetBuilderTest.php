@@ -28,7 +28,7 @@ class DatasetBuilderTest extends PKPTestCase
         $this->assertTrue($this->dataset instanceof DatasetModel);
     }
 
-    public function testValidateData()
+    public function testMetadataValuesContainsSubmissionData()
     {
         foreach ($this->authors as $author)
         {
