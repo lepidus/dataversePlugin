@@ -41,7 +41,7 @@ class SubmissionAdapterCreatorTest extends DatabaseTestCase
 
         $publicationDao->updateObject($publication);
 
-        $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submissionId);
+        $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submissionId, $this->authors);
     }
 
     protected function getAffectedTables()
@@ -51,17 +51,11 @@ class SubmissionAdapterCreatorTest extends DatabaseTestCase
 
     private function createAuthors(): array
     {
-        $authorDao = DAORegistry::getDAO('AuthorDAO');
-        $author = new Author();
-        $author->setData('publicationId', $this->publicationId);
-        $author->setData('email', "anaalice@harvard.com");
-        $author->setGivenName('Ana Alice', $this->locale);
-        $author->setFamilyName('Caldas Novas', $this->locale);
-        $author->setAffiliation("Harvard University", $this->locale);
+        $authorFullName = 'Ana Alice Caldas Novas';
+        $authorAffiliation = 'Harvard University';
+        $authorEmail = 'anaalice@harvard.com';
 
-        $authorDao->insertObject($author);
-
-        return [new AuthorAdapter("Ana Alice Caldas Novas", "Harvard University", "anaalice@harvard.com")];
+        return [new AuthorAdapter($authorFullName, $authorAffiliation, $authorEmail)];
     }
 
     private function addCurrentPublicationToSubmission(): void

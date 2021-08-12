@@ -1,12 +1,12 @@
 <?php
 
-import('lib.pkp.tests.DatabaseTestCase');
+import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.DatasetModel');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 
 
-class DataversePackageCreatorTest extends DatabaseTestCase
+class DataversePackageCreatorTest extends PKPTestCase
 {
     public const ATOM_ENTRY_XML_NAMESPACE = "http://www.w3.org/2005/Atom";
     public const ATOM_ENTRY_XML_DCTERMS = "http://purl.org/dc/terms/";
@@ -20,6 +20,7 @@ class DataversePackageCreatorTest extends DatabaseTestCase
     private $publicationId;
 
     private $keywords = ["en_US" => array("computer science")];
+    private $authors = array();
     private $locale = 'en_US';
     private $dateSubmitted = '2021-05-31 15:38:24';
     private $dateLastActivity = '2021-06-03 16:00:00';
@@ -34,76 +35,20 @@ class DataversePackageCreatorTest extends DatabaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-        
-        $this->submissionAdapterCreator = new SubmissionAdapterCreator();
-        $this->submissionId = $this->createTestSubmission();
-        $this->publicationId = $this->createTestPublication();
-        $authors = $this->createAuthors();
-        $this->addCurrentPublicationToSubmission();
-
         $this->packageCreator = new DataversePackageCreator();
-
-        $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submissionId);
     }
 
-    protected function getAffectedTables()
+    public function tearDown(): void
     {
-        return ['authors', 'submissions', 'publications', 'publication_settings', 'author_settings'];
-    }
-
-    private function createAuthors(): array
-    {
-        $creatorFullname = $this->creator[0];
-        $creatorGivenName = explode(" ", $creatorFullname)[0];
-        $creatorFamilyName = explode(" ", $creatorFullname)[1];
-
-        $authorDao = DAORegistry::getDAO('AuthorDAO');
-        $author = new Author();
-        $author->setData('publicationId', $this->publicationId);
-        $author->setData('email', $this->contributor['contact']);
-        $author->setGivenName($creatorGivenName, $this->locale);
-        $author->setFamilyName($creatorFamilyName, $this->locale);
-        $author->setAffiliation("Harvard University", $this->locale);
-
-        $authorDao->insertObject($author);
-
-        return [new AuthorAdapter($creatorFullname, "Harvard University", $this->contributor['contact'])];
-    }
-
-    private function addCurrentPublicationToSubmission(): void
-    {
-        $submissionDao = DAORegistry::getDAO('SubmissionDAO');
-        $submission = $submissionDao->getById($this->submissionId);
-        $submission->setData('currentPublicationId', $this->publicationId);
-        $submissionDao->updateObject($submission);
-    }
-
-    private function createTestSubmission(): int
-    {
-        $submissionDao = DAORegistry::getDAO('SubmissionDAO');
-        $submission = new Submission();
-        $submission->setData('contextId', $this->contextId);
-        $submission->setData('dateSubmitted', $this->dateSubmitted);
-        $submission->setData('status', $this->statusCode);
-        $submission->setData('locale', $this->locale);
-        $submission->setData('dateLastActivity', $this->dateLastActivity);
-
-        return $submissionDao->insertObject($submission);
-    }
-
-    private function createTestPublication(): int
-    {
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publication = new Publication();
-        $publication->setData('submissionId', $this->submissionId);
-        $publication->setData('title', $this->title, $this->locale);
-        $publication->setData('abstract', $this->description);
-        $publication->setData('title', $this->title, $this->locale);
-        $publication->setData('relationStatus', '1');
-        $publication->setData('status', $this->statusCode);
-        $publication->setData('keywords', $this->keywords);
-
-        return $publicationDao->insertObject($publication);
+        if (file_exists($this->packageCreator->getAtomEntryPath())) {
+            unlink($this->packageCreator->getAtomEntryPath());
+        }
+        if (file_exists($this->packageCreator->getPackageFilePath())) {
+            unlink($this->packageCreator->getPackageFilePath());
+        }
+        rmdir($this->packageCreator->getOutPath() . '/files');
+        rmdir($this->packageCreator->getOutPath());
+        parent::tearDown();
     }
 
     private function createDefaultTestAtomEntry(): void
@@ -115,7 +60,11 @@ class DataversePackageCreatorTest extends DatabaseTestCase
 
     private function createDefaultTestAtomEntryFromSubmission(): void
     {
+        $this->authors[] = new AuthorAdapter($this->creator[0], 'Universidade de São Paulo', $this->contributor['contact']);
+        $this->submissionAdapter = new SubmissionAdapter($this->title, $this->authors, $this->description, $this->subject);
+
         $datasetModel = DatasetBuilder::build($this->submissionAdapter);
+        
         $this->packageCreator->loadMetadata($datasetModel);
         $this->packageCreator->createAtomEntry();
     }
@@ -222,18 +171,5 @@ class DataversePackageCreatorTest extends DatabaseTestCase
         $this->packageCreator->createPackage();
 
         $this->assertTrue(file_exists($this->packageCreator->getPackageFilePath()));
-    }
-
-    public function tearDown(): void
-    {
-        if (file_exists($this->packageCreator->getAtomEntryPath())) {
-            unlink($this->packageCreator->getAtomEntryPath());
-        }
-        if (file_exists($this->packageCreator->getPackageFilePath())) {
-            unlink($this->packageCreator->getPackageFilePath());
-        }
-        rmdir($this->packageCreator->getOutPath() . '/files');
-        rmdir($this->packageCreator->getOutPath());
-        parent::tearDown();
     }
 }
