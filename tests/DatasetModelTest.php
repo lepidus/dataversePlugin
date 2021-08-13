@@ -49,52 +49,7 @@ class DatasetModelTest extends PKPTestCase
         $this->isReferencedBy = 'None';
     }
 
-    public function testValidateDatasetModelTitle(): void
-    {
-        $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
-        $expectedTitle = $this->title;
-        $resultTitle = $this->datasetModel->getTitle();
-
-        self::assertEquals($expectedTitle, $resultTitle);
-    }
-
-    public function testValidateDatasetModelCreator(): void
-    {
-        $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
-        $expectedCreator = $this->creator;
-        $resultCreator = $this->datasetModel->getCreator();
-
-        self::assertEquals($expectedCreator, $resultCreator);
-    }
-
-    public function testValidateDatasetModelSubject(): void
-    {
-        $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
-        $expectedSubject = $this->subject;
-        $resultSubject = $this->datasetModel->getSubject();
-
-        self::assertEquals($expectedSubject, $resultSubject);
-    }
-
-    public function testValidateDatasetModelDescription(): void
-    {
-        $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
-        $expectedDescription = $this->description;
-        $resultDescription = $this->datasetModel->getDescription();
-
-        self::assertEquals($expectedDescription, $resultDescription);
-    }
-
-    public function testValidateDatasetModelContributor(): void
-    {
-        $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
-        $expectedContributor = $this->contributor;
-        $resultContributor = $this->datasetModel->getContributor();
-
-        self::assertEquals($expectedContributor, $resultContributor);
-    }
-
-    public function testValidMetadata(): void
+    public function testMetadataValuesContainsData(): void
     {
         $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
         $datasetModelMetadata = $this->datasetModel->getMetadataValues();
@@ -113,10 +68,9 @@ class DatasetModelTest extends PKPTestCase
     {
         $this->publisher = 'Lepidus Tecnologia Ltda.';
         $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor, $this->publisher);
-
         $datasetModelMetadata = $this->datasetModel->getMetadataValues();
 
-        $this->assertEquals($this->datasetModel->getPublisher(), $this->publisher);
+        $this->assertEquals($datasetModelMetadata['publisher'], $this->publisher);
     }
 
     public function testAllMetadataFields(): void

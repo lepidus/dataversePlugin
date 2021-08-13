@@ -4,15 +4,16 @@ require_once('plugins/generic/dataverse/libs/swordappv2-php-library/packager_ato
 
 class DataversePackageCreator extends PackagerAtomTwoStep
 {
-    public const FILE_DIR = "files";
-    public const PACKAGE_FILE_NAME = "deposit.zip";
+    private const FILE_DIR = "files";
+    private const PACKAGE_FILE_NAME = "deposit.zip";
+    private const TEMPORARY_FILES_DIR = "/tmp";
     private $outPath;
     private $files = array();
 
     public function DataversePackageCreator()
     {
         // Create temporary directory for Atom entry & deposit files
-        $this->outPath = tempnam('/tmp', 'dataverse');
+        $this->outPath = tempnam(self::TEMPORARY_FILES_DIR, 'dataverse');
         unlink($this->outPath);
         mkdir($this->outPath);
         mkdir($this->outPath .DIRECTORY_SEPARATOR. self::FILE_DIR);
@@ -34,7 +35,7 @@ class DataversePackageCreator extends PackagerAtomTwoStep
         return $this->outPath;
     }
 
-    public function loadMetadataFromDatasetModel(DatasetModel $dataset): void
+    public function loadMetadata(DatasetModel $dataset): void
     {
         $datasetMetadata = $dataset->getMetadataValues();
         foreach ($datasetMetadata as $key => $value) {
