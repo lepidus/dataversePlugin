@@ -1,6 +1,9 @@
 <?php
 
 import('lib.pkp.tests.DatabaseTestCase');
+import('classes.submission.Submission');
+import('classes.publication.Publication');
+import('classes.article.Author');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 
 class SubmissionAdapterCreatorTest extends DatabaseTestCase
@@ -9,10 +12,10 @@ class SubmissionAdapterCreatorTest extends DatabaseTestCase
     private $submissionAdapter;
 
     private $contextId = 1;
-    private $publicationId;
-    private $submissionId;
+    private $submissionId = 1245;
+    private $publicationId = 1234;
 
-    private $submissionTitle = "The Rise of The Machine Empire";
+    private $title = "The Rise of The Machine Empire";
     private $authors = array();
     private $description = "This is an abstract / description";
     private $keywords = ["en_US" => array("computer science", "testing")];
@@ -22,77 +25,63 @@ class SubmissionAdapterCreatorTest extends DatabaseTestCase
     private $statusCode = "STATUS_PUBLISHED";
     private $dateLastActivity = '2021-06-03 16:00:00';
     private $submissionAuthors;
-    private $doi = "10.666/949494";
 
     public function setUp(): void
     {
         parent::setUp();
         $this->submissionAdapterCreator = new SubmissionAdapterCreator();
-        $this->submissionId = $this->createTestSubmission();
-        $this->publicationId = $this->createTestPublication();
-        $this->authors = $this->createAuthors();
+
+        $this->createTestSubmission();
+        $this->createAuthors();
+        $this->createTestPublication();
         $this->addCurrentPublicationToSubmission();
-        $submissionSubjectDao = DAORegistry::getDAO('SubmissionSubjectDAO');
-        $submissionSubjectDao->insertSubjects($this->keywords, $this->publicationId);
 
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publication = $publicationDao->getById($this->publicationId);
-        $publication->setData('subjects', $submissionSubjectDao->getSubjects($publication->getId()));
-
-        $publicationDao->updateObject($publication);
-
-        $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submissionId, $this->authors);
+        $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submission, $this->locale);
     }
 
-    protected function getAffectedTables()
+    private function createAuthors(): void
     {
-        return ['authors', 'submissions', 'publications', 'publication_settings', 'author_settings'];
-    }
+        $author = new Author();
+        $author->setData('publicationId', $this->publicationId);
+        $author->setData('email', 'anaalice@harvard.com');
+        $author->setGivenName('Ana Alice', $this->locale);
+        $author->setFamilyName('Caldas Novas', $this->locale);
+        $author->setAffiliation("Harvard University", $this->locale);
 
-    private function createAuthors(): array
-    {
-        $authorFullName = 'Ana Alice Caldas Novas';
-        $authorAffiliation = 'Harvard University';
-        $authorEmail = 'anaalice@harvard.com';
+        $this->authors = [$author];
 
-        return [new AuthorAdapter($authorFullName, $authorAffiliation, $authorEmail)];
+        $this->submissionAuthors = [new AuthorAdapter("Ana Alice Caldas Novas", "Harvard University", "anaalice@harvard.com")];
     }
 
     private function addCurrentPublicationToSubmission(): void
     {
-        $submissionDao = DAORegistry::getDAO('SubmissionDAO');
-        $submission = $submissionDao->getById($this->submissionId);
-        $submission->setData('currentPublicationId', $this->publicationId);
-        $submissionDao->updateObject($submission);
+        $this->submission->setData('currentPublicationId', $this->publicationId);
+        $this->submission->setData('publications', array($this->publication));
     }
 
-    private function createTestSubmission(): int
+    private function createTestSubmission(): void
     {
-        $submissionDao = DAORegistry::getDAO('SubmissionDAO');
-        $submission = new Submission();
-        $submission->setData('contextId', $this->contextId);
-        $submission->setData('dateSubmitted', $this->dateSubmitted);
-        $submission->setData('status', $this->statusCode);
-        $submission->setData('locale', $this->locale);
-        $submission->setData('dateLastActivity', $this->dateLastActivity);
-        $submission->setSubject('assunto da submissao', $this->locale);
-
-        return $submissionDao->insertObject($submission);
+        $this->submission = new Submission();
+        $this->submission->setId($this->submissionId);
+        $this->submission->setData('contextId', $this->contextId);
+        $this->submission->setData('dateSubmitted', $this->dateSubmitted);
+        $this->submission->setData('status', $this->statusCode);
+        $this->submission->setData('locale', $this->locale);
+        $this->submission->setData('dateLastActivity', $this->dateLastActivity);
     }
 
-    private function createTestPublication(): int
+    private function createTestPublication(): void
     {
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publication = new Publication();
-        $publication->setData('submissionId', $this->submissionId);
-        $publication->setData('title', $this->submissionTitle, $this->locale);
-        $publication->setData('abstract', $this->description);
-        $publication->setData('title', $this->submissionTitle, $this->locale);
-        $publication->setData('relationStatus', '1');
-        $publication->setData('status', $this->statusCode);
-        $publication->setData('keywords', $this->keywords);
-
-        return $publicationDao->insertObject($publication);
+        $this->publication = new Publication();
+        $this->publication->setId($this->publicationId);
+        $this->publication->setData('submissionId', $this->submissionId);
+        $this->publication->setData('title', $this->title, $this->locale);
+        $this->publication->setData('abstract', $this->description);
+        $this->publication->setData('authors', $this->authors);
+        $this->publication->setData('locale', $this->locale);
+        $this->publication->setData('relationStatus', '1');
+        $this->publication->setData('status', $this->statusCode);
+        $this->publication->setData('keywords', $this->keywords);
     }
 
     public function testCreatorReturnsSubmissionAdapterObject(): void
@@ -102,12 +91,12 @@ class SubmissionAdapterCreatorTest extends DatabaseTestCase
 
     public function testRetrieveSubmissionTitle(): void
     {
-        $this->assertEquals($this->submissionTitle, $this->submissionAdapter->getTitle());
+        $this->assertEquals($this->title, $this->submissionAdapter->getTitle());
     }
 
     public function testRetrieveSubmissionAuthors(): void
     {
-        $this->assertEquals($this->authors, $this->submissionAdapter->getAuthors());
+        $this->assertEquals($this->submissionAuthors, $this->submissionAdapter->getAuthors());
     }
 
     public function testRetrieveSubmissionDescription(): void
