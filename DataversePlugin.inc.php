@@ -100,22 +100,35 @@ class DataversePlugin extends GenericPlugin {
 	function createMetadataPackage($hookName, $params){
         $form =& $params[0];
         $submission = $form->submission;
+		$locale = $submission->getLocale();
 
         $galleys = $submission->getGalleys();
-        $galleysGenres = array_map(function($galley){
-            return ($galley->getFile()->getGenreId());
-        }, $galleys);
 
-		if (in_array(self::DATASET_GENRE_ID, $galleysGenres)) {
+		$galleysFiles;
+		$galleysFilesGenres;
+		foreach ($galleys as $galley){
+			$galleysFiles[] = $galley->getFile();
+			$galleysFilesGenres[] = $galley->getFile()->getGenreId();
+		}
+
+		if (in_array(self::DATASET_GENRE_ID, $galleysFilesGenres)) {
 			$packageCreator = new DataversePackageCreator();
 			$submissionAdapterCreator = new SubmissionAdapterCreator();
 			$datasetBuilder = new DatasetBuilder();
 
-			$submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($submission, $submission->getLocale());
+			$submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($submission, $locale);
 			$datasetModel = $datasetBuilder->build($submissionAdapter);
 
 			$packageCreator->loadMetadata($datasetModel);
 			$packageCreator->createAtomEntry();
+
+			$publicFilesDir = Config::getVar('files', 'files_dir');
+			foreach($galleysFiles as $galleysFile) {
+				$galleysFilePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $galleysFile->getLocalizedData('path');
+				$packageCreator->addFileToPackage($galleysFilePath, $galleysFile->getLocalizedData('name'));
+			}
+
+			$packageCreator->createPackage();
 		}
 
 		return;
