@@ -14,15 +14,21 @@
 
 import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
+import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
+import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
+import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
 require('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
 
 class DataversePlugin extends GenericPlugin {
+
+	private const DATASET_GENRE_ID = 7;
 
 	/**
 	 * @see LazyLoadPlugin::register()
 	 */
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
+		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'createMetadataPackage'));
 		return $success;
 	}
 
@@ -89,6 +95,30 @@ class DataversePlugin extends GenericPlugin {
 				return new JSONMessage(true, $form->fetch($request));
 		}
 		return parent::manage($args, $request);
+	}
+
+	function createMetadataPackage($hookName, $params){
+        $form =& $params[0];
+        $submission = $form->submission;
+
+        $galleys = $submission->getGalleys();
+        $galleysGenres = array_map(function($galley){
+            return ($galley->getFile()->getGenreId());
+        }, $galleys);
+
+		if (in_array(self::DATASET_GENRE_ID, $galleysGenres)) {
+			$packageCreator = new DataversePackageCreator();
+			$submissionAdapterCreator = new SubmissionAdapterCreator();
+			$datasetBuilder = new DatasetBuilder();
+
+			$submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($submission, $submission->getLocale());
+			$datasetModel = $datasetBuilder->build($submissionAdapter);
+
+			$packageCreator->loadMetadata($datasetModel);
+			$packageCreator->createAtomEntry();
+		}
+
+		return;
 	}
 }
 

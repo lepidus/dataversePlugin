@@ -1,5 +1,8 @@
 <?php
 
+import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
+import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
+
 class SubmissionAdapterCreator
 {
     public function createSubmissionAdapter($submission, $locale): SubmissionAdapter

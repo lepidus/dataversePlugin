@@ -1,5 +1,7 @@
 <?php
 
+import('plugins.generic.dataverse.classes.DatasetModel');
+
 class DatasetBuilder
 {
     public function build(SubmissionAdapter $submissionAdapter): DatasetModel
