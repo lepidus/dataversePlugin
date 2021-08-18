@@ -17,6 +17,7 @@ import('classes.notification.NotificationManager');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
+import('plugins.generic.dataverse.classes.DataverseClient');
 require('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
 
 class DataversePlugin extends GenericPlugin {
@@ -99,6 +100,8 @@ class DataversePlugin extends GenericPlugin {
 
 	function createMetadataPackage($hookName, $params){
         $form =& $params[0];
+		$context = $form->context;
+		$contextId = ($context == null) ? 0 : $context->getId();
         $submission = $form->submission;
 		$locale = $submission->getLocale();
 
@@ -127,8 +130,14 @@ class DataversePlugin extends GenericPlugin {
 				$galleysFilePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $galleysFile->getLocalizedData('path');
 				$packageCreator->addFileToPackage($galleysFilePath, $galleysFile->getLocalizedData('name'));
 			}
-
 			$packageCreator->createPackage();
+
+			$dataverseServer = $this->getSetting($contextId, 'dataverseServer');
+			$dataverse = $this->getSetting($contextId, 'dataverse');
+			$apiToken = $this->getSetting($contextId, 'apiToken');
+
+			$client = new DataverseClient($apiToken, $dataverseServer, $dataverse);
+			$depositReceipt = $client->depositAtomEntry($packageCreator->getAtomEntryPath());
 		}
 
 		return;

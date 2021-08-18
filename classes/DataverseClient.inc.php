@@ -3,18 +3,30 @@
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_API_VERSION', "v1.1");
 
-class DataverseRepository {
+class DataverseClient {
     private $apiToken;
     private $dataverseServer;
+    private $dataverse;
+    private $swordClient;
 
-    public function __construct($apiToken, $dataverseServer) {
+    public function __construct($apiToken, $dataverseServer, $dataverse) {
         $this->apiToken = $apiToken;
         $this->dataverseServer = $dataverseServer;
+        $this->dataverse = $this->formatDvnUri($dataverse);
+        $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
+    }
+
+    public function formatDvnUri($dataverseUrl) {
+        $dataverseCollection = explode($this->dataverseServer, $dataverseUrl)[1];
+        $dvnUri = $this->dataverseServer;
+        $dvnUri .= preg_match('/\/dvn$/', $this->dataverseServer) ? '' : '/dvn';
+        $dvnUri .= '/api/data-deposit/'. DATAVERSE_API_VERSION . '/swordv2/collection' . $dataverseCollection;
+
+        return $dvnUri;
     }
     
     private function validateCredentials($serviceDocumentRequest) {
-        $client = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
-		$serviceDocumentClient = $client->servicedocument(
+		$serviceDocumentClient = $this->swordClient->servicedocument(
 			$this->dataverseServer . $serviceDocumentRequest,
 			$this->apiToken,
 			'********',
@@ -32,5 +44,8 @@ class DataverseRepository {
 		return ($dataverseConnectionStatus);
 	}
 
+    public function depositAtomEntry($atomEntryPath) {
+        return $this->swordClient->depositAtomEntry($this->dataverse, $this->apiToken, "", '', $atomEntryPath);
+    }
 }
 ?>
