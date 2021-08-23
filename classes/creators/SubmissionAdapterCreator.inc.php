@@ -5,8 +5,9 @@ import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 
 class SubmissionAdapterCreator
 {
-    public function createSubmissionAdapter($submission, $locale): SubmissionAdapter
+    public function createSubmissionAdapter($submission): SubmissionAdapter
     {
+        $locale = $submission->getLocale();
         $publication = $submission->getCurrentPublication();
 
         $title = $publication->getLocalizedData('title', $locale);

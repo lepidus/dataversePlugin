@@ -25,10 +25,11 @@ describe('Deposit Atom Entry', function() {
     it('Create Submission', function() {
 
 		cy.register({
-			'username': Cypress.env('authorUser'),
-			'givenName': Cypress.env('authorGivenName'),
-			'familyName': Cypress.env('authorFamilyName'),
-			'affiliation': Cypress.env('authorAffiliation'),
+			'username': 'icastanheiras1',
+			'givenName': 'Íris',
+			'familyName': 'Castanheira',
+            'email': 'iris@lepidus.com.br',
+			'affiliation': 'Preprints da Lepidus',
 			'country': 'Brazil'
 		});
 

@@ -20,16 +20,16 @@ import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
 import('plugins.generic.dataverse.classes.DataverseClient');
 require('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
 
-class DataversePlugin extends GenericPlugin {
+define('DATASET_GENRE_ID', 7);
 
-	private const DATASET_GENRE_ID = 7;
+class DataversePlugin extends GenericPlugin {
 
 	/**
 	 * @see LazyLoadPlugin::register()
 	 */
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
-		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'createMetadataPackage'));
+		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'depositPackage'));
 		return $success;
 	}
 
@@ -97,51 +97,62 @@ class DataversePlugin extends GenericPlugin {
 		}
 		return parent::manage($args, $request);
 	}
+	
+	function createPackage($submission, $galleysFiles){
+		$package = new DataversePackageCreator();
+		$submissionAdapterCreator = new SubmissionAdapterCreator();
+		$datasetBuilder = new DatasetBuilder();
+		$submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($submission);
+		$datasetModel = $datasetBuilder->build($submissionAdapter);
+		$package->loadMetadata($datasetModel);
+		$package->createAtomEntry();
 
-	function createMetadataPackage($hookName, $params){
-        $form =& $params[0];
+		$publicFilesDir = Config::getVar('files', 'files_dir');
+		foreach($galleysFiles as $galleysFile) {
+			$galleysFilePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $galleysFile->getLocalizedData('path');
+			$package->addFileToPackage($galleysFilePath, $galleysFile->getLocalizedData('name'));
+		}
+		$package->createPackage();
+
+		return $package;
+	}
+
+	function depositPackage($hookName, $params) {
+		$form =& $params[0];
 		$context = $form->context;
-		$contextId = ($context == null) ? 0 : $context->getId();
+		$contextId = $context->getId();
         $submission = $form->submission;
-		$locale = $submission->getLocale();
-
         $galleys = $submission->getGalleys();
+		$galleysFiles = array();
+		$galleysFilesGenres = array();		
 
-		$galleysFiles;
-		$galleysFilesGenres;
 		foreach ($galleys as $galley){
 			$galleysFiles[] = $galley->getFile();
 			$galleysFilesGenres[] = $galley->getFile()->getGenreId();
 		}
 
-		if (in_array(self::DATASET_GENRE_ID, $galleysFilesGenres)) {
-			$packageCreator = new DataversePackageCreator();
-			$submissionAdapterCreator = new SubmissionAdapterCreator();
-			$datasetBuilder = new DatasetBuilder();
+		if (in_array(DATASET_GENRE_ID, $galleysFilesGenres)) {
+			$package = $this->createPackage($submission, $galleysFiles);
 
-			$submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($submission, $locale);
-			$datasetModel = $datasetBuilder->build($submissionAdapter);
-
-			$packageCreator->loadMetadata($datasetModel);
-			$packageCreator->createAtomEntry();
-
-			$publicFilesDir = Config::getVar('files', 'files_dir');
-			foreach($galleysFiles as $galleysFile) {
-				$galleysFilePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $galleysFile->getLocalizedData('path');
-				$packageCreator->addFileToPackage($galleysFilePath, $galleysFile->getLocalizedData('name'));
-			}
-			$packageCreator->createPackage();
-
-			$dataverseServer = $this->getSetting($contextId, 'dataverseServer');
-			$dataverse = $this->getSetting($contextId, 'dataverse');
 			$apiToken = $this->getSetting($contextId, 'apiToken');
+			$dataverseUrl = $this->getSetting($contextId, 'dataverse');
+			$dataverseServer = $this->getSetting($contextId, 'dataverseServer');	
+			$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
 
-			$client = new DataverseClient($apiToken, $dataverseServer, $dataverse);
-			$depositReceipt = $client->depositAtomEntry($packageCreator->getAtomEntryPath());
+			$editMediaIri = $client->depositAtomEntry($package->getAtomEntryPath());
+			if(isset($editMediaIri)) {
+				$depositStatus = $client->depositFiles(
+					$editMediaIri,
+					$package->getPackageFilePath(),
+					$package->getPackaging(),
+					$package->getContentType()
+				);
+
+				if($depositStatus) return true;
+			}
 		}
-
-		return;
 	}
+
 }
 
 ?>
