@@ -1,4 +1,4 @@
-describe('Deposit Atom Entry', function() {
+describe('Deposit Draft Dataverse on Submission', function() {
 
     it('Dataverse Plugin Configuration', function() {
         var adminUser = Cypress.env('adminUser');
