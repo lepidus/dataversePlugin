@@ -18,6 +18,7 @@ import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
 import('plugins.generic.dataverse.classes.DataverseClient');
+import('plugins.generic.dataverse.classes.DataverseService');
 require('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
 
 define('DATASET_GENRE_ID', 7);
@@ -29,7 +30,7 @@ class DataversePlugin extends GenericPlugin {
 	 */
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
-		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'depositPackage'));
+		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		return $success;
 	}
 
@@ -97,27 +98,8 @@ class DataversePlugin extends GenericPlugin {
 		}
 		return parent::manage($args, $request);
 	}
-	
-	function createPackage($submission, $galleysFiles){
-		$package = new DataversePackageCreator();
-		$submissionAdapterCreator = new SubmissionAdapterCreator();
-		$datasetBuilder = new DatasetBuilder();
-		$submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($submission);
-		$datasetModel = $datasetBuilder->build($submissionAdapter);
-		$package->loadMetadata($datasetModel);
-		$package->createAtomEntry();
 
-		$publicFilesDir = Config::getVar('files', 'files_dir');
-		foreach($galleysFiles as $galleysFile) {
-			$galleysFilePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $galleysFile->getLocalizedData('path');
-			$package->addFileToPackage($galleysFilePath, $galleysFile->getLocalizedData('name'));
-		}
-		$package->createPackage();
-
-		return $package;
-	}
-
-	function depositPackage($hookName, $params) {
+	function dataverseDepositOnSubmission($hookName, $params) {
 		$form =& $params[0];
 		$context = $form->context;
 		$contextId = $context->getId();
@@ -132,27 +114,15 @@ class DataversePlugin extends GenericPlugin {
 		}
 
 		if (in_array(DATASET_GENRE_ID, $galleysFilesGenres)) {
-			$package = $this->createPackage($submission, $galleysFiles);
-
 			$apiToken = $this->getSetting($contextId, 'apiToken');
 			$dataverseUrl = $this->getSetting($contextId, 'dataverse');
 			$dataverseServer = $this->getSetting($contextId, 'dataverseServer');	
+
 			$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
-
-			$editMediaIri = $client->depositAtomEntry($package->getAtomEntryPath());
-			if(isset($editMediaIri)) {
-				$depositStatus = $client->depositFiles(
-					$editMediaIri,
-					$package->getPackageFilePath(),
-					$package->getPackaging(),
-					$package->getContentType()
-				);
-
-				if($depositStatus) return true;
-			}
+			$service = new DataverseService($client, $submission, $galleysFiles);
+			$service->depositPackage();
 		}
 	}
-
 }
 
 ?>
