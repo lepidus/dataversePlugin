@@ -3,6 +3,7 @@
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
 define('DATAVERSE_API_VERSION', "v1.1");
+define('DATAVERSE_API_PASSWORD', "******");
 
 class DataverseClient {
     private $apiToken;
@@ -30,7 +31,7 @@ class DataverseClient {
 		$serviceDocumentClient = $this->swordClient->servicedocument(
 			$this->dataverseServer . $serviceDocumentRequest,
 			$this->apiToken,
-			$this->apiToken,
+			DATAVERSE_API_PASSWORD,
 			'');
 
         $dataverseConnectionStatus = isset($serviceDocumentClient) && $serviceDocumentClient->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK;
@@ -46,7 +47,7 @@ class DataverseClient {
 	}
 
     public function depositAtomEntry($atomEntryPath) {
-        $depositReceipt = $this->swordClient->depositAtomEntry($this->dataverse, $this->apiToken, '', '', $atomEntryPath);
+        $depositReceipt = $this->swordClient->depositAtomEntry($this->dataverse, $this->apiToken, DATAVERSE_API_PASSWORD, '', $atomEntryPath);
 
         if(isset($depositReceipt) && $depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED)
             return $depositReceipt->sac_edit_media_iri;
@@ -55,7 +56,7 @@ class DataverseClient {
     }
 
     public function depositFiles($editMediaIri, $packageFilePath, $packaging, $contentType) {
-        $depositReceipt = $this->swordClient->deposit($editMediaIri, $this->apiToken, '', '', $packageFilePath, $packaging, $contentType, false);
+        $depositReceipt = $this->swordClient->deposit($editMediaIri, $this->apiToken, DATAVERSE_API_PASSWORD, '', $packageFilePath, $packaging, $contentType, false);
 
         $depositStatus = isset($depositReceipt) && $depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED;
         return $depositStatus;
