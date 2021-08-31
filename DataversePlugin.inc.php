@@ -14,7 +14,14 @@
 
 import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
+import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
+import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
+import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
+import('plugins.generic.dataverse.classes.DataverseClient');
+import('plugins.generic.dataverse.classes.DataverseService');
 require('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
+
+define('DATASET_GENRE_ID', 7);
 
 class DataversePlugin extends GenericPlugin {
 
@@ -23,6 +30,7 @@ class DataversePlugin extends GenericPlugin {
 	 */
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
+		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		return $success;
 	}
 
@@ -89,6 +97,31 @@ class DataversePlugin extends GenericPlugin {
 				return new JSONMessage(true, $form->fetch($request));
 		}
 		return parent::manage($args, $request);
+	}
+
+	function dataverseDepositOnSubmission($hookName, $params) {
+		$form =& $params[0];
+		$context = $form->context;
+		$contextId = $context->getId();
+        $submission = $form->submission;
+        $galleys = $submission->getGalleys();
+		$galleysFiles = array();
+		$galleysFilesGenres = array();		
+
+		foreach ($galleys as $galley){
+			$galleysFiles[] = $galley->getFile();
+			$galleysFilesGenres[] = $galley->getFile()->getGenreId();
+		}
+
+		if (in_array(DATASET_GENRE_ID, $galleysFilesGenres)) {
+			$apiToken = $this->getSetting($contextId, 'apiToken');
+			$dataverseUrl = $this->getSetting($contextId, 'dataverse');
+			$dataverseServer = $this->getSetting($contextId, 'dataverseServer');	
+
+			$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
+			$service = new DataverseService($client, $submission, $galleysFiles);
+			$service->depositPackage();
+		}
 	}
 }
 

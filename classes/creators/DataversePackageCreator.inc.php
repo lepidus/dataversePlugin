@@ -7,6 +7,8 @@ class DataversePackageCreator extends PackagerAtomTwoStep
     private const FILE_DIR = "files";
     private const PACKAGE_FILE_NAME = "deposit.zip";
     private const TEMPORARY_FILES_DIR = "/tmp";
+    private const PACKAGING = 'http://purl.org/net/sword/package/SimpleZip';
+    private const CONTENT_TYPE = 'application/zip';
     private $outPath;
     private $files = array();
 
@@ -72,4 +74,12 @@ class DataversePackageCreator extends PackagerAtomTwoStep
     {
         $this->files[$fileName] = $filePath;
     }
+
+    function getPackaging() {
+		return self::PACKAGING;
+	}
+
+    function getContentType() {
+		return self::CONTENT_TYPE;
+	}
 }
