@@ -19,7 +19,6 @@ import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
 import('plugins.generic.dataverse.classes.DataverseClient');
 import('plugins.generic.dataverse.classes.DataverseService');
-require('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
 
 define('DATASET_GENRE_ID', 7);
 
@@ -31,6 +30,7 @@ class DataversePlugin extends GenericPlugin {
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
+		// HookRegistry::register('Publication::publish', array($this, 'publishDataset'));
 		return $success;
 	}
 
@@ -123,6 +123,12 @@ class DataversePlugin extends GenericPlugin {
 			$service->depositPackage();
 		}
 	}
+
+	function getInstallMigration() {
+        $this->import('classes.migration.DataverseStudyMigration');
+        return new DataverseStudyMigration();
+    }
+
 }
 
 ?>

@@ -1,5 +1,7 @@
 <?php 
 
+require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
+
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
 define('DATAVERSE_API_VERSION', "v1.1");
@@ -48,6 +50,8 @@ class DataverseClient {
 
     public function depositAtomEntry($atomEntryPath) {
         $depositReceipt = $this->swordClient->depositAtomEntry($this->dataverse, $this->apiToken, DATAVERSE_API_PASSWORD, '', $atomEntryPath);
+
+        error_log(print_r($depositReceipt, true));
 
         if(isset($depositReceipt) && $depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED)
             return $depositReceipt->sac_edit_media_iri;
