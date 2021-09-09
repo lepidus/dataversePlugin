@@ -51,8 +51,6 @@ class DataverseClient {
     public function depositAtomEntry($atomEntryPath) {
         $depositReceipt = $this->swordClient->depositAtomEntry($this->dataverse, $this->apiToken, DATAVERSE_API_PASSWORD, '', $atomEntryPath);
 
-        error_log(print_r($depositReceipt, true));
-
         if(isset($depositReceipt) && $depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED)
             return $depositReceipt->sac_edit_media_iri;
         else
