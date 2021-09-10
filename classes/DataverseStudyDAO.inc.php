@@ -20,7 +20,20 @@ class DataverseStudyDAO extends DAO {
 		return $returner;
 	}
 
-    function insertObject($study) {
+    function getStudyBySubmissionId($submissionId) {
+        $result = Capsule::table('dataverse_studies')
+            ->where('submission_id', $submissionId)
+            ->get();
+
+        $returner = array();
+        foreach ($result->toArray() as $row) {
+            $returner = $this->returnStudyFromRow(get_object_vars($row));
+        }
+
+		return $returner;
+    }
+
+    function insertStudy($study) {
 		Capsule::table('dataverse_studies')
             ->insert(array(
                 'submission_id'     =>  (int)$study->getSubmissionId(),

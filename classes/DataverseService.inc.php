@@ -1,16 +1,25 @@
-<?php 
+<?php
+
+define('DATASET_GENRE_ID', 7);
 
 class DataverseService {
 
     private $dataverseClient;
     private $submission;
-    private $galleysFiles;
+    private $galleys;
 
-    function __construct($dataverseClient, $submission, $galleysFiles) {
+    function __construct($dataverseClient, $submission) {
         $this->dataverseClient = $dataverseClient;
         $this->submission = $submission;
-        $this->galleysFiles = $galleysFiles;
+		$this->galleys = $this->submission->getGalleys();
     }
+
+	function hasDataSetComponent(){
+		foreach($this->galleys as $galley) {
+			$galleysFilesGenres[] = $galley->getFile()->getGenreId();
+		}
+		return in_array(DATASET_GENRE_ID, $galleysFilesGenres);
+	}
 
     function createPackage() {
 		$package = new DataversePackageCreator();
@@ -22,9 +31,9 @@ class DataverseService {
 		$package->createAtomEntry();
 
 		$publicFilesDir = Config::getVar('files', 'files_dir');
-		foreach($this->galleysFiles as $galleysFile) {
-			$galleysFilePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $galleysFile->getLocalizedData('path');
-			$package->addFileToPackage($galleysFilePath, $galleysFile->getLocalizedData('name'));
+		foreach($this->galleys as $galley) {
+			$galleyFilePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $galley->getFile()->getLocalizedData('path');
+			$package->addFileToPackage($galleyFilePath, $galley->getFile()->getLocalizedData('name'));
 		}
 		$package->createPackage();
 
@@ -34,16 +43,15 @@ class DataverseService {
 	function depositPackage() {
 		$package = $this->createPackage();
 
-		$editMediaIri = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath());
+		$study = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath(), $this->submission->getId());
 
-		if(!is_null($editMediaIri)) {
+		if(!is_null($study)) {
 			$this->dataverseClient->depositFiles(
-				$editMediaIri,
+				$study->getEditMediaUri(),
 				$package->getPackageFilePath(),
 				$package->getPackaging(),
 				$package->getContentType()
 			);
 		}
 	}
-
 }

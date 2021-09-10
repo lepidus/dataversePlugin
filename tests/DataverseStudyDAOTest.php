@@ -8,6 +8,7 @@ class DataverseStudyDAOTest extends DatabaseTestCase {
     
     private $studyDao;
     private $study;
+    private $studyId;
     private $submissionId;
     private $editUri;
     private $editMediaUri;
@@ -34,20 +35,58 @@ class DataverseStudyDAOTest extends DatabaseTestCase {
         $this->study->setPersistentUri($this->persistentUri);
 
         $this->studyDao = new DataverseStudyDAO();
+        $this->studyId = $this->studyDao->insertStudy($this->study);
     }
 
     protected function getAffectedTables() {
 		return array('dataverse_studies');
 	}
 
-    public function testStudyDAOIsADataverseStudyDAO() : void {
-        $this->assertTrue($this->studyDao instanceof DataverseStudyDAO);
+    public function testStudyHasInsertedInDB() : void {
+        $returnedStudy = $this->studyDao->getStudy($this->studyId);
+
+        $expectedStudyData = array(
+            'submission_id'     =>  $this->study->getSubmissionId(),
+            'edit_uri'          =>  $this->study->getEditUri(),
+            'edit_media_uri'    =>  $this->study->getEditMediaUri(),
+            'statement_uri'     =>  $this->study->getStatementUri(),
+            'persistent_uri'    =>  $this->study->getPersistentUri(),
+            'data_citation'     =>  $this->study->getDataCitation()
+        );
+
+        $resultStudyData = array(
+            'submission_id'     =>  $returnedStudy->getSubmissionId(),
+            'edit_uri'          =>  $returnedStudy->getEditUri(),
+            'edit_media_uri'    =>  $returnedStudy->getEditMediaUri(),
+            'statement_uri'     =>  $returnedStudy->getStatementUri(),
+            'persistent_uri'    =>  $returnedStudy->getPersistentUri(),
+            'data_citation'     =>  $returnedStudy->getDataCitation()
+        );
+
+        $this->assertEquals($expectedStudyData, $resultStudyData);
     }
 
-    public function testStudyHasInserted() : void {
-        $studyId = $this->studyDao->insertObject($this->study);
-        $returnedStudy = $this->studyDao->getStudy($studyId);
+    public function testGetStudyBySubmissionId() : void {
+        $returnedStudy = $this->studyDao->getStudyBySubmissionId($this->submissionId);
 
-        $this->assertEquals($returnedStudy->getSubmissionId(), $this->study->getSubmissionId());
+        $expectedStudyData = array(
+            'submission_id'     =>  $this->study->getSubmissionId(),
+            'edit_uri'          =>  $this->study->getEditUri(),
+            'edit_media_uri'    =>  $this->study->getEditMediaUri(),
+            'statement_uri'     =>  $this->study->getStatementUri(),
+            'persistent_uri'    =>  $this->study->getPersistentUri(),
+            'data_citation'     =>  $this->study->getDataCitation()
+        );
+
+        $resultStudyData = array(
+            'submission_id'     =>  $returnedStudy->getSubmissionId(),
+            'edit_uri'          =>  $returnedStudy->getEditUri(),
+            'edit_media_uri'    =>  $returnedStudy->getEditMediaUri(),
+            'statement_uri'     =>  $returnedStudy->getStatementUri(),
+            'persistent_uri'    =>  $returnedStudy->getPersistentUri(),
+            'data_citation'     =>  $returnedStudy->getDataCitation()
+        );
+
+        $this->assertEquals($expectedStudyData, $resultStudyData);
     }
 }
