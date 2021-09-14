@@ -119,6 +119,7 @@ class DataversePlugin extends GenericPlugin {
 
 	function publishDataset($hookName, $params) {
 		$submission = $params[2];
+		$contextId = $submission->getData("contextId");
 
 		$apiToken = $this->getSetting($contextId, 'apiToken');
 		$dataverseUrl = $this->getSetting($contextId, 'dataverse');
@@ -126,6 +127,7 @@ class DataversePlugin extends GenericPlugin {
 
 		$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
 		$service = new DataverseService($client, $submission);
+		$service->releaseStudy();
 	}
 
 	function getInstallMigration() {

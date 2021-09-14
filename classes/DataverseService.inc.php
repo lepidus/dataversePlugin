@@ -54,4 +54,11 @@ class DataverseService {
 			);
 		}
 	}
+
+	function releaseStudy(){
+		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+		$study = $dataverseStudyDao->getStudyBySubmissionId($this->submission->getId());
+
+		return $this->dataverseClient->completeIncompleteDeposit($study);
+	}
 }
