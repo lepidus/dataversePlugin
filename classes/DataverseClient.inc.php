@@ -1,7 +1,7 @@
 <?php 
 
 import('plugins.generic.dataverse.classes.DataverseStudy');
-require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
+import('plugins.generic.dataverse.classes.DataverseSwordClient');
 
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
@@ -19,7 +19,7 @@ class DataverseClient {
         $this->apiToken = $apiToken;
         $this->dataverseServer = $dataverseServer;
         $this->dataverseUri = $this->formatDataverseUri($dataverseUrl);
-        $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
+        $this->swordClient = new DataverseSwordClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
     }
 
     public function getApiToken() {

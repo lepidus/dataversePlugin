@@ -48,6 +48,18 @@ class DataverseStudyDAO extends DAO {
 		return $study->getId();
 	}
 
+    function updateStudy($study) {
+        Capsule::table('dataverse_studies')
+            ->where('study_id', $study->getId())
+            ->update(array(
+                'edit_uri'          =>  $study->getEditUri(),
+                'edit_media_uri'    =>  $study->getEditMediaUri(),
+                'statement_uri'     =>  $study->getStatementUri(),
+                'persistent_uri'    =>  $study->getPersistentUri(),
+                'data_citation'     =>  $study->getDataCitation()
+            ));
+	}	 
+
     function getInsertStudyId() {
 		return $this->_getInsertId('dataverse_studies', 'study_id');
 	}

@@ -45,48 +45,13 @@ class DataverseStudyDAOTest extends DatabaseTestCase {
     public function testStudyHasInsertedInDB() : void {
         $returnedStudy = $this->studyDao->getStudy($this->studyId);
 
-        $expectedStudyData = array(
-            'submission_id'     =>  $this->study->getSubmissionId(),
-            'edit_uri'          =>  $this->study->getEditUri(),
-            'edit_media_uri'    =>  $this->study->getEditMediaUri(),
-            'statement_uri'     =>  $this->study->getStatementUri(),
-            'persistent_uri'    =>  $this->study->getPersistentUri(),
-            'data_citation'     =>  $this->study->getDataCitation()
-        );
-
-        $resultStudyData = array(
-            'submission_id'     =>  $returnedStudy->getSubmissionId(),
-            'edit_uri'          =>  $returnedStudy->getEditUri(),
-            'edit_media_uri'    =>  $returnedStudy->getEditMediaUri(),
-            'statement_uri'     =>  $returnedStudy->getStatementUri(),
-            'persistent_uri'    =>  $returnedStudy->getPersistentUri(),
-            'data_citation'     =>  $returnedStudy->getDataCitation()
-        );
-
-        $this->assertEquals($expectedStudyData, $resultStudyData);
+        $this->assertEquals($this->study, $returnedStudy);
     }
 
     public function testGetStudyBySubmissionId() : void {
         $returnedStudy = $this->studyDao->getStudyBySubmissionId($this->submissionId);
 
-        $expectedStudyData = array(
-            'submission_id'     =>  $this->study->getSubmissionId(),
-            'edit_uri'          =>  $this->study->getEditUri(),
-            'edit_media_uri'    =>  $this->study->getEditMediaUri(),
-            'statement_uri'     =>  $this->study->getStatementUri(),
-            'persistent_uri'    =>  $this->study->getPersistentUri(),
-            'data_citation'     =>  $this->study->getDataCitation()
-        );
-
-        $resultStudyData = array(
-            'submission_id'     =>  $returnedStudy->getSubmissionId(),
-            'edit_uri'          =>  $returnedStudy->getEditUri(),
-            'edit_media_uri'    =>  $returnedStudy->getEditMediaUri(),
-            'statement_uri'     =>  $returnedStudy->getStatementUri(),
-            'persistent_uri'    =>  $returnedStudy->getPersistentUri(),
-            'data_citation'     =>  $returnedStudy->getDataCitation()
-        );
-
-        $this->assertEquals($expectedStudyData, $resultStudyData);
+        $this->assertEquals($this->study, $returnedStudy);
     }
+
 }
