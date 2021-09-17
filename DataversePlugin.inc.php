@@ -31,7 +31,7 @@ class DataversePlugin extends GenericPlugin {
 		$dataverseStudyDAO = new DataverseStudyDAO();
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
-		HookRegistry::register('Publication::publish', array($this, 'publishDataset'));
+		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
 		return $success;
 	}
 
@@ -111,13 +111,14 @@ class DataversePlugin extends GenericPlugin {
 		$dataverseServer = $this->getSetting($contextId, 'dataverseServer');	
 
 		$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
-		$service = new DataverseService($client, $submission);
+		$service = new DataverseService($client);
+		$service->setSubmission($submission);
 		if($service->hasDataSetComponent()){
 			$service->depositPackage();
 		}
 	}
 
-	function publishDataset($hookName, $params) {
+	function publishDeposit($hookName, $params) {
 		$submission = $params[2];
 		$contextId = $submission->getData("contextId");
 
@@ -126,7 +127,8 @@ class DataversePlugin extends GenericPlugin {
 		$dataverseServer = $this->getSetting($contextId, 'dataverseServer');
 
 		$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
-		$service = new DataverseService($client, $submission);
+		$service = new DataverseService($client);
+		$service->setSubmission($submission);
 		$service->releaseStudy();
 	}
 

@@ -11,23 +11,40 @@ define('DATAVERSE_API_PASSWORD', "******");
 class DataverseClient {
     private $apiToken;
     private $dataverseServer;
-    private $dataverse;
+    private $dataverseUri;
     private $swordClient;
+    private $dataverseAlias;
 
-    public function __construct($apiToken, $dataverseServer, $dataverse) {
+    public function __construct($apiToken, $dataverseServer, $dataverseUrl) {
         $this->apiToken = $apiToken;
         $this->dataverseServer = $dataverseServer;
-        $this->dataverse = $this->formatDvnUri($dataverse);
+        $this->dataverseUri = $this->formatDataverseUri($dataverseUrl);
         $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
     }
 
-    public function formatDvnUri($dataverseUrl) {
-        $dataverseCollection = explode($this->dataverseServer, $dataverseUrl)[1];
-        $dvnUri = $this->dataverseServer;
-        $dvnUri .= preg_match('/\/dvn$/', $this->dataverseServer) ? '' : '/dvn';
-        $dvnUri .= '/api/data-deposit/'. DATAVERSE_API_VERSION . '/swordv2/collection' . $dataverseCollection;
+    public function getApiToken() {
+        return $this->apiToken;
+    }
 
-        return $dvnUri;
+    public function getDataverseServer() {
+        return $this->dataverseServer;
+    }
+
+    public function getDataverseUri() {
+        return $this->dataverseUri;
+    }
+
+    public function getDataverseAlias() {
+        return $this->dataverseAlias;
+    }
+
+    public function formatDataverseUri($dataverseUrl) {
+        $this->dataverseAlias = explode($this->dataverseServer, $dataverseUrl)[1];
+        $dataverseUri = $this->dataverseServer;
+        $dataverseUri .= preg_match('/\/dvn$/', $this->dataverseServer) ? '' : '/dvn';
+        $dataverseUri .= '/api/data-deposit/'. DATAVERSE_API_VERSION . '/swordv2/collection' . $this->dataverseAlias;
+
+        return $dataverseUri;
     }
     
     private function validateCredentials($serviceDocumentRequest) {
@@ -50,7 +67,7 @@ class DataverseClient {
 	}
 
     public function depositAtomEntry($atomEntryPath, $submissionId) {
-        $depositReceipt = $this->swordClient->depositAtomEntry($this->dataverse, $this->apiToken, DATAVERSE_API_PASSWORD, '', $atomEntryPath);
+        $depositReceipt = $this->swordClient->depositAtomEntry($this->dataverseUri, $this->apiToken, DATAVERSE_API_PASSWORD, '', $atomEntryPath);
 
         $study = null;
 		if ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED) {
@@ -80,27 +97,24 @@ class DataverseClient {
         return $depositStatus;
     }
 
-    public function completeIncompleteDeposit($study) {		
+    public function retrieveDepositReceipt($request) {
+        $depositReceipt = $this->swordClient->retrieveDepositReceipt(
+            $request, 
+            $this->apiToken,
+            DATAVERSE_API_PASSWORD,
+            '');
+        
+        return ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) ? $depositReceipt : null;
+    }
+
+    public function completeIncompleteDeposit($request) {		
         $response = $this->swordClient->completeIncompleteDeposit(
-                        $study->getEditUri(),
+                        $request,
                         $this->apiToken,
                         DATAVERSE_API_PASSWORD,	
                         '');
-        
-        $studyReleased = ($response->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK); 
-        if ($studyReleased) {
-            $depositReceipt = $this->swordClient->retrieveDepositReceipt(
-                            $study->getEditUri(), 
-                            $this->apiToken,
-                            DATAVERSE_API_PASSWORD,
-                            '');
-
-            if ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
-                $study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
-                $dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
-                $dataverseStudyDao->updateStudy($study);
-            }		
-        }
-        return $studyReleased;
+                        
+        return ($response->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
     }
+
 }

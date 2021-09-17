@@ -1,21 +1,24 @@
 <?php
 
+import('plugins.generic.dataverse.classes.DataverseClient');
+
 define('DATASET_GENRE_ID', 7);
 
 class DataverseService {
 
     private $dataverseClient;
     private $submission;
-    private $galleys;
 
-    function __construct($dataverseClient, $submission) {
+    function __construct($dataverseClient) {
         $this->dataverseClient = $dataverseClient;
-        $this->submission = $submission;
-		$this->galleys = $this->submission->getGalleys();
     }
 
+	function setSubmission($submission) {
+		$this->submission = $submission;
+	}
+
 	function hasDataSetComponent(){
-		foreach($this->galleys as $galley) {
+		foreach($this->submission->getGalleys() as $galley) {
 			$galleysFilesGenres[] = $galley->getFile()->getGenreId();
 		}
 		return in_array(DATASET_GENRE_ID, $galleysFilesGenres);
@@ -31,7 +34,7 @@ class DataverseService {
 		$package->createAtomEntry();
 
 		$publicFilesDir = Config::getVar('files', 'files_dir');
-		foreach($this->galleys as $galley) {
+		foreach($this->submission->getGalleys() as $galley) {
 			$galleyFilePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $galley->getFile()->getLocalizedData('path');
 			$package->addFileToPackage($galleyFilePath, $galley->getFile()->getLocalizedData('name'));
 		}
@@ -44,7 +47,6 @@ class DataverseService {
 		$package = $this->createPackage();
 
 		$study = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath(), $this->submission->getId());
-
 		if(!is_null($study)) {
 			$this->dataverseClient->depositFiles(
 				$study->getEditMediaUri(),
@@ -55,10 +57,48 @@ class DataverseService {
 		}
 	}
 
-	function releaseStudy(){
-		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
-		$study = $dataverseStudyDao->getStudyBySubmissionId($this->submission->getId());
+	public function dataverseIsReleased() {		
+		$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getDataverseUri());
 
-		return $this->dataverseClient->completeIncompleteDeposit($study);
+		$released = false;
+		if (!is_null($depositReceipt)) {
+			$depositReceiptXml = new SimpleXMLElement($depositReceipt->sac_xml);
+			$releasedNodes = $depositReceiptXml->children('http://purl.org/net/sword/terms/state')->dataverseHasBeenReleased;
+			if (!empty($releasedNodes) && $releasedNodes[0] == 'true') {
+				$released = true;
+			}
+		}
+		return $released;
+    }
+
+	function releaseDataverse() {
+		$request = $this->dataverseClient->getDataverseServer();
+		$request .= preg_match('/\/dvn$/', $this->dataverseClient->getDataverseServer()) ? '' : '/dvn';
+		$request .= '/api/data-deposit/'. DATAVERSE_API_VERSION;
+		$request .= '/swordv2/edit' . $this->dataverseClient->getDataverseAlias();
+
+		return $this->dataverseClient->completeIncompleteDeposit($request);
+	}
+
+	function releaseStudy(){
+		$dvReleased = $this->dataverseIsReleased();
+		if(!$dvReleased) {
+			$dvReleased = $this->releaseDataverse();
+		}
+
+		if($dvReleased) {
+			$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+			$study = $dataverseStudyDao->getStudyBySubmissionId($this->submission->getId());
+			$studyReleased = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
+			if ($studyReleased) {
+				$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($study->getEditUri());
+				if (!is_null($depositReceipt)) {
+					$study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
+					$dataverseStudyDao->updateStudy($study);
+				}		
+			}
+			return $studyReleased;
+		}
+		return $dvReleased;
 	}
 }
