@@ -12,12 +12,12 @@ class DataverseStudyDAO extends DAO {
             ->where('study_id', $studyId)
             ->get();
 
-        $returner = array();
+        $study = array();
         foreach ($result->toArray() as $row) {
-            $returner = $this->returnStudyFromRow(get_object_vars($row));
+            $study = $this->returnStudyFromRow(get_object_vars($row));
         }
 
-		return $returner;
+		return $study;
 	}
 
     function getStudyBySubmissionId($submissionId) {
@@ -25,12 +25,12 @@ class DataverseStudyDAO extends DAO {
             ->where('submission_id', $submissionId)
             ->get();
 
-        $returner = array();
+        $study = array();
         foreach ($result->toArray() as $row) {
-            $returner = $this->returnStudyFromRow(get_object_vars($row));
+            $study = $this->returnStudyFromRow(get_object_vars($row));
         }
 
-		return $returner;
+		return $study;
     }
 
     function insertStudy($study) {
