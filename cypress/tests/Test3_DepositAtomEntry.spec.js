@@ -46,6 +46,27 @@ describe('Deposit Draft Dataverse on Submission', function() {
                 'genre': 'Data Set'
             }]
 		});
+
+        cy.logout();
     });
 
+});
+
+describe('Publish Draft Dataverse on Submission Publish', function() {
+
+    it('Publish Created Submission', function() {
+        var adminUser = Cypress.env('adminUser');
+        var adminPassword = Cypress.env('adminPassword');
+
+        cy.login(adminUser, adminPassword);
+        cy.get('a:contains(' + adminUser + '):visible').click();
+        cy.get('a:contains("Dashboard"):visible').click();
+        cy.get('#myQueue a:contains("View")').click();
+        cy.wait(1000);
+        cy.get('li > .pkpButton').click();
+        cy.get('.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton').click();
+        cy.get('.pkp_modal_panel button:contains("Post")').click();
+        cy.wait(2000);
+        cy.get('.pkpPublication__versionPublished:contains("This version has been posted and can not be edited.")');
+    });
 });

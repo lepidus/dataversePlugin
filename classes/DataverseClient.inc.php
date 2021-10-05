@@ -1,5 +1,8 @@
 <?php 
 
+import('plugins.generic.dataverse.classes.DataverseStudy');
+import('plugins.generic.dataverse.classes.DataverseSwordClient');
+
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
 define('DATAVERSE_API_VERSION', "v1.1");
@@ -8,23 +11,40 @@ define('DATAVERSE_API_PASSWORD', "******");
 class DataverseClient {
     private $apiToken;
     private $dataverseServer;
-    private $dataverse;
+    private $dataverseUri;
     private $swordClient;
+    private $dataverseAlias;
 
-    public function __construct($apiToken, $dataverseServer, $dataverse) {
+    public function __construct($apiToken, $dataverseServer, $dataverseUrl) {
         $this->apiToken = $apiToken;
         $this->dataverseServer = $dataverseServer;
-        $this->dataverse = $this->formatDvnUri($dataverse);
-        $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
+        $this->dataverseUri = $this->formatDataverseUri($dataverseUrl);
+        $this->swordClient = new DataverseSwordClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
     }
 
-    public function formatDvnUri($dataverseUrl) {
-        $dataverseCollection = explode($this->dataverseServer, $dataverseUrl)[1];
-        $dvnUri = $this->dataverseServer;
-        $dvnUri .= preg_match('/\/dvn$/', $this->dataverseServer) ? '' : '/dvn';
-        $dvnUri .= '/api/data-deposit/'. DATAVERSE_API_VERSION . '/swordv2/collection' . $dataverseCollection;
+    public function getApiToken() {
+        return $this->apiToken;
+    }
 
-        return $dvnUri;
+    public function getDataverseServer() {
+        return $this->dataverseServer;
+    }
+
+    public function getDataverseUri() {
+        return $this->dataverseUri;
+    }
+
+    public function getDataverseAlias() {
+        return $this->dataverseAlias;
+    }
+
+    public function formatDataverseUri($dataverseUrl) {
+        $this->dataverseAlias = explode($this->dataverseServer, $dataverseUrl)[1];
+        $dataverseUri = $this->dataverseServer;
+        $dataverseUri .= preg_match('/\/dvn$/', $this->dataverseServer) ? '' : '/dvn';
+        $dataverseUri .= '/api/data-deposit/'. DATAVERSE_API_VERSION . '/swordv2/collection' . $this->dataverseAlias;
+
+        return $dataverseUri;
     }
     
     private function validateCredentials($serviceDocumentRequest) {
@@ -46,19 +66,55 @@ class DataverseClient {
 		return ($dataverseConnectionStatus);
 	}
 
-    public function depositAtomEntry($atomEntryPath) {
-        $depositReceipt = $this->swordClient->depositAtomEntry($this->dataverse, $this->apiToken, DATAVERSE_API_PASSWORD, '', $atomEntryPath);
+    public function depositAtomEntry($atomEntryPath, $submissionId) {
+        $depositReceipt = $this->swordClient->depositAtomEntry($this->dataverseUri, $this->apiToken, DATAVERSE_API_PASSWORD, '', $atomEntryPath);
 
-        if(isset($depositReceipt) && $depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED)
-            return $depositReceipt->sac_edit_media_iri;
-        else
-            return null;
+        $study = null;
+		if ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED) {
+			$study = new DataverseStudy();
+			$study->setSubmissionId($submissionId);
+			$study->setEditUri($depositReceipt->sac_edit_iri);
+			$study->setEditMediaUri($depositReceipt->sac_edit_media_iri);
+			$study->setStatementUri($depositReceipt->sac_state_iri_atom);
+			$study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
+			
+			foreach ($depositReceipt->sac_links as $link) {
+				if ($link->sac_linkrel == 'alternate') {
+					$study->setPersistentUri($link->sac_linkhref);
+					break;
+				}
+			}
+			$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');			 
+			$dataverseStudyDao->insertStudy($study);
+		}
+		return $study;
     }
 
-    public function depositFiles($editMediaIri, $packageFilePath, $packaging, $contentType) {
-        $depositReceipt = $this->swordClient->deposit($editMediaIri, $this->apiToken, DATAVERSE_API_PASSWORD, '', $packageFilePath, $packaging, $contentType, false);
+    public function depositFiles($editMediaUri, $packageFilePath, $packaging, $contentType) {
+        $depositReceipt = $this->swordClient->deposit($editMediaUri, $this->apiToken, DATAVERSE_API_PASSWORD, '', $packageFilePath, $packaging, $contentType, false);
 
         $depositStatus = isset($depositReceipt) && $depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED;
         return $depositStatus;
     }
+
+    public function retrieveDepositReceipt($request) {
+        $depositReceipt = $this->swordClient->retrieveDepositReceipt(
+            $request, 
+            $this->apiToken,
+            DATAVERSE_API_PASSWORD,
+            '');
+        
+        return ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) ? $depositReceipt : null;
+    }
+
+    public function completeIncompleteDeposit($request) {		
+        $response = $this->swordClient->completeIncompleteDeposit(
+                        $request,
+                        $this->apiToken,
+                        DATAVERSE_API_PASSWORD,	
+                        '');
+                        
+        return ($response->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
+    }
+
 }

@@ -19,9 +19,7 @@ import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
 import('plugins.generic.dataverse.classes.DataverseClient');
 import('plugins.generic.dataverse.classes.DataverseService');
-require('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
-
-define('DATASET_GENRE_ID', 7);
+import('plugins.generic.dataverse.classes.DataverseStudyDAO');
 
 class DataversePlugin extends GenericPlugin {
 
@@ -30,7 +28,10 @@ class DataversePlugin extends GenericPlugin {
 	 */
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
+		$dataverseStudyDAO = new DataverseStudyDAO();
+		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
+		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
 		return $success;
 	}
 
@@ -104,25 +105,38 @@ class DataversePlugin extends GenericPlugin {
 		$context = $form->context;
 		$contextId = $context->getId();
         $submission = $form->submission;
-        $galleys = $submission->getGalleys();
-		$galleysFiles = array();
-		$galleysFilesGenres = array();		
 
-		foreach ($galleys as $galley){
-			$galleysFiles[] = $galley->getFile();
-			$galleysFilesGenres[] = $galley->getFile()->getGenreId();
-		}
+		$apiToken = $this->getSetting($contextId, 'apiToken');
+		$dataverseUrl = $this->getSetting($contextId, 'dataverse');
+		$dataverseServer = $this->getSetting($contextId, 'dataverseServer');	
 
-		if (in_array(DATASET_GENRE_ID, $galleysFilesGenres)) {
-			$apiToken = $this->getSetting($contextId, 'apiToken');
-			$dataverseUrl = $this->getSetting($contextId, 'dataverse');
-			$dataverseServer = $this->getSetting($contextId, 'dataverseServer');	
-
-			$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
-			$service = new DataverseService($client, $submission, $galleysFiles);
+		$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
+		$service = new DataverseService($client);
+		$service->setSubmission($submission);
+		if($service->hasDataSetComponent()){
 			$service->depositPackage();
 		}
 	}
+
+	function publishDeposit($hookName, $params) {
+		$submission = $params[2];
+		$contextId = $submission->getData("contextId");
+
+		$apiToken = $this->getSetting($contextId, 'apiToken');
+		$dataverseUrl = $this->getSetting($contextId, 'dataverse');
+		$dataverseServer = $this->getSetting($contextId, 'dataverseServer');
+
+		$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
+		$service = new DataverseService($client);
+		$service->setSubmission($submission);
+		$service->releaseStudy();
+	}
+
+	function getInstallMigration() {
+        $this->import('classes.migration.DataverseStudyMigration');
+        return new DataverseStudyMigration();
+    }
+
 }
 
 ?>
