@@ -12,7 +12,7 @@ class DataverseStudyDAO extends DAO {
             ->where('study_id', $studyId)
             ->get();
 
-        $study = array();
+        $study = null;
         foreach ($result->toArray() as $row) {
             $study = $this->returnStudyFromRow(get_object_vars($row));
         }
@@ -25,7 +25,7 @@ class DataverseStudyDAO extends DAO {
             ->where('submission_id', $submissionId)
             ->get();
 
-        $study = array();
+        $study = null;
         foreach ($result->toArray() as $row) {
             $study = $this->returnStudyFromRow(get_object_vars($row));
         }
