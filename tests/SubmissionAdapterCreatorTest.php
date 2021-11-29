@@ -1,12 +1,12 @@
 <?php
 
-import('lib.pkp.tests.DatabaseTestCase');
+import('lib.pkp.tests.PKPTestCase');
 import('classes.submission.Submission');
 import('classes.publication.Publication');
 import('classes.article.Author');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 
-class SubmissionAdapterCreatorTest extends DatabaseTestCase
+class SubmissionAdapterCreatorTest extends PKPTestCase
 {
     private $submissionAdapterCreator;
     private $submissionAdapter;
@@ -50,7 +50,14 @@ class SubmissionAdapterCreatorTest extends DatabaseTestCase
 
         $this->authors = [$author];
 
-        $this->submissionAuthors = [new AuthorAdapter("Ana Alice Caldas Novas", "Harvard University", "anaalice@harvard.com")];
+        $this->submissionAuthors = [
+            new AuthorAdapter(
+                $author->getLocalizedGivenName($this->locale),
+                $author->getLocalizedFamilyName($this->locale),
+                $author->getFullName(),
+                $author->getLocalizedData('affiliation', $this->locale),
+                $author->getData('email')
+        )];
     }
 
     private function addCurrentPublicationToSubmission(): void
@@ -92,6 +99,39 @@ class SubmissionAdapterCreatorTest extends DatabaseTestCase
     public function testRetrieveSubmissionTitle(): void
     {
         $this->assertEquals($this->title, $this->submissionAdapter->getTitle());
+    }
+
+    public function testAuthorsCitationIsAPA(){
+        $firstAuthor = new AuthorAdapter('Ana Alice', 'Caldas Novas', 'Ana Alice Caldas Novas', "", "");
+        $secondAuthor = new AuthorAdapter('Deane', 'Chord', 'Deane Chord', "", "");
+        $thirdAuthor = new AuthorAdapter('Francis', 'Bucker', 'Francis Bucker', "", "");
+
+        $authors = [$firstAuthor, $secondAuthor, $thirdAuthor];
+
+        $submissionAdapterCreator = new SubmissionAdapterCreator();
+
+        $resultCitation = $submissionAdapterCreator->createAuthorsCitationAPA($authors);
+        $expectedCitation = 'Caldas Novas, A., Chord, D., &amp; Bucker, F.';
+
+        $this->assertEquals($resultCitation, $expectedCitation);
+    }
+
+    public function testVariousAuthorsCitationIsAPA(){
+        $firstAuthor = new AuthorAdapter('Deane', 'Chord', 'Deane Chord', "", "");
+        $secondAuthor = new AuthorAdapter('Ana Alice', 'Caldas Novas', 'Ana Alice Caldas Novas', "", "");
+        $thirdAuthor = new AuthorAdapter('Íris', 'Castanheiras', 'Íris Castanheiras', "", "");
+        $fourthAuthor = new AuthorAdapter('Francis', 'Bucker', 'Francis Bucker', "", "");
+        $fifthAuthor = new AuthorAdapter('Tim', 'Winter', 'Tim Winter', "", "");
+        $sixthAuthor = new AuthorAdapter('Walter', 'Zappy', 'Walter Zappy', "", "");
+
+        $authors = [$firstAuthor, $secondAuthor, $thirdAuthor, $fourthAuthor, $fifthAuthor, $sixthAuthor];
+
+        $submissionAdapterCreator = new SubmissionAdapterCreator();
+
+        $resultCitation = $submissionAdapterCreator->createAuthorsCitationAPA($authors);
+        $expectedCitation = 'Chord, D. et al.';
+
+        $this->assertEquals($resultCitation, $expectedCitation);
     }
 
     public function testRetrieveSubmissionAuthors(): void

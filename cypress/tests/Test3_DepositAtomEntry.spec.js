@@ -61,7 +61,7 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
         cy.login(adminUser, adminPassword);
         cy.get('a:contains(' + adminUser + '):visible').click();
         cy.get('a:contains("Dashboard"):visible').click();
-        cy.get('#myQueue a:contains("View")').click();
+        cy.get('#myQueue a:contains("View"):first').click();
         cy.wait(1000);
         cy.get('li > .pkpButton').click();
         cy.get('.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton').click();

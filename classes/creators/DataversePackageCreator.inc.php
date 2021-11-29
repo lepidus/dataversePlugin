@@ -42,11 +42,15 @@ class DataversePackageCreator extends PackagerAtomTwoStep
         $datasetMetadata = $dataset->getMetadataValues();
         foreach ($datasetMetadata as $key => $value) {
             if (is_array($value)) {
-                foreach ($value as $innerKey => $metadata) {
-                    if ($key == "contributor") {
-                        $this->addMetadata($key, $metadata, array("type" => $innerKey));
-                    } else {
-                        $this->addMetadata($key, $metadata);
+                if ($key == 'isReferencedBy') {
+                    $this->addMetadata($key, $value[0], $value[1]);
+                } else {
+                    foreach ($value as $innerKey => $metadata) {
+                        if ($key == "contributor") {
+                            $this->addMetadata($key, $metadata, array("type" => $innerKey));
+                        } else {
+                            $this->addMetadata($key, $metadata);
+                        }
                     }
                 }
             } else {
