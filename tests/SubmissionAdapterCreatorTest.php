@@ -57,7 +57,6 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
             new AuthorAdapter(
                 $author->getLocalizedGivenName($this->locale),
                 $author->getLocalizedFamilyName($this->locale),
-                $author->getFullName(),
                 $author->getLocalizedData('affiliation', $this->locale),
                 $author->getData('email')
         )];
@@ -113,9 +112,9 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
 
     public function testAuthorsCitationIsAPA(): void
     {
-        $firstAuthor = new AuthorAdapter('Ana Alice', 'Caldas Novas', 'Ana Alice Caldas Novas', "", "");
-        $secondAuthor = new AuthorAdapter('Deane', 'Chord', 'Deane Chord', "", "");
-        $thirdAuthor = new AuthorAdapter('Francis', 'Bucker', 'Francis Bucker', "", "");
+        $firstAuthor = new AuthorAdapter('Ana Alice', 'Caldas Novas', "", "");
+        $secondAuthor = new AuthorAdapter('Deane', 'Chord', "", "");
+        $thirdAuthor = new AuthorAdapter('Francis', 'Bucker', "", "");
 
         $authors = [$firstAuthor, $secondAuthor, $thirdAuthor];
 
@@ -129,12 +128,12 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
 
     public function testVariousAuthorsCitationIsAPA(): void
     {
-        $firstAuthor = new AuthorAdapter('Deane', 'Chord', 'Deane Chord', "", "");
-        $secondAuthor = new AuthorAdapter('Ana Alice', 'Caldas Novas', 'Ana Alice Caldas Novas', "", "");
-        $thirdAuthor = new AuthorAdapter('Íris', 'Castanheiras', 'Íris Castanheiras', "", "");
-        $fourthAuthor = new AuthorAdapter('Francis', 'Bucker', 'Francis Bucker', "", "");
-        $fifthAuthor = new AuthorAdapter('Tim', 'Winter', 'Tim Winter', "", "");
-        $sixthAuthor = new AuthorAdapter('Walter', 'Zappy', 'Walter Zappy', "", "");
+        $firstAuthor = new AuthorAdapter('Deane', 'Chord', "", "");
+        $secondAuthor = new AuthorAdapter('Ana Alice', 'Caldas Novas', "", "");
+        $thirdAuthor = new AuthorAdapter('Íris', 'Castanheiras', "", "");
+        $fourthAuthor = new AuthorAdapter('Francis', 'Bucker', "", "");
+        $fifthAuthor = new AuthorAdapter('Tim', 'Winter', "", "");
+        $sixthAuthor = new AuthorAdapter('Walter', 'Zappy', "", "");
 
         $authors = [$firstAuthor, $secondAuthor, $thirdAuthor, $fourthAuthor, $fifthAuthor, $sixthAuthor];
 

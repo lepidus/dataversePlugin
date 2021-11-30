@@ -30,13 +30,12 @@ class SubmissionAdapterCreator
         foreach ($authors as $author) {
             $givenName = $author->getLocalizedGivenName($locale);
             $familyName = $author->getLocalizedFamilyName($locale);
-            $fullName = $author->getFullName($locale);
             $affiliation = $author->getLocalizedData('affiliation', $locale);
             $email = $author->getData('email');
 
             $affiliation = !is_null($affiliation) ? $affiliation : "";
             $email = !is_null($email) ? $email : "";
-            $authorAdapters[] = new AuthorAdapter($givenName, $familyName, $fullName, $affiliation, $email);
+            $authorAdapters[] = new AuthorAdapter($givenName, $familyName, $affiliation, $email);
         }
 
         return $authorAdapters;

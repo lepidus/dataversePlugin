@@ -60,7 +60,7 @@ class DataversePackageCreatorTest extends PKPTestCase
 
     private function createDefaultTestAtomEntryFromSubmission(): void
     {
-        $this->authors[] = new AuthorAdapter("Irís", "Castanheiras", $this->creator[0], 'Universidade de São Paulo', $this->contributor['contact']);
+        $this->authors[] = new AuthorAdapter("Irís", "Castanheiras", 'Universidade de São Paulo', $this->contributor['contact']);
         $this->submissionAdapter = new SubmissionAdapter($this->title, $this->authors, $this->description, $this->subject);
 
         $datasetBuilder = new DatasetBuilder();
