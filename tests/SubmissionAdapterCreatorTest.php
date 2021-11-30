@@ -1,6 +1,7 @@
 <?php
 
 import('lib.pkp.tests.PKPTestCase');
+import('classes.journal.Journal');
 import('classes.submission.Submission');
 import('classes.publication.Publication');
 import('classes.article.Author');
@@ -10,6 +11,7 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
 {
     private $submissionAdapterCreator;
     private $submissionAdapter;
+    private $journal;
 
     private $contextId = 1;
     private $submissionId = 1245;
@@ -31,6 +33,7 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
         parent::setUp();
         $this->submissionAdapterCreator = new SubmissionAdapterCreator();
 
+        $this->createTestJournal();
         $this->createTestSubmission();
         $this->createAuthors();
         $this->createTestPublication();
@@ -91,6 +94,13 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
         $this->publication->setData('keywords', $this->keywords);
     }
 
+    private function createTestJournal(): void
+    {
+        $this->journal = new Journal();
+        $this->journal->setPrimaryLocale($this->locale);
+        $this->journal->setName('Preprints da Lepidus', $this->locale);
+    }
+
     public function testCreatorReturnsSubmissionAdapterObject(): void
     {
         $this->assertTrue($this->submissionAdapter instanceof SubmissionAdapter);
@@ -101,7 +111,8 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
         $this->assertEquals($this->title, $this->submissionAdapter->getTitle());
     }
 
-    public function testAuthorsCitationIsAPA(){
+    public function testAuthorsCitationIsAPA(): void
+    {
         $firstAuthor = new AuthorAdapter('Ana Alice', 'Caldas Novas', 'Ana Alice Caldas Novas', "", "");
         $secondAuthor = new AuthorAdapter('Deane', 'Chord', 'Deane Chord', "", "");
         $thirdAuthor = new AuthorAdapter('Francis', 'Bucker', 'Francis Bucker', "", "");
@@ -116,7 +127,8 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
         $this->assertEquals($resultCitation, $expectedCitation);
     }
 
-    public function testVariousAuthorsCitationIsAPA(){
+    public function testVariousAuthorsCitationIsAPA(): void
+    {
         $firstAuthor = new AuthorAdapter('Deane', 'Chord', 'Deane Chord', "", "");
         $secondAuthor = new AuthorAdapter('Ana Alice', 'Caldas Novas', 'Ana Alice Caldas Novas', "", "");
         $thirdAuthor = new AuthorAdapter('Íris', 'Castanheiras', 'Íris Castanheiras', "", "");
@@ -130,6 +142,17 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
 
         $resultCitation = $submissionAdapterCreator->createAuthorsCitationAPA($authors);
         $expectedCitation = 'Chord, D. et al.';
+
+        $this->assertEquals($resultCitation, $expectedCitation);
+    }
+
+    public function testSubmissionCitationIsAPA(): void
+    {
+        $submissionAdapterCreator = new SubmissionAdapterCreator();
+
+        $resultCitation = $submissionAdapterCreator->createSubmissionCitationAPA($this->submission, $this->journal);
+
+        $expectedCitation = 'Caldas Novas, A. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
 
         $this->assertEquals($resultCitation, $expectedCitation);
     }

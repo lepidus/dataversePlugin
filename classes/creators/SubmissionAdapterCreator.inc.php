@@ -7,6 +7,8 @@ class SubmissionAdapterCreator
 {
     public function createSubmissionAdapter($submission): SubmissionAdapter
     {
+        $journalDao = DAORegistry::getDAO('JournalDAO');
+        $journal = $journalDao->getById($submission->getContextId());
         $locale = $submission->getLocale();
         $publication = $submission->getCurrentPublication();
 
@@ -14,7 +16,7 @@ class SubmissionAdapterCreator
         $authors = $this->retrieveAuthors($publication, $locale);
         $description = $publication->getLocalizedData('abstract', $locale);
         $keywords = $publication->getData('keywords')[$locale];
-        $citation = $this->createAuthorsCitationAPA($authors);
+        $citation = $this->createSubmissionCitationAPA($submission, $journal);
         $reference = array($citation, array());
 
         return new SubmissionAdapter($title, $authors, $description, $keywords, $reference);
@@ -89,6 +91,20 @@ class SubmissionAdapterCreator
         }
 
         return $authorsCitation;
+    }
+
+    public function createSubmissionCitationAPA($submission, $journal)
+    {
+        $authors = $this->retrieveAuthors($submission->getCurrentPublication(), $submission->getLocale());
+        $submittedDate = new DateTime($submission->getDateSubmitted());
+        
+        $submissionCitation = $this->createAuthorsCitationAPA($authors) . ' ';
+        $submissionCitation .= '(' . date_format($submittedDate, 'Y') . '). ';
+        $submissionCitation .= '<em>' . $submission->getLocalizedTitle($submission->getLocale()) . '</em>. ';
+        $submissionCitation .= $journal->getLocalizedName();
+        
+
+        return $submissionCitation;
     }
 
 }
