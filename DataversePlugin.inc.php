@@ -31,6 +31,7 @@ class DataversePlugin extends GenericPlugin {
 		$dataverseStudyDAO = new DataverseStudyDAO();
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
+		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
 		return $success;
 	}
@@ -130,6 +131,27 @@ class DataversePlugin extends GenericPlugin {
 		$service = new DataverseService($client);
 		$service->setSubmission($submission);
 		$service->releaseStudy();
+	}
+
+	function addDataCitationSubmission($hookName, $params) {
+		$templateMgr =& $params[1];
+		$output =& $params[2];
+
+		$submission = $templateMgr->getTemplateVars('preprint');
+		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');			 
+		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
+
+		if(isset($study)) {
+			$dataCitation = $this->formatDataCitation($study->getDataCitation(), $study->getPersistentUri());
+			$templateMgr->assign('dataCitation', $dataCitation);
+			$output .= $templateMgr->fetch($this->getTemplateResource('dataCitationSubmission.tpl'));
+		}
+
+		return false;
+	}
+
+	function formatDataCitation($dataCitation, $persistentUri) {
+		return str_replace($persistentUri, '<a href="'. $persistentUri .'">'. $persistentUri .'</a>', strip_tags($dataCitation));
 	}
 
 	function getInstallMigration() {

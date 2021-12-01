@@ -45,4 +45,7 @@ msgid "plugins.generic.dataverse.settings.dataverseServerNotValid"
 msgstr "Can't connect to Dataverse."
 
 msgid "plugins.generic.dataverse.settings.tokenRequired"
-msgstr "Please enter a token API."
+msgstr "Please enter a API token."
+
+msgid "plugins.generic.dataverse.dataCitationLabel"
+msgstr "Data citation"
