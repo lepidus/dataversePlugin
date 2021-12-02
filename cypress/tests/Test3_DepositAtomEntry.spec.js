@@ -69,4 +69,11 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
         cy.wait(2000);
         cy.get('.pkpPublication__versionPublished:contains("This version has been posted and can not be edited.")');
     });
+
+    it('Check Publication has Dataset Citation', function() {
+        cy.get('a.pkpButton:contains("View")').click();
+        cy.waitJQuery();
+        cy.get('.label').contains('Data citation');
+        cy.get('.value > p').contains('Íris Castanheira, 2021, "The Rise of The Machine Empire"');
+    });
 });
