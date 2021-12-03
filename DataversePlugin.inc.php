@@ -16,11 +16,10 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-import('plugins.generic.dataverse.classes.creators.DatasetFactory');
+import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
 import('plugins.generic.dataverse.classes.DataverseClient');
 import('plugins.generic.dataverse.classes.DataverseService');
 import('plugins.generic.dataverse.classes.DataverseStudyDAO');
-import('plugins.generic.dataverse.classes.APACitation');
 
 class DataversePlugin extends GenericPlugin {
 
@@ -143,12 +142,16 @@ class DataversePlugin extends GenericPlugin {
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
 		if(isset($study)) {
-			$dataCitation = new APACitation($study);
-			$templateMgr->assign('dataCitation', $dataCitation->asMarkup());
+			$dataCitation = $this->formatDataCitation($study->getDataCitation(), $study->getPersistentUri());
+			$templateMgr->assign('dataCitation', $dataCitation);
 			$output .= $templateMgr->fetch($this->getTemplateResource('dataCitationSubmission.tpl'));
 		}
 
 		return false;
+	}
+
+	function formatDataCitation($dataCitation, $persistentUri) {
+		return str_replace($persistentUri, '<a href="'. $persistentUri .'">'. $persistentUri .'</a>', strip_tags($dataCitation));
 	}
 
 	function getInstallMigration() {
