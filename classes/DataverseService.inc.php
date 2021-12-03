@@ -72,8 +72,8 @@ class DataverseService {
     }
 
 	function releaseDataverse() {
-		$request = $this->dataverseClient->getDataverseServer();
-		$request .= preg_match('/\/dvn$/', $this->dataverseClient->getDataverseServer()) ? '' : '/dvn';
+		$request = $this->dataverseClient->getConfiguration()->getDataverseServer();
+		$request .= preg_match('/\/dvn$/', $this->dataverseClient->getConfiguration()->getDataverseServer()) ? '' : '/dvn';
 		$request .= '/api/data-deposit/'. DATAVERSE_API_VERSION;
 		$request .= '/swordv2/edit' . $this->dataverseClient->getDataverseAlias();
 

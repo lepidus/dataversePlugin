@@ -16,8 +16,9 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
+import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 import('plugins.generic.dataverse.classes.DataverseClient');
+import('plugins.generic.dataverse.classes.DataverseConfiguration');
 import('plugins.generic.dataverse.classes.DataverseService');
 import('plugins.generic.dataverse.classes.DataverseStudyDAO');
 
@@ -101,17 +102,17 @@ class DataversePlugin extends GenericPlugin {
 		return parent::manage($args, $request);
 	}
 
+	private function getDataverseConfiguration($contextId) : DataverseConfiguration {
+		return new DataverseConfiguration($this->getSetting($contextId, 'apiToken'), $this->getSetting($contextId, 'dataverseServer'), $this->getSetting($contextId, 'dataverse'));	
+	}
+
 	function dataverseDepositOnSubmission($hookName, $params) {
 		$form =& $params[0];
 		$context = $form->context;
 		$contextId = $context->getId();
         $submission = $form->submission;
 
-		$apiToken = $this->getSetting($contextId, 'apiToken');
-		$dataverseUrl = $this->getSetting($contextId, 'dataverse');
-		$dataverseServer = $this->getSetting($contextId, 'dataverseServer');	
-
-		$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
+		$client = new DataverseClient($this->getDataverseConfiguration($contextId));
 		$service = new DataverseService($client);
 		$service->setSubmission($submission);
 		if($service->hasDataSetComponent()){
@@ -123,11 +124,7 @@ class DataversePlugin extends GenericPlugin {
 		$submission = $params[2];
 		$contextId = $submission->getData("contextId");
 
-		$apiToken = $this->getSetting($contextId, 'apiToken');
-		$dataverseUrl = $this->getSetting($contextId, 'dataverse');
-		$dataverseServer = $this->getSetting($contextId, 'dataverseServer');
-
-		$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
+		$client = new DataverseClient($this->getDataverseConfiguration($contextId));
 		$service = new DataverseService($client);
 		$service->setSubmission($submission);
 		$service->releaseStudy();
