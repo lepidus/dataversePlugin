@@ -46,7 +46,7 @@ class DatasetModelTest extends PKPTestCase
         array_push($this->coverage, 'South America', 'North America');
         $this->license = 'CC';
         $this->rights = 'BY-NC-ND';
-        $this->isReferencedBy = 'None';
+        $this->isReferencedBy = [];
     }
 
     public function testMetadataValuesContainsData(): void

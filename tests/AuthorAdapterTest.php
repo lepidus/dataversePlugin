@@ -6,18 +6,20 @@ import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 final class AuthorAdapterTest extends PKPTestCase
 {
     private $author;
-    private $fullName = "Atila Iamarino";
+    private $givenName = "Atila";
+    private $familyName = "Iamarino";
     private $affiliation = "Universidade de São Paulo";
     private $email = "atila@usp.edu.br";
 
     public function setUp(): void
     {
-        $this->author = new AuthorAdapter($this->fullName, $this->affiliation, $this->email);
+        $this->author = new AuthorAdapter($this->givenName, $this->familyName, $this->affiliation, $this->email);
     }
 
     public function testHasFullName(): void
     {
-        $this->assertEquals($this->fullName, $this->author->getFullName());
+        $expectedFullName = $this->givenName . " $this->familyName";
+        $this->assertEquals($expectedFullName, $this->author->getFullName());
     }
 
     public function testHasAffiliation(): void
