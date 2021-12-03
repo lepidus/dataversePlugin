@@ -16,7 +16,7 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
+import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 import('plugins.generic.dataverse.classes.DataverseClient');
 import('plugins.generic.dataverse.classes.DataverseService');
 import('plugins.generic.dataverse.classes.DataverseStudyDAO');

@@ -27,9 +27,9 @@ class DataverseService {
     function createPackage() {
 		$package = new DataversePackageCreator();
 		$submissionAdapterCreator = new SubmissionAdapterCreator();
-		$datasetBuilder = new DatasetBuilder();
+		$datasetFactory = new DatasetFactory();
 		$submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($this->submission);
-		$datasetModel = $datasetBuilder->build($submissionAdapter);
+		$datasetModel = $datasetFactory->build($submissionAdapter);
 		$package->loadMetadata($datasetModel);
 		$package->createAtomEntry();
 

@@ -1,11 +1,11 @@
 <?php
 
 import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
+import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 
-class DatasetBuilderTest extends PKPTestCase
+class DatasetFactoryTest extends PKPTestCase
 {
-    private $datasetBuilder;
+    private $datasetFactory;
     private $dataset;
 
     private $title = "The Rise of The Machine Empire";
@@ -20,8 +20,8 @@ class DatasetBuilderTest extends PKPTestCase
         $this->authors = array(new AuthorAdapter("Irís", "Castanheiras", "Lepidus", $this->authorsEmails[0]));
         
         $submissionAdapter = new SubmissionAdapter($this->title, $this->authors, $this->description, $this->keywords);
-        $datasetBuilder = new DatasetBuilder();
-        $this->dataset = $datasetBuilder->build($submissionAdapter);
+        $datasetFactory = new DatasetFactory();
+        $this->dataset = $datasetFactory->build($submissionAdapter);
     }
 
     public function testBuildDatasetModel(): void

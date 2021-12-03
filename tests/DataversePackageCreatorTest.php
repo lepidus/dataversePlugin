@@ -63,8 +63,8 @@ class DataversePackageCreatorTest extends PKPTestCase
         $this->authors[] = new AuthorAdapter("Irís", "Castanheiras", 'Universidade de São Paulo', $this->contributor['contact']);
         $this->submissionAdapter = new SubmissionAdapter($this->title, $this->authors, $this->description, $this->subject);
 
-        $datasetBuilder = new DatasetBuilder();
-        $this->datasetModel = $datasetBuilder->build($this->submissionAdapter);
+        $datasetFactory = new DatasetFactory();
+        $this->datasetModel = $datasetFactory->build($this->submissionAdapter);
         
         $this->packageCreator->loadMetadata($this->datasetModel);
         $this->packageCreator->createAtomEntry();

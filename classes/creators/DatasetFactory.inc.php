@@ -2,7 +2,7 @@
 
 import('plugins.generic.dataverse.classes.DatasetModel');
 
-class DatasetBuilder
+class DatasetFactory
 {
     public function build(SubmissionAdapter $submissionAdapter): DatasetModel
     {
