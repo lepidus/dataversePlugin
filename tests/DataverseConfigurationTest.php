@@ -27,4 +27,18 @@ class DataverseConfigurationTest extends PKPTestCase
         $configuration = new DataverseConfiguration($this->apiToken, $this->dataverseServer, $this->dataverseUrl);
         $this->assertEquals($this->dataverseUrl, $configuration->getDataverseUrl());
     }
+
+    public function testConfigurationReturnsValidDataverseCollection(): void
+    {
+        $expectedDataverseCollection = "/dataverse/dataverseDeExemplo/";
+        $configuration = new DataverseConfiguration($this->apiToken, $this->dataverseServer, $this->dataverseUrl);
+        $this->assertEquals($expectedDataverseCollection, $configuration->getDataverseCollection());
+    }
+
+    public function testConfigurationReturnsValidDataverseDepositURL(): void
+    {
+        $expectedDepositUrl = "https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/dataverseDeExemplo/";
+        $configuration = new DataverseConfiguration($this->apiToken, $this->dataverseServer, $this->dataverseUrl);
+        $this->assertEquals($expectedDepositUrl, $configuration->getDataverseDepositUrl());
+    }
 }
