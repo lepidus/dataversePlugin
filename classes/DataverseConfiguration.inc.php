@@ -37,12 +37,29 @@ class DataverseConfiguration
         return explode($this->dataverseServer, $this->dataverseUrl)[1];
     }
 
-    public function getDataverseDepositUrl() {
-        return $this->getDataverseServer(). '/dvn/api/data-deposit/'. DATAVERSE_API_VERSION. '/swordv2/collection'. $this->dataverseCollection;
-    }    
-
-    public function getDataverseCollection() {
+    public function getDataverseCollection(): String
+    {
         return $this->dataverseCollection;
+    }
+
+    public function getDataDepositBaseUrl(): String
+    {
+        return $this->getDataverseServer(). '/dvn/api/data-deposit/'. DATAVERSE_API_VERSION. '/swordv2/';
+    }
+
+    public function getDataverseServiceDocumentUrl(): String
+    {
+        return $this->getDataDepositBaseUrl(). 'service-document';
+    }
+
+    public function getDataverseDepositUrl(): String
+    {
+        return $this->getDataDepositBaseUrl(). 'collection'. $this->dataverseCollection;
+    }
+
+    public function getDataverseReleaseUrl(): String
+    {
+        return $this->getDataDepositBaseUrl(). 'edit'. $this->dataverseCollection;
     }
 
 }

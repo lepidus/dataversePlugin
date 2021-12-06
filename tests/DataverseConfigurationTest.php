@@ -35,10 +35,31 @@ class DataverseConfigurationTest extends PKPTestCase
         $this->assertEquals($expectedDataverseCollection, $configuration->getDataverseCollection());
     }
 
+    public function testConfigurationReturnsValidDataDepositBaseURL(): void
+    {
+        $expectedDataverseCollection = "https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/";
+        $configuration = new DataverseConfiguration($this->apiToken, $this->dataverseServer, $this->dataverseUrl);
+        $this->assertEquals($expectedDataverseCollection, $configuration->getDataDepositBaseUrl());
+    }
+
+    public function testConfigurationReturnsValidDataverseServiceDocumentURL(): void
+    {
+        $expectedDepositUrl = "https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/service-document";
+        $configuration = new DataverseConfiguration($this->apiToken, $this->dataverseServer, $this->dataverseUrl);
+        $this->assertEquals($expectedDepositUrl, $configuration->getDataverseServiceDocumentUrl());
+    }
+
     public function testConfigurationReturnsValidDataverseDepositURL(): void
     {
         $expectedDepositUrl = "https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/dataverseDeExemplo/";
         $configuration = new DataverseConfiguration($this->apiToken, $this->dataverseServer, $this->dataverseUrl);
         $this->assertEquals($expectedDepositUrl, $configuration->getDataverseDepositUrl());
+    }
+
+    public function testConfigurationReturnsValidDataverseReleaseURL(): void
+    {
+        $expectedDepositUrl = "https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/edit/dataverse/dataverseDeExemplo/";
+        $configuration = new DataverseConfiguration($this->apiToken, $this->dataverseServer, $this->dataverseUrl);
+        $this->assertEquals($expectedDepositUrl, $configuration->getDataverseReleaseUrl());
     }
 }
