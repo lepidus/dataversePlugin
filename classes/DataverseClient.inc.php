@@ -5,7 +5,6 @@ require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclie
 
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
-define('DATAVERSE_API_VERSION', "v1.1");
 
 class DataverseClient {
     private $configuration;
