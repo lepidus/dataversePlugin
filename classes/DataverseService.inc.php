@@ -17,7 +17,7 @@ class DataverseService {
 		$this->submission = $submission;
 	}
 
-	function hasDataSetComponent(){
+	function hasDataSetComponent() {
 		foreach($this->submission->getGalleys() as $galley) {
 			$galleysFilesGenres[] = $galley->getFile()->getGenreId();
 		}
@@ -58,7 +58,7 @@ class DataverseService {
 	}
 
 	public function dataverseIsReleased() {		
-		$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getDataverseUri());
+		$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getConfiguration()->getDataverseDepositUrl());
 
 		$released = false;
 		if (!is_null($depositReceipt)) {
@@ -72,12 +72,7 @@ class DataverseService {
     }
 
 	function releaseDataverse() {
-		$request = $this->dataverseClient->getConfiguration()->getDataverseServer();
-		$request .= preg_match('/\/dvn$/', $this->dataverseClient->getConfiguration()->getDataverseServer()) ? '' : '/dvn';
-		$request .= '/api/data-deposit/'. DATAVERSE_API_VERSION;
-		$request .= '/swordv2/edit' . $this->dataverseClient->getDataverseAlias();
-
-		return $this->dataverseClient->completeIncompleteDeposit($request);
+		return $this->dataverseClient->completeIncompleteDeposit($this->dataverseClient->getConfiguration()->getDataverseReleaseUrl());
 	}
 
 	function releaseStudy(){
