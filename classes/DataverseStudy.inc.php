@@ -2,59 +2,73 @@
 
 class DataverseStudy extends DataObject {
 
-	function getId() {
+	function getId(): int
+	{
 		return $this->getData('studyId');
 	}
 
-	function setId($studyId) {
-		return $this->setData('studyId', $studyId);
+	function setId($studyId): void
+	{
+		$this->setData('studyId', $studyId);
 	}
 
-	function getSubmissionId() {
+	function getSubmissionId(): int
+	{
 		return $this->getData('submissionId');
 	}
 
-	function setSubmissionId($submissionId) {
-		return $this->setData('submissionId', $submissionId);
+	function setSubmissionId($submissionId): void
+	{
+		$this->setData('submissionId', $submissionId);
 	}
 	
-	function getEditUri() {
+	function getEditUri(): string
+	{
 		return $this->getData('editUri');
 	}
 
-	function setEditUri($editUri) {
-		return $this->setData('editUri', $editUri);
+	function setEditUri($editUri): void
+	{
+		$this->setData('editUri', $editUri);
 	}	 
 	
-	function getEditMediaUri() {
+	function getEditMediaUri(): string
+	{
 		return $this->getData('editMediaUri');
 	}
 
-	function setEditMediaUri($editMediaUri) {
-		return $this->setData('editMediaUri', $editMediaUri);
+	function setEditMediaUri($editMediaUri): void
+	{
+		$this->setData('editMediaUri', $editMediaUri);
 	}	 
 
-	function getStatementUri() {
+	function getStatementUri(): string
+	{
 		return $this->getData('statementUri');
 	}
 
-	function setStatementUri($statementUri) {
-		return $this->setData('statementUri', $statementUri);
+	function setStatementUri($statementUri): void
+	{
+		$this->setData('statementUri', $statementUri);
 	} 
 	
-	function getPersistentUri() {
+	function getPersistentUri(): string
+	{
 		return $this->getData('persistentUri');
 	}
 	
-	function setPersistentUri($persistentUri) {
+	function setPersistentUri($persistentUri): void
+	{
 		$this->setData('persistentUri', $persistentUri);
 	}
 	
-	function getDataCitation() {
+	function getDataCitation(): string
+	{
 		return $this->getData('dataCitation');
 	}
 	
-	function setDataCitation($dataCitation) {
+	function setDataCitation($dataCitation): void
+	{
 		$this->setData('dataCitation', $dataCitation);
 	}
 

@@ -2,22 +2,22 @@
 
 class DatasetModel
 {
-    private $title;
-    private $description;
-    private $creator = array();
-    private $subject = array();
-    private $contributor = array();
-    private $publisher;
-    private $date;
-    private $type = array();
-    private $source;
-    private $relation;
-    private $coverage = array();
-    private $license;
-    private $rights;
-    private $isReferencedBy;
+    private string $title;
+    private string $description;
+    private array $creator = array();
+    private array $subject = array();
+    private array $contributor = array();
+    private string $publisher;
+    private string $date;
+    private array $type = array();
+    private string $source;
+    private string $relation;
+    private array $coverage = array();
+    private string $license;
+    private string $rights;
+    private array $isReferencedBy;
 
-    public function __construct(string $title, array $creator, array $subject, string $description, array $contributor, string $publisher = null, string $date = null, array $type = null, string $source = null, string $relation = null, array $coverage = null, string $license = null, string $rights = null, array $isReferencedBy = null)
+    public function __construct(string $title, array $creator, array $subject, string $description, array $contributor, string $publisher = '', string $date = '', array $type = array(), string $source = '', string $relation = '', array $coverage = array(), string $license = '', string $rights = '', array $isReferencedBy = array())
     {
         $this->title = $title;
         $this->description = $description;
@@ -39,7 +39,7 @@ class DatasetModel
     {
         $metadata = array();
         foreach (get_object_vars($this) as $label => $value) {
-            if (isset($value)) {
+            if (!empty($value)) {
                 $metadata += [$label => $value];
             }
         }

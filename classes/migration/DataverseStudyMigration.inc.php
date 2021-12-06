@@ -18,7 +18,8 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class DataverseStudyMigration extends Migration {
     
-    public function up() {
+    public function up(): void
+	{
 		if(Capsule::schema()->hasTable('dataverse_studies')) {
 			Capsule::schema()->table('dataverse_studies', function (Blueprint $table) {
 				$table->text('data_citation')->nullable();

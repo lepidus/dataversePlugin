@@ -9,7 +9,7 @@ class APACitation
         $this->study = $study;
     }
 
-    public function asMarkup(): String
+    public function asMarkup(): string
     {
         $href = '<a href="'. $this->study->getPersistentUri() .'">'. $this->study->getPersistentUri() .'</a>';
         return str_replace($this->study->getPersistentUri(), $href, strip_tags($this->study->getDataCitation()));

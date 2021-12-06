@@ -6,11 +6,11 @@ import('plugins.generic.dataverse.classes.DataverseDAO');
 
 class DataverseAuthForm extends Form {
 
-	private $plugin;
+	private Plugin $plugin;
+	private int $contextId;
 
-	private $contextId;
-
-	function DataverseAuthForm($plugin, $contextId) {
+	function DataverseAuthForm(Plugin $plugin, int $contextId)
+	{
 		$this->plugin = $plugin;
 		$this->contextId = $contextId;
 
@@ -22,32 +22,36 @@ class DataverseAuthForm extends Form {
 		$this->addCheck(new FormValidatorPost($this));
 	}
 
-	function initData() {
+	function initData(): void
+	{
 		$plugin = $this->plugin;
 		$this->setData('dataverseServer', $plugin->getSetting($this->contextId, 'dataverseServer'));
 		$this->setData('dataverse', $plugin->getSetting($this->contextId, 'dataverse'));
 		$this->setData('apiToken', $plugin->getSetting($this->contextId, 'apiToken'));
-
 	}
 
-	function readInputData() {
+	function readInputData(): void
+	{
 		$this->readUserVars(array('dataverseServer', 'dataverse', 'apiToken'));
 		$request = PKPApplication::getRequest();
 		$this->setData('dataverseServer', $this->normalizeURI($this->getData('dataverseServer')));
 		$this->setData('dataverse', $this->normalizeURI($this->getData('dataverse')));
 	}
 
-	private function normalizeURI($uri) {
+	private function normalizeURI(string $uri): string
+	{
 		return preg_replace("/\/+$/", '', $uri);
 	}
 
-	function fetch($request, $template = NULL, $display = false) {
+	function fetch($request, $template = null, $display = false)
+	{
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('pluginName', $this->plugin->getName());
 		return parent::fetch($request);
 	}
 
-	function execute(...$functionArgs) {
+	function execute(...$functionArgs)
+	{
 		$plugin = $this->plugin;
 		$plugin->updateSetting($this->contextId, 'dataverseServer', $this->getData('dataverseServer'), 'string');
 		$plugin->updateSetting($this->contextId, 'dataverse', $this->getData('dataverse'), 'string');
@@ -56,7 +60,8 @@ class DataverseAuthForm extends Form {
 		parent::execute(...$functionArgs);
 	}
 
-	function validateCredentials() {
+	function validateCredentials(): bool
+	{
 		$client = new DataverseClient(new DataverseConfiguration($this->getData("apiToken"), $this->getData("dataverseServer"), $this->getData("dataverse")));
 		$connectionSuccessful = $client->checkConnectionWithDataverse();
 

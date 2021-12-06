@@ -2,12 +2,13 @@
 
 class SubmissionAdapter
 {
-    private $title;
-    private $authors;
-    private $description;
-    private $keywords;
+    private string $title;
+    private array $authors;
+    private string $description;
+    private array $keywords;
+    private array $reference;
 
-    public function __construct(string $title, array $authors, string $description, array $keywords, array $reference = null)
+    public function __construct(string $title, array $authors, string $description, array $keywords, array $reference = array())
     {
         $this->title = $title;
         $this->authors = $authors;
@@ -16,27 +17,27 @@ class SubmissionAdapter
         $this->reference = $reference;
     }
 
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }
 
-    public function getAuthors()
+    public function getAuthors(): array
     {
         return $this->authors;
     }
 
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
 
-    public function getKeywords()
+    public function getKeywords(): array
     {
         return $this->keywords;
     }
 
-    public function getReference()
+    public function getReference(): array
     {
         return $this->reference;
     }

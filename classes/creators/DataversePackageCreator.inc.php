@@ -2,24 +2,24 @@
 
 require_once('plugins/generic/dataverse/libs/swordappv2-php-library/packager_atom_twostep.php');
 
+define('FILE_DIR', 'files');
+define('PACKAGE_FILE_NAME', 'deposit.zip');
+define('TEMPORARY_FILES_DIR', '/tmp');
+define('PACKAGING', 'http://purl.org/net/sword/package/SimpleZip');
+define('CONTENT_TYPE', 'application/zip');
+
 class DataversePackageCreator extends PackagerAtomTwoStep
 {
-    private const FILE_DIR = "files";
-    private const PACKAGE_FILE_NAME = "deposit.zip";
-    private const TEMPORARY_FILES_DIR = "/tmp";
-    private const PACKAGING = 'http://purl.org/net/sword/package/SimpleZip';
-    private const CONTENT_TYPE = 'application/zip';
-    private $outPath;
-    private $files = array();
+    private string $outPath;
+    private array $files = array();
 
     public function DataversePackageCreator()
     {
-        // Create temporary directory for Atom entry & deposit files
-        $this->outPath = tempnam(self::TEMPORARY_FILES_DIR, 'dataverse');
+        $this->outPath = tempnam(TEMPORARY_FILES_DIR, 'dataverse');
         unlink($this->outPath);
         mkdir($this->outPath);
-        mkdir($this->outPath .DIRECTORY_SEPARATOR. self::FILE_DIR);
-        parent::__construct($this->outPath, self::FILE_DIR, $this->outPath, "");
+        mkdir($this->outPath. DIRECTORY_SEPARATOR. FILE_DIR);
+        parent::__construct($this->outPath, FILE_DIR, $this->outPath, "");
     }
 
     public function createAtomEntry(): void
@@ -29,10 +29,10 @@ class DataversePackageCreator extends PackagerAtomTwoStep
 
     public function getAtomEntryPath(): string
     {
-        return $this->outPath . DIRECTORY_SEPARATOR . self::FILE_DIR . DIRECTORY_SEPARATOR . 'atom';
+        return $this->outPath. DIRECTORY_SEPARATOR. FILE_DIR. DIRECTORY_SEPARATOR. 'atom';
     }
 
-    public function getOutPath()
+    public function getOutPath(): string
     {
         return $this->outPath;
     }
@@ -71,19 +71,21 @@ class DataversePackageCreator extends PackagerAtomTwoStep
 
     public function getPackageFilePath(): string
     {
-        return $this->outPath . DIRECTORY_SEPARATOR . self::FILE_DIR . DIRECTORY_SEPARATOR . self::PACKAGE_FILE_NAME;
+        return $this->outPath. DIRECTORY_SEPARATOR. FILE_DIR. DIRECTORY_SEPARATOR. PACKAGE_FILE_NAME;
     }
 
-    public function addFileToPackage($filePath, $fileName)
+    public function addFileToPackage(string $filePath, string $fileName)
     {
         $this->files[$fileName] = $filePath;
     }
 
-    function getPackaging() {
-		return self::PACKAGING;
+    function getPackaging(): string
+    {
+		return PACKAGING;
 	}
 
-    function getContentType() {
-		return self::CONTENT_TYPE;
+    function getContentType(): string
+    {
+		return CONTENT_TYPE;
 	}
 }

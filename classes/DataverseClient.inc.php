@@ -7,31 +7,33 @@ define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
 
 class DataverseClient {
-    private $configuration;
-    private $swordClient;
+    private DataverseConfiguration $configuration;
+    private SWORDAPPClient $swordClient;
 
-    public function __construct(DataverseConfiguration $configuration) {
+    public function __construct(DataverseConfiguration $configuration)
+    {
         $this->configuration = $configuration;
         $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
     }
 
-    public function getConfiguration()
+    public function getConfiguration(): DataverseConfiguration
     {
         return $this->configuration;
     }
     
-    private function validateCredentials($serviceDocumentRequest) {
+    private function validateCredentials(string $serviceDocumentRequest): bool
+    {
 		$serviceDocumentClient = $this->swordClient->servicedocument($serviceDocumentRequest, $this->configuration->getApiToken(), '', '');
-
-        $dataverseConnectionStatus = isset($serviceDocumentClient) && $serviceDocumentClient->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK;
-        return $dataverseConnectionStatus;
+        return isset($serviceDocumentClient) && $serviceDocumentClient->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK;    
     }
 
-    public function checkConnectionWithDataverse() {
+    public function checkConnectionWithDataverse(): bool
+    {
 		return $this->validateCredentials($this->configuration->getDataverseServiceDocumentUrl());
 	}
 
-    public function depositAtomEntry($atomEntryPath, $submissionId) {
+    public function depositAtomEntry(string $atomEntryPath, int $submissionId): DataverseStudy
+    {
         $depositReceipt = $this->swordClient->depositAtomEntry($this->configuration->getDataverseDepositUrl(), $this->configuration->getApiToken(), '', '', $atomEntryPath);
 
         $study = null;
@@ -55,19 +57,21 @@ class DataverseClient {
 		return $study;
     }
 
-    public function depositFiles($editMediaUri, $packageFilePath, $packaging, $contentType) {
+    public function depositFiles(string $editMediaUri, string $packageFilePath, string $packaging, string $contentType): bool
+    {
         $depositReceipt = $this->swordClient->deposit($editMediaUri, $this->configuration->getApiToken(), '', '', $packageFilePath, $packaging, $contentType, false);
-        $depositStatus = isset($depositReceipt) && $depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED;
-        return $depositStatus;
+        return isset($depositReceipt) && $depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED;
     }
 
-    public function retrieveDepositReceipt($request) {
-        $depositReceipt = $this->swordClient->retrieveDepositReceipt($request, $this->configuration->getApiToken(), '', '');
+    public function retrieveDepositReceipt(string $url): SWORDAPPEntry
+    {
+        $depositReceipt = $this->swordClient->retrieveDepositReceipt($url, $this->configuration->getApiToken(), '', '');
         return ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) ? $depositReceipt : null;
     }
 
-    public function completeIncompleteDeposit($request) {		
-        $response = $this->swordClient->completeIncompleteDeposit($request, $this->configuration->getApiToken(), '', '');
+    public function completeIncompleteDeposit(string $url): bool
+    {		
+        $response = $this->swordClient->completeIncompleteDeposit($url, $this->configuration->getApiToken(), '', '');
         return ($response->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
     }
 

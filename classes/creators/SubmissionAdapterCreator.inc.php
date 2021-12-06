@@ -5,7 +5,7 @@ import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 
 class SubmissionAdapterCreator
 {
-    public function createSubmissionAdapter($submission): SubmissionAdapter
+    public function createSubmissionAdapter(Submission $submission): SubmissionAdapter
     {
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($submission->getContextId());
@@ -22,7 +22,7 @@ class SubmissionAdapterCreator
         return new SubmissionAdapter($title, $authors, $description, $keywords, $reference);
     }
 
-    private function retrieveAuthors($publication, $locale)
+    private function retrieveAuthors(Publication $publication, string $locale): array
     {
         $authors =  $publication->getData('authors');
         $authorAdapters = [];
@@ -41,7 +41,7 @@ class SubmissionAdapterCreator
         return $authorAdapters;
     }
 
-    private function retrievePubIdAttributes($submission) 
+    private function retrievePubIdAttributes(Submission $submission): array
     {
         $contextId = $submission->getContextId();
 
@@ -61,12 +61,12 @@ class SubmissionAdapterCreator
         return $pubIdAttributes;
     }
 
-    private function getAuthorCitation($author) 
+    private function getAuthorCitation(AuthorAdapter $author): string
     {
         return $author->getFamilyName() . ', ' . substr($author->getGivenName(), 0, 1) . ".";
     }
 
-    public function createAuthorsCitationAPA($authors) 
+    public function createAuthorsCitationAPA(array $authors): string
     {
         $authorsCitation = '';
         $authorsNumbers = count($authors);
@@ -92,7 +92,7 @@ class SubmissionAdapterCreator
         return $authorsCitation;
     }
 
-    public function createSubmissionCitationAPA($submission, $journal)
+    public function createSubmissionCitationAPA(Submission $submission, Journal $journal): string
     {
         $authors = $this->retrieveAuthors($submission->getCurrentPublication(), $submission->getLocale());
         $submittedDate = new DateTime($submission->getDateSubmitted());

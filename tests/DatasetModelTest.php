@@ -18,7 +18,7 @@ class DatasetModelTest extends PKPTestCase
     private $coverage = array();
     private $license;
     private $rights;
-    private $isReferencedBy;
+    private $isReferencedBy = array();
     private $datasetModel;
 
     public function setUp(): void
@@ -46,7 +46,7 @@ class DatasetModelTest extends PKPTestCase
         array_push($this->coverage, 'South America', 'North America');
         $this->license = 'CC';
         $this->rights = 'BY-NC-ND';
-        $this->isReferencedBy = [];
+        array_push($this->isReferencedBy, array('Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus', array()));
     }
 
     public function testMetadataValuesContainsData(): void

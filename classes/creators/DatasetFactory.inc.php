@@ -17,6 +17,6 @@ class DatasetFactory
             $creator[] = $author->getFullName();
         }
         
-        return new DatasetModel($title, $creator, $subject, $description, $contributors, null, null, null, null, null, null, null, null, $isReferencedBy);
+        return new DatasetModel($title, $creator, $subject, $description, $contributors, '', '', array(), '', '', array(), '', '', $isReferencedBy);
     }
 }
