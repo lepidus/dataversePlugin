@@ -16,6 +16,7 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
+import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 import('plugins.generic.dataverse.classes.DataverseClient');
 import('plugins.generic.dataverse.classes.DataverseConfiguration');
@@ -113,8 +114,8 @@ class DataversePlugin extends GenericPlugin {
 		$contextId = $context->getId();
         $submission = $form->submission;
 
-		$client = new DataverseClient($this->getDataverseConfiguration($contextId));
-		$service = new DataverseService($client);
+		$serviceFactory = new DataverseServiceFactory();
+		$service = $serviceFactory->build($this->getDataverseConfiguration($contextId));
 		$service->setSubmission($submission);
 		if($service->hasDataSetComponent()){
 			$service->depositPackage();
@@ -125,8 +126,8 @@ class DataversePlugin extends GenericPlugin {
 		$submission = $params[2];
 		$contextId = $submission->getData("contextId");
 
-		$client = new DataverseClient($this->getDataverseConfiguration($contextId));
-		$service = new DataverseService($client);
+		$serviceFactory = new DataverseServiceFactory();
+		$service = $serviceFactory->build($this->getDataverseConfiguration($contextId));
 		$service->setSubmission($submission);
 		$service->releaseStudy();
 	}
