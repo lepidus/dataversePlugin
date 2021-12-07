@@ -6,9 +6,9 @@ import('plugins.generic.dataverse.classes.DataverseConfiguration');
 
 class DataverseConfigurationTest extends PKPTestCase
 {
-    private $apiToken = "APIToken";
-    private $dataverseServer = "https://demo.dataverse.org";
-    private $dataverseUrl = "https://demo.dataverse.org/dataverse/dataverseDeExemplo/";
+    private string $apiToken = "APIToken";
+    private string $dataverseServer = "https://demo.dataverse.org";
+    private string $dataverseUrl = "https://demo.dataverse.org/dataverse/dataverseDeExemplo/";
 
     public function testConfigurationHasAPIToken(): void
     {

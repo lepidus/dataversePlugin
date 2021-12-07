@@ -5,11 +5,11 @@ import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 
 final class AuthorAdapterTest extends PKPTestCase
 {
-    private $author;
-    private $givenName = "Atila";
-    private $familyName = "Iamarino";
-    private $affiliation = "Universidade de São Paulo";
-    private $email = "atila@usp.edu.br";
+    private AuthorAdapter $author;
+    private string $givenName = "Atila";
+    private string $familyName = "Iamarino";
+    private string $affiliation = "Universidade de São Paulo";
+    private string $email = "atila@usp.edu.br";
 
     public function setUp(): void
     {

@@ -1,22 +1,25 @@
 <?php
+
 import('lib.pkp.tests.DatabaseTestCase');
 import('plugins.generic.dataverse.classes.DataverseStudy');
 import('plugins.generic.dataverse.classes.DataverseStudyDAO');
 import('lib.pkp.classes.db.DAO');
 
-class DataverseStudyDAOTest extends DatabaseTestCase {
+class DataverseStudyDAOTest extends DatabaseTestCase
+{
     
-    private $studyDao;
-    private $study;
-    private $studyId;
-    private $submissionId;
-    private $editUri;
-    private $editMediaUri;
-    private $statementUri;
-    private $persistentUri;
-    private $dataCitation;
+    private DataverseStudyDAO $studyDao;
+    private DataverseStudy $study;
+    private int $studyId;
+    private int $submissionId;
+    private string $editUri;
+    private string $editMediaUri;
+    private string $statementUri;
+    private string $persistentUri;
+    private string $dataCitation;
 
-    public function setUp(): void {
+    public function setUp(): void
+    {
         parent::setUp();
 
         $this->submissionId = 4321;
@@ -38,20 +41,20 @@ class DataverseStudyDAOTest extends DatabaseTestCase {
         $this->studyId = $this->studyDao->insertStudy($this->study);
     }
 
-    protected function getAffectedTables() {
+    protected function getAffectedTables(): array
+    {
 		return array('dataverse_studies');
 	}
 
-    public function testStudyHasInsertedInDB() : void {
+    public function testStudyHasInsertedInDB() : void
+    {
         $returnedStudy = $this->studyDao->getStudy($this->studyId);
-
         $this->assertEquals($this->study, $returnedStudy);
     }
 
-    public function testGetStudyBySubmissionId() : void {
+    public function testGetStudyBySubmissionId() : void
+    {
         $returnedStudy = $this->studyDao->getStudyBySubmissionId($this->submissionId);
-
         $this->assertEquals($this->study, $returnedStudy);
     }
-
 }

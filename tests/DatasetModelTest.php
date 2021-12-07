@@ -5,21 +5,21 @@ import('plugins.generic.dataverse.classes.DatasetModel');
 
 class DatasetModelTest extends PKPTestCase
 {
-    private $title;
-    private $description;
-    private $creator = array();
-    private $subject = array();
-    private $contributor = array();
-    private $publisher;
-    private $date;
-    private $type = array();
-    private $source;
-    private $relation;
-    private $coverage = array();
-    private $license;
-    private $rights;
-    private $isReferencedBy = array();
-    private $datasetModel;
+    private string $title;
+    private string $description;
+    private array $creator = array();
+    private array $subject = array();
+    private array $contributor = array();
+    private string $publisher;
+    private string $date;
+    private array $type = array();
+    private string $source;
+    private string $relation;
+    private array $coverage = array();
+    private string $license;
+    private string $rights;
+    private array $isReferencedBy = array();
+    private DatasetModel $datasetModel;
 
     public function setUp(): void
     {

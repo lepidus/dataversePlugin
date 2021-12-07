@@ -9,30 +9,30 @@ import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 
 class SubmissionAdapterCreatorTest extends PKPTestCase
 {
-    private $submissionAdapterCreator;
-    private $submissionAdapter;
-    private $journal;
+    private SubmissionAdapterCreator $submissionAdapterCreator;
+    private SubmissionAdapter $submissionAdapter;
+    private Journal $journal;
 
-    private $contextId = 1;
-    private $submissionId = 1245;
-    private $publicationId = 1234;
+    private int $contextId = 1;
+    private int $submissionId = 1245;
+    private int $publicationId = 1234;
 
-    private $title = "The Rise of The Machine Empire";
-    private $authors = array();
-    private $description = "This is an abstract / description";
-    private $keywords = ["en_US" => array("computer science", "testing")];
-    private $locale = 'en_US';
+    private string $title = "The Rise of The Machine Empire";
+    private array $authors = array();
+    private string $description = "This is an abstract / description";
+    private array $keywords = ["en_US" => array("computer science", "testing")];
+    private string $locale = 'en_US';
 
-    private $dateSubmitted = '2021-05-31 15:38:24';
-    private $statusCode = "STATUS_PUBLISHED";
-    private $dateLastActivity = '2021-06-03 16:00:00';
-    private $submissionAuthors;
+    private string $dateSubmitted = '2021-05-31 15:38:24';
+    private string $statusCode = "STATUS_PUBLISHED";
+    private string $dateLastActivity = '2021-06-03 16:00:00';
+    private array $submissionAuthors;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->submissionAdapterCreator = new SubmissionAdapterCreator();
 
+        $this->submissionAdapterCreator = new SubmissionAdapterCreator();
         $this->createTestJournal();
         $this->createTestSubmission();
         $this->createAuthors();
@@ -115,14 +115,12 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
         $firstAuthor = new AuthorAdapter('Ana Alice', 'Caldas Novas', "", "");
         $secondAuthor = new AuthorAdapter('Deane', 'Chord', "", "");
         $thirdAuthor = new AuthorAdapter('Francis', 'Bucker', "", "");
-
         $authors = [$firstAuthor, $secondAuthor, $thirdAuthor];
-
+        
         $submissionAdapterCreator = new SubmissionAdapterCreator();
-
         $resultCitation = $submissionAdapterCreator->createAuthorsCitationAPA($authors);
         $expectedCitation = 'Caldas Novas, A., Chord, D., &amp; Bucker, F.';
-
+        
         $this->assertEquals($resultCitation, $expectedCitation);
     }
 
@@ -134,11 +132,9 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
         $fourthAuthor = new AuthorAdapter('Francis', 'Bucker', "", "");
         $fifthAuthor = new AuthorAdapter('Tim', 'Winter', "", "");
         $sixthAuthor = new AuthorAdapter('Walter', 'Zappy', "", "");
-
         $authors = [$firstAuthor, $secondAuthor, $thirdAuthor, $fourthAuthor, $fifthAuthor, $sixthAuthor];
 
         $submissionAdapterCreator = new SubmissionAdapterCreator();
-
         $resultCitation = $submissionAdapterCreator->createAuthorsCitationAPA($authors);
         $expectedCitation = 'Chord, D. et al.';
 
@@ -148,11 +144,8 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
     public function testSubmissionCitationIsAPA(): void
     {
         $submissionAdapterCreator = new SubmissionAdapterCreator();
-
         $resultCitation = $submissionAdapterCreator->createSubmissionCitationAPA($this->submission, $this->journal);
-
         $expectedCitation = 'Caldas Novas, A. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
-
         $this->assertEquals($resultCitation, $expectedCitation);
     }
 
