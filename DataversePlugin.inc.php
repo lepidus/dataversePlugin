@@ -103,11 +103,11 @@ class DataversePlugin extends GenericPlugin {
 		return parent::manage($args, $request);
 	}
 
-	private function getDataverseConfiguration($contextId) : DataverseConfiguration {
+	private function getDataverseConfiguration(int $contextId): DataverseConfiguration {
 		return new DataverseConfiguration($this->getSetting($contextId, 'apiToken'), $this->getSetting($contextId, 'dataverseServer'), $this->getSetting($contextId, 'dataverse'));	
 	}
 
-	function dataverseDepositOnSubmission($hookName, $params) {
+	function dataverseDepositOnSubmission(string $hookName, array $params): void {
 		$form =& $params[0];
 		$context = $form->context;
 		$contextId = $context->getId();
@@ -121,7 +121,7 @@ class DataversePlugin extends GenericPlugin {
 		}
 	}
 
-	function publishDeposit($hookName, $params) {
+	function publishDeposit(string $hookName, array $params): void {
 		$submission = $params[2];
 		$contextId = $submission->getData("contextId");
 
@@ -131,7 +131,7 @@ class DataversePlugin extends GenericPlugin {
 		$service->releaseStudy();
 	}
 
-	function addDataCitationSubmission($hookName, $params) {
+	function addDataCitationSubmission(string $hookName, array $params): bool {
 		$templateMgr =& $params[1];
 		$output =& $params[2];
 
@@ -148,7 +148,7 @@ class DataversePlugin extends GenericPlugin {
 		return false;
 	}
 
-	function getInstallMigration() {
+	function getInstallMigration(): DataverseStudyMigration {
         $this->import('classes.migration.DataverseStudyMigration');
         return new DataverseStudyMigration();
     }
