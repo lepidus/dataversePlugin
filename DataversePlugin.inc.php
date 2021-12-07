@@ -141,8 +141,9 @@ class DataversePlugin extends GenericPlugin {
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
 		if(isset($study)) {
-			$dataCitation = new APACitation($study);
-			$templateMgr->assign('dataCitation', $dataCitation->asMarkup());
+			$apaCitation = new APACitation();
+			$dataCitation = $apaCitation->getCitationAsMarkupByStudy($study);
+			$templateMgr->assign('dataCitation', $dataCitation);
 			$output .= $templateMgr->fetch($this->getTemplateResource('dataCitationSubmission.tpl'));
 		}
 
