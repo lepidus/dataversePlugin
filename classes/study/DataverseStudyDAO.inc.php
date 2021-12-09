@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.classes.db.DAO');
-import('plugins.generic.dataverse.classes.DataverseStudy');
+import('plugins.generic.dataverse.classes.study.DataverseStudy');
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 

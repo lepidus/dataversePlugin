@@ -18,10 +18,10 @@ import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
-import('plugins.generic.dataverse.classes.DataverseClient');
+import('plugins.generic.dataverse.classes.resources.DataverseClient');
+import('plugins.generic.dataverse.classes.resources.DataverseService');
 import('plugins.generic.dataverse.classes.DataverseConfiguration');
-import('plugins.generic.dataverse.classes.DataverseService');
-import('plugins.generic.dataverse.classes.DataverseStudyDAO');
+import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.APACitation');
 
 class DataversePlugin extends GenericPlugin {

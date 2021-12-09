@@ -1,6 +1,6 @@
 <?php 
 
-import('plugins.generic.dataverse.classes.DataverseStudy');
+import('plugins.generic.dataverse.classes.study.DataverseStudy');
 require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
 
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
