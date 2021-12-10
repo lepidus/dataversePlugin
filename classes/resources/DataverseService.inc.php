@@ -82,6 +82,22 @@ class DataverseService {
 		return $released;
     }
 
+	public function studyIsReleased(DataverseStudy $study): bool
+	{
+		$statement = $this->dataverseClient->retrieveAtomStatement($study->getStatementUri());
+		$studyReleased = false;
+		if (!empty($statement) && !empty($statement->sac_xml)) {
+			$sac_xml = new SimpleXMLElement($statement->sac_xml);
+			foreach ($sac_xml->children()->category as $category) {
+				if ($category->attributes()->term == 'latestVersionState') {
+					if ($category == 'RELEASED') $studyReleased = true;
+					break;
+				}
+			}
+		}
+		return $studyReleased;
+	}
+
 	function releaseDataverse(): bool
 	{
 		return $this->dataverseClient->completeIncompleteDeposit($this->dataverseClient->getConfiguration()->getDataverseReleaseUrl());
@@ -97,15 +113,26 @@ class DataverseService {
 		if($dvReleased) {
 			$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
 			$study = $dataverseStudyDao->getStudyBySubmissionId($this->submission->getId());
-			$studyReleased = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
-			if ($studyReleased) {
-				$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($study->getEditUri());
-				if (!empty($depositReceipt)) {
-					$study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
-					$dataverseStudyDao->updateStudy($study);
-				}		
+			$studyPublished = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
+
+			if ($studyPublished) {
+				$this->updateStudy($study);
 			}
 		}
 		return $dvReleased;
+	}
+
+	function updateStudy(DataverseStudy $study): void
+	{
+		$studyReleased = $this->studyIsReleased($study);
+		while (!$studyReleased) $studyReleased = $this->studyIsReleased($study);
+		if ($studyReleased) {
+			$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($study->getEditUri());
+			if (!empty($depositReceipt)) {
+				$study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
+				$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+				$dataverseStudyDao->updateStudy($study);
+			}
+		}
 	}
 }

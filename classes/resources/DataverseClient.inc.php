@@ -63,6 +63,11 @@ class DataverseClient {
         return isset($depositReceipt) && $depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED;
     }
 
+    public function retrieveAtomStatement(string $url): SWORDAPPStatement
+    {
+        return $this->swordClient->retrieveAtomStatement($url, $this->configuration->getApiToken(), '', '');
+    }
+
     public function retrieveDepositReceipt(string $url): SWORDAPPEntry
     {
         $depositReceipt = $this->swordClient->retrieveDepositReceipt($url, $this->configuration->getApiToken(), '', '');
