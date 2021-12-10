@@ -14,6 +14,11 @@ class DataverseService {
         $this->dataverseClient = $dataverseClient;
     }
 
+	public function getClient(): DataverseClient
+	{
+		return $this->dataverseClient;
+	}
+
 	function setSubmission(Submission $submission): void
 	{
 		$this->submission = $submission;

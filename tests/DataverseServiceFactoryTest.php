@@ -6,7 +6,7 @@ import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
 
 class DataverseServiceFactoryTest extends PKPTestCase
 {
-    public function testFactoryReturnsADataverseService(): void
+    public function testServiceHasConfiguration(): void
     {
         $apiToken = "APIToken";
         $dataverseServer = "https://demo.dataverse.org";
@@ -14,6 +14,20 @@ class DataverseServiceFactoryTest extends PKPTestCase
 
         $factory = new DataverseServiceFactory();
         $service = $factory->build(new DataverseConfiguration($apiToken, $dataverseServer, $dataverseUrl));
-        $this->assertTrue($service instanceof DataverseService);
+        $configuration = $service->getClient()->getConfiguration();
+
+        $expectedConfigData = [
+            'apiToken' => $apiToken,
+            'dataverseServer' => $dataverseServer,
+            'dataverseUrl' => $dataverseUrl
+        ];
+
+        $serviceConfigData = [
+            'apiToken' => $configuration->getAPIToken(),
+            'dataverseServer' => $configuration->getDataverseServer(),
+            'dataverseUrl' => $configuration->getDataverseUrl()
+        ];
+
+        $this->assertEquals($expectedConfigData, $serviceConfigData);
     }
 }
