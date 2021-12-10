@@ -1,18 +1,18 @@
 <?php
 
 import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataverse.classes.DataverseStudy');
+import('plugins.generic.dataverse.classes.study.DataverseStudy');
 
 final class DataverseStudyTest extends PKPTestCase
 {
-    private $studyId;
-    private $submissionId;
-    private $editUri;
-    private $editMediaUri;
-    private $statementUri;
-    private $persistentUri;
-    private $dataCitation;
-    private $study;
+    private DataverseStudy $study;
+    private int $studyId;
+    private int $submissionId;
+    private string $editUri;
+    private string $editMediaUri;
+    private string $statementUri;
+    private string $persistentUri;
+    private string $dataCitation;
 
     public function setUp(): void
     {

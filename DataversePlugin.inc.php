@@ -16,10 +16,12 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-import('plugins.generic.dataverse.classes.creators.DatasetBuilder');
-import('plugins.generic.dataverse.classes.DataverseClient');
-import('plugins.generic.dataverse.classes.DataverseService');
-import('plugins.generic.dataverse.classes.DataverseStudyDAO');
+import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
+import('plugins.generic.dataverse.classes.creators.DatasetFactory');
+import('plugins.generic.dataverse.classes.resources.DataverseClient');
+import('plugins.generic.dataverse.classes.resources.DataverseService');
+import('plugins.generic.dataverse.classes.DataverseConfiguration');
+import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.APACitation');
 
 class DataversePlugin extends GenericPlugin {
@@ -102,39 +104,35 @@ class DataversePlugin extends GenericPlugin {
 		return parent::manage($args, $request);
 	}
 
-	function dataverseDepositOnSubmission($hookName, $params) {
+	private function getDataverseConfiguration(int $contextId): DataverseConfiguration {
+		return new DataverseConfiguration($this->getSetting($contextId, 'apiToken'), $this->getSetting($contextId, 'dataverseServer'), $this->getSetting($contextId, 'dataverse'));	
+	}
+
+	function dataverseDepositOnSubmission(string $hookName, array $params): void {
 		$form =& $params[0];
 		$context = $form->context;
 		$contextId = $context->getId();
         $submission = $form->submission;
 
-		$apiToken = $this->getSetting($contextId, 'apiToken');
-		$dataverseUrl = $this->getSetting($contextId, 'dataverse');
-		$dataverseServer = $this->getSetting($contextId, 'dataverseServer');	
-
-		$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
-		$service = new DataverseService($client);
+		$serviceFactory = new DataverseServiceFactory();
+		$service = $serviceFactory->build($this->getDataverseConfiguration($contextId));
 		$service->setSubmission($submission);
 		if($service->hasDataSetComponent()){
 			$service->depositPackage();
 		}
 	}
 
-	function publishDeposit($hookName, $params) {
+	function publishDeposit(string $hookName, array $params): void {
 		$submission = $params[2];
 		$contextId = $submission->getData("contextId");
 
-		$apiToken = $this->getSetting($contextId, 'apiToken');
-		$dataverseUrl = $this->getSetting($contextId, 'dataverse');
-		$dataverseServer = $this->getSetting($contextId, 'dataverseServer');
-
-		$client = new DataverseClient($apiToken, $dataverseServer, $dataverseUrl);
-		$service = new DataverseService($client);
+		$serviceFactory = new DataverseServiceFactory();
+		$service = $serviceFactory->build($this->getDataverseConfiguration($contextId));
 		$service->setSubmission($submission);
 		$service->releaseStudy();
 	}
 
-	function addDataCitationSubmission($hookName, $params) {
+	function addDataCitationSubmission(string $hookName, array $params): bool {
 		$templateMgr =& $params[1];
 		$output =& $params[2];
 
@@ -143,15 +141,16 @@ class DataversePlugin extends GenericPlugin {
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
 		if(isset($study)) {
-			$dataCitation = new APACitation($study);
-			$templateMgr->assign('dataCitation', $dataCitation->asMarkup());
+			$apaCitation = new APACitation();
+			$dataCitation = $apaCitation->getCitationAsMarkupByStudy($study);
+			$templateMgr->assign('dataCitation', $dataCitation);
 			$output .= $templateMgr->fetch($this->getTemplateResource('dataCitationSubmission.tpl'));
 		}
 
 		return false;
 	}
 
-	function getInstallMigration() {
+	function getInstallMigration(): DataverseStudyMigration {
         $this->import('classes.migration.DataverseStudyMigration');
         return new DataverseStudyMigration();
     }

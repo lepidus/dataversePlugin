@@ -1,35 +1,44 @@
 <?php
 
-import('plugins.generic.dataverse.classes.DataverseClient');
+import('plugins.generic.dataverse.classes.resources.DataverseClient');
 
 define('DATASET_GENRE_ID', 7);
 
 class DataverseService {
 
-    private $dataverseClient;
-    private $submission;
+    private DataverseClient $dataverseClient;
+    private Submission $submission;
 
-    function __construct($dataverseClient) {
+    function __construct(DataverseClient $dataverseClient)
+	{
         $this->dataverseClient = $dataverseClient;
     }
 
-	function setSubmission($submission) {
+	public function getClient(): DataverseClient
+	{
+		return $this->dataverseClient;
+	}
+
+	function setSubmission(Submission $submission): void
+	{
 		$this->submission = $submission;
 	}
 
-	function hasDataSetComponent(){
+	function hasDataSetComponent(): bool
+	{
 		foreach($this->submission->getGalleys() as $galley) {
 			$galleysFilesGenres[] = $galley->getFile()->getGenreId();
 		}
 		return in_array(DATASET_GENRE_ID, $galleysFilesGenres);
 	}
 
-    function createPackage() {
+    function createPackage(): DataversePackageCreator
+	{
 		$package = new DataversePackageCreator();
 		$submissionAdapterCreator = new SubmissionAdapterCreator();
-		$datasetBuilder = new DatasetBuilder();
+		$datasetFactory = new DatasetFactory();
 		$submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($this->submission);
-		$datasetModel = $datasetBuilder->build($submissionAdapter);
+		$datasetModel = $datasetFactory->build($submissionAdapter);
 		$package->loadMetadata($datasetModel);
 		$package->createAtomEntry();
 
@@ -43,7 +52,8 @@ class DataverseService {
 		return $package;
 	}
 
-	function depositPackage() {
+	function depositPackage(): void
+	{
 		$package = $this->createPackage();
 
 		$study = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath(), $this->submission->getId());
@@ -57,11 +67,12 @@ class DataverseService {
 		}
 	}
 
-	public function dataverseIsReleased() {		
-		$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getDataverseUri());
+	public function dataverseIsReleased(): bool
+	{		
+		$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getConfiguration()->getDataverseDepositUrl());
 
 		$released = false;
-		if (!is_null($depositReceipt)) {
+		if (!empty($depositReceipt)) {
 			$depositReceiptXml = new SimpleXMLElement($depositReceipt->sac_xml);
 			$releasedNodes = $depositReceiptXml->children('http://purl.org/net/sword/terms/state')->dataverseHasBeenReleased;
 			if (!empty($releasedNodes) && $releasedNodes[0] == 'true') {
@@ -71,16 +82,13 @@ class DataverseService {
 		return $released;
     }
 
-	function releaseDataverse() {
-		$request = $this->dataverseClient->getDataverseServer();
-		$request .= preg_match('/\/dvn$/', $this->dataverseClient->getDataverseServer()) ? '' : '/dvn';
-		$request .= '/api/data-deposit/'. DATAVERSE_API_VERSION;
-		$request .= '/swordv2/edit' . $this->dataverseClient->getDataverseAlias();
-
-		return $this->dataverseClient->completeIncompleteDeposit($request);
+	function releaseDataverse(): bool
+	{
+		return $this->dataverseClient->completeIncompleteDeposit($this->dataverseClient->getConfiguration()->getDataverseReleaseUrl());
 	}
 
-	function releaseStudy(){
+	function releaseStudy(): bool
+	{
 		$dvReleased = $this->dataverseIsReleased();
 		if(!$dvReleased) {
 			$dvReleased = $this->releaseDataverse();
@@ -92,12 +100,11 @@ class DataverseService {
 			$studyReleased = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
 			if ($studyReleased) {
 				$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($study->getEditUri());
-				if (!is_null($depositReceipt)) {
+				if (!empty($depositReceipt)) {
 					$study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
 					$dataverseStudyDao->updateStudy($study);
 				}		
 			}
-			return $studyReleased;
 		}
 		return $dvReleased;
 	}

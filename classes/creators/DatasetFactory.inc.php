@@ -2,7 +2,7 @@
 
 import('plugins.generic.dataverse.classes.DatasetModel');
 
-class DatasetBuilder
+class DatasetFactory
 {
     public function build(SubmissionAdapter $submissionAdapter): DatasetModel
     {
@@ -17,6 +17,6 @@ class DatasetBuilder
             $creator[] = $author->getFullName();
         }
         
-        return new DatasetModel($title, $creator, $subject, $description, $contributors, null, null, null, null, null, null, null, null, $isReferencedBy);
+        return new DatasetModel($title, $creator, $subject, $description, $contributors, '', '', array(), '', '', array(), '', '', $isReferencedBy);
     }
 }

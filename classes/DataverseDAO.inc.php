@@ -4,7 +4,7 @@ import('lib.pkp.classes.db.DAO');
 
 class DataverseDAO extends DAO
 {
-    public function getCredentialsFromDatabase($contextId)
+    public function getCredentialsFromDatabase(int $contextId): array
     {
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
         $result = $pluginSettingsDao->getPluginSettings($contextId, 'dataverseplugin');
@@ -12,7 +12,7 @@ class DataverseDAO extends DAO
         return $credentials;
     }
 
-    public function insertCredentialsOnDatabase($contextId, $dataverseServer, $dataverse, $apiToken)
+    public function insertCredentialsOnDatabase(int $contextId, string $dataverseServer, string $dataverse, string $apiToken): bool
     {
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
         $pluginSettingsDao->updateSetting($contextId, 'dataverseplugin', 'dataverseServer', $dataverseServer);

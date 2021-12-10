@@ -5,11 +5,11 @@ import('lib.pkp.classes.db.DAO');
 
 class DataverseDAOTest extends PKPTestCase
 {
-    private $contextId;
-    private $dataverseServer;
-    private $dataverse;
-    private $apiToken;
-    private $dataverseDAO;
+    private int $contextId;
+    private string $dataverseServer;
+    private string $dataverse;
+    private string $apiToken;
+    private DataverseDao $dataverseDAO;
 
     protected function setUp(): void
     {
@@ -22,7 +22,7 @@ class DataverseDAOTest extends PKPTestCase
         parent::setUp();
     }
 
-    public function testCredentialsAddedInDB()
+    public function testCredentialsAddedInDB(): void
     {
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
         $pluginSettingsDao->updateSetting($this->contextId, 'dataverseplugin', 'dataverseServer', $this->dataverseServer);
@@ -32,7 +32,7 @@ class DataverseDAOTest extends PKPTestCase
         $this->assertEquals($expectedCredentials, $this->dataverseDAO->getCredentialsFromDatabase($this->contextId));
     }
 
-    public function testInsertCredentialsOnDatabase()
+    public function testInsertCredentialsOnDatabase(): void
     {
         $this->dataverseDAO->insertCredentialsOnDatabase($this->contextId, $this->dataverseServer, $this->dataverse, $this->apiToken);
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');

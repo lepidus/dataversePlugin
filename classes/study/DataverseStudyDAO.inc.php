@@ -1,13 +1,14 @@
 <?php
 
 import('lib.pkp.classes.db.DAO');
-import('plugins.generic.dataverse.classes.DataverseStudy');
+import('plugins.generic.dataverse.classes.study.DataverseStudy');
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 class DataverseStudyDAO extends DAO {
 
-    function getStudy($studyId) {
+    function getStudy(int $studyId): DataverseStudy
+    {
         $result = Capsule::table('dataverse_studies')
             ->where('study_id', $studyId)
             ->get();
@@ -20,7 +21,8 @@ class DataverseStudyDAO extends DAO {
 		return $study;
 	}
 
-    function getStudyBySubmissionId($submissionId) {
+    function getStudyBySubmissionId(int $submissionId): DataverseStudy
+    {
         $result = Capsule::table('dataverse_studies')
             ->where('submission_id', $submissionId)
             ->get();
@@ -33,7 +35,8 @@ class DataverseStudyDAO extends DAO {
 		return $study;
     }
 
-    function insertStudy($study) {
+    function insertStudy(DataverseStudy $study): int
+    {
 		Capsule::table('dataverse_studies')
             ->insert(array(
                 'submission_id'     =>  (int)$study->getSubmissionId(),
@@ -48,7 +51,8 @@ class DataverseStudyDAO extends DAO {
 		return $study->getId();
 	}
 
-    function updateStudy($study) {
+    function updateStudy(DataverseStudy $study): void
+    {
         Capsule::table('dataverse_studies')
             ->where('study_id', $study->getId())
             ->update(array(
@@ -60,11 +64,13 @@ class DataverseStudyDAO extends DAO {
             ));
 	}	 
 
-    function getInsertStudyId() {
+    function getInsertStudyId(): int
+    {
 		return $this->_getInsertId('dataverse_studies', 'study_id');
 	}
 
-    function returnStudyFromRow($row) {
+    function returnStudyFromRow(array $row): DataverseStudy
+    {
         $study = new DataverseStudy();
 		$study->setId($row['study_id']);
 		$study->setSubmissionId($row['submission_id']);

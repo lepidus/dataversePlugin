@@ -2,10 +2,10 @@
 
 class AuthorAdapter
 {
-    private $givenName;
-    private $familyName;
-    private $affiliation;
-    private $email;
+    private string $givenName;
+    private string $familyName;
+    private string $affiliation;
+    private string $email;
 
     public function __construct(string $givenName, string $familyName, string $affiliation, string $email)
     {
@@ -27,7 +27,7 @@ class AuthorAdapter
 
     public function getFullName(): string
     {
-        return $this->givenName . ($this->familyName != ''?" $this->familyName" :'');
+        return $this->givenName. ($this->familyName != ''?" $this->familyName" :'');
     }
 
     public function getAffiliation(): string

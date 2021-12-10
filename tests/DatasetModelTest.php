@@ -5,21 +5,21 @@ import('plugins.generic.dataverse.classes.DatasetModel');
 
 class DatasetModelTest extends PKPTestCase
 {
-    private $title;
-    private $description;
-    private $creator = array();
-    private $subject = array();
-    private $contributor = array();
-    private $publisher;
-    private $date;
-    private $type = array();
-    private $source;
-    private $relation;
-    private $coverage = array();
-    private $license;
-    private $rights;
-    private $isReferencedBy;
-    private $datasetModel;
+    private string $title;
+    private string $description;
+    private array $creator = array();
+    private array $subject = array();
+    private array $contributor = array();
+    private string $publisher;
+    private string $date;
+    private array $type = array();
+    private string $source;
+    private string $relation;
+    private array $coverage = array();
+    private string $license;
+    private string $rights;
+    private array $isReferencedBy = array();
+    private DatasetModel $datasetModel;
 
     public function setUp(): void
     {
@@ -46,7 +46,7 @@ class DatasetModelTest extends PKPTestCase
         array_push($this->coverage, 'South America', 'North America');
         $this->license = 'CC';
         $this->rights = 'BY-NC-ND';
-        $this->isReferencedBy = [];
+        array_push($this->isReferencedBy, array('Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus', array()));
     }
 
     public function testMetadataValuesContainsData(): void

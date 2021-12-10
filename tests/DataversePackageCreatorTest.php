@@ -3,34 +3,31 @@
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.DatasetModel');
-import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 
+define('ATOM_ENTRY_XML_NAMESPACE', 'http://www.w3.org/2005/Atom');
+define('ATOM_ENTRY_XML_DCTERMS', 'http://purl.org/dc/terms/');
 
 class DataversePackageCreatorTest extends PKPTestCase
 {
-    public const ATOM_ENTRY_XML_NAMESPACE = "http://www.w3.org/2005/Atom";
-    public const ATOM_ENTRY_XML_DCTERMS = "http://purl.org/dc/terms/";
+    private DataversePackageCreator $packageCreator;
+    private SubmissionAdapter $submissionAdapter;
 
-    private $packageCreator;
-    private $submissionAdapter;
-    private $submissionAdapterCreator;
+    private int $contextId = 1;
+    private int $submissionId;
+    private int $publicationId;
 
-    private $contextId = 1;
-    private $submissionId;
-    private $publicationId;
+    private array $keywords = ["en_US" => array("computer science")];
+    private array $authors = array();
+    private string $locale = 'en_US';
+    private string $dateSubmitted = '2021-05-31 15:38:24';
+    private string $dateLastActivity = '2021-06-03 16:00:00';
+    private string $statusCode = "STATUS_PUBLISHED";
 
-    private $keywords = ["en_US" => array("computer science")];
-    private $authors = array();
-    private $locale = 'en_US';
-    private $dateSubmitted = '2021-05-31 15:38:24';
-    private $dateLastActivity = '2021-06-03 16:00:00';
-    private $statusCode = "STATUS_PUBLISHED";
-
-    private $title       = 'The Rise of The Machine Empire';
-    private $description = 'An example abstract';
-    private $creator     = array("Irís Castanheiras");
-    private $subject     = array("computer science");
-    private $contributor = array("contact" => "iris@lepidus.com.br");
+    private string $title       = 'The Rise of The Machine Empire';
+    private string $description = 'An example abstract';
+    private array $creator     = array("Irís Castanheiras");
+    private array $subject     = array("computer science");
+    private array $contributor = array("contact" => "iris@lepidus.com.br");
 
     public function setUp(): void
     {
@@ -63,8 +60,8 @@ class DataversePackageCreatorTest extends PKPTestCase
         $this->authors[] = new AuthorAdapter("Irís", "Castanheiras", 'Universidade de São Paulo', $this->contributor['contact']);
         $this->submissionAdapter = new SubmissionAdapter($this->title, $this->authors, $this->description, $this->subject);
 
-        $datasetBuilder = new DatasetBuilder();
-        $this->datasetModel = $datasetBuilder->build($this->submissionAdapter);
+        $datasetFactory = new DatasetFactory();
+        $this->datasetModel = $datasetFactory->build($this->submissionAdapter);
         
         $this->packageCreator->loadMetadata($this->datasetModel);
         $this->packageCreator->createAtomEntry();
@@ -102,8 +99,8 @@ class DataversePackageCreatorTest extends PKPTestCase
         $xmlns = $entry->getAttribute('xmlns');
         $xmlnsDcTerms = $entry->getAttribute('xmlns:dcterms');
 
-        $this->assertEquals($xmlns, self::ATOM_ENTRY_XML_NAMESPACE);
-        $this->assertEquals($xmlnsDcTerms, self::ATOM_ENTRY_XML_DCTERMS);
+        $this->assertEquals($xmlns, ATOM_ENTRY_XML_NAMESPACE);
+        $this->assertEquals($xmlnsDcTerms, ATOM_ENTRY_XML_DCTERMS);
     }
 
     public function testValidateAtomEntryRequiredMetadata(): void
@@ -154,7 +151,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);
     }
 
-    public function testCreatePackageWithSampleFile()
+    public function testCreatePackageWithSampleFile(): void
     {
         $this->createDefaultTestAtomEntry();
 
@@ -164,7 +161,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         $this->assertTrue(file_exists($this->packageCreator->getPackageFilePath()));
     }
 
-    public function testCreatePackageFromSubmissionWithSampleFile()
+    public function testCreatePackageFromSubmissionWithSampleFile(): void
     {
         $this->createDefaultTestAtomEntryFromSubmission();
 
