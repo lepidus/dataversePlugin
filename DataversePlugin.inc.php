@@ -33,6 +33,7 @@ class DataversePlugin extends GenericPlugin {
 		$success = parent::register($category, $path, $mainContextId);
 		$dataverseStudyDAO = new DataverseStudyDAO();
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
+		HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleFormDisplay'));
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
@@ -102,6 +103,28 @@ class DataversePlugin extends GenericPlugin {
 				return new JSONMessage(true, $form->fetch($request));
 		}
 		return parent::manage($args, $request);
+	}
+
+	function handleFormDisplay(string $hookName, array $params): bool
+	{
+		$request = PKPApplication::get()->getRequest();
+		$templateMgr = TemplateManager::getManager($request);
+		$templateMgr->registerFilter("output", array($this, 'publishDataFormFilter'));
+		return false;
+	}
+
+	function publishDataFormFilter(string $output, Smarty_Internal_Template $templateMgr): string
+	{
+		if (preg_match('/<input[^>]+name="language"[^>]*>(.|\n)*?<\/div>(.|\n)*?<\/div>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
+			$match = $matches[0][0];
+			$offset = $matches[0][1];
+			$newOutput = substr($output, 0, $offset + strlen($match));
+			$newOutput .= $templateMgr->fetch($this->getTemplateResource('publishDataForm.tpl'));
+			$newOutput .= substr($output, $offset + strlen($match));
+			$output = $newOutput;
+			$templateMgr->unregisterFilter('output', array($this, 'publishDataFormFilter'));
+		}
+		return $output;
 	}
 
 	private function getDataverseConfiguration(int $contextId): DataverseConfiguration {
