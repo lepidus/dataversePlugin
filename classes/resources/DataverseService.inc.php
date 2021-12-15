@@ -44,8 +44,10 @@ class DataverseService {
 
 		$publicFilesDir = Config::getVar('files', 'files_dir');
 		foreach($this->submission->getGalleys() as $galley) {
-			$galleyFilePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $galley->getFile()->getLocalizedData('path');
-			$package->addFileToPackage($galleyFilePath, $galley->getFile()->getLocalizedData('name'));
+			if ($galley->getFile()->getData('publishData')) {
+				$galleyFilePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $galley->getFile()->getLocalizedData('path');
+				$package->addFileToPackage($galleyFilePath, $galley->getFile()->getLocalizedData('name'));
+			}
 		}
 		$package->createPackage();
 

@@ -33,7 +33,9 @@ class DataversePlugin extends GenericPlugin {
 		$success = parent::register($category, $path, $mainContextId);
 		$dataverseStudyDAO = new DataverseStudyDAO();
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
-		HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleFormDisplay'));
+		HookRegistry::register('Schema::get::submissionFile', array($this, 'modifySubmissionFileSchema'));
+		HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
+		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
@@ -105,14 +107,25 @@ class DataversePlugin extends GenericPlugin {
 		return parent::manage($args, $request);
 	}
 
-	function handleFormDisplay(string $hookName, array $params): bool
+	public function modifySubmissionFileSchema(string $hookName, array $params): bool
+	{
+		$schema =& $params[0];
+        $schema->properties->{'publishData'} = (object) [
+            'type' => 'boolean',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
+        return false;
+	}
+
+	function handleSubmissionFilesMetadataFormDisplay(string $hookName, array $params): bool
 	{
 		$request = PKPApplication::get()->getRequest();
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->registerFilter("output", array($this, 'publishDataFormFilter'));
 		return false;
 	}
-
+	
 	function publishDataFormFilter(string $output, Smarty_Internal_Template $templateMgr): string
 	{
 		if (preg_match('/<input[^>]+name="language"[^>]*>(.|\n)*?<\/div>(.|\n)*?<\/div>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
@@ -127,6 +140,19 @@ class DataversePlugin extends GenericPlugin {
 		return $output;
 	}
 
+	function handleSubmissionFilesMetadataFormExecute(string $hookName, array $params): void
+	{
+		$form =& $params[0];
+		$form->readUserVars(array('publishData'));
+		$submissionFile = $form->getSubmissionFile();
+
+		$newSubmissionFile = Services::get('submissionFile')->edit(
+			$form->getSubmissionFile(),
+			['publishData' => $form->getData('publishData') ? true : false],
+			Application::get()->getRequest()
+		);
+	}
+	
 	private function getDataverseConfiguration(int $contextId): DataverseConfiguration {
 		return new DataverseConfiguration($this->getSetting($contextId, 'apiToken'), $this->getSetting($contextId, 'dataverseServer'), $this->getSetting($contextId, 'dataverse'));	
 	}
