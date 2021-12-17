@@ -1,7 +1,5 @@
 <?php
 
-import('lib.pkp.classes.handler.PKPHandler');
-
 class DataverseHandler
 {
     private Plugin $plugin;
