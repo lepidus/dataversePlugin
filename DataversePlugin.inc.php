@@ -18,8 +18,8 @@ import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
-import('plugins.generic.dataverse.classes.resources.DataverseClient');
-import('plugins.generic.dataverse.classes.resources.DataverseService');
+import('plugins.generic.dataverse.classes.api.DataverseClient');
+import('plugins.generic.dataverse.classes.api.DataverseService');
 import('plugins.generic.dataverse.classes.DataverseConfiguration');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.APACitation');
@@ -32,10 +32,9 @@ class DataversePlugin extends GenericPlugin {
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
 		$dataverseStudyDAO = new DataverseStudyDAO();
+		$this->import('classes/handler/DataverseHandler');
+		$dataverseHandler = new DataverseHandler($this);
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
-		HookRegistry::register('Schema::get::submissionFile', array($this, 'modifySubmissionFileSchema'));
-		HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
-		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
@@ -105,52 +104,6 @@ class DataversePlugin extends GenericPlugin {
 				return new JSONMessage(true, $form->fetch($request));
 		}
 		return parent::manage($args, $request);
-	}
-
-	public function modifySubmissionFileSchema(string $hookName, array $params): bool
-	{
-		$schema =& $params[0];
-        $schema->properties->{'publishData'} = (object) [
-            'type' => 'boolean',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        return false;
-	}
-
-	function handleSubmissionFilesMetadataFormDisplay(string $hookName, array $params): bool
-	{
-		$request = PKPApplication::get()->getRequest();
-		$templateMgr = TemplateManager::getManager($request);
-		$templateMgr->registerFilter("output", array($this, 'publishDataFormFilter'));
-		return false;
-	}
-	
-	function publishDataFormFilter(string $output, Smarty_Internal_Template $templateMgr): string
-	{
-		if (preg_match('/<input[^>]+name="language"[^>]*>(.|\n)*?<\/div>(.|\n)*?<\/div>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
-			$match = $matches[0][0];
-			$offset = $matches[0][1];
-			$newOutput = substr($output, 0, $offset + strlen($match));
-			$newOutput .= $templateMgr->fetch($this->getTemplateResource('publishDataForm.tpl'));
-			$newOutput .= substr($output, $offset + strlen($match));
-			$output = $newOutput;
-			$templateMgr->unregisterFilter('output', array($this, 'publishDataFormFilter'));
-		}
-		return $output;
-	}
-
-	function handleSubmissionFilesMetadataFormExecute(string $hookName, array $params): void
-	{
-		$form =& $params[0];
-		$form->readUserVars(array('publishData'));
-		$submissionFile = $form->getSubmissionFile();
-
-		$newSubmissionFile = Services::get('submissionFile')->edit(
-			$form->getSubmissionFile(),
-			['publishData' => $form->getData('publishData') ? true : false],
-			Application::get()->getRequest()
-		);
 	}
 	
 	private function getDataverseConfiguration(int $contextId): DataverseConfiguration {

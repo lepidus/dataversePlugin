@@ -1,6 +1,6 @@
 <?php
 
-import('plugins.generic.dataverse.classes.resources.DataverseService');
+import('plugins.generic.dataverse.classes.api.DataverseService');
 
 class DataverseServiceFactory
 {

@@ -1,6 +1,6 @@
 <?php
 
-import('plugins.generic.dataverse.classes.resources.DataverseClient');
+import('plugins.generic.dataverse.classes.api.DataverseClient');
 
 define('DATASET_GENRE_ID', 7);
 
