@@ -64,3 +64,6 @@ msgstr "Informe uma chave de API para Dataverse."
 
 msgid "plugins.generic.dataverse.dataCitationLabel"
 msgstr "Citação de dados"
+
+msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
+msgstr "Depositar arquivo no Dataverse"

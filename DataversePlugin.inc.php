@@ -18,8 +18,8 @@ import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
-import('plugins.generic.dataverse.classes.resources.DataverseClient');
-import('plugins.generic.dataverse.classes.resources.DataverseService');
+import('plugins.generic.dataverse.classes.api.DataverseClient');
+import('plugins.generic.dataverse.classes.api.DataverseService');
 import('plugins.generic.dataverse.classes.DataverseConfiguration');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.APACitation');
@@ -32,6 +32,8 @@ class DataversePlugin extends GenericPlugin {
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
 		$dataverseStudyDAO = new DataverseStudyDAO();
+		$this->import('classes/handler/DataverseHandler');
+		$dataverseHandler = new DataverseHandler($this);
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
@@ -103,7 +105,7 @@ class DataversePlugin extends GenericPlugin {
 		}
 		return parent::manage($args, $request);
 	}
-
+	
 	private function getDataverseConfiguration(int $contextId): DataverseConfiguration {
 		return new DataverseConfiguration($this->getSetting($contextId, 'apiToken'), $this->getSetting($contextId, 'dataverseServer'), $this->getSetting($contextId, 'dataverse'));	
 	}

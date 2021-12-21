@@ -1,3 +1,5 @@
+import '../support/commands';
+
 describe('Deposit Draft Dataverse on Submission', function() {
 
     it('Dataverse Plugin Configuration', function() {
@@ -33,18 +35,30 @@ describe('Deposit Draft Dataverse on Submission', function() {
 			'country': 'Brazil'
 		});
 
-		cy.createSubmission({
+		cy.DataverseCreateSubmission({
 			'title': 'The Rise of The Machine Empire',
 			'abstract': 'An example abstract',
 			'keywords': [
 				'Modern History'
 			],
-            'files': [{
-                'file': 'dummy.pdf',
-                'fileName': 'Data Table.pdf',
-                'fileTitle': 'Data Table',
-                'genre': 'Data Set'
-            }]
+            'files': [
+                {
+                    'galleyLabel': 'CSV',
+                    'file': 'dummy.pdf',
+                    'fileName': 'Data Table.pdf',
+                    'fileTitle': 'Data Table',
+                    'genre': 'Data Set',
+                    'publishData': true,
+                },
+                {
+                    'galleyLabel': 'JPG',
+                    'file': 'dummy.pdf',
+                    'fileName': 'Amostra.pdf',
+                    'fileTitle': 'Amostra',
+                    'genre': 'Data Set',
+                    'publishData': false,
+                }
+            ]
 		});
 
         cy.logout();

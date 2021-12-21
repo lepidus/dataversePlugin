@@ -49,3 +49,6 @@ msgstr "Please enter a API token."
 
 msgid "plugins.generic.dataverse.dataCitationLabel"
 msgstr "Data citation"
+
+msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
+msgstr "Deposit file in Dataverse"
