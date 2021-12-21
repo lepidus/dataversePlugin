@@ -9,8 +9,9 @@ class SubmissionFileFactory
         $publicFilesDir = Config::getVar('files', 'files_dir');
         $path = $publicFilesDir. $submissionFile->getLocalizedData('path');
         $name = $submissionFile->getLocalizedData('name');
+        $genreId = $submissionFile->getGenreId();
         $publishData = $submissionFile->getData('publishData');
 
-        return new SubmissionFileAdapter($path, $name, $publishData);
+        return new SubmissionFileAdapter($path, $name, $genreId, $publishData);
     }
 }
