@@ -106,7 +106,7 @@ class DataversePlugin extends GenericPlugin {
 		return parent::manage($args, $request);
 	}
 	
-	private function getDataverseConfiguration(int $contextId): DataverseConfiguration {
+	public function getDataverseConfiguration(int $contextId): DataverseConfiguration {
 		return new DataverseConfiguration($this->getSetting($contextId, 'apiToken'), $this->getSetting($contextId, 'dataverseServer'), $this->getSetting($contextId, 'dataverse'));	
 	}
 

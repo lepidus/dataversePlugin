@@ -26,9 +26,26 @@ class DataverseHandler
     function handleSubmissionFilesMetadataFormDisplay(string $hookName, array $params): bool
 	{
 		$request = PKPApplication::get()->getRequest();
+
+		$this->addDataverseTermsOfUseToFile();
+
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->registerFilter("output", array($this, 'publishDataFormFilter'));
 		return false;
+	}
+
+	private function addDataverseTermsOfUseToFile()
+	{
+		$request = PKPApplication::get()->getRequest();
+
+		$contextId = $request->getContext()->getId();
+		$configuration = $this->plugin->getDataverseConfiguration($contextId);
+
+		$client = new DataverseClient($configuration);
+		$client->getDataverseTermsOfUse();
+
+		//call the file and put the terms
+
 	}
 	
 	function publishDataFormFilter(string $output, Smarty_Internal_Template $templateMgr): string
