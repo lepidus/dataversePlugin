@@ -51,4 +51,4 @@ msgid "plugins.generic.dataverse.dataCitationLabel"
 msgstr "Data citation"
 
 msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
-msgstr "Deposit file in Dataverse and agree to Dataverse <a href=\"/plugins/generic/dataverse/html/termsOfUse.html\" target=\"_blank\">Terms</a> of Use"
+msgstr "Deposit file in Dataverse and agree to Dataverse <a id=\"terms\" onclick=\"newWindow()\">Terms</a> of Use"

@@ -27,14 +27,15 @@ class DataverseHandler
 	{
 		$request = PKPApplication::get()->getRequest();
 
-		$this->addDataverseTermsOfUseToFile();
+		$dataverseTermsOfUse = $this->addDataverseTermsOfUseToFile();
 
 		$templateMgr = TemplateManager::getManager($request);
+		$templateMgr->assign('dataverseTermsOfUse', $dataverseTermsOfUse);
 		$templateMgr->registerFilter("output", array($this, 'publishDataFormFilter'));
 		return false;
 	}
 
-	private function addDataverseTermsOfUseToFile()
+	private function addDataverseTermsOfUseToFile(): string
 	{
 		$request = PKPApplication::get()->getRequest();
 
@@ -42,10 +43,7 @@ class DataverseHandler
 		$configuration = $this->plugin->getDataverseConfiguration($contextId);
 
 		$client = new DataverseClient($configuration);
-		$client->getDataverseTermsOfUse();
-
-		//call the file and put the terms
-
+		return  $client->getDataverseTermsOfUse();
 	}
 	
 	function publishDataFormFilter(string $output, Smarty_Internal_Template $templateMgr): string
