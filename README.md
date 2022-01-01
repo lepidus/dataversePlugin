@@ -37,6 +37,6 @@ With the plugin enabled, you should expand its options by clicking the arrow nex
 
 __This plugin is licensed under the GNU General Public License v3.0__
 
-__Copyright (c) 2020-2021 Lepidus Tecnologia__
+__Copyright (c) 2021-2022 Lepidus Tecnologia__
 
-__Copyright (c) 2020-2021 SciELO__
+__Copyright (c) 2021-2022 SciELO__
