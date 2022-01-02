@@ -23,6 +23,7 @@ import('plugins.generic.dataverse.classes.api.DataverseService');
 import('plugins.generic.dataverse.classes.DataverseConfiguration');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.APACitation');
+import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
 
 class DataversePlugin extends GenericPlugin {
 
@@ -38,6 +39,7 @@ class DataversePlugin extends GenericPlugin {
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
+		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
 		return $success;
 	}
 
@@ -157,6 +159,13 @@ class DataversePlugin extends GenericPlugin {
         return new DataverseStudyMigration();
     }
 
+	function setupTermsOfUseHandler($hookName, $params) {
+		$component = &$params[0];
+		if ($component == 'plugins.generic.dataverse.handlers.TermsOfUseHandler') {
+			return true;
+		}
+		return false;
+	}
 }
 
 ?>

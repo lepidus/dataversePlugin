@@ -137,4 +137,9 @@ class DataverseService {
 			}
 		}
 	}
+
+	function getTermsOfUse(): string
+	{
+		return $this->dataverseClient->getDataverseTermsOfUse();
+	}
 }

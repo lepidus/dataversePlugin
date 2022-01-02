@@ -40,7 +40,6 @@ class DataverseClient {
 		foreach ($serviceDocument->sac_workspaces as $workspace) {
 			foreach ($workspace->sac_collections as $collection) {
 				if ($collection->sac_href[0] == $dataverseDepositUrl) {
-
 					$dataverseTermsOfUse = $collection->sac_collpolicy;
 					break;
 				}
