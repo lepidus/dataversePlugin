@@ -33,8 +33,8 @@ class DataversePlugin extends GenericPlugin {
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
 		$dataverseStudyDAO = new DataverseStudyDAO();
-		$this->import('classes/handler/DataverseHandler');
-		$dataverseHandler = new DataverseHandler($this);
+		$this->import('classes/controllers/DataverseFormController');
+		$dataverseController = new DataverseFormController($this);
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));

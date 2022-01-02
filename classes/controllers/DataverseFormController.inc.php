@@ -1,6 +1,6 @@
 <?php
 
-class DataverseHandler
+class DataverseFormController
 {
     private Plugin $plugin;
 
