@@ -23,6 +23,7 @@ import('plugins.generic.dataverse.classes.api.DataverseService');
 import('plugins.generic.dataverse.classes.DataverseConfiguration');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.APACitation');
+import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
 
 class DataversePlugin extends GenericPlugin {
 
@@ -32,12 +33,13 @@ class DataversePlugin extends GenericPlugin {
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
 		$dataverseStudyDAO = new DataverseStudyDAO();
-		$this->import('classes/handler/DataverseHandler');
-		$dataverseHandler = new DataverseHandler($this);
+		$this->import('classes/controllers/DataverseFormController');
+		$dataverseController = new DataverseFormController($this);
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
+		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
 		return $success;
 	}
 
@@ -106,7 +108,7 @@ class DataversePlugin extends GenericPlugin {
 		return parent::manage($args, $request);
 	}
 	
-	private function getDataverseConfiguration(int $contextId): DataverseConfiguration {
+	public function getDataverseConfiguration(int $contextId): DataverseConfiguration {
 		return new DataverseConfiguration($this->getSetting($contextId, 'apiToken'), $this->getSetting($contextId, 'dataverseServer'), $this->getSetting($contextId, 'dataverse'));	
 	}
 
@@ -157,6 +159,13 @@ class DataversePlugin extends GenericPlugin {
         return new DataverseStudyMigration();
     }
 
+	function setupTermsOfUseHandler($hookName, $params) {
+		$component = &$params[0];
+		if ($component == 'plugins.generic.dataverse.handlers.TermsOfUseHandler') {
+			return true;
+		}
+		return false;
+	}
 }
 
 ?>

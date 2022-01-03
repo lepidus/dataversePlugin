@@ -27,6 +27,29 @@ class DataverseClient {
         return isset($serviceDocumentClient) && $serviceDocumentClient->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK;    
     }
 
+    private function getServiceDocument(): SWORDAPPServiceDocument
+    {
+        return $this->swordClient->servicedocument($this->configuration->getDataverseServiceDocumentUrl(), $this->configuration->getApiToken(), '', '');
+    }
+
+    public function getDataverseTermsOfUse(): string
+    {
+		$dataverseDepositUrl = $this->configuration->getDataverseDepositUrl();
+        $serviceDocument = $this->getServiceDocument();
+
+		foreach ($serviceDocument->sac_workspaces as $workspace) {
+			foreach ($workspace->sac_collections as $collection) {
+				if ($collection->sac_href[0] == $dataverseDepositUrl) {
+					$dataverseTermsOfUse = $collection->sac_collpolicy;
+					break;
+				}
+			}
+		}
+
+        return $dataverseTermsOfUse;
+    }
+
+
     public function checkConnectionWithDataverse(): bool
     {
 		return $this->validateCredentials($this->configuration->getDataverseServiceDocumentUrl());
