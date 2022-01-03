@@ -28,7 +28,6 @@ class DataverseFormController
 		$request = PKPApplication::get()->getRequest();
 
 		$templateMgr = TemplateManager::getManager($request);
-		$templateMgr->assign('dataverseTermsOfUse', $dataverseTermsOfUse);
 		$templateMgr->registerFilter("output", array($this, 'publishDataFormFilter'));
 		return false;
 	}
