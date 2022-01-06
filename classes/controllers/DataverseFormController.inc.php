@@ -2,7 +2,7 @@
 
 class DataverseFormController
 {
-    private Plugin $plugin;
+    private $plugin;
 
     public function __construct(Plugin $plugin)
 	{

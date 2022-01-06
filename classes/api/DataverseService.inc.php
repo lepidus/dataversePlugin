@@ -6,8 +6,8 @@ define('DATASET_GENRE_ID', 7);
 
 class DataverseService {
 
-    private DataverseClient $dataverseClient;
-    private Submission $submission;
+    private $dataverseClient;
+    private $submission;
 
     function __construct(DataverseClient $dataverseClient)
 	{

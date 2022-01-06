@@ -6,8 +6,8 @@ import('plugins.generic.dataverse.classes.DataverseDAO');
 
 class DataverseAuthForm extends Form {
 
-	private Plugin $plugin;
-	private int $contextId;
+	private $plugin;
+	private $contextId;
 
 	function DataverseAuthForm(Plugin $plugin, int $contextId)
 	{

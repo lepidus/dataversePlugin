@@ -7,8 +7,8 @@ define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
 
 class DataverseClient {
-    private DataverseConfiguration $configuration;
-    private SWORDAPPClient $swordClient;
+    private $configuration;
+    private $swordClient;
 
     public function __construct(DataverseConfiguration $configuration)
     {

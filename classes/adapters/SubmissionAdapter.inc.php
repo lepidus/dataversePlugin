@@ -2,11 +2,11 @@
 
 class SubmissionAdapter
 {
-    private string $title;
-    private array $authors;
-    private string $description;
-    private array $keywords;
-    private array $reference;
+    private $title;
+    private $authors;
+    private $description;
+    private $keywords;
+    private $reference;
 
     public function __construct(string $title, array $authors, string $description, array $keywords, array $reference = array())
     {

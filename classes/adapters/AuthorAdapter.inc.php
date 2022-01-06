@@ -2,10 +2,10 @@
 
 class AuthorAdapter
 {
-    private string $givenName;
-    private string $familyName;
-    private string $affiliation;
-    private string $email;
+    private $givenName;
+    private $familyName;
+    private $affiliation;
+    private $email;
 
     public function __construct(string $givenName, string $familyName, string $affiliation, string $email)
     {

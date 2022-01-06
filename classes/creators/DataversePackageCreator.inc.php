@@ -10,8 +10,8 @@ define('CONTENT_TYPE', 'application/zip');
 
 class DataversePackageCreator extends PackagerAtomTwoStep
 {
-    private string $outPath;
-    private array $files = array();
+    private $outPath;
+    private $files = array();
 
     public function DataversePackageCreator()
     {
