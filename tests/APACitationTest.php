@@ -6,9 +6,9 @@ import('plugins.generic.dataverse.classes.APACitation');
 
 class APACitationTest extends PKPTestCase
 {
-    private Submission $submission;
-    private Publication $publication;
-    private array $authors;
+    private $submission;
+    private $publication;
+    private $authors;
     
     public function setUp(): void
     {
