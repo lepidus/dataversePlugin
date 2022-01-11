@@ -5,11 +5,11 @@ import('lib.pkp.classes.db.DAO');
 
 class DataverseDAOTest extends PKPTestCase
 {
-    private int $contextId;
-    private string $dataverseServer;
-    private string $dataverse;
-    private string $apiToken;
-    private DataverseDao $dataverseDAO;
+    private $contextId;
+    private $dataverseServer;
+    private $dataverse;
+    private $apiToken;
+    private $dataverseDAO;
 
     protected function setUp(): void
     {

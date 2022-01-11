@@ -9,24 +9,24 @@ import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 
 class SubmissionAdapterCreatorTest extends PKPTestCase
 {
-    private SubmissionAdapterCreator $submissionAdapterCreator;
-    private SubmissionAdapter $submissionAdapter;
-    private Journal $journal;
+    private $submissionAdapterCreator;
+    private $submissionAdapter;
+    private $journal;
 
-    private int $contextId = 1;
-    private int $submissionId = 1245;
-    private int $publicationId = 1234;
+    private $contextId = 1;
+    private $submissionId = 1245;
+    private $publicationId = 1234;
 
-    private string $title = "The Rise of The Machine Empire";
-    private array $authors = array();
-    private string $description = "This is an abstract / description";
-    private array $keywords = ["en_US" => array("computer science", "testing")];
-    private string $locale = 'en_US';
+    private $title = "The Rise of The Machine Empire";
+    private $authors = array();
+    private $description = "This is an abstract / description";
+    private $keywords = ["en_US" => array("computer science", "testing")];
+    private $locale = 'en_US';
 
-    private string $dateSubmitted = '2021-05-31 15:38:24';
-    private string $statusCode = "STATUS_PUBLISHED";
-    private string $dateLastActivity = '2021-06-03 16:00:00';
-    private array $submissionAuthors;
+    private $dateSubmitted = '2021-05-31 15:38:24';
+    private $statusCode = "STATUS_PUBLISHED";
+    private $dateLastActivity = '2021-06-03 16:00:00';
+    private $submissionAuthors;
 
     public function setUp(): void
     {

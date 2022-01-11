@@ -7,11 +7,11 @@ import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 
 class SubmissionAdapterTest extends PKPTestCase
 {
-    private SubmissionAdapter $submission;
-    private string $title = "Rethinking linguistic relativity";
-    private string $description = "This is a description of a submission.";
-    private array $keywords = array("Biological Sciences");
-    private array $authors;
+    private $submission;
+    private $title = "Rethinking linguistic relativity";
+    private $description = "This is a description of a submission.";
+    private $keywords = array("Biological Sciences");
+    private $authors;
 
     public function setUp(): void
     {
