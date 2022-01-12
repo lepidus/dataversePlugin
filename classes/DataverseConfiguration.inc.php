@@ -4,10 +4,10 @@ define('DATAVERSE_API_VERSION', "v1.1");
 
 class DataverseConfiguration
 {
-    private string $apiToken;
-    private string $dataverseServer;
-    private string $dataverseUrl;
-    private string $dataverseCollection;
+    private $apiToken;
+    private $dataverseServer;
+    private $dataverseUrl;
+    private $dataverseCollection;
 
     public function __construct(string $apiToken, string $dataverseServer, string $dataverseUrl)
     {

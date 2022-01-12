@@ -5,14 +5,14 @@ import('plugins.generic.dataverse.classes.study.DataverseStudy');
 
 final class DataverseStudyTest extends PKPTestCase
 {
-    private DataverseStudy $study;
-    private int $studyId;
-    private int $submissionId;
-    private string $editUri;
-    private string $editMediaUri;
-    private string $statementUri;
-    private string $persistentUri;
-    private string $dataCitation;
+    private $study;
+    private $studyId;
+    private $submissionId;
+    private $editUri;
+    private $editMediaUri;
+    private $statementUri;
+    private $persistentUri;
+    private $dataCitation;
 
     public function setUp(): void
     {

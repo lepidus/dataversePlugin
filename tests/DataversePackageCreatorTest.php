@@ -9,25 +9,25 @@ define('ATOM_ENTRY_XML_DCTERMS', 'http://purl.org/dc/terms/');
 
 class DataversePackageCreatorTest extends PKPTestCase
 {
-    private DataversePackageCreator $packageCreator;
-    private SubmissionAdapter $submissionAdapter;
+    private $packageCreator;
+    private $submissionAdapter;
 
-    private int $contextId = 1;
-    private int $submissionId;
-    private int $publicationId;
+    private $contextId = 1;
+    private $submissionId;
+    private $publicationId;
 
-    private array $keywords = ["en_US" => array("computer science")];
-    private array $authors = array();
-    private string $locale = 'en_US';
-    private string $dateSubmitted = '2021-05-31 15:38:24';
-    private string $dateLastActivity = '2021-06-03 16:00:00';
-    private string $statusCode = "STATUS_PUBLISHED";
+    private $keywords = ["en_US" => array("computer science")];
+    private $authors = array();
+    private $locale = 'en_US';
+    private $dateSubmitted = '2021-05-31 15:38:24';
+    private $dateLastActivity = '2021-06-03 16:00:00';
+    private $statusCode = "STATUS_PUBLISHED";
 
-    private string $title       = 'The Rise of The Machine Empire';
-    private string $description = 'An example abstract';
-    private array $creator     = array("Irís Castanheiras");
-    private array $subject     = array("computer science");
-    private array $contributor = array("contact" => "iris@lepidus.com.br");
+    private $title       = 'The Rise of The Machine Empire';
+    private $description = 'An example abstract';
+    private $creator     = array("Irís Castanheiras");
+    private $subject     = array("computer science");
+    private $contributor = array("contact" => "iris@lepidus.com.br");
 
     public function setUp(): void
     {

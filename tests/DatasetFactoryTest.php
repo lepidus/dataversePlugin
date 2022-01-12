@@ -5,14 +5,14 @@ import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 
 class DatasetFactoryTest extends PKPTestCase
 {
-    private DatasetFactory $datasetFactory;
-    private DatasetModel $dataset;
+    private $datasetFactory;
+    private $dataset;
 
-    private string $title = "The Rise of The Machine Empire";
-    private array $authors;
-    private string $description = "This is a description/abstract.";
-    private array $keywords = array("Modern History", "Computer Science");
-    private array $authorsEmails = array("iris@lepidus.com.br");
+    private $title = "The Rise of The Machine Empire";
+    private $authors;
+    private $description = "This is a description/abstract.";
+    private $keywords = array("Modern History", "Computer Science");
+    private $authorsEmails = array("iris@lepidus.com.br");
 
     public function setUp(): void
     {

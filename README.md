@@ -20,6 +20,16 @@ To download the plugin, go to the [Releases page](https://github.com/lepidus/dat
 ## Development dependencies
 * [php-zip](https://www.php.net/manual/pt_BR/zip.installation.php)
 
+## Install from repository clone and start `swordappv` submodule
+
+1. Use SSH/HTTP to clone the Dataverse plugin repository on your machine
+2. With the Dataverse plugin repository cloned on your machine, open a terminal inside the repository and run the following commands:
+ * git submodule init
+ * git submodule update
+3. In the root of the OPS directory, execute the command to create the tables used by the plugin:
+ * php tools/upgrade.php upgrade
+4. With the submodules installed in the plugin from the steps above, it is possible to link the symbolic plugin or simply copy and paste the plugin type into the OPS, in this case the folder is located at the path ops/plugins/generic .
+
 ## Installation
 
 1. Install the 'php-zip' dependency.
