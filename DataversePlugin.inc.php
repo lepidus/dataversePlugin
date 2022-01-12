@@ -16,11 +16,7 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
-import('plugins.generic.dataverse.classes.creators.DatasetFactory');
-import('plugins.generic.dataverse.classes.api.DataverseClient');
-import('plugins.generic.dataverse.classes.api.DataverseService');
-import('plugins.generic.dataverse.classes.DataverseConfiguration');
+import('plugins.generic.dataverse.classes.dispatchers.DataverseServiceDispatcher');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.APACitation');
 import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
@@ -35,10 +31,9 @@ class DataversePlugin extends GenericPlugin {
 		$dataverseStudyDAO = new DataverseStudyDAO();
 		$this->import('classes/controllers/DataverseFormController');
 		$dataverseController = new DataverseFormController($this);
+		$serviceDispatcher = new DataverseServiceDispatcher($this);
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
-		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
-		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
 		return $success;
 	}
@@ -106,34 +101,6 @@ class DataversePlugin extends GenericPlugin {
 				return new JSONMessage(true, $form->fetch($request));
 		}
 		return parent::manage($args, $request);
-	}
-	
-	public function getDataverseConfiguration(int $contextId): DataverseConfiguration {
-		return new DataverseConfiguration($this->getSetting($contextId, 'apiToken'), $this->getSetting($contextId, 'dataverseServer'), $this->getSetting($contextId, 'dataverse'));	
-	}
-
-	function dataverseDepositOnSubmission(string $hookName, array $params): void {
-		$form =& $params[0];
-		$context = $form->context;
-		$contextId = $context->getId();
-        $submission = $form->submission;
-
-		$serviceFactory = new DataverseServiceFactory();
-		$service = $serviceFactory->build($this->getDataverseConfiguration($contextId));
-		$service->setSubmission($submission);
-		if($service->hasDataSetComponent()){
-			$service->depositPackage();
-		}
-	}
-
-	function publishDeposit(string $hookName, array $params): void {
-		$submission = $params[2];
-		$contextId = $submission->getData("contextId");
-
-		$serviceFactory = new DataverseServiceFactory();
-		$service = $serviceFactory->build($this->getDataverseConfiguration($contextId));
-		$service->setSubmission($submission);
-		$service->releaseStudy();
 	}
 
 	function addDataCitationSubmission(string $hookName, array $params): bool {
