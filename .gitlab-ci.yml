@@ -1,6 +1,7 @@
 variables:
     PLUGIN_NAME: 'dataverse'
     RELEASE_PACKAGE_URL: '${CI_PROJECT_URL}'
+    GIT_SUBMODULE_STRATEGY: recursive
     
 stages:
     - pre-release
