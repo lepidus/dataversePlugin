@@ -10,9 +10,21 @@ class DataverseServiceDispatcher
     public function __construct(Plugin $plugin)
 	{
         $this->plugin = $plugin;
+		HookRegistry::register('Schema::get::submissionFile', array($this, 'modifySubmissionFileSchema'));
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
     }
+
+    public function modifySubmissionFileSchema(string $hookName, array $params): bool
+	{
+		$schema =& $params[0];
+        $schema->properties->{'publishData'} = (object) [
+            'type' => 'boolean',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
+        return false;
+	}
 
     public function getDataverseConfiguration(int $contextId): DataverseConfiguration {
 		return new DataverseConfiguration(

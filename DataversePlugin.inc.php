@@ -17,9 +17,8 @@ import('classes.notification.NotificationManager');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseServiceDispatcher');
+import('plugins.generic.dataverse.classes.dispatchers.TemplateDispatcher');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
-import('plugins.generic.dataverse.classes.APACitation');
-import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
 
 class DataversePlugin extends GenericPlugin {
 
@@ -29,12 +28,9 @@ class DataversePlugin extends GenericPlugin {
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
 		$dataverseStudyDAO = new DataverseStudyDAO();
-		$this->import('classes/controllers/DataverseFormController');
-		$dataverseController = new DataverseFormController($this);
+		$templateDispatcher = new TemplateDispatcher($this);
 		$serviceDispatcher = new DataverseServiceDispatcher($this);
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
-		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
-		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
 		return $success;
 	}
 
@@ -103,36 +99,10 @@ class DataversePlugin extends GenericPlugin {
 		return parent::manage($args, $request);
 	}
 
-	function addDataCitationSubmission(string $hookName, array $params): bool {
-		$templateMgr =& $params[1];
-		$output =& $params[2];
-
-		$submission = $templateMgr->getTemplateVars('preprint');
-		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');			 
-		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
-
-		if(isset($study)) {
-			$apaCitation = new APACitation();
-			$dataCitation = $apaCitation->getCitationAsMarkupByStudy($study);
-			$templateMgr->assign('dataCitation', $dataCitation);
-			$output .= $templateMgr->fetch($this->getTemplateResource('dataCitationSubmission.tpl'));
-		}
-
-		return false;
-	}
-
 	function getInstallMigration(): DataverseStudyMigration {
         $this->import('classes.migration.DataverseStudyMigration');
         return new DataverseStudyMigration();
     }
-
-	function setupTermsOfUseHandler($hookName, $params) {
-		$component = &$params[0];
-		if ($component == 'plugins.generic.dataverse.handlers.TermsOfUseHandler') {
-			return true;
-		}
-		return false;
-	}
 }
 
 ?>
