@@ -10,6 +10,8 @@ The latest release of this plugin is compatible with the following PKP applicati
 
 * OPS 3.3 (or higher)
 
+Using PHP 7.3 or higher, but below PHP 8.0. 
+
 ## Plugin Download
 
 To download the plugin, go to the [Releases page](https://github.com/lepidus/dataversePlugin/releases) and download the tar.gz package of the latest release compatible with your website.
