@@ -2,6 +2,7 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.DataversePlugin');
+import('plugins.generic.dataverse.classes.dispatchers.Dispatcher');
 
 
 class DispatcherTest extends PKPTestCase
