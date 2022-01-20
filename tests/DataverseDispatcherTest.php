@@ -2,10 +2,10 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.DataversePlugin');
-import('plugins.generic.dataverse.classes.dispatchers.Dispatcher');
+import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 
 
-class DispatcherTest extends PKPTestCase
+class DataverseDispatcherTest extends PKPTestCase
 {
     private $dataverseServer = "https://demo.dataverse.org";
     private $dataverseUrl = "https://demo.dataverse.org/dataverse/dataverseDeExemplo/";
@@ -48,7 +48,7 @@ class DispatcherTest extends PKPTestCase
     public function testReturnsTheDataverseConfiguration(): void
     {
         $contextId = 1;
-        $dispatcher = new Dispatcher($this->plugin);
+        $dispatcher = new DataverseDispatcher($this->plugin);
 
         $configuration = $dispatcher->getDataverseConfiguration($contextId);
 

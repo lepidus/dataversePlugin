@@ -1,10 +1,10 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dispatchers.Dispatcher');
+import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.APACitation');
 import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
 
-class TemplateDispatcher extends Dispatcher
+class TemplateDispatcher extends DataverseDispatcher
 {
     public function __construct(Plugin $plugin)
 	{

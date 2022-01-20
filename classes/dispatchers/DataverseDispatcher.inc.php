@@ -2,9 +2,9 @@
 
 import('plugins.generic.dataverse.classes.DataverseConfiguration');
 
-class Dispatcher
+class DataverseDispatcher
 {
-    private $plugin;
+    var $plugin;
 
     public function __construct(Plugin $plugin)
 	{

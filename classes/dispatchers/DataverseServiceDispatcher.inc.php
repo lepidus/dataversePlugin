@@ -1,9 +1,9 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dispatchers.Dispatcher');
+import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
 
-class DataverseServiceDispatcher extends Dispatcher
+class DataverseServiceDispatcher extends DataverseDispatcher
 {
     public function __construct(Plugin $plugin)
 	{
