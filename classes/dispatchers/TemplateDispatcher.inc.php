@@ -1,19 +1,19 @@
 <?php
 
+import('plugins.generic.dataverse.classes.dispatchers.Dispatcher');
 import('plugins.generic.dataverse.classes.APACitation');
 import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
 
-class TemplateDispatcher
+class TemplateDispatcher extends Dispatcher
 {
-    private $plugin;
-
     public function __construct(Plugin $plugin)
 	{
-        $this->plugin = $plugin;
         HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
+
+		parent::__construct($plugin);
     }
 
     function handleSubmissionFilesMetadataFormDisplay(string $hookName, array $params): bool
