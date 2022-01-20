@@ -9,6 +9,7 @@ class DispatcherTest extends PKPTestCase
     private $dataverseServer = "https://demo.dataverse.org";
     private $dataverseUrl = "https://demo.dataverse.org/dataverse/dataverseDeExemplo/";
     private $apiToken = "APIToken";
+    private $plugin;
 
     public function setUp(): void
     {
@@ -18,11 +19,11 @@ class DispatcherTest extends PKPTestCase
     }
     
     private function registerMockPlugin() {
-		$plugin = $this->getMockBuilder(DataversePlugin::class)
+		$this->plugin = $this->getMockBuilder(DataversePlugin::class)
             ->setMethods(array('getSetting', 'getName', 'getDisplayName', 'getDescription'))
 			->getMock();
 
-		$plugin->expects($this->any())
+        $this->plugin->expects($this->any())
                     ->method('getSetting')
                     ->will($this->returnCallback(array($this, 'getPluginSetting')));
 	}
@@ -46,8 +47,7 @@ class DispatcherTest extends PKPTestCase
     public function testReturnsTheDataverseConfiguration(): void
     {
         $contextId = 1;
-        $plugin = new DataversePlugin();
-        $dispatcher = new Dispatcher($plugin);
+        $dispatcher = new Dispatcher($this->plugin);
 
         $configuration = $dispatcher->getDataverseConfiguration($contextId);
 
