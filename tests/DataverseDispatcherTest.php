@@ -18,7 +18,8 @@ class DataverseDispatcherTest extends PKPTestCase
         $this->registerMockPlugin();
     }
     
-    private function registerMockPlugin() {
+    private function registerMockPlugin(): void
+    {
 		$context = $this->getMockBuilder(Context::class)
             ->setMethods(array('getId', 'getAssocType'))
             ->getMock();
@@ -46,7 +47,8 @@ class DataverseDispatcherTest extends PKPTestCase
                      ->will($this->returnCallback(array($this, 'getPluginSetting')));
 	}
 
-    function getPluginSetting($contextId, $settingName) {
+    function getPluginSetting($contextId, $settingName): string
+    {
 		switch ($settingName) {
 			case 'dataverseServer':
 				return $this->dataverseServer;
