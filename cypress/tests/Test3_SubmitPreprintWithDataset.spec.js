@@ -88,6 +88,6 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
         cy.get('a.pkpButton:contains("View")').click();
         cy.waitJQuery();
         cy.get('.label').contains('Data citation');
-        cy.get('.value > p').contains('Íris Castanheira, 2021, "The Rise of The Machine Empire"');
+        cy.get('.value > p').contains('Íris Castanheira, 2022, "The Rise of The Machine Empire"');
     });
 });
