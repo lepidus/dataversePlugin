@@ -4,7 +4,6 @@ import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.DataversePlugin');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 
-
 class DataverseDispatcherTest extends PKPTestCase
 {
     private $dataverseServer = "https://demo.dataverse.org";
@@ -20,13 +19,31 @@ class DataverseDispatcherTest extends PKPTestCase
     }
     
     private function registerMockPlugin() {
-		$this->plugin = $this->getMockBuilder(DataversePlugin::class)
-            ->setMethods(array('getSetting', 'getName', 'getDisplayName', 'getDescription'))
-			->getMock();
+		$context = $this->getMockBuilder(Context::class)
+            ->setMethods(array('getId', 'getAssocType'))
+            ->getMock();
+        $context->expects($this->any())
+                ->method('getId')
+                ->will($this->returnValue(1));
+
+        $request = $this->getMockBuilder(PKPRequest::class)
+            ->setMethods(array('getContext'))
+            ->getMock();
+        $request->expects($this->any())
+                ->method('getContext')
+                ->will($this->returnValue($context));
+
+        $this->plugin = $this->getMockBuilder(DataversePlugin::class)
+            ->setMethods(array('getSetting', 'getRequest', 'getName', 'getDisplayName', 'getDescription'))
+            ->getMock();
 
         $this->plugin->expects($this->any())
-                    ->method('getSetting')
-                    ->will($this->returnCallback(array($this, 'getPluginSetting')));
+                     ->method('getRequest')
+                     ->will($this->returnValue($request));
+
+        $this->plugin->expects($this->any())
+                     ->method('getSetting')
+                     ->will($this->returnCallback(array($this, 'getPluginSetting')));
 	}
 
     function getPluginSetting($contextId, $settingName) {
@@ -47,10 +64,9 @@ class DataverseDispatcherTest extends PKPTestCase
 
     public function testReturnsTheDataverseConfiguration(): void
     {
-        $contextId = 1;
         $dispatcher = new DataverseDispatcher($this->plugin);
 
-        $configuration = $dispatcher->getDataverseConfiguration($contextId);
+        $configuration = $dispatcher->getDataverseConfiguration();
 
         $expectedConfigData = array(
             'dataverseServer' => $this->dataverseServer,

@@ -27,12 +27,10 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 
     function dataverseDepositOnSubmission(string $hookName, array $params): void {
 		$form =& $params[0];
-		$context = $form->context;
-		$contextId = $context->getId();
         $submission = $form->submission;
 
 		$serviceFactory = new DataverseServiceFactory();
-		$service = $serviceFactory->build($this->getDataverseConfiguration($contextId));
+		$service = $serviceFactory->build($this->getDataverseConfiguration());
 		$service->setSubmission($submission);
 		if($service->hasDataSetComponent()){
 			$service->depositPackage();
@@ -41,10 +39,9 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 
 	function publishDeposit(string $hookName, array $params): void {
 		$submission = $params[2];
-		$contextId = $submission->getData("contextId");
 
 		$serviceFactory = new DataverseServiceFactory();
-		$service = $serviceFactory->build($this->getDataverseConfiguration($contextId));
+		$service = $serviceFactory->build($this->getDataverseConfiguration());
 		$service->setSubmission($submission);
 		$service->releaseStudy();
 	}
