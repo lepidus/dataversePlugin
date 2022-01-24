@@ -1,43 +1,37 @@
-# variables:
-#     PLUGIN_NAME: 'dataverse'
-#     RELEASE_PACKAGE_URL: '${CI_PROJECT_URL}'
-#     GIT_SUBMODULE_STRATEGY: recursive
+variables:
+    PLUGIN_NAME: 'dataverse'
+    RELEASE_PACKAGE_URL: '${CI_PROJECT_URL}'
+    GIT_SUBMODULE_STRATEGY: recursive
     
-# stages:
-#     - pre-release
-#     - release
+stages:
+    - pre-release
+    - release
 
-# check_version_xml:
-#     stage: pre-release
-#     rules:
-#         - if: $CI_COMMIT_TAG
-#     script:
-#         - application=$(xmlstarlet sel -t -v 'version/application' version.xml)
-#         - if [ $application != $PLUGIN_NAME ]; then exit 1; fi
-#         - release=$(xmlstarlet sel -t -v 'version/release' version.xml)
-#         - tag=${CI_COMMIT_TAG:1}
-#         - if [[ $release != $tag* ]]; then exit 1; fi
-#         - date_version=$(xmlstarlet sel -t -v 'version/date' version.xml)
-#         - current_date=$(date +'%Y-%m-%d')
-#         - if [ $date_version != $current_date ]; then exit 1; fi
-
-# build_plugin:
-#     stage: release
-#     image: registry.gitlab.com/gitlab-org/release-cli
-#     rules:
-#         - if: $CI_COMMIT_TAG
-#     script:
-#         - mkdir ${PLUGIN_NAME}
-#         - shopt -s extglob
-#         - cp -r !(${PLUGIN_NAME}|.git*|.|..|tests|cypress) ${PLUGIN_NAME}
-#         - tar -zcvf ${PLUGIN_NAME}.tar.gz ${PLUGIN_NAME}
-#         - "content=$(curl --request POST --header 'Private-Token: \'${PRIVATE_TOKEN}'\' --form 'file=@./\'${PLUGIN_NAME}\'.tar.gz' 'https://gitlab.lepidus.com.br/api/v4/projects/\'${CI_PROJECT_ID}'/uploads')"
-#         - url_upload=$(jq -r '.url' <<<$content)
-#         - RELEASE_PACKAGE_URL=$RELEASE_PACKAGE_URL$url_upload
-#         - release-cli create --name "Release $CI_COMMIT_TAG" --description "Essa release foi gerada automaticamente. Para a instalar, use o pacote presente nos assets" --tag-name "$CI_COMMIT_TAG" --ref "$CI_COMMIT_TAG" --assets-link "{\"name\":\"${PLUGIN_NAME}.tar.gz\",\"url\":\"$RELEASE_PACKAGE_URL\"}"
-
-demo:
-    tags: 
-        - ci
+check_version_xml:
+    stage: pre-release
+    rules:
+        - if: $CI_COMMIT_TAG
     script:
-    - echo Hello, World!    
+        - application=$(xmlstarlet sel -t -v 'version/application' version.xml)
+        - if [ $application != $PLUGIN_NAME ]; then exit 1; fi
+        - release=$(xmlstarlet sel -t -v 'version/release' version.xml)
+        - tag=${CI_COMMIT_TAG:1}
+        - if [[ $release != $tag* ]]; then exit 1; fi
+        - date_version=$(xmlstarlet sel -t -v 'version/date' version.xml)
+        - current_date=$(date +'%Y-%m-%d')
+        - if [ $date_version != $current_date ]; then exit 1; fi
+
+build_plugin:
+    stage: release
+    image: registry.gitlab.com/gitlab-org/release-cli
+    rules:
+        - if: $CI_COMMIT_TAG
+    script:
+        - mkdir ${PLUGIN_NAME}
+        - shopt -s extglob
+        - cp -r !(${PLUGIN_NAME}|.git*|.|..|tests|cypress) ${PLUGIN_NAME}
+        - tar -zcvf ${PLUGIN_NAME}.tar.gz ${PLUGIN_NAME}
+        - "content=$(curl --request POST --header 'Private-Token: \'${PRIVATE_TOKEN}'\' --form 'file=@./\'${PLUGIN_NAME}\'.tar.gz' 'https://gitlab.lepidus.com.br/api/v4/projects/\'${CI_PROJECT_ID}'/uploads')"
+        - url_upload=$(jq -r '.url' <<<$content)
+        - RELEASE_PACKAGE_URL=$RELEASE_PACKAGE_URL$url_upload
+        - release-cli create --name "Release $CI_COMMIT_TAG" --description "Essa release foi gerada automaticamente. Para a instalar, use o pacote presente nos assets" --tag-name "$CI_COMMIT_TAG" --ref "$CI_COMMIT_TAG" --assets-link "{\"name\":\"${PLUGIN_NAME}.tar.gz\",\"url\":\"$RELEASE_PACKAGE_URL\"}"
