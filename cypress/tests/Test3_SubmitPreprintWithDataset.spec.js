@@ -1,11 +1,12 @@
 import '../support/commands';
 
+var adminUser = Cypress.env('adminUser');
+var adminPassword = Cypress.env('adminPassword');
+var currentYear = new Date().getFullYear();
+
 describe('Deposit Draft Dataverse on Submission', function() {
 
     it('Dataverse Plugin Configuration', function() {
-        var adminUser = Cypress.env('adminUser');
-        var adminPassword = Cypress.env('adminPassword');
-
         cy.login(adminUser, adminPassword);
         cy.get('a:contains(' + adminUser + '):visible').click();
         cy.get('a:contains("Dashboard"):visible').click();
@@ -21,21 +22,16 @@ describe('Deposit Draft Dataverse on Submission', function() {
         cy.get('input[name="apiToken"]').invoke('val', Cypress.env('dataverseAPIToken'));
         cy.get('form[id="dataverseAuthForm"] button[name="submitFormButton"]').click();
         cy.get('div:contains(\'Your changes have been saved.\')');
-        cy.logout();
     });
 
     it('Create Submission', function() {
-
-		cy.register({
-			'username': 'icastanheiras1',
-			'givenName': 'Íris',
-			'familyName': 'Castanheira',
-            'email': 'iris@lepidus.com.br',
-			'affiliation': 'Preprints da Lepidus',
-			'country': 'Brazil'
-		});
+        cy.login(adminUser, adminPassword);
+        cy.get('a:contains(' + adminUser + '):visible').click();
+        cy.get('a:contains("Dashboard"):visible').click();
+        cy.get('.app__nav a').contains('Submissions').click();
 
 		cy.DataverseCreateSubmission({
+            'submitterRole': 'Preprint Server manager',
 			'title': 'The Rise of The Machine Empire',
 			'abstract': 'An example abstract',
 			'keywords': [
@@ -58,20 +54,23 @@ describe('Deposit Draft Dataverse on Submission', function() {
                     'genre': 'Data Set',
                     'publishData': false,
                 }
+            ],
+            'additionalAuthors': [
+                {
+                    'givenName': 'Íris',
+                    'familyName': 'Castanheiras',
+                    'email': 'iris@lepidus.com.br',
+                    'affiliation': 'Preprints da Lepidus',
+                    'country': 'Brazil'
+                }
             ]
 		});
-
-        cy.logout();
     });
-
 });
 
 describe('Publish Draft Dataverse on Submission Publish', function() {
 
     it('Publish Created Submission', function() {
-        var adminUser = Cypress.env('adminUser');
-        var adminPassword = Cypress.env('adminPassword');
-
         cy.login(adminUser, adminPassword);
         cy.get('a:contains(' + adminUser + '):visible').click();
         cy.get('a:contains("Dashboard"):visible').click();
@@ -88,6 +87,6 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
         cy.get('a.pkpButton:contains("View")').click();
         cy.waitJQuery();
         cy.get('.label').contains('Data citation');
-        cy.get('.value > p').contains('Íris Castanheira, 2022, "The Rise of The Machine Empire"');
+        cy.get('.value > p').contains('Íris Castanheiras, ' + currentYear + ', "The Rise of The Machine Empire"');
     });
 });

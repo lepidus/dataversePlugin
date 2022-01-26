@@ -196,6 +196,12 @@ Cypress.Commands.add("DataverseCreateSubmission", (data, context) => {
             node.tagit("createTag", keyword);
         });
     });
+
+    cy.get('#authorsGridContainer .first_column > .show_extras').click();
+    cy.get('#authorsGridContainer td a:contains("Delete")').click();
+    cy.wait(250);
+    cy.get("button").contains("OK").click();
+
     data.additionalAuthors.forEach((author) => {
         if (!("role" in author)) author.role = "Author";
         cy.get(
