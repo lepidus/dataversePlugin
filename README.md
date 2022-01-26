@@ -10,6 +10,8 @@ The latest release of this plugin is compatible with the following PKP applicati
 
 * OPS 3.3 (or higher)
 
+Using PHP 7.3 or higher, but below PHP 8.0. 
+
 ## Plugin Download
 
 To download the plugin, go to the [Releases page](https://github.com/lepidus/dataversePlugin/releases) and download the tar.gz package of the latest release compatible with your website.
@@ -20,16 +22,18 @@ To download the plugin, go to the [Releases page](https://github.com/lepidus/dat
 ## Development dependencies
 * [php-zip](https://www.php.net/manual/pt_BR/zip.installation.php)
 
-## Install from repository clone and start `swordappv` submodule
+## Development Instructions:
 
-1. Use SSH/HTTP to clone the Dataverse plugin repository on your machine
-2. With the Dataverse plugin repository cloned on your machine, open a terminal inside the repository and run the following commands:
- * git submodule init
- * git submodule update
-3. In the root of the OPS directory, execute the command to create the tables used by the plugin:
- * php tools/upgrade.php upgrade
-4. With the submodules installed in the plugin from the steps above, it is possible to link the symbolic plugin or simply copy and paste the plugin type into the OPS, in this case the folder is located at the path ops/plugins/generic .
+1. Clone the Dataverse plugin repository
+2. Open a terminal inside the repository directory and run the following commands:
+     * git submodule init
+     * git submodule update
 
+To clone [SWORD v2 PHP API library](https://github.com/swordapp/swordappv2-php-library/) submodule.
+
+3. To use the plugin into the PKP Appplication, copy it's folder to the /plugins/generic directory.
+4. And from the root of the PKP Appplication directory, execute this command to update the database, creating the tables used by the plugin:
+    * php tools/upgrade.php upgrade
 ## Installation
 
 1. Install the 'php-zip' dependency.

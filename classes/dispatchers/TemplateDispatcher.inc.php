@@ -1,27 +1,20 @@
 <?php
 
-class DataverseFormController
-{
-    private $plugin;
+import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
+import('plugins.generic.dataverse.classes.APACitation');
+import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
 
+class TemplateDispatcher extends DataverseDispatcher
+{
     public function __construct(Plugin $plugin)
 	{
-        $this->plugin = $plugin;
-		HookRegistry::register('Schema::get::submissionFile', array($this, 'modifySubmissionFileSchema'));
         HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
-    }
+		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
+		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
 
-	public function modifySubmissionFileSchema(string $hookName, array $params): bool
-	{
-		$schema =& $params[0];
-        $schema->properties->{'publishData'} = (object) [
-            'type' => 'boolean',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        return false;
-	}
+		parent::__construct($plugin);
+    }
 
     function handleSubmissionFilesMetadataFormDisplay(string $hookName, array $params): bool
 	{
@@ -62,5 +55,31 @@ class DataverseFormController
 			['publishData' => $form->getData('publishData') ? true : false],
 			Application::get()->getRequest()
 		);
+	}
+
+	function addDataCitationSubmission(string $hookName, array $params): bool {
+		$templateMgr =& $params[1];
+		$output =& $params[2];
+
+		$submission = $templateMgr->getTemplateVars('preprint');
+		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');			 
+		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
+
+		if(isset($study)) {
+			$apaCitation = new APACitation();
+			$dataCitation = $apaCitation->getCitationAsMarkupByStudy($study);
+			$templateMgr->assign('dataCitation', $dataCitation);
+			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitationSubmission.tpl'));
+		}
+
+		return false;
+	}
+
+	function setupTermsOfUseHandler($hookName, $params) {
+		$component = &$params[0];
+		if ($component == 'plugins.generic.dataverse.handlers.TermsOfUseHandler') {
+			return true;
+		}
+		return false;
 	}
 }

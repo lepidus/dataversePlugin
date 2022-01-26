@@ -21,11 +21,13 @@ class APACitationTest extends PKPTestCase
         $this->addCurrentPublicationToSubmission();
     }
     
-    protected function getMockedDAOs() {
+    protected function getMockedDAOs(): array
+    {
 		return array('JournalDAO');
 	}
     
-    private function registerMockJournalDAO() {
+    private function registerMockJournalDAO(): void
+    {
 		$journalDAO = $this->getMockBuilder(JournalDAO::class)
 			->setMethods(array('getById'))
 			->getMock();

@@ -30,7 +30,7 @@
 			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dataverseDescription"}</label>
 			
 			<label class="label">{fieldLabel name="apiToken" required="true" key="plugins.generic.dataverse.settings.token"}</label>
-			{fbvElement type="text" id="apiToken" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}
+			{fbvElement type="text" password="true" id="apiToken" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}
 			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.tokenDescription"}</label>
 			{/fbvFormSection}
 			{fbvFormButtons}
