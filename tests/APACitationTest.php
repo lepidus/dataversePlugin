@@ -103,4 +103,65 @@ class APACitationTest extends PKPTestCase
 
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
+
+    public function testFamilyNameWithAccentOnTheFirstLetter(): void
+    {
+        $this->authors[0]->setGivenName('Átila', 'en_US');
+        $this->authors[0]->setFamilyName('Álamo', 'en_US');
+
+        $apaCitation = new APACitation();
+        $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
+
+        $expectedSubmissionCitation = 'Álamo, Á. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
+
+    }
+
+    public function testGivenNameWithAccentAnyLetterExceptFirstLetterAndFamilyNameWithoutAccent(): void
+    {
+        $this->authors[0]->setGivenName('Mário', 'en_US');
+        $this->authors[0]->setFamilyName('Fernandes', 'en_US');
+
+        $apaCitation = new APACitation();
+        $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
+
+        $expectedSubmissionCitation = 'Fernandes, M. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
+    }
+
+    public function testFamilyNameWithAccentOnTheFirstLetterAndGivenNameWithoutAccent() : void 
+    {
+        $this->authors[0]->setGivenName('Lucas', 'en_US');
+        $this->authors[0]->setFamilyName('Átila', 'en_US');
+
+        $apaCitation = new APACitation();
+        $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
+
+        $expectedSubmissionCitation = 'Átila, L. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
+    }
+
+    public function testGivenNameAndFamilyNameWithAccentExceptFirstLetter(): void
+    {
+        $this->authors[0]->setGivenName('Cláudio', 'en_US');
+        $this->authors[0]->setFamilyName('Sérgio', 'en_US');
+
+        $apaCitation = new APACitation();
+        $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
+        
+        $expectedSubmissionCitation = 'Sérgio, C. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
+    }
+
+    public function testGivenNameWithAccentOnTheFirstLetter(): void
+    {
+        $this->authors[0]->setGivenName('Ângelo', 'en_US');
+
+        $apaCitation = new APACitation();
+        $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
+
+        $expectedSubmissionCitation = 'Castanheiras, Â. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
+    }
 }
+
