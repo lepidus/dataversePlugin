@@ -12,14 +12,14 @@ check_version_xml:
     rules:
         - if: $CI_COMMIT_TAG
     script:
-        - application=$(xmlstarlet sel -t -v 'version/application' version.xml)
+        - application=$(awk -F "[><]" '/application/{print $3}' version.xml) && echo $application
+        - release=$(awk -F "[><]" '/release/{print $3}' version.xml) && echo $release
+        - data_version=$(awk -F "[><]" '/date/{print $3}' version.xml) && echo $data_version
+        - tag=${CI_COMMIT_TAG:1} && echo "$tag"
+        - current_date=$(date +'%Y-%m-%d') && echo "$current_date"
         - if [ $application != $PLUGIN_NAME ]; then exit 1; fi
-        - release=$(xmlstarlet sel -t -v 'version/release' version.xml)
-        - tag=${CI_COMMIT_TAG:1}
         - if [[ $release != $tag* ]]; then exit 1; fi
-        - date_version=$(xmlstarlet sel -t -v 'version/date' version.xml)
-        - current_date=$(date +'%Y-%m-%d')
-        - if [ $date_version != $current_date ]; then exit 1; fi
+        - if [ $data_version != $current_date ]; then exit 1; fi
 
 build_plugin:
     stage: release
