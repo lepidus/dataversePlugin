@@ -20,7 +20,7 @@ class APACitation
         $submissionCitation .= '(' . date_format($submittedDate, 'Y') . '). ';
         $submissionCitation .= '<em>' . $submission->getLocalizedTitle($submission->getLocale()) . '</em>. ';
         $submissionCitation .= $journal->getLocalizedName();
-        
+
         return $submissionCitation;
     }
 
@@ -39,10 +39,10 @@ class APACitation
                 if($authorsNumbers > 1) {
                     if ($key != 0 && $key < ($authorsNumbers - 1)) {
                         $authorsCitation .= ', ' . $this->getAuthorCitation($author);
-                    } 
+                    }
                     if ($key == ($authorsNumbers - 1)) {
                         $authorsCitation .= ', &amp; ' . $this->getAuthorCitation($author);
-                    }    
+                    }
                 }
             }
         }
@@ -51,7 +51,7 @@ class APACitation
 
     private function getAuthorCitation(Author $author): string
     {
-        return $author->getLocalizedFamilyName() . ', ' . substr($author->getLocalizedGivenName(), 0, 1) . ".";
+        return $author->getLocalizedFamilyName() . ', ' . mb_substr($author->getLocalizedGivenName(), 0, 1) . ".";
     }
 
     private function retrievePubIdAttributes(Submission $submission): array
