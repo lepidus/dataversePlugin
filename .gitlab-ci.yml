@@ -3,9 +3,19 @@ variables:
     RELEASE_PACKAGE_URL: '${CI_PROJECT_URL}'
     GIT_SUBMODULE_STRATEGY: recursive
     
+include:
+    - template: Security/Secret-Detection.gitlab-ci.yml
+
 stages:
+    - test
     - pre-release
     - release
+
+secret_detection:
+    stage: test
+    script:
+        - if grep "severity" gl-secret-detection-report.json; then exit 1; fi
+    allow_failure: false
 
 check_version_xml:
     stage: pre-release
