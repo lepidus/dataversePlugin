@@ -2,19 +2,28 @@ variables:
     PLUGIN_NAME: 'dataverse'
     RELEASE_PACKAGE_URL: '${CI_PROJECT_URL}'
     GIT_SUBMODULE_STRATEGY: recursive
+    SECRET_DETECTION_REPORT_FILE: "gl-secret-detection-report.json"
     
 include:
     - template: Security/Secret-Detection.gitlab-ci.yml
 
 stages:
-    - test
+    - secret-detection
+    - secret-detection-eval
     - pre-release
     - release
 
 secret_detection:
-    stage: test
+    stage: secret-detection
+    artifacts:
+        paths:
+            - $SECRET_DETECTION_REPORT_FILE
+
+secret_detection_eval:
+    stage: secret-detection-eval
     script:
-        - if grep "severity" gl-secret-detection-report.json; then exit 1; fi
+        - apt update -qq && apt install jq -yqq
+        - if [ "$(jq ".vulnerabilities | length" $SECRET_DETECTION_REPORT_FILE)" -gt 0 ]; then echo "Segredos/credenciais encontrados!" && exit 1; fi
     allow_failure: false
 
 check_version_xml:
