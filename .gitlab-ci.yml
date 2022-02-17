@@ -1,55 +1,9 @@
 variables:
     PLUGIN_NAME: 'dataverse'
-    RELEASE_PACKAGE_URL: '${CI_PROJECT_URL}'
     GIT_SUBMODULE_STRATEGY: recursive
-    SECRET_DETECTION_REPORT_FILE: "gl-secret-detection-report.json"
     
 include:
-    - template: Security/Secret-Detection.gitlab-ci.yml
-
-stages:
-    - secret-detection
-    - secret-detection-eval
-    - pre-release
-    - release
-
-secret_detection:
-    stage: secret-detection
-    artifacts:
-        paths:
-            - $SECRET_DETECTION_REPORT_FILE
-
-secret_detection_eval:
-    stage: secret-detection-eval
-    script:
-        - apt update -qq && apt install jq -yqq
-        - if [ "$(jq ".vulnerabilities | length" $SECRET_DETECTION_REPORT_FILE)" -gt 0 ]; then echo "Segredos/credenciais encontrados!" && exit 1; fi
-    allow_failure: false
-
-check_version_xml:
-    stage: pre-release
-    rules:
-        - if: $CI_COMMIT_TAG
-    script:
-        - application=$(awk -F "[><]" '/application/{print $3}' version.xml) && echo $application
-        - release=$(awk -F "[><]" '/release/{print $3}' version.xml) && echo $release
-        - data_version=$(awk -F "[><]" '/date/{print $3}' version.xml) && echo $data_version
-        - tag=${CI_COMMIT_TAG:1} && echo "$tag"
-        - current_date=$(date +'%Y-%m-%d') && echo "$current_date"
-        - if [ $application != $PLUGIN_NAME ]; then exit 1; fi
-        - if [[ $release != $tag* ]]; then exit 1; fi
-        - if [ $data_version != $current_date ]; then exit 1; fi
-
-release_package:
-    stage: release
-    image: registry.gitlab.com/gitlab-org/release-cli
-    rules:
-        - if: $CI_COMMIT_TAG
-    script:
-        - apk add curl jq --upgrade --no-cache
-        - rm -rf .git .gitlab-ci.yml .github .vscode tests cypress
-        - cd .. && tar -zcvf /tmp/${PLUGIN_NAME}.tar.gz ${PLUGIN_NAME}
-        - "content=$(curl --request POST --header 'Private-Token: \'${PRIVATE_TOKEN}'\' --form 'file=@/tmp/\'${PLUGIN_NAME}\'.tar.gz' '\'${CI_API_V4_URL}'/projects/\'${CI_PROJECT_ID}'/uploads')"
-        - url_upload=$(echo $content | jq '.url' -r)
-        - RELEASE_PACKAGE_URL=$RELEASE_PACKAGE_URL$url_upload
-        - release-cli create --name "Release $CI_COMMIT_TAG" --description "Essa release foi gerada automaticamente. Para a instalar, use o pacote presente nos assets" --tag-name "$CI_COMMIT_TAG" --ref "$CI_COMMIT_TAG" --assets-link "{\"name\":\"${PLUGIN_NAME}.tar.gz\",\"url\":\"$RELEASE_PACKAGE_URL\"}"
+  - project: 'documentacao-e-tarefas/modelosparaintegracaocontinua'
+    ref: main
+    file:
+      - 'templates/groups/pkp_plugin.yml'
