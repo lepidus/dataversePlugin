@@ -2,6 +2,8 @@
 
 class APACitation
 {
+    private $locale;
+
     public function getCitationAsMarkupByStudy(DataverseStudy $study): string
     {
         $href = '<a href="'. $study->getPersistentUri() .'">'. $study->getPersistentUri() .'</a>';
@@ -10,6 +12,7 @@ class APACitation
 
     public function getFormattedCitationBySubmission(Submission $submission): string
     {
+        $this->locale = $submission->getLocale();
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($submission->getContextId());
         $publication = $submission->getCurrentPublication();
@@ -51,7 +54,7 @@ class APACitation
 
     private function getAuthorCitation(Author $author): string
     {
-        return $author->getLocalizedFamilyName() . ', ' . mb_substr($author->getLocalizedGivenName(), 0, 1) . ".";
+        return $author->getLocalizedFamilyName($this->locale) . ', ' . mb_substr($author->getLocalizedGivenName($this->locale), 0, 1) . ".";
     }
 
     private function retrievePubIdAttributes(Submission $submission): array
