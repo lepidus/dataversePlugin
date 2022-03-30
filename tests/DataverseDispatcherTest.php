@@ -50,10 +50,7 @@ class DataverseDispatcherTest extends PKPTestCase
     function getPluginSetting($contextId, $settingName): string
     {
 		switch ($settingName) {
-			case 'dataverseServer':
-				return $this->dataverseServer;
-
-			case 'dataverse':
+			case 'dataverseUrl':
 				return $this->dataverseUrl;
 
 			case 'apiToken':
@@ -71,13 +68,11 @@ class DataverseDispatcherTest extends PKPTestCase
         $configuration = $dispatcher->getDataverseConfiguration();
 
         $expectedConfigData = array(
-            'dataverseServer' => $this->dataverseServer,
             'dataverseUrl' => $this->dataverseUrl,
             'apiToken' => $this->apiToken,
         );
 
         $dispatcherConfigData = array(
-            'dataverseServer' => $configuration->getDataverseServer(),
             'dataverseUrl' => $configuration->getDataverseUrl(),
             'apiToken' => $configuration->getApiToken(),
         );

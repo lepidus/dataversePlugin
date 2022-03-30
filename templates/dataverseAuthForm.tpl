@@ -21,17 +21,13 @@
 	{fbvFormArea id="authForm"}
 		<div id="authForm">
 			{fbvFormSection list=true}
-			<label class="label">{fieldLabel name="dataverseServer" required="true" key="plugins.generic.dataverse.settings.dataverseServer"}</label>
-			{fbvElement type="url" id="dataverseServer" value=$dataverseServer|escape size=$fbvStyles.size.MEDIUM}
-			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dataverseServerDescription"}</label>
-
-			<label class="label">{fieldLabel name="dataverse" required="true" key="plugins.generic.dataverse.settings.dataverse"}</label>
-			{fbvElement type="url" id="dataverse" value=$dataverse|escape size=$fbvStyles.size.MEDIUM}
-			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dataverseDescription"}</label>
-			
-			<label class="label">{fieldLabel name="apiToken" required="true" key="plugins.generic.dataverse.settings.token"}</label>
-			{fbvElement type="text" password="true" id="apiToken" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}
-			<label class="sub_label">{translate key="plugins.generic.dataverse.settings.tokenDescription"}</label>
+				<label class="label">{fieldLabel name="dataverseUrl" required="true" key="plugins.generic.dataverse.settings.dataverseUrl"}</label>
+				{fbvElement type="url" id="dataverseUrl" value=$dataverse|escape size=$fbvStyles.size.MEDIUM}
+				<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dataverseUrlDescription"}</label>
+				
+				<label class="label">{fieldLabel name="apiToken" required="true" key="plugins.generic.dataverse.settings.token"}</label>
+				{fbvElement type="text" password="true" id="apiToken" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}
+				<label class="sub_label">{translate key="plugins.generic.dataverse.settings.tokenDescription"}</label>
 			{/fbvFormSection}
 			{fbvFormButtons}
 		</div>
