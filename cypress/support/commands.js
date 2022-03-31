@@ -1,5 +1,9 @@
 import '../../../../../lib/pkp/cypress/support/commands';
 
+function setData (fileName,fileTitle,genreName){
+    return{file: "dummy.pdf",fileName: fileName,fileTitle: fileTile,genre: genreName,} 
+}
+
 Cypress.Commands.add("DataverseCreateSubmission", (data, context) => {
     // Initialize some data defaults before starting
     if (data.type == "editedVolume" && !("files" in data)) {
@@ -7,10 +11,7 @@ Cypress.Commands.add("DataverseCreateSubmission", (data, context) => {
         // Edited volumes should default to a single file per chapter, named after it.
         data.chapters.forEach((chapter, index) => {
             data.files.push({
-                file: "dummy.pdf",
-                fileName: chapter.title.substring(0, 40) + ".pdf",
-                fileTitle: chapter.title,
-                genre: "Chapter Manuscript",
+                this:setData(chapter.title.substring(0, 40) + ".pdf", chapter.title, "Chapter Manuscript" )
             });
             data.chapters[index].files = [chapter.title];
         });
@@ -18,10 +19,7 @@ Cypress.Commands.add("DataverseCreateSubmission", (data, context) => {
     if (!("files" in data))
         data.files = [
             {
-                file: "dummy.pdf",
-                fileName: data.title + ".pdf",
-                fileTitle: data.title,
-                genre: Cypress.env("defaultGenre"),
+                this:setData(data.title + ".pdf", data.title, Cypress.env("defaultGenre") ),
                 publishData: false,
             },
         ];
