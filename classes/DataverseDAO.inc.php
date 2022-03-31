@@ -8,15 +8,14 @@ class DataverseDAO extends DAO
     {
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
         $result = $pluginSettingsDao->getPluginSettings($contextId, 'dataverseplugin');
-        $credentials = [$result['apiToken'], $result['dataverse'], $result['dataverseServer']];
+        $credentials = [$result['apiToken'], $result['dataverseUrl']];
         return $credentials;
     }
 
-    public function insertCredentialsOnDatabase(int $contextId, string $dataverseServer, string $dataverse, string $apiToken): bool
+    public function insertCredentialsOnDatabase(int $contextId, string $dataverseUrl, string $apiToken): bool
     {
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
-        $pluginSettingsDao->updateSetting($contextId, 'dataverseplugin', 'dataverseServer', $dataverseServer);
-        $pluginSettingsDao->updateSetting($contextId, 'dataverseplugin', 'dataverse', $dataverse);
+        $pluginSettingsDao->updateSetting($contextId, 'dataverseplugin', 'dataverseUrl', $dataverseUrl);
         $pluginSettingsDao->updateSetting($contextId, 'dataverseplugin', 'apiToken', $apiToken);
         return true;
     }

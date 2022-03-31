@@ -17,9 +17,8 @@ class DataverseDispatcher
         $contextId = $context->getId();
 
 		return new DataverseConfiguration(
-            $this->plugin->getSetting($contextId, 'apiToken'),
-            $this->plugin->getSetting($contextId, 'dataverseServer'),
-            $this->plugin->getSetting($contextId, 'dataverse')
+            $this->plugin->getSetting($contextId, 'dataverseUrl'),
+            $this->plugin->getSetting($contextId, 'apiToken')
         );
 	}
 }

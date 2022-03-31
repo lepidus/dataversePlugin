@@ -8,24 +8,21 @@ class DataverseServiceFactoryTest extends PKPTestCase
 {
     public function testServiceHasConfiguration(): void
     {
-        $apiToken = "APIToken";
-        $dataverseServer = "https://demo.dataverse.org";
         $dataverseUrl = "https://demo.dataverse.org/dataverse/dataverseDeExemplo/";
+        $apiToken = "APIToken";
 
         $factory = new DataverseServiceFactory();
-        $service = $factory->build(new DataverseConfiguration($apiToken, $dataverseServer, $dataverseUrl));
+        $service = $factory->build(new DataverseConfiguration($dataverseUrl, $apiToken));
         $configuration = $service->getClient()->getConfiguration();
 
         $expectedConfigData = [
-            'apiToken' => $apiToken,
-            'dataverseServer' => $dataverseServer,
-            'dataverseUrl' => $dataverseUrl
+            'dataverseUrl' => $dataverseUrl,
+            'apiToken' => $apiToken
         ];
 
         $serviceConfigData = [
-            'apiToken' => $configuration->getAPIToken(),
-            'dataverseServer' => $configuration->getDataverseServer(),
-            'dataverseUrl' => $configuration->getDataverseUrl()
+            'dataverseUrl' => $configuration->getDataverseUrl(),
+            'apiToken' => $configuration->getAPIToken()
         ];
 
         $this->assertEquals($expectedConfigData, $serviceConfigData);

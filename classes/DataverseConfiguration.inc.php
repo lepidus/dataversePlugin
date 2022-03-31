@@ -9,11 +9,11 @@ class DataverseConfiguration
     private $dataverseUrl;
     private $dataverseCollection;
 
-    public function __construct(string $apiToken, string $dataverseServer, string $dataverseUrl)
+    public function __construct(string $dataverseUrl, string $apiToken)
     {
         $this->apiToken = $apiToken;
-        $this->dataverseServer = $dataverseServer;
         $this->dataverseUrl = $dataverseUrl;
+        $this->dataverseServer = $this->getDataverseServer();
         $this->dataverseCollection = $this->retrieveDataverseCollection();
     }
 
@@ -24,7 +24,8 @@ class DataverseConfiguration
     
     public function getDataverseServer(): string
     {
-        return $this->dataverseServer;
+        preg_match('/https:\/\/(.)*?(?=\/)/', $this->dataverseUrl, $matches);
+        return $matches[0];
     }
     
     public function getDataverseUrl(): string
