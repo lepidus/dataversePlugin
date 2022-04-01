@@ -2,7 +2,7 @@
 
 We are implementing this plugin for OPS and OJS 3.3 (or higher) for SciELO Brasil.
 
-It is a work in progress, and we do not have an estimate to finish it.
+It is a work in progress, the current version is a MVP for OPS only.
 
 ## Compatibility
 
@@ -45,7 +45,9 @@ To clone [SWORD v2 PHP API library](https://github.com/swordapp/swordappv2-php-l
 
 After installation, it is necessary to enable the plugin. This is done in `Website Settings` > `Plugins` > `Installed Plugins`.
 
-With the plugin enabled, you should expand its options by clicking the arrow next to its name and then accessing its `Settings`. In the new window, the _Dataverse URL_ (Root Dataverse URL), _Dataverse_ (Dataverse URL) and _API Token_ will be displayed. After filling in the fields, just confirm the action by clicking `Save`. The plugin will only work after filling in these data.
+With the plugin enabled, you should expand its options by clicking the arrow next to its name and then accessing its `Settings`. In the new window, the  _Dataverse_ (Dataverse URL) and _API Token_ will be displayed. After filling in the fields, just confirm the action by clicking `Save`. The plugin will only work after filling in these data.
+
+For authors: Currently only components of the "dataset" genre are depositable in Dataverse. So deposit dialog is only shown for these kind of components.
 
 # License
 
