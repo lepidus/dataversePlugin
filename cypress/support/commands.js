@@ -106,7 +106,10 @@ Cypress.Commands.add("DataverseCreateSubmission", (data, context) => {
                 cy.get('input[id^="language"').click({ force: true }); // Close multilingual and datepicker pop-overs
             }
 
-            if (file.publishData === true) cy.get('input[id^=publishData]').check();
+            if (file.publishData === true) {
+                cy.get('input[id^=publishData]').parent().contains('Deposit file in Dataverse: Dataverse de Exemplo Lepidus, agreeing to the Terms of Use.');
+                cy.get('input[id^=publishData]').check();
+            }
 
             cy.get("button").contains("Continue").click();
             cy.get("button").contains("Complete").click();

@@ -7,7 +7,8 @@ class TermsOfUseHandler extends Handler
 	{
 		$contextId = $request->getContext()->getId();
 		$plugin = new DataversePlugin();
-		$configuration = $plugin->getDataverseConfiguration($contextId);
+		$dispatcher = new DataverseDispatcher($plugin);
+		$configuration = $dispatcher->getDataverseConfiguration($contextId);
 		$serviceFactory = new DataverseServiceFactory();
 		$service = $serviceFactory->build($configuration);
 		$termsOfUse = $service->getTermsOfUse();
