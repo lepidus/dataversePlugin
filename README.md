@@ -47,7 +47,7 @@ After installation, it is necessary to enable the plugin. This is done in `Websi
 
 With the plugin enabled, you should expand its options by clicking the arrow next to its name and then accessing its `Settings`. In the new window, the  _Dataverse_ (Dataverse URL) and _API Token_ will be displayed. After filling in the fields, just confirm the action by clicking `Save`. The plugin will only work after filling in these data.
 
-For authors: Currently only components of the "dataset" genre are depositable in Dataverse. So deposit dialog is only shown for these kind of components.
+For authors: Currently only components of the "dataset" genre are depositable in Dataverse. So deposit dialog is only shown for these kind of components. Title, abstract and keywords must be filled on preprint submission for the deposit to be made.
 
 # License
 
