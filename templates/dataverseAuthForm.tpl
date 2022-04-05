@@ -22,7 +22,7 @@
 		<div id="authForm">
 			{fbvFormSection list=true}
 				<label class="label">{fieldLabel name="dataverseUrl" required="true" key="plugins.generic.dataverse.settings.dataverseUrl"}</label>
-				{fbvElement type="url" id="dataverseUrl" value=$dataverse|escape size=$fbvStyles.size.MEDIUM}
+				{fbvElement type="url" id="dataverseUrl" value=$dataverseUrl|escape size=$fbvStyles.size.MEDIUM}
 				<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dataverseUrlDescription"}</label>
 				
 				<label class="label">{fieldLabel name="apiToken" required="true" key="plugins.generic.dataverse.settings.token"}</label>

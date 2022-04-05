@@ -30,11 +30,19 @@ class TemplateDispatcher extends DataverseDispatcher
 		if (preg_match('/<input[^>]+name="language"[^>]*>(.|\n)*?<\/div>(.|\n)*?<\/div>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
 			$match = $matches[0][0];
 			$offset = $matches[0][1];
+
 			$newOutput = substr($output, 0, $offset + strlen($match));
 			$newOutput .= $templateMgr->fetch($this->plugin->getTemplateResource('publishDataForm.tpl'));
 
+			$configuration = $this->getDataverseConfiguration();
+			$serviceFactory = new DataverseServiceFactory();
+			$service = $serviceFactory->build($configuration);
+			$dataverseName = $service->getDataverseName();
+
 			$request = PKPApplication::get()->getRequest();
 			$termsOfUseURL = $request->getDispatcher()->url($request, ROUTE_PAGE) . '/$$$call$$$/plugins/generic/dataverse/handlers/terms-of-use/get';
+
+			$newOutput = str_replace("{\$dataverseName}", $dataverseName, $newOutput);
 			$newOutput = str_replace("{\$termsOfUseURL}", $termsOfUseURL, $newOutput);
 
 			$newOutput .= substr($output, $offset + strlen($match));

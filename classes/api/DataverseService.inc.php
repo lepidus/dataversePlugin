@@ -33,6 +33,13 @@ class DataverseService {
 		return in_array(DATASET_GENRE_ID, $galleysFilesGenres);
 	}
 
+	function getDataverseName(): string
+	{
+		$receipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getConfiguration()->getDataverseDepositUrl());
+
+		return $receipt->sac_title;
+	}
+
     function createPackage(): DataversePackageCreator
 	{
 		$package = new DataversePackageCreator();
