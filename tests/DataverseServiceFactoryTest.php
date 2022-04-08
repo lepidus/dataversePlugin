@@ -2,6 +2,7 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
+import('plugins.generic.dataverse.classes.DataverseConfiguration');
 
 
 class DataverseServiceFactoryTest extends PKPTestCase

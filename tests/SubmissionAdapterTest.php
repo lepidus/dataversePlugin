@@ -2,16 +2,19 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
+import('plugins.generic.dataverse.classes.adapters.SubmissionFileAdapter');
 import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 
 
 class SubmissionAdapterTest extends PKPTestCase
 {
     private $submission;
+    private $id = 1;
     private $title = "Rethinking linguistic relativity";
     private $description = "This is a description of a submission.";
     private $keywords = array("Biological Sciences");
     private $authors;
+    private $files;
 
     public function setUp(): void
     {
@@ -22,26 +25,37 @@ class SubmissionAdapterTest extends PKPTestCase
     private function createSubmissionAdapter(): SubmissionAdapter
     {
         $this->authors = array(new AuthorAdapter("Atila", "Iamarino", "USP", "atila@usp.edu.br"));
-        return new SubmissionAdapter($this->title, $this->authors, $this->description, $this->keywords);
+        $this->files = array(new SubmissionFileAdapter(7, 'sampleTest', 'path/to/file', true, 'CAPES'));
+        return new SubmissionAdapter($this->id, $this->title, $this->authors, $this->files, $this->description, $this->keywords);
     }
 
-    public function testSubmissionTitle(): void
+    public function testReturnsSubmissionId(): void
+    {
+        $this->assertEquals($this->id, $this->submission->getId());
+    }
+
+    public function testReturnsSubmissionTitle(): void
     {
         $this->assertEquals($this->title, $this->submission->getTitle());
     }
 
-    public function testSubmissionDescription(): void
+    public function testReturnsSubmissionDescription(): void
     {
         $this->assertEquals($this->description, $this->submission->getDescription());
     }
 
-    public function testSubmissionKeywords(): void
+    public function testReturnsSubmissionKeywords(): void
     {
         $this->assertEquals($this->keywords, $this->submission->getKeywords());
     }
 
-    public function testSubmissionAuthors(): void
+    public function testReturnsSubmissionAuthors(): void
     {
         $this->assertEquals($this->authors, $this->submission->getAuthors());
+    }
+
+    public function testSubmissionFiles(): void
+    {
+        $this->assertEquals($this->files, $this->submission->getFiles());
     }
 }

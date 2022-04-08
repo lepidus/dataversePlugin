@@ -3,8 +3,6 @@
 import('plugins.generic.dataverse.classes.api.DataverseClient');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 
-define('DATASET_GENRE_ID', 7);
-
 class DataverseService {
 
     private $dataverseClient;

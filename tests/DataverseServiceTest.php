@@ -4,7 +4,7 @@ import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.api.DataverseService');
 import('plugins.generic.dataverse.classes.DataverseConfiguration');
 
-class DatasetServiceTest extends PKPTestCase {
+class DataverseServiceTest extends PKPTestCase {
 
     function createDataverseClientMock(): DataverseClient
     {
