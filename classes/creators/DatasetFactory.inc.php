@@ -15,7 +15,8 @@ class DatasetFactory
 
         $sponsors = [];
         foreach ($files as $file) {
-            $sponsors[] = $file->getSponsor();
+            if($file->getPublishData())
+                $sponsors[] = $file->getSponsor();
         }
         
         if(!empty($sponsors)) {
