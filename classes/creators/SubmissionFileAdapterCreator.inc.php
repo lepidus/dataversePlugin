@@ -11,7 +11,7 @@ class SubmissionFileAdapterCreator
         $name = $submissionFile->getLocalizedData('name', $locale);
         $path = $submissionFile->getLocalizedData('path', $locale);
         $publishData = $submissionFile->getData('publishData');
-        $sponsor = $submissionFile->getData('sponsor');
+        $sponsor = $submissionFile->getLocalizedData('sponsor', $locale);
 
         return new SubmissionFileAdapter($genreId, $name, $path, $publishData, $sponsor);
     }

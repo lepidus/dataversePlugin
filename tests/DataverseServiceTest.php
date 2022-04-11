@@ -73,8 +73,8 @@ class DataverseServiceTest extends PKPTestCase {
         $publication->setData('authors', array($author));
         $publication->setData('keywords', array("en_US" => array("computer science", "testing")));
         $publication->setData('relationStatus', '1');
+        $publication->setData('galleys', array($galley));
 
-        $submission->setData('galleys', array($galley));
         $submission->setData('currentPublicationId', 1234);
         $submission->setData('publications', array($publication));
 

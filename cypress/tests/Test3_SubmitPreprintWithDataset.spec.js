@@ -50,6 +50,9 @@ describe('Deposit Draft Dataverse on Submission', function() {
                     'fileTitle': 'Data Table',
                     'genre': 'Data Set',
                     'publishData': true,
+                    'metadata': {
+                        'sponsor': 'CAPES'
+                    }
                 },
                 {
                     'galleyLabel': 'JPG',
@@ -58,6 +61,9 @@ describe('Deposit Draft Dataverse on Submission', function() {
                     'fileTitle': 'Amostra',
                     'genre': 'Data Set',
                     'publishData': false,
+                    'metadata': {
+                        'sponsor': 'SciELO'
+                    }
                 }
             ],
             'additionalAuthors': [

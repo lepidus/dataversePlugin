@@ -16,7 +16,7 @@ class SubmissionAdapterCreator
         $id = $submission->getId();
         $title = $publication->getLocalizedData('title', $locale);
         $authors = $this->retrieveAuthors($publication, $locale);
-        $files = $this->retrieveFiles($submission);
+        $files = $this->retrieveFiles($publication);
         $description = $publication->getLocalizedData('abstract', $locale);
         $keywords = $publication->getData('keywords')[$locale];
         $citation = $apaCitation->getFormattedCitationBySubmission($submission);
@@ -44,10 +44,10 @@ class SubmissionAdapterCreator
         return $authorAdapters;
     }
 
-    private function retrieveFiles(Submission $submission): array
+    private function retrieveFiles(Publication $publication): array
     {
         $files = [];
-        $galleys = $submission->getData('galleys');
+        $galleys = $publication->getData('galleys');
         if(!empty($galleys)) {
             foreach ($galleys as $galley) {
                 $submissionFile = $galley->getFile();
