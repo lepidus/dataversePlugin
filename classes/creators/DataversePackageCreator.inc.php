@@ -45,10 +45,14 @@ class DataversePackageCreator extends PackagerAtomTwoStep
                 if ($key == 'isReferencedBy') {
                     $this->addMetadata($key, $value[0], $value[1]);
                 } else {
-                    foreach ($value as $innerKey => $metadata) {
-                        if ($key == "contributor") {
-                            $this->addMetadata($key, $metadata, array("type" => $innerKey));
-                        } else {
+                    if($key == 'contributor') {
+                        foreach ($value as $metadata) {
+                            foreach ($metadata as $innerKey => $innerValue) {
+                                $this->addMetadata($key, $innerValue, array("type" => $innerKey));
+                            }
+                        }
+                    } else {
+                        foreach ($value as $innerKey => $metadata) {
                             $this->addMetadata($key, $metadata);
                         }
                     }

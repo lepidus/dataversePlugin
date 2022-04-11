@@ -2,6 +2,8 @@
 
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
 import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
+import('plugins.generic.dataverse.classes.creators.SubmissionFileAdapterCreator');
+import('plugins.generic.dataverse.classes.APACitation');
 
 class SubmissionAdapterCreator
 {
@@ -52,7 +54,7 @@ class SubmissionAdapterCreator
                 $submissionFileAdapterCreator = new SubmissionFileAdapterCreator();
                 $files[] = $submissionFileAdapterCreator->createSubmissionFileAdapter($submissionFile);
             }
-        }        
+        }
         return $files;
     }
 }

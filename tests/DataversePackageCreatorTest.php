@@ -4,6 +4,7 @@ import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
+import('plugins.generic.dataverse.classes.adapters.SubmissionFileAdapter');
 import('plugins.generic.dataverse.classes.DatasetModel');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 
@@ -32,7 +33,7 @@ class DataversePackageCreatorTest extends PKPTestCase
     private $description = 'An example abstract';
     private $creator     = array("Irís Castanheiras");
     private $subject     = array("computer science");
-    private $contributor = array("contact" => "iris@lepidus.com.br");
+    private $contributor = array(array('Funder' => 'CAPES'));
 
     public function setUp(): void
     {
@@ -62,7 +63,8 @@ class DataversePackageCreatorTest extends PKPTestCase
 
     private function createDefaultTestAtomEntryFromSubmission(): void
     {
-        $this->authors[] = new AuthorAdapter("Irís", "Castanheiras", 'Universidade de São Paulo', $this->contributor['contact']);
+        $this->authors[] = new AuthorAdapter("Irís", "Castanheiras", 'Universidade de São Paulo', 'iris@lepidus.com.br');
+        $this->files = array(new SubmissionFileAdapter(1, 'testSample', 'path/to/file', true, 'CAPES'));
         $this->submissionAdapter = new SubmissionAdapter($this->id, $this->title, $this->authors, $this->files, $this->description, $this->subject);
 
         $datasetFactory = new DatasetFactory();
@@ -126,7 +128,7 @@ class DataversePackageCreatorTest extends PKPTestCase
             'atomEntryDescription' => $this->description,
             'atomEntryCreator' => $this->creator[0],
             'atomEntrySubject' => $this->subject[0],
-            'atomEntryContributor' => $this->contributor['contact']
+            'atomEntryContributor' => $this->contributor[0]['Funder']
         );
 
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);
@@ -150,7 +152,7 @@ class DataversePackageCreatorTest extends PKPTestCase
             'atomEntryDescription' => $this->description,
             'atomEntryCreator' => $this->creator[0],
             'atomEntrySubject' => $this->subject[0],
-            'atomEntryContributor' => $this->contributor['contact']
+            'atomEntryContributor' => $this->contributor[0]['Funder']
         );
 
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);

@@ -8,12 +8,25 @@ class DatasetFactory
     {
         $title = $submissionAdapter->getTitle();
         $authors = $submissionAdapter->getAuthors();
+        $files = $submissionAdapter->getFiles();
         $description = $submissionAdapter->getDescription();
         $subject = $submissionAdapter->getKeywords();
         $isReferencedBy = $submissionAdapter->getReference();
+
+        $sponsors = [];
+        foreach ($files as $file) {
+            $sponsors[] = $file->getSponsor();
+        }
+        
+        if(!empty($sponsors)) {
+            foreach ($sponsors as $sponsor) {
+                $contributors[] = array('Funder' => $sponsor);
+            }
+        } else {
+            $contributors[] = array('Funder' => 'N/A');
+        }
         
         foreach ($authors as $author) {
-            $contributors = array('contact' => $author->getAuthorEmail());
             $creator[] = $author->getFullName();
         }
         

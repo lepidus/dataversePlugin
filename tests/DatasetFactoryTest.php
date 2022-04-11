@@ -17,6 +17,7 @@ class DatasetFactoryTest extends PKPTestCase
     private $files;
     private $description = "This is a description/abstract.";
     private $keywords = array("Modern History", "Computer Science");
+    private $contributor = array(array('Funder' => 'CAPES'));
     private $authorsEmails = array("iris@lepidus.com.br");
 
     public function setUp(): void
@@ -40,14 +41,14 @@ class DatasetFactoryTest extends PKPTestCase
         foreach ($this->authors as $author)
         {
             $creator[] = $author->getFullName();
-            $contributor = array('contact' => $author->getAuthorEmail());
         }
+
         $expectedData = array(
             'title' => $this->title,
             'description' => $this->description,
             'creator' => $creator,
             'subject' => $this->keywords,
-            'contributor' => $contributor,
+            'contributor' => $this->contributor
         );
 
         $this->assertEquals($expectedData, $this->dataset->getMetadataValues());
