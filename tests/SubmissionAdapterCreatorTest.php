@@ -5,6 +5,7 @@ import('classes.journal.Journal');
 import('classes.submission.Submission');
 import('classes.publication.Publication');
 import('classes.article.Author');
+import('plugins.generic.dataverse.classes.APACitation');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 
 class SubmissionAdapterCreatorTest extends PKPTestCase
@@ -38,7 +39,7 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
         $this->createTestPublication();
         $this->addCurrentPublicationToSubmission();
 
-        $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submission, $this->locale);
+        $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submission);
     }
 
     private function createAuthors(): void
@@ -90,11 +91,6 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
         $this->publication->setData('relationStatus', '1');
         $this->publication->setData('status', $this->statusCode);
         $this->publication->setData('keywords', $this->keywords);
-    }
-
-    public function testCreatorReturnsSubmissionAdapterObject(): void
-    {
-        $this->assertTrue($this->submissionAdapter instanceof SubmissionAdapter);
     }
 
     public function testRetrieveSubmissionTitle(): void

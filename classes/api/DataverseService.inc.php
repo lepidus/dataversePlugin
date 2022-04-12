@@ -1,9 +1,9 @@
 <?php
 
 import('plugins.generic.dataverse.classes.api.DataverseClient');
+import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
+import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
-
-define('DATASET_GENRE_ID', 7);
 
 class DataverseService {
 
@@ -22,15 +22,17 @@ class DataverseService {
 
 	function setSubmission(Submission $submission): void
 	{
-		$this->submission = $submission;
+		$submissionAdapterCreator = new SubmissionAdapterCreator();
+		$submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($submission);
+		$this->submission = $submissionAdapter;
 	}
 
 	function hasDataSetComponent(): bool
 	{
-		foreach($this->submission->getGalleys() as $galley) {
-			$galleysFilesGenres[] = $galley->getFile()->getGenreId();
+		foreach($this->submission->getFiles() as $file) {
+			$filesGenres[] = $file->getGenreId();
 		}
-		return in_array(DATASET_GENRE_ID, $galleysFilesGenres);
+		return in_array(DATASET_GENRE_ID, $filesGenres);
 	}
 
 	function getDataverseName(): string
@@ -43,18 +45,16 @@ class DataverseService {
     function createPackage(): DataversePackageCreator
 	{
 		$package = new DataversePackageCreator();
-		$submissionAdapterCreator = new SubmissionAdapterCreator();
 		$datasetFactory = new DatasetFactory();
-		$submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($this->submission);
-		$datasetModel = $datasetFactory->build($submissionAdapter);
+		$datasetModel = $datasetFactory->build($this->submission);
 		$package->loadMetadata($datasetModel);
 		$package->createAtomEntry();
 
 		$publicFilesDir = Config::getVar('files', 'files_dir');
-		foreach($this->submission->getGalleys() as $galley) {
-			if ($galley->getFile()->getData('publishData')) {
-				$galleyFilePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $galley->getFile()->getLocalizedData('path');
-				$package->addFileToPackage($galleyFilePath, $galley->getFile()->getLocalizedData('name'));
+		foreach($this->submission->getFiles() as $file) {
+			if ($file->getPublishData()) {
+				$filePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $file->getPath();
+				$package->addFileToPackage($filePath, $file->getName());
 			}
 		}
 		$package->createPackage();

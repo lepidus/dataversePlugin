@@ -2,7 +2,11 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
+import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
+import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
+import('plugins.generic.dataverse.classes.adapters.SubmissionFileAdapter');
 import('plugins.generic.dataverse.classes.DatasetModel');
+import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 
 define('ATOM_ENTRY_XML_NAMESPACE', 'http://www.w3.org/2005/Atom');
 define('ATOM_ENTRY_XML_DCTERMS', 'http://purl.org/dc/terms/');
@@ -18,16 +22,18 @@ class DataversePackageCreatorTest extends PKPTestCase
 
     private $keywords = ["en_US" => array("computer science")];
     private $authors = array();
+    private $files = array();
     private $locale = 'en_US';
     private $dateSubmitted = '2021-05-31 15:38:24';
     private $dateLastActivity = '2021-06-03 16:00:00';
     private $statusCode = "STATUS_PUBLISHED";
 
+    private $id          = 1;
     private $title       = 'The Rise of The Machine Empire';
     private $description = 'An example abstract';
     private $creator     = array("Irís Castanheiras");
     private $subject     = array("computer science");
-    private $contributor = array("contact" => "iris@lepidus.com.br");
+    private $contributor = array(array('Funder' => 'CAPES'));
 
     public function setUp(): void
     {
@@ -57,8 +63,9 @@ class DataversePackageCreatorTest extends PKPTestCase
 
     private function createDefaultTestAtomEntryFromSubmission(): void
     {
-        $this->authors[] = new AuthorAdapter("Irís", "Castanheiras", 'Universidade de São Paulo', $this->contributor['contact']);
-        $this->submissionAdapter = new SubmissionAdapter($this->title, $this->authors, $this->description, $this->subject);
+        $this->authors[] = new AuthorAdapter("Irís", "Castanheiras", 'Universidade de São Paulo', 'iris@lepidus.com.br');
+        $this->files = array(new SubmissionFileAdapter(1, 'testSample', 'path/to/file', true, 'CAPES'));
+        $this->submissionAdapter = new SubmissionAdapter($this->id, $this->title, $this->authors, $this->files, $this->description, $this->subject);
 
         $datasetFactory = new DatasetFactory();
         $this->datasetModel = $datasetFactory->build($this->submissionAdapter);
@@ -121,7 +128,7 @@ class DataversePackageCreatorTest extends PKPTestCase
             'atomEntryDescription' => $this->description,
             'atomEntryCreator' => $this->creator[0],
             'atomEntrySubject' => $this->subject[0],
-            'atomEntryContributor' => $this->contributor['contact']
+            'atomEntryContributor' => $this->contributor[0]['Funder']
         );
 
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);
@@ -145,7 +152,7 @@ class DataversePackageCreatorTest extends PKPTestCase
             'atomEntryDescription' => $this->description,
             'atomEntryCreator' => $this->creator[0],
             'atomEntrySubject' => $this->subject[0],
-            'atomEntryContributor' => $this->contributor['contact']
+            'atomEntryContributor' => $this->contributor[0]['Funder']
         );
 
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);
