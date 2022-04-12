@@ -48,7 +48,7 @@ msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Informe uma chave de API para Dataverse."
 
 msgid "plugins.generic.dataverse.dataCitationLabel"
-msgstr "Citação de dados"
+msgstr "Dados de pesquisa"
 
 msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
 msgstr "Depositar arquivo no Dataverse: <strong>{$dataverseName}</strong>, concordando com os <a href=\"{$termsOfUseURL}\" target=\"_new\">Termos de Uso</a>."
