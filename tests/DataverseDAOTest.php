@@ -20,9 +20,9 @@ class DataverseDAOTest extends DatabaseTestCase
         $this->dataverseDAO =  new DataverseDAO();
     }
 
-    protected function getEffectedTables(): array
+    protected function getAffectedTables(): array
     {
-        return ['plugin_settings'];
+        return array('plugin_settings');
     }
 
     public function testCredentialsAddedInDB(): void
