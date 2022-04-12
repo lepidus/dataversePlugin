@@ -29,32 +29,32 @@ class SubmissionAdapterTest extends PKPTestCase
         return new SubmissionAdapter($this->id, $this->title, $this->authors, $this->files, $this->description, $this->keywords);
     }
 
-    public function testReturnsSubmissionId(): void
+    public function testHasSubmissionId(): void
     {
         $this->assertEquals($this->id, $this->submission->getId());
     }
 
-    public function testReturnsSubmissionTitle(): void
+    public function testHasSubmissionTitle(): void
     {
         $this->assertEquals($this->title, $this->submission->getTitle());
     }
 
-    public function testReturnsSubmissionDescription(): void
+    public function testHasSubmissionDescription(): void
     {
         $this->assertEquals($this->description, $this->submission->getDescription());
     }
 
-    public function testReturnsSubmissionKeywords(): void
+    public function testHasSubmissionKeywords(): void
     {
         $this->assertEquals($this->keywords, $this->submission->getKeywords());
     }
 
-    public function testReturnsSubmissionAuthors(): void
+    public function testHasSubmissionAuthors(): void
     {
         $this->assertEquals($this->authors, $this->submission->getAuthors());
     }
 
-    public function testSubmissionFiles(): void
+    public function testHasSubmissionFiles(): void
     {
         $this->assertEquals($this->files, $this->submission->getFiles());
     }
