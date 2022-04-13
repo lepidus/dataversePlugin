@@ -10,7 +10,7 @@ class TemplateDispatcher extends DataverseDispatcher
 	{
         HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
-		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
+		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
 
 		parent::__construct($plugin);
