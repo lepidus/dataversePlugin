@@ -75,6 +75,13 @@ class DataverseService {
 				$package->getContentType()
 			);
 		}
+
+		$statement = $this->dataverseClient->retrieveAtomStatement($study->getStatementUri());
+		if(!empty($statement)) {
+			foreach ($statement->sac_entries as $entry) {
+				$dataverseFileKey = substr($entry->sac_content_source, strrpos($entry->sac_content_source, '/')+1);
+			}
+		}
 	}
 
 	public function dataverseIsReleased(): bool

@@ -37,8 +37,7 @@ class DataverseFileDAOTest extends DatabaseTestCase
         $dataverseFileId = $dataverseFileDAO->insertObject($this->dataverseFile);
 
         $dataverseFileFromDB = $dataverseFileDAO->getById($dataverseFileId);
-
-
+        
         $this->assertEquals($this->dataverseFile, $dataverseFileFromDB);
     }
 }
