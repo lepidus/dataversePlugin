@@ -1,11 +1,10 @@
 variables:
     PLUGIN_NAME: 'dataverse'
-    GIT_SUBMODULE_STRATEGY: recursive
     
 include:
   - project: 'documentacao-e-tarefas/modelosparaintegracaocontinua'
     ref: main
     file:
-      - 'templates/groups/pkp_plugin.yml'
+      - 'templates/groups/pkp_plugin_mirrored.yml'
 
       
