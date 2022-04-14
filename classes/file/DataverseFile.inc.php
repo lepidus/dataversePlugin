@@ -2,6 +2,16 @@
 
 class DataverseFile extends DataObject
 {
+    public function setFileId(int $fileId): void
+    {
+        $this->setData('fileId', $fileId);
+    }
+
+    public function getFileId(): int
+    {
+        return $this->getData('fileId');
+    }
+
     public function setStudyId(int $studyId): void
     {
         $this->setData('studyId', $studyId);
@@ -20,6 +30,16 @@ class DataverseFile extends DataObject
     public function getSubmissionId(): int
     {
         return $this->getData('submissionId');
+    }
+
+    public function setSubmissionFileId(int $submissionFileId): void
+    {
+        $this->setData('submissionFileId', $submissionFileId);
+    }
+
+    public function getSubmissionFileId(): int
+    {
+        return $this->getData('submissionFileId');
     }
 
     public function setContentUri(string $contentUri): void

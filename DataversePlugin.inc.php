@@ -99,9 +99,9 @@ class DataversePlugin extends GenericPlugin {
 		return parent::manage($args, $request);
 	}
 
-	function getInstallMigration(): DataverseStudyMigration {
-        $this->import('classes.migration.DataverseStudyMigration');
-        return new DataverseStudyMigration();
+	function getInstallMigration(): DataverseMigration {
+        $this->import('classes.migration.DataverseMigration');
+        return new DataverseMigration();
     }
 }
 
