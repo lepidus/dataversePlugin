@@ -6,5 +6,3 @@ include:
     ref: main
     file:
       - 'templates/groups/pkp_plugin_mirrored.yml'
-
-      
