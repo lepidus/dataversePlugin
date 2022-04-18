@@ -6,7 +6,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class DataverseFileDAO extends DAO
 {
-    function getById(int $dataverseFileId): DataverseFile
+    function getById(int $dataverseFileId): ?DataverseFile
     {
         $result = Capsule::table('dataverse_files')
             ->where('file_id', $dataverseFileId)
@@ -20,10 +20,10 @@ class DataverseFileDAO extends DAO
 		return $dataverseFile;
 	}
 
-    function getBySubmissionFileId(int $submissionFileId): DataverseFile
+    function getBySubmissionFileId(int $submissionFileId): ?DataverseFile
     {
         $result = Capsule::table('dataverse_files')
-            ->where('submission_file_id', $dataverseFileId)
+            ->where('submission_file_id', $submissionFileId)
             ->get();
 
         $dataverseFile = null;

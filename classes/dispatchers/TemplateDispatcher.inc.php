@@ -11,6 +11,7 @@ class TemplateDispatcher extends DataverseDispatcher
         HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
+		HookRegistry::register('TemplateManager::display', array($this, 'changeGalleysLinks'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
 
 		parent::__construct($plugin);
@@ -81,6 +82,49 @@ class TemplateDispatcher extends DataverseDispatcher
 		}
 
 		return false;
+	}
+
+	function changeGalleysLinks(string $hookName, array $params)
+	{
+		$smarty = $params[0];
+		$template = $params[1];
+
+		error_log($template);
+
+		switch ($template) {
+			case 'frontend/pages/preprint.tpl':
+				$smarty->registerFilter("output", array($this, 'galleyLinkFilter'));
+				break;
+			default:
+				return false;
+		}
+	}
+
+	function galleyLinkFilter(string $output, Smarty_Internal_Template $templateMgr): string
+	{
+		$offset = 0;
+		$foundGalleyLinks = false;
+		while(preg_match('/<a[^>]+class="obj_galley_link[^>]*"[^>]+href="([^>]+)">[^<]+<\/a>/', $output, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+			$foundGalleyLinks = true;
+			$matchAll = $matches[0][0];
+			$posMatchAll = $matches[0][1];
+			$linkGalley = $matches[1][0];
+
+			$fileId = (int) substr($linkGalley, strrpos($linkGalley, '/')+1);
+			$dataverseFileDAO = DAORegistry::getDAO('DataverseFileDAO');
+			$dataverseFile = $dataverseFileDAO->getBySubmissionFileId($fileId);
+
+			if(!empty($dataverseFile)) {
+				$output = substr_replace($output, "", $posMatchAll, strlen($matchAll));
+				$offset = $posMatchAll;
+			}
+			else {
+				$offset = $posMatchAll + strlen($matchAll);
+			}
+		}
+		
+		if($foundGalleyLinks) $templateMgr->unregisterFilter('output', array($this, 'galleyLinkFilter'));
+		return $output;
 	}
 
 	function setupTermsOfUseHandler($hookName, $params) {
