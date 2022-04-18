@@ -2,6 +2,8 @@
 
 import('plugins.generic.dataverse.classes.api.DataverseClient');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
+import('plugins.generic.dataverse.classes.file.DataverseFile');
+import('plugins.generic.dataverse.classes.file.DataverseFileDAO');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 
@@ -80,6 +82,21 @@ class DataverseService {
 		if(!empty($statement)) {
 			foreach ($statement->sac_entries as $entry) {
 				$dataverseFileKey = substr($entry->sac_content_source, strrpos($entry->sac_content_source, '/')+1);
+				$dataverseFiles[$dataverseFileKey] = $entry->sac_content_source;
+			}
+
+			$files = $this->submission->getFiles();
+			foreach ($files as $file) {
+				$fileKey = $file->getName();
+				if(array_key_exists($fileKey, $dataverseFiles)) {
+					$dataverseFile = new DataverseFile();
+					$dataverseFile->setStudyId($study->getId());
+					$dataverseFile->setSubmissionId($this->submission->getId());
+					$dataverseFile->setSubmissionFileId($file->getId());
+					$dataverseFile->setContentUri($dataverseFiles[$fileKey]);
+					$dataverseFileDAO = DAORegistry::getDAO('DataverseFileDAO');
+					$dataverseFileDAO->insertObject($dataverseFile);
+				}
 			}
 		}
 	}
