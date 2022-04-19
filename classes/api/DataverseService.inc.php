@@ -87,7 +87,7 @@ class DataverseService {
 
 			$files = $this->submission->getFiles();
 			foreach ($files as $file) {
-				$fileKey = $file->getName();
+				$fileKey = str_replace(' ', '_', $file->getName());
 				if(array_key_exists($fileKey, $dataverseFiles)) {
 					$dataverseFile = new DataverseFile();
 					$dataverseFile->setStudyId($study->getId());
