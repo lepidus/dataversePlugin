@@ -110,9 +110,12 @@ class TemplateDispatcher extends DataverseDispatcher
 			$posMatchAll = $matches[0][1];
 			$linkGalley = $matches[1][0];
 
-			$fileId = (int) substr($linkGalley, strrpos($linkGalley, '/')+1);
+			$galleyId = (int) substr($linkGalley, strrpos($linkGalley, '/')+1);
+			$galleyService = Services::get('galley');
+			$galley = $galleyService->get($galleyId);
+			$submissionFile = $galley->getFile();
 			$dataverseFileDAO = DAORegistry::getDAO('DataverseFileDAO');
-			$dataverseFile = $dataverseFileDAO->getBySubmissionFileId($fileId);
+			$dataverseFile = $dataverseFileDAO->getBySubmissionFileId($submissionFile->getId());
 
 			if(!empty($dataverseFile)) {
 				$output = substr_replace($output, "", $posMatchAll, strlen($matchAll));
