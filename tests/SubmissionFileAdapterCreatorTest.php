@@ -10,6 +10,7 @@ class SubmissionFileAdapterCreatorTest extends PKPTestCase
     private function createSubmissionFile(): SubmissionFile
     {
         $submissionFile = new SubmissionFile();
+        $submissionFile->setId(1);
         $submissionFile->setData('genreId', 7);
         $submissionFile->setData('name', 'testSample.csv');
         $submissionFile->setData('path', 'path/to/file');

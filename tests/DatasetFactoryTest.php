@@ -24,7 +24,7 @@ class DatasetFactoryTest extends PKPTestCase
     {
         parent::setUp();
         $this->authors = array(new AuthorAdapter("Irís", "Castanheiras", "Lepidus", $this->authorsEmails[0]));
-        $this->files = array(new SubmissionFileAdapter(1, 'testSample', 'path/to/file', true, 'CAPES'));
+        $this->files = array(new SubmissionFileAdapter(1, 1, 'testSample', 'path/to/file', true, 'CAPES'));
         
         $submissionAdapter = new SubmissionAdapter($this->id, $this->title, $this->authors, $this->files, $this->description, $this->keywords);
         $datasetFactory = new DatasetFactory();

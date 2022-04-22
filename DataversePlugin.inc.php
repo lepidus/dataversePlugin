@@ -19,6 +19,7 @@ import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseServiceDispatcher');
 import('plugins.generic.dataverse.classes.dispatchers.TemplateDispatcher');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
+import('plugins.generic.dataverse.classes.file.DataverseFileDAO');
 
 class DataversePlugin extends GenericPlugin {
 
@@ -27,10 +28,12 @@ class DataversePlugin extends GenericPlugin {
 	 */
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
-		$dataverseStudyDAO = new DataverseStudyDAO();
 		$templateDispatcher = new TemplateDispatcher($this);
 		$serviceDispatcher = new DataverseServiceDispatcher($this);
+		$dataverseStudyDAO = new DataverseStudyDAO();
+		$dataverseFileDAO = new DataverseFileDAO();
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
+		DAORegistry::registerDAO('DataverseFileDAO', $dataverseFileDAO);
 		return $success;
 	}
 
@@ -99,9 +102,9 @@ class DataversePlugin extends GenericPlugin {
 		return parent::manage($args, $request);
 	}
 
-	function getInstallMigration(): DataverseStudyMigration {
-        $this->import('classes.migration.DataverseStudyMigration');
-        return new DataverseStudyMigration();
+	function getInstallMigration(): DataverseMigration {
+        $this->import('classes.migration.DataverseMigration');
+        return new DataverseMigration();
     }
 }
 
