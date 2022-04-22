@@ -1,6 +1,6 @@
 variables:
     PLUGIN_NAME: 'dataverse'
-    SAST_EXCLUDED_PATHS: classes/creators/DataversePackageCreator.inc.php, tests/DataversePackageCreatorTest.php, libs/swordappv2-php-library
+    SAST_EXCLUDED_PATHS: libs/swordappv2-php-library
     
 include:
   - project: 'documentacao-e-tarefas/modelosparaintegracaocontinua'
