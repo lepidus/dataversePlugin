@@ -68,6 +68,14 @@ class DataverseService {
 	{
 		$package = $this->createPackage();
 
+		$study = $this->depositStudy($package);
+		if(!empty($study)) {
+			$this->insertDataverseFilesInDB($study);
+		}
+	}
+
+	public function depositStudy(DataversePackageCreator $package): ?DataverseStudy
+	{
 		$study = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath(), $this->submission->getId());
 		if(!is_null($study)) {
 			$this->dataverseClient->depositFiles(
@@ -77,7 +85,11 @@ class DataverseService {
 				$package->getContentType()
 			);
 		}
+		return $study;
+	}
 
+	public function insertDataverseFilesInDB(DataverseStudy $study): void
+	{
 		$statement = $this->dataverseClient->retrieveAtomStatement($study->getStatementUri());
 		if(!empty($statement)) {
 			foreach ($statement->sac_entries as $entry) {
