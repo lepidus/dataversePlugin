@@ -46,3 +46,9 @@ msgstr "Research data"
 
 msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
 msgstr "Deposit file in Dataverse: <strong>{$dataverseName}</strong>, agreeing to the <a href=\"{$termsOfUseURL}\" target=\"_new\">Terms of Use</a>."
+
+msgid "plugins.generic.dataverse.notification.statusCreated"
+msgstr "Dataset successful created in <strong>{$dataverseName}</strong>"
+
+msgid "plugins.generic.dataverse.notification.statusUnavailable"
+msgstr "Service Unavailable. <strong>{$dataverseName}</strong> is temporarily busy. Please try again later"

@@ -52,3 +52,9 @@ msgstr "Dados de pesquisa"
 
 msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
 msgstr "Depositar arquivo no Dataverse: <strong>{$dataverseName}</strong>, concordando com os <a href=\"{$termsOfUseURL}\" target=\"_new\">Termos de Uso</a>."
+
+msgid "plugins.generic.dataverse.notification.statusCreated"
+msgstr "Dataset depositado com sucesso em <strong>{$dataverseName}</strong>!"
+
+msgid "plugins.generic.dataverse.notification.statusUnavailable"
+msgstr "Servidor não disponível. <strong>{$dataverseName}</strong> está temporariamente fora do ar. Por favor, tente novamente mais tarde"

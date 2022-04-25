@@ -1,10 +1,12 @@
 <?php 
 
 import('plugins.generic.dataverse.classes.study.DataverseStudy');
+import('plugins.generic.dataverse.classes.dispatchers.DataverseNotificationDispatcher');
 require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
 
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE', 503);
 
 class DataverseClient {
     private $configuration;
@@ -57,26 +59,36 @@ class DataverseClient {
 
     public function depositAtomEntry(string $atomEntryPath, int $submissionId): DataverseStudy
     {
-        $depositReceipt = $this->swordClient->depositAtomEntry($this->configuration->getDataverseDepositUrl(), $this->configuration->getApiToken(), '', '', $atomEntryPath);
+        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
+        $dataverseNotification = new DataverseNotificationDispatcher($plugin);
 
+        $depositReceipt = $this->swordClient->depositAtomEntry($this->configuration->getDataverseDepositUrl(), $this->configuration->getApiToken(), '', '', $atomEntryPath);
+        
         $study = null;
-		if ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED) {
-			$study = new DataverseStudy();
-			$study->setSubmissionId($submissionId);
-			$study->setEditUri($depositReceipt->sac_edit_iri);
-			$study->setEditMediaUri($depositReceipt->sac_edit_media_iri);
-			$study->setStatementUri($depositReceipt->sac_state_iri_atom);
-			$study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
-			
-			foreach ($depositReceipt->sac_links as $link) {
-				if ($link->sac_linkrel == 'alternate') {
-					$study->setPersistentUri($link->sac_linkhref);
-					break;
-				}
-			}
-			$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');			 
-			$dataverseStudyDao->insertStudy($study);
-		}
+        switch ($depositReceipt->sac_status) {
+            case DATAVERSE_PLUGIN_HTTP_STATUS_CREATED:
+                $study = new DataverseStudy();
+                $study->setSubmissionId($submissionId);
+                $study->setEditUri($depositReceipt->sac_edit_iri);
+                $study->setEditMediaUri($depositReceipt->sac_edit_media_iri);
+                $study->setStatementUri($depositReceipt->sac_state_iri_atom);
+                $study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
+                
+                foreach ($depositReceipt->sac_links as $link) {
+                    if ($link->sac_linkrel == 'alternate') {
+                        $study->setPersistentUri($link->sac_linkhref);
+                        break;
+                    }
+                }
+                $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');	 
+                $dataverseStudyDao->insertStudy($study);
+
+                $dataverseNotification->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED);
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE:
+                $dataverseNotification->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE);
+                break;
+        }
 		return $study;
     }
 
@@ -91,7 +103,7 @@ class DataverseClient {
         return $this->swordClient->retrieveAtomStatement($url, $this->configuration->getApiToken(), '', '');
     }
 
-    public function retrieveDepositReceipt(string $url): SWORDAPPEntry
+    public function retrieveDepositReceipt(string $url): ?SWORDAPPEntry
     {
         $depositReceipt = $this->swordClient->retrieveDepositReceipt($url, $this->configuration->getApiToken(), '', '');
         return ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) ? $depositReceipt : null;

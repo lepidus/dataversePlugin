@@ -35,9 +35,7 @@ class TemplateDispatcher extends DataverseDispatcher
 			$newOutput = substr($output, 0, $offset + strlen($match));
 			$newOutput .= $templateMgr->fetch($this->plugin->getTemplateResource('publishDataForm.tpl'));
 
-			$configuration = $this->getDataverseConfiguration();
-			$serviceFactory = new DataverseServiceFactory();
-			$service = $serviceFactory->build($configuration);
+			$service = $this->getDataverseService();
 			$dataverseName = $service->getDataverseName();
 
 			$request = PKPApplication::get()->getRequest();
