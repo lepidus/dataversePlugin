@@ -6,14 +6,17 @@ require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclie
 
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED', 403);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE', 503);
 
 class DataverseClient {
     private $configuration;
     private $swordClient;
+    private $dataverseNotification;
 
-    public function __construct(DataverseConfiguration $configuration)
+    public function __construct(DataverseConfiguration $configuration, DataversePlugin $plugin)
     {
+        $this->dataverseNotification = new DataverseNotificationDispatcher($plugin);
         $this->configuration = $configuration;
         $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
     }
@@ -21,12 +24,6 @@ class DataverseClient {
     public function getConfiguration(): DataverseConfiguration
     {
         return $this->configuration;
-    }
-    
-    private function validateCredentials(string $serviceDocumentRequest): bool
-    {
-		$serviceDocumentClient = $this->swordClient->servicedocument($serviceDocumentRequest, $this->configuration->getApiToken(), '', '');
-        return isset($serviceDocumentClient) && $serviceDocumentClient->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK;    
     }
 
     private function getServiceDocument(): SWORDAPPServiceDocument
@@ -51,17 +48,14 @@ class DataverseClient {
         return $dataverseTermsOfUse;
     }
 
-
     public function checkConnectionWithDataverse(): bool
     {
-		return $this->validateCredentials($this->configuration->getDataverseServiceDocumentUrl());
+		$serviceDocument = $this->getServiceDocument();
+        return isset($serviceDocument) && $serviceDocument->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK;
 	}
 
     public function depositAtomEntry(string $atomEntryPath, int $submissionId): DataverseStudy
     {
-        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
-        $dataverseNotification = new DataverseNotificationDispatcher($plugin);
-
         $depositReceipt = $this->swordClient->depositAtomEntry($this->configuration->getDataverseDepositUrl(), $this->configuration->getApiToken(), '', '', $atomEntryPath);
         
         $study = null;
@@ -83,10 +77,10 @@ class DataverseClient {
                 $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');	 
                 $dataverseStudyDao->insertStudy($study);
 
-                $dataverseNotification->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED);
+                $this->dataverseNotification->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED);
                 break;
             case DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE:
-                $dataverseNotification->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE);
+                $this->dataverseNotification->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE);
                 break;
         }
 		return $study;
@@ -106,7 +100,12 @@ class DataverseClient {
     public function retrieveDepositReceipt(string $url): ?SWORDAPPEntry
     {
         $depositReceipt = $this->swordClient->retrieveDepositReceipt($url, $this->configuration->getApiToken(), '', '');
-        return ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) ? $depositReceipt : null;
+        if ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
+            return $depositReceipt;
+        } else {
+            $this->dataverseNotification->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED);
+            return null;
+        }
     }
 
     public function completeIncompleteDeposit(string $url): bool

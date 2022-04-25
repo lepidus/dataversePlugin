@@ -52,3 +52,6 @@ msgstr "Dataset successful created in <strong>{$dataverseName}</strong>"
 
 msgid "plugins.generic.dataverse.notification.statusUnavailable"
 msgstr "Service Unavailable. <strong>{$dataverseName}</strong> is temporarily busy. Please try again later"
+
+msgid "plugins.generic.dataverse.notification.statusUnauthorized"
+msgstr "Unauthorized access. Verify your credential to access the <strong>{$dataverseName}</strong>"

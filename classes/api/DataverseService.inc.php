@@ -37,7 +37,7 @@ class DataverseService {
 		return in_array(DATASET_GENRE_ID, $filesGenres);
 	}
 
-	function getDataverseName(): string
+	function getDataverseName(): ?string
 	{
 		$receipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getConfiguration()->getDataverseDepositUrl());
 

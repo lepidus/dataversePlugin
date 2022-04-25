@@ -56,7 +56,7 @@ class DataverseAuthForm extends Form {
 
 	function validateCredentials(): bool
 	{
-		$client = new DataverseClient(new DataverseConfiguration($this->getData("dataverseUrl"), $this->getData("apiToken")));
+		$client = new DataverseClient(new DataverseConfiguration($this->getData("dataverseUrl"), $this->getData("apiToken")), $this->plugin);
 		$connectionSuccessful = $client->checkConnectionWithDataverse();
 
 		if ($connectionSuccessful) {

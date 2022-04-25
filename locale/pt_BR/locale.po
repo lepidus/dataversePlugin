@@ -58,3 +58,6 @@ msgstr "Dataset depositado com sucesso em <strong>{$dataverseName}</strong>!"
 
 msgid "plugins.generic.dataverse.notification.statusUnavailable"
 msgstr "Servidor não disponível. <strong>{$dataverseName}</strong> está temporariamente fora do ar. Por favor, tente novamente mais tarde"
+
+msgid "plugins.generic.dataverse.notification.statusUnauthorized"
+msgstr "Acesso não autorizado. Verifique suas credenciais para obter acesso ao <strong>{$dataverseName}</strong>"

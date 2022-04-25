@@ -35,6 +35,16 @@ class DataverseNotificationDispatcherTest extends PKPTestCase
 
         $this->assertEquals($expectedMsg, $msg);
     }
+
+    public function testReturnStatusUnauthorizedMessage(): void
+    {
+        $status = 401;
+        $expectedMsg = '##plugins.generic.dataverse.notification.statusUnauthorized##';
+
+        $msg = $this->dataverseNotification->getNotificationMessage($status, $this->dataverseName);
+
+        $this->assertEquals($expectedMsg, $msg);
+    }
 }
 
 ?>

@@ -25,7 +25,7 @@ class DataverseDispatcher
     public function getDataverseService(): DataverseService
     {
         $serviceFactory = new DataverseServiceFactory();
-		$service = $serviceFactory->build($this->getDataverseConfiguration());
+		$service = $serviceFactory->build($this->getDataverseConfiguration(), $this->plugin);
         return $service;
     }
 }
