@@ -1,22 +1,26 @@
 <?php 
 
 import('plugins.generic.dataverse.classes.study.DataverseStudy');
-import('plugins.generic.dataverse.classes.dispatchers.DataverseNotificationDispatcher');
+import('plugins.generic.dataverse.classes.DataverseNotificationManager');
 require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
 
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST', 400);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED', 401);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN', 403);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND', 404);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED', 412);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE', 413);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE', 415);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE', 503);
 
 class DataverseClient {
     private $configuration;
     private $swordClient;
-    private $dataverseNotification;
 
-    public function __construct(DataverseConfiguration $configuration, DataversePlugin $plugin)
+    public function __construct(DataverseConfiguration $configuration)
     {
-        $this->dataverseNotification = new DataverseNotificationDispatcher($plugin);
         $this->configuration = $configuration;
         $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
     }
@@ -57,7 +61,10 @@ class DataverseClient {
     public function depositAtomEntry(string $atomEntryPath, int $submissionId): DataverseStudy
     {
         $depositReceipt = $this->swordClient->depositAtomEntry($this->configuration->getDataverseDepositUrl(), $this->configuration->getApiToken(), '', '', $atomEntryPath);
-        
+        $dataverseNotificationMgr = new DataverseNotificationManager();
+        $dataverseUrl = $this->configuration->getDataverseUrl();
+        $params = ['dataverseUrl' => $dataverseUrl];
+
         $study = null;
         switch ($depositReceipt->sac_status) {
             case DATAVERSE_PLUGIN_HTTP_STATUS_CREATED:
@@ -76,11 +83,54 @@ class DataverseClient {
                 }
                 $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');	 
                 $dataverseStudyDao->insertStudy($study);
-
-                $this->dataverseNotification->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED);
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN, $params),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE
+                );
                 break;
             case DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE:
-                $this->dataverseNotification->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE);
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE, $params),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE
+                );
                 break;
         }
 		return $study;
@@ -100,12 +150,65 @@ class DataverseClient {
     public function retrieveDepositReceipt(string $url): ?SWORDAPPEntry
     {
         $depositReceipt = $this->swordClient->retrieveDepositReceipt($url, $this->configuration->getApiToken(), '', '');
-        if ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
-            return $depositReceipt;
-        } else {
-            $this->dataverseNotification->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED);
-            return null;
+
+        $dataverseNotificationMgr = new DataverseNotificationManager();
+        $dataverseUrl = $this->configuration->getDataverseUrl();
+        $params = ['dataverseUrl' => $dataverseUrl];
+        
+        switch ($depositReceipt->sac_status) {
+            case DATAVERSE_PLUGIN_HTTP_STATUS_OK:
+                return $depositReceipt;
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN, $params),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE
+                );
+                break;
+            case DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE:
+                throw new DomainException(
+                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE, $params),
+                    DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE
+                );
+                break;
         }
+        return null;
     }
 
     public function completeIncompleteDeposit(string $url): bool
