@@ -50,6 +50,9 @@ msgstr "Deposit file in Dataverse: <strong>{$dataverseName}</strong>, agreeing t
 msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Dataset successful created in {$dataverseName}"
 
+msgid "plugins.generic.dataverse.notification.statusPublished"
+msgstr "Dataset \"{$datasetName}\" published in: {$dataverseUrl}."
+
 msgid "plugins.generic.dataverse.notification.statusBadRequest"
 msgstr "The request could not be processed by the Dataverse server due to request errors"
 
@@ -73,3 +76,6 @@ msgstr "The format of the media sent in the request is not supported by the serv
 
 msgid "plugins.generic.dataverse.notification.statusUnavailable" 
 msgstr "Service Unavailable. {$dataverseUrl} is temporarily busy. Please try again later"
+
+msgid "plugins.generic.dataverse.notification.unknownError"
+msgstr "Unknown error. Could not connect to {$dataverseUrl}"

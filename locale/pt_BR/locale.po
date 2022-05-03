@@ -56,6 +56,9 @@ msgstr "Depositar arquivo no Dataverse: <strong>{$dataverseName}</strong>, conco
 msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Dataset depositado com sucesso em {$dataverseUrl}."
 
+msgid "plugins.generic.dataverse.notification.statusPublished"
+msgstr "Dataset \"{$datasetDOI}\" publicado em: {$dataverseUrl}."
+
 msgid "plugins.generic.dataverse.notification.statusBadRequest"
 msgstr "A requisição não pode ser processada pelo servidor do Dataverse devido a erros na requisição"
 
@@ -79,3 +82,6 @@ msgstr "O formato da mídia enviada na requisição não é suportado pelo servi
 
 msgid "plugins.generic.dataverse.notification.statusUnavailable"
 msgstr "Servidor não disponível. {$dataverseUrl} está temporariamente fora do ar. Por favor, tente novamente mais tarde"
+
+msgid "plugins.generic.dataverse.notification.unknownError"
+msgstr "Erro desconhecido. Não foi possível conectar a {$dataverseUrl}"

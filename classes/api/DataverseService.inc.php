@@ -145,7 +145,7 @@ class DataverseService {
 	{
 		$statement = $this->dataverseClient->retrieveAtomStatement($study->getStatementUri());
 		$studyReleased = false;
-		if (!empty($statement) && !empty($statement->sac_xml)) {
+		if (!empty($statement)) {
 			$sac_xml = new SimpleXMLElement($statement->sac_xml);
 			foreach ($sac_xml->children()->category as $category) {
 				if ($category->attributes()->term == 'latestVersionState') {
@@ -164,20 +164,28 @@ class DataverseService {
 
 	function releaseStudy(): bool
 	{
-		$dvReleased = $this->dataverseIsReleased();
-		if(!$dvReleased) {
-			$dvReleased = $this->releaseDataverse();
-		}
-
-		if($dvReleased) {
-			$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
-			$study = $dataverseStudyDao->getStudyBySubmissionId($this->submission->getId());
-			$studyPublished = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
-
-			if ($studyPublished) {
-				$this->updateStudy($study);
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		try {
+			$dvReleased = $this->dataverseIsReleased();
+			if(!$dvReleased) {
+				$dvReleased = $this->releaseDataverse();
 			}
+
+			if($dvReleased) {
+				$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+				$study = $dataverseStudyDao->getStudyBySubmissionId($this->submission->getId());
+				$studyPublished = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
+
+				if ($studyPublished) {
+					$this->updateStudy($study);
+					$dataverseNotificationMgr->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_OK);
+				}
+			}
+		} catch (DomainException $e) {
+			error_log($e->getMessage());
+			$dataverseNotificationMgr->sendNotification($e->getCode());
 		}
+		
 		return $dvReleased;
 	}
 
