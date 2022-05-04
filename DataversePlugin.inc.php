@@ -18,6 +18,7 @@ import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseServiceDispatcher');
 import('plugins.generic.dataverse.classes.dispatchers.TemplateDispatcher');
+import('plugins.generic.dataverse.classes.DataverseDAO');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.file.DataverseFileDAO');
 
@@ -30,9 +31,11 @@ class DataversePlugin extends GenericPlugin {
 		$success = parent::register($category, $path, $mainContextId);
 		$templateDispatcher = new TemplateDispatcher($this);
 		$serviceDispatcher = new DataverseServiceDispatcher($this);
+		$dataverseDAO = new DataverseDAO();
+		DAORegistry::registerDAO('DataverseDAO', $dataverseDAO);
 		$dataverseStudyDAO = new DataverseStudyDAO();
-		$dataverseFileDAO = new DataverseFileDAO();
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
+		$dataverseFileDAO = new DataverseFileDAO();
 		DAORegistry::registerDAO('DataverseFileDAO', $dataverseFileDAO);
 		return $success;
 	}

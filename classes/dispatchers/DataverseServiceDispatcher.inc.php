@@ -29,8 +29,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 		$form =& $params[0];
         $submission = $form->submission;
 
-		$serviceFactory = new DataverseServiceFactory();
-		$service = $serviceFactory->build($this->getDataverseConfiguration());
+		$service = $this->getDataverseService();
 		$service->setSubmission($submission);
 		if($service->hasDataSetComponent()){
 			$service->depositPackage();
@@ -39,9 +38,8 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 
 	function publishDeposit(string $hookName, array $params): void {
 		$submission = $params[2];
-
-		$serviceFactory = new DataverseServiceFactory();
-		$service = $serviceFactory->build($this->getDataverseConfiguration());
+		
+		$service = $this->getDataverseService();
 		$service->setSubmission($submission);
 		$service->releaseStudy();
 	}

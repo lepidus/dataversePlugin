@@ -52,3 +52,30 @@ msgstr "Dados de pesquisa"
 
 msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
 msgstr "Depositar arquivo no Dataverse: <strong>{$dataverseName}</strong>, concordando com os <a href=\"{$termsOfUseURL}\" target=\"_new\">Termos de Uso</a>."
+
+msgid "plugins.generic.dataverse.notification.statusCreated"
+msgstr "Dataset depositado com sucesso em {$dataverseUrl}."
+
+msgid "plugins.generic.dataverse.notification.statusBadRequest"
+msgstr "A requisição não pode ser processada pelo servidor do Dataverse devido a erros na requisição"
+
+msgid "plugins.generic.dataverse.notification.statusUnauthorized" 
+msgstr "Acesso não autorizado. Você não tem permissão para acessar esse recurso"
+
+msgid "plugins.generic.dataverse.notification.statusForbidden"
+msgstr "Access negado. Verifique suas credenciais para obter acesso ao {$dataverseUrl}"
+
+msgid "plugins.generic.dataverse.notification.statusNotFound" 
+msgstr "O servidor não conseguiu encontrar o recurso solicitado."
+
+msgid "plugins.generic.dataverse.notification.statusPreconditionFailed" 
+msgstr "As codições do cabeçalho da solicitação não foram satisfeitas."
+
+msgid "plugins.generic.dataverse.notification.statusPayloadTooLarge" 
+msgstr "A entidade de solicitação é maior que os limites definidos pelo servidor"
+
+msgid "plugins.generic.dataverse.notification.statusUnsupportedMediaType" 
+msgstr "O formato da mídia enviada na requisição não é suportado pelo servidor"
+
+msgid "plugins.generic.dataverse.notification.statusUnavailable"
+msgstr "Servidor não disponível. {$dataverseUrl} está temporariamente fora do ar. Por favor, tente novamente mais tarde"

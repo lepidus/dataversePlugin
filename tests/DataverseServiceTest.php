@@ -8,6 +8,7 @@ import('classes.article.Author');
 import('classes.article.ArticleGalley');
 import('plugins.generic.dataverse.classes.api.DataverseService');
 import('plugins.generic.dataverse.classes.DataverseConfiguration');
+import('plugins.generic.dataverse.DataversePlugin');
 
 class DataverseServiceTest extends PKPTestCase {
 
@@ -20,8 +21,9 @@ class DataverseServiceTest extends PKPTestCase {
             ->setConstructorArgs([
                 new DataverseConfiguration(
                     $dataverseUrl,
-                    $apiToken
-            )])
+                    $apiToken),
+                new DataversePlugin()
+            ])
             ->setMethods(array('retrieveDepositReceipt'))
             ->getMock();
 

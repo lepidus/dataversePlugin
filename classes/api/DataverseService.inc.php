@@ -37,9 +37,15 @@ class DataverseService {
 		return in_array(DATASET_GENRE_ID, $filesGenres);
 	}
 
-	function getDataverseName(): string
+	function getDataverseName(): ?string
 	{
-		$receipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getConfiguration()->getDataverseDepositUrl());
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		try {
+			$receipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getConfiguration()->getDataverseDepositUrl());
+		} catch (DomainException $e) {
+			error_log($e->getMessage());
+			$dataverseNotificationMgr->createNotification($e->getCode());
+		}
 
 		return $receipt->sac_title;
 	}
@@ -76,15 +82,22 @@ class DataverseService {
 
 	public function depositStudy(DataversePackageCreator $package): ?DataverseStudy
 	{
-		$study = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath(), $this->submission->getId());
-		if(!is_null($study)) {
-			$this->dataverseClient->depositFiles(
-				$study->getEditMediaUri(),
-				$package->getPackageFilePath(),
-				$package->getPackaging(),
-				$package->getContentType()
-			);
-		}
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		try {
+			$study = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath(), $this->submission->getId());
+			if(!is_null($study)) {
+				$this->dataverseClient->depositFiles(
+					$study->getEditMediaUri(),
+					$package->getPackageFilePath(),
+					$package->getPackaging(),
+					$package->getContentType()
+				);
+			}
+			$dataverseNotificationMgr->createNotification(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED);
+		} catch (DomainException $e) {
+			error_log($e->getMessage());
+			$dataverseNotificationMgr->createNotification($e->getCode());
+		}	
 		return $study;
 	}
 

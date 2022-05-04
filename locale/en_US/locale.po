@@ -46,3 +46,30 @@ msgstr "Research data"
 
 msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
 msgstr "Deposit file in Dataverse: <strong>{$dataverseName}</strong>, agreeing to the <a href=\"{$termsOfUseURL}\" target=\"_new\">Terms of Use</a>."
+
+msgid "plugins.generic.dataverse.notification.statusCreated"
+msgstr "Dataset successful created in {$dataverseName}"
+
+msgid "plugins.generic.dataverse.notification.statusBadRequest"
+msgstr "The request could not be processed by the Dataverse server due to request errors"
+
+msgid "plugins.generic.dataverse.notification.statusUnauthorized" 
+msgstr "Unauthorized access. You do not have permission to access content on this server"
+
+msgid "plugins.generic.dataverse.notification.statusForbidden"
+msgstr "Access forbidden. Verify your credential to access the {$dataverseUrl}"
+
+msgid "plugins.generic.dataverse.notification.statusNotFound" 
+msgstr "The server cannot find the requested resource"
+
+msgid "plugins.generic.dataverse.notification.statusPreconditionFailed" 
+msgstr "Request header conditions not satisfied"
+
+msgid "plugins.generic.dataverse.notification.statusPayloadTooLarge" 
+msgstr "The request entity is larger than limits defined by server"
+
+msgid "plugins.generic.dataverse.notification.statusUnsupportedMediaType" 
+msgstr "The format of the media sent in the request is not supported by the server"
+
+msgid "plugins.generic.dataverse.notification.statusUnavailable" 
+msgstr "Service Unavailable. {$dataverseUrl} is temporarily busy. Please try again later"

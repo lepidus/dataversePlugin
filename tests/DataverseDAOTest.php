@@ -14,7 +14,7 @@ class DataverseDAOTest extends DatabaseTestCase
     {
         parent::setUp();
 
-        $this->contextId = 1;
+        $this->contextId = 9;
         $this->dataverseUrl = 'https://demo.dataverse.org/dataverse/dataverseDeExemplo';
         $this->apiToken = 'randomToken';
         $this->dataverseDAO =  new DataverseDAO();
