@@ -133,8 +133,13 @@ class DataverseClient {
     }
 
     public function completeIncompleteDeposit(string $url): bool
-    {		
+    {
         $response = $this->swordClient->completeIncompleteDeposit($url, $this->configuration->getApiToken(), '', '');
+        if($response->sac_status != DATAVERSE_PLUGIN_HTTP_STATUS_OK)
+            throw new DomainException(
+                $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
+                $depositReceipt->sac_status
+            );
         return ($response->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
     }
 

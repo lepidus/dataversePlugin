@@ -57,7 +57,7 @@ msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Dataset depositado com sucesso em {$dataverseUrl}."
 
 msgid "plugins.generic.dataverse.notification.statusPublished"
-msgstr "Dataset \"{$datasetDOI}\" publicado em: {$dataverseUrl}."
+msgstr "Dataset publicado em: {$dataverseUrl}."
 
 msgid "plugins.generic.dataverse.notification.statusBadRequest"
 msgstr "A requisição não pode ser processada pelo servidor do Dataverse devido a erros na requisição"

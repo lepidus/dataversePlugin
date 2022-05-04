@@ -51,7 +51,7 @@ msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Dataset successful created in {$dataverseName}"
 
 msgid "plugins.generic.dataverse.notification.statusPublished"
-msgstr "Dataset \"{$datasetName}\" published in: {$dataverseUrl}."
+msgstr "Dataset published in: {$dataverseUrl}."
 
 msgid "plugins.generic.dataverse.notification.statusBadRequest"
 msgstr "The request could not be processed by the Dataverse server due to request errors"

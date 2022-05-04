@@ -165,28 +165,27 @@ class DataverseService {
 	function releaseStudy(): bool
 	{
 		$dataverseNotificationMgr = new DataverseNotificationManager();
+		$studyPublished = false;
 		try {
 			$dvReleased = $this->dataverseIsReleased();
 			if(!$dvReleased) {
 				$dvReleased = $this->releaseDataverse();
-			}
-
-			if($dvReleased) {
+			}else {
 				$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
 				$study = $dataverseStudyDao->getStudyBySubmissionId($this->submission->getId());
 				$studyPublished = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
 
 				if ($studyPublished) {
 					$this->updateStudy($study);
-					$dataverseNotificationMgr->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_OK);
+					$dataverseNotificationMgr->createNotification(DATAVERSE_PLUGIN_HTTP_STATUS_OK);
 				}
 			}
 		} catch (DomainException $e) {
 			error_log($e->getMessage());
-			$dataverseNotificationMgr->sendNotification($e->getCode());
+			$dataverseNotificationMgr->createNotification($e->getCode());
 		}
 		
-		return $dvReleased;
+		return $studyPublished;
 	}
 
 	function updateStudy(DataverseStudy $study): void
