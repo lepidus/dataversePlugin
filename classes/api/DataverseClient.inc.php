@@ -48,7 +48,6 @@ class DataverseClient {
 				}
 			}
 		}
-
         return $dataverseTermsOfUse;
     }
 
@@ -63,76 +62,32 @@ class DataverseClient {
         $depositReceipt = $this->swordClient->depositAtomEntry($this->configuration->getDataverseDepositUrl(), $this->configuration->getApiToken(), '', '', $atomEntryPath);
         $dataverseNotificationMgr = new DataverseNotificationManager();
         $dataverseUrl = $this->configuration->getDataverseUrl();
+
         $params = ['dataverseUrl' => $dataverseUrl];
 
         $study = null;
-        switch ($depositReceipt->sac_status) {
-            case DATAVERSE_PLUGIN_HTTP_STATUS_CREATED:
-                $study = new DataverseStudy();
-                $study->setSubmissionId($submissionId);
-                $study->setEditUri($depositReceipt->sac_edit_iri);
-                $study->setEditMediaUri($depositReceipt->sac_edit_media_iri);
-                $study->setStatementUri($depositReceipt->sac_state_iri_atom);
-                $study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
-                
-                foreach ($depositReceipt->sac_links as $link) {
-                    if ($link->sac_linkrel == 'alternate') {
-                        $study->setPersistentUri($link->sac_linkhref);
-                        break;
-                    }
+        if($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED) {
+            $study = new DataverseStudy();
+            $study->setSubmissionId($submissionId);
+            $study->setEditUri($depositReceipt->sac_edit_iri);
+            $study->setEditMediaUri($depositReceipt->sac_edit_media_iri);
+            $study->setStatementUri($depositReceipt->sac_state_iri_atom);
+            $study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
+            
+            foreach ($depositReceipt->sac_links as $link) {
+                if ($link->sac_linkrel == 'alternate') {
+                    $study->setPersistentUri($link->sac_linkhref);
+                    break;
                 }
-                $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');	 
-                $dataverseStudyDao->insertStudy($study);
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN, $params),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE, $params),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE
-                );
-                break;
-        }
+            }
+            $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');	 
+            $dataverseStudyDao->insertStudy($study);
+        } else {
+            throw new DomainException(
+                $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
+                $depositReceipt->sac_status
+            );
+        }    
 		return $study;
     }
 
@@ -154,60 +109,14 @@ class DataverseClient {
         $dataverseNotificationMgr = new DataverseNotificationManager();
         $dataverseUrl = $this->configuration->getDataverseUrl();
         $params = ['dataverseUrl' => $dataverseUrl];
-        
-        switch ($depositReceipt->sac_status) {
-            case DATAVERSE_PLUGIN_HTTP_STATUS_OK:
-                return $depositReceipt;
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN, $params),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE:
-                throw new DomainException(
-                    $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE, $params),
-                    DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE
-                );
-                break;
-        }
+
+        if($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK)
+            return $depositReceipt;
+        else
+            throw new DomainException(
+                $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
+                $depositReceipt->sac_status
+            );
         return null;
     }
 

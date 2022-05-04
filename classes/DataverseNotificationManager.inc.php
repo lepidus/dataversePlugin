@@ -48,7 +48,7 @@ class DataverseNotificationManager
         return $dataverseUrl;
     }
 
-    private function createNotification(int $dataverseResponseStatus): void
+    public function createNotification(int $dataverseResponseStatus): void
     {
         $user = Application::get()->getRequest()->getUser();
         $dataverseUrl = $this->getDataverseUrl();
