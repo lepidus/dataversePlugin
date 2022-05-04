@@ -2,6 +2,8 @@
 
 import('plugins.generic.dataverse.classes.api.DataverseClient');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
+import('plugins.generic.dataverse.classes.file.DataverseFile');
+import('plugins.generic.dataverse.classes.file.DataverseFileDAO');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 
@@ -35,9 +37,15 @@ class DataverseService {
 		return in_array(DATASET_GENRE_ID, $filesGenres);
 	}
 
-	function getDataverseName(): string
+	function getDataverseName(): ?string
 	{
-		$receipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getConfiguration()->getDataverseDepositUrl());
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		try {
+			$receipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getConfiguration()->getDataverseDepositUrl());
+		} catch (DomainException $e) {
+			error_log($e->getMessage());
+			$dataverseNotificationMgr->createNotification($e->getCode());
+		}
 
 		return $receipt->sac_title;
 	}
@@ -66,14 +74,55 @@ class DataverseService {
 	{
 		$package = $this->createPackage();
 
-		$study = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath(), $this->submission->getId());
-		if(!is_null($study)) {
-			$this->dataverseClient->depositFiles(
-				$study->getEditMediaUri(),
-				$package->getPackageFilePath(),
-				$package->getPackaging(),
-				$package->getContentType()
-			);
+		$study = $this->depositStudy($package);
+		if(!empty($study)) {
+			$this->insertDataverseFilesInDB($study);
+		}
+	}
+
+	public function depositStudy(DataversePackageCreator $package): ?DataverseStudy
+	{
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		try {
+			$study = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath(), $this->submission->getId());
+			if(!is_null($study)) {
+				$this->dataverseClient->depositFiles(
+					$study->getEditMediaUri(),
+					$package->getPackageFilePath(),
+					$package->getPackaging(),
+					$package->getContentType()
+				);
+			}
+			$dataverseNotificationMgr->createNotification(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED);
+		} catch (DomainException $e) {
+			error_log($e->getMessage());
+			$dataverseNotificationMgr->createNotification($e->getCode());
+		}	
+		return $study;
+	}
+
+	public function insertDataverseFilesInDB(DataverseStudy $study): void
+	{
+		$statement = $this->dataverseClient->retrieveAtomStatement($study->getStatementUri());
+		if(!empty($statement)) {
+			foreach ($statement->sac_entries as $entry) {
+				$dataverseFileKey = substr($entry->sac_content_source, strrpos($entry->sac_content_source, '/')+1);
+				$dataverseFiles[$dataverseFileKey] = $entry->sac_content_source;
+			}
+
+			$files = $this->submission->getFiles();
+			foreach ($files as $file) {
+				$fileKey = str_replace(' ', '_', $file->getName());
+				if(array_key_exists($fileKey, $dataverseFiles)) {
+					$dataverseFile = new DataverseFile();
+					$dataverseFile->setStudyId($study->getId());
+					$dataverseFile->setSubmissionId($this->submission->getId());
+					$dataverseFile->setSubmissionFileId($file->getId());
+					$dataverseFile->setContentUri($dataverseFiles[$fileKey]);
+					$dataverseFileDAO = DAORegistry::getDAO('DataverseFileDAO');
+					$dataverseFileDAO->insertObject($dataverseFile);
+				}
+			}
 		}
 	}
 

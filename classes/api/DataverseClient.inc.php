@@ -1,10 +1,19 @@
 <?php 
 
 import('plugins.generic.dataverse.classes.study.DataverseStudy');
+import('plugins.generic.dataverse.classes.DataverseNotificationManager');
 require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
 
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST', 400);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED', 401);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN', 403);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND', 404);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED', 412);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE', 413);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE', 415);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE', 503);
 
 class DataverseClient {
     private $configuration;
@@ -19,12 +28,6 @@ class DataverseClient {
     public function getConfiguration(): DataverseConfiguration
     {
         return $this->configuration;
-    }
-    
-    private function validateCredentials(string $serviceDocumentRequest): bool
-    {
-		$serviceDocumentClient = $this->swordClient->servicedocument($serviceDocumentRequest, $this->configuration->getApiToken(), '', '');
-        return isset($serviceDocumentClient) && $serviceDocumentClient->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK;    
     }
 
     private function getServiceDocument(): SWORDAPPServiceDocument
@@ -45,38 +48,46 @@ class DataverseClient {
 				}
 			}
 		}
-
         return $dataverseTermsOfUse;
     }
 
-
     public function checkConnectionWithDataverse(): bool
     {
-		return $this->validateCredentials($this->configuration->getDataverseServiceDocumentUrl());
+		$serviceDocument = $this->getServiceDocument();
+        return isset($serviceDocument) && $serviceDocument->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK;
 	}
 
     public function depositAtomEntry(string $atomEntryPath, int $submissionId): DataverseStudy
     {
         $depositReceipt = $this->swordClient->depositAtomEntry($this->configuration->getDataverseDepositUrl(), $this->configuration->getApiToken(), '', '', $atomEntryPath);
+        $dataverseNotificationMgr = new DataverseNotificationManager();
+        $dataverseUrl = $this->configuration->getDataverseUrl();
+
+        $params = ['dataverseUrl' => $dataverseUrl];
 
         $study = null;
-		if ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED) {
-			$study = new DataverseStudy();
-			$study->setSubmissionId($submissionId);
-			$study->setEditUri($depositReceipt->sac_edit_iri);
-			$study->setEditMediaUri($depositReceipt->sac_edit_media_iri);
-			$study->setStatementUri($depositReceipt->sac_state_iri_atom);
-			$study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
-			
-			foreach ($depositReceipt->sac_links as $link) {
-				if ($link->sac_linkrel == 'alternate') {
-					$study->setPersistentUri($link->sac_linkhref);
-					break;
-				}
-			}
-			$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');			 
-			$dataverseStudyDao->insertStudy($study);
-		}
+        if($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED) {
+            $study = new DataverseStudy();
+            $study->setSubmissionId($submissionId);
+            $study->setEditUri($depositReceipt->sac_edit_iri);
+            $study->setEditMediaUri($depositReceipt->sac_edit_media_iri);
+            $study->setStatementUri($depositReceipt->sac_state_iri_atom);
+            $study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
+            
+            foreach ($depositReceipt->sac_links as $link) {
+                if ($link->sac_linkrel == 'alternate') {
+                    $study->setPersistentUri($link->sac_linkhref);
+                    break;
+                }
+            }
+            $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');	 
+            $dataverseStudyDao->insertStudy($study);
+        } else {
+            throw new DomainException(
+                $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
+                $depositReceipt->sac_status
+            );
+        }    
 		return $study;
     }
 
@@ -91,10 +102,22 @@ class DataverseClient {
         return $this->swordClient->retrieveAtomStatement($url, $this->configuration->getApiToken(), '', '');
     }
 
-    public function retrieveDepositReceipt(string $url): SWORDAPPEntry
+    public function retrieveDepositReceipt(string $url): ?SWORDAPPEntry
     {
         $depositReceipt = $this->swordClient->retrieveDepositReceipt($url, $this->configuration->getApiToken(), '', '');
-        return ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) ? $depositReceipt : null;
+
+        $dataverseNotificationMgr = new DataverseNotificationManager();
+        $dataverseUrl = $this->configuration->getDataverseUrl();
+        $params = ['dataverseUrl' => $dataverseUrl];
+
+        if($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK)
+            return $depositReceipt;
+        else
+            throw new DomainException(
+                $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
+                $depositReceipt->sac_status
+            );
+        return null;
     }
 
     public function completeIncompleteDeposit(string $url): bool

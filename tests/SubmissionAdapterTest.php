@@ -25,7 +25,7 @@ class SubmissionAdapterTest extends PKPTestCase
     private function createSubmissionAdapter(): SubmissionAdapter
     {
         $this->authors = array(new AuthorAdapter("Atila", "Iamarino", "USP", "atila@usp.edu.br"));
-        $this->files = array(new SubmissionFileAdapter(7, 'sampleTest', 'path/to/file', true, 'CAPES'));
+        $this->files = array(new SubmissionFileAdapter(1, 7, 'sampleTest', 'path/to/file', true, 'CAPES'));
         return new SubmissionAdapter($this->id, $this->title, $this->authors, $this->files, $this->description, $this->keywords);
     }
 

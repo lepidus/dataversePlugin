@@ -10,7 +10,8 @@ class TemplateDispatcher extends DataverseDispatcher
 	{
         HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
-		HookRegistry::register('Templates::Preprint::Main', array($this, 'addDataCitationSubmission'));
+		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
+		HookRegistry::register('TemplateManager::display', array($this, 'changeGalleysLinks'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
 
 		parent::__construct($plugin);
@@ -34,9 +35,7 @@ class TemplateDispatcher extends DataverseDispatcher
 			$newOutput = substr($output, 0, $offset + strlen($match));
 			$newOutput .= $templateMgr->fetch($this->plugin->getTemplateResource('publishDataForm.tpl'));
 
-			$configuration = $this->getDataverseConfiguration();
-			$serviceFactory = new DataverseServiceFactory();
-			$service = $serviceFactory->build($configuration);
+			$service = $this->getDataverseService();
 			$dataverseName = $service->getDataverseName();
 
 			$request = PKPApplication::get()->getRequest();
@@ -81,6 +80,50 @@ class TemplateDispatcher extends DataverseDispatcher
 		}
 
 		return false;
+	}
+
+	function changeGalleysLinks(string $hookName, array $params)
+	{
+		$smarty = $params[0];
+		$template = $params[1];
+
+		switch ($template) {
+			case 'frontend/pages/preprint.tpl':
+				$smarty->registerFilter("output", array($this, 'galleyLinkFilter'));
+				break;
+			default:
+				return false;
+		}
+	}
+
+	function galleyLinkFilter(string $output, Smarty_Internal_Template $templateMgr): string
+	{
+		$offset = 0;
+		$foundGalleyLinks = false;
+		while(preg_match('/<a[^>]+class="obj_galley_link[^>]*"[^>]+href="([^>]+)">[^<]+<\/a>/', $output, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+			$foundGalleyLinks = true;
+			$matchAll = $matches[0][0];
+			$posMatchAll = $matches[0][1];
+			$linkGalley = $matches[1][0];
+
+			$galleyId = (int) substr($linkGalley, strrpos($linkGalley, '/')+1);
+			$galleyService = Services::get('galley');
+			$galley = $galleyService->get($galleyId);
+			$submissionFile = $galley->getFile();
+			$dataverseFileDAO = DAORegistry::getDAO('DataverseFileDAO');
+			$dataverseFile = $dataverseFileDAO->getBySubmissionFileId($submissionFile->getId());
+
+			if(!empty($dataverseFile)) {
+				$output = substr_replace($output, "", $posMatchAll, strlen($matchAll));
+				$offset = $posMatchAll;
+			}
+			else {
+				$offset = $posMatchAll + strlen($matchAll);
+			}
+		}
+		
+		if($foundGalleyLinks) $templateMgr->unregisterFilter('output', array($this, 'galleyLinkFilter'));
+		return $output;
 	}
 
 	function setupTermsOfUseHandler($hookName, $params) {

@@ -21,4 +21,11 @@ class DataverseDispatcher
             $this->plugin->getSetting($contextId, 'apiToken')
         );
 	}
+
+    public function getDataverseService(): DataverseService
+    {
+        $serviceFactory = new DataverseServiceFactory();
+		$service = $serviceFactory->build($this->getDataverseConfiguration(), $this->plugin);
+        return $service;
+    }
 }
