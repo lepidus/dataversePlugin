@@ -2,6 +2,23 @@
 
 class DataverseNotificationManager
 {
+    private $notificationStatusMapping;
+
+    public function __construct()
+    {
+        $this->notificationStatusMapping = [
+            DATAVERSE_PLUGIN_HTTP_STATUS_CREATED => NOTIFICATION_TYPE_SUCCESS,
+            DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST => NOTIFICATION_TYPE_ERROR,
+            DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED => NOTIFICATION_TYPE_ERROR,
+            DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN => NOTIFICATION_TYPE_ERROR,
+            DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND => NOTIFICATION_TYPE_ERROR,
+            DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED => NOTIFICATION_TYPE_ERROR,
+            DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE => NOTIFICATION_TYPE_ERROR,
+            DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE => NOTIFICATION_TYPE_ERROR,
+            DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE => NOTIFICATION_TYPE_ERROR,
+        ];
+    }
+
     public function getNotificationMessage(int $status, array $params = array()): string
     {
         import('plugins.generic.dataverse.classes.api.DataverseClient');
@@ -33,93 +50,19 @@ class DataverseNotificationManager
         return $dataverseUrl;
     }
 
-    public function sendNotification(int $type, array $params = array()): void
+    public function createNotification(int $dataverseResponseStatus): void
     {
         $user = Application::get()->getRequest()->getUser();
-        
         $dataverseUrl = $this->getDataverseUrl();
-        $params['dataverseUrl'] = $dataverseUrl;
+        
+        $params = ['dataverseUrl' => $dataverseUrl ];
 
         $notificationManager = new NotificationManager();
-        switch ($type) {
-            case DATAVERSE_PLUGIN_HTTP_STATUS_CREATED:
-                $notificationManager->createTrivialNotification(
-                    $user->getId(),
-                    NOTIFICATION_TYPE_SUCCESS,
-                    array('contents' => $this->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED, $params))
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_OK:
-                $notificationManager->createTrivialNotification(
-                    $user->getId(),
-                    NOTIFICATION_TYPE_SUCCESS,
-                    array('contents' => $this->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_OK, $params))
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST:
-                $notificationManager->createTrivialNotification(
-                    $user->getId(),
-                    NOTIFICATION_TYPE_ERROR,
-                    array('contents' => $this->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED, $params))
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED:
-                $notificationManager->createTrivialNotification(
-                    $user->getId(),
-                    NOTIFICATION_TYPE_ERROR,
-                    array('contents' => $this->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED, $params))
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN:
-                $notificationManager->createTrivialNotification(
-                    $user->getId(),
-                    NOTIFICATION_TYPE_ERROR,
-                    array('contents' => $this->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN, $params))
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND:
-                $notificationManager->createTrivialNotification(
-                    $user->getId(),
-                    NOTIFICATION_TYPE_ERROR,
-                    array('contents' => $this->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND, $params))
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED:
-                $notificationManager->createTrivialNotification(
-                    $user->getId(),
-                    NOTIFICATION_TYPE_ERROR,
-                    array('contents' => $this->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED, $params))
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE:
-                $notificationManager->createTrivialNotification(
-                    $user->getId(),
-                    NOTIFICATION_TYPE_ERROR,
-                    array('contents' => $this->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE, $params))
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE:
-                $notificationManager->createTrivialNotification(
-                    $user->getId(),
-                    NOTIFICATION_TYPE_ERROR,
-                    array('contents' => $this->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE, $params))
-                );
-                break;
-            case DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE:
-                $notificationManager->createTrivialNotification(
-                    $user->getId(),
-                    NOTIFICATION_TYPE_ERROR,
-                    array('contents' => $this->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE, $params))
-                );
-                break;
-            default:
-                $notificationManager->createTrivialNotification(
-                    $user->getId(),
-                    NOTIFICATION_TYPE_ERROR,
-                    array('contents' => $this->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR, $params))
-                );
-                break;
-        }
+        $notificationManager->createTrivialNotification(
+            $user->getId(),
+            $this->notificationStatusMapping[$dataverseResponseStatus],
+            array('contents' => $this->getNotificationMessage($dataverseResponseStatus, $params))
+        );
     }
 }
 

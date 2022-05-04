@@ -44,7 +44,7 @@ class DataverseService {
 			$receipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getConfiguration()->getDataverseDepositUrl());
 		} catch (DomainException $e) {
 			error_log($e->getMessage());
-			$dataverseNotificationMgr->sendNotification($e->getCode());
+			$dataverseNotificationMgr->createNotification($e->getCode());
 		}
 
 		return $receipt->sac_title;
@@ -93,10 +93,10 @@ class DataverseService {
 					$package->getContentType()
 				);
 			}
-			$dataverseNotificationMgr->sendNotification(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED);
+			$dataverseNotificationMgr->createNotification(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED);
 		} catch (DomainException $e) {
 			error_log($e->getMessage());
-			$dataverseNotificationMgr->sendNotification($e->getCode());
+			$dataverseNotificationMgr->createNotification($e->getCode());
 		}	
 		return $study;
 	}
