@@ -42,7 +42,7 @@ class DataverseService {
 		$dataverseNotificationMgr = new DataverseNotificationManager();
 		try {
 			$receipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getConfiguration()->getDataverseDepositUrl());
-		} catch (DomainException $e) {
+		} catch (RuntimeException $e) {
 			error_log($e->getMessage());
 			$dataverseNotificationMgr->createNotification($e->getCode());
 		}
@@ -94,7 +94,7 @@ class DataverseService {
 				);
 			}
 			$dataverseNotificationMgr->createNotification(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED);
-		} catch (DomainException $e) {
+		} catch (RuntimeException $e) {
 			error_log($e->getMessage());
 			$dataverseNotificationMgr->createNotification($e->getCode());
 		}	
@@ -145,7 +145,7 @@ class DataverseService {
 	{
 		$statement = $this->dataverseClient->retrieveAtomStatement($study->getStatementUri());
 		$studyReleased = false;
-		if (!empty($statement) && !empty($statement->sac_xml)) {
+		if (!empty($statement)) {
 			$sac_xml = new SimpleXMLElement($statement->sac_xml);
 			foreach ($sac_xml->children()->category as $category) {
 				if ($category->attributes()->term == 'latestVersionState') {
@@ -164,21 +164,28 @@ class DataverseService {
 
 	function releaseStudy(): bool
 	{
-		$dvReleased = $this->dataverseIsReleased();
-		if(!$dvReleased) {
-			$dvReleased = $this->releaseDataverse();
-		}
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		$studyPublished = false;
+		try {
+			$dvReleased = $this->dataverseIsReleased();
+			if(!$dvReleased) {
+				$dvReleased = $this->releaseDataverse();
+			}else {
+				$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+				$study = $dataverseStudyDao->getStudyBySubmissionId($this->submission->getId());
+				$studyPublished = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
 
-		if($dvReleased) {
-			$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
-			$study = $dataverseStudyDao->getStudyBySubmissionId($this->submission->getId());
-			$studyPublished = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
-
-			if ($studyPublished) {
-				$this->updateStudy($study);
+				if ($studyPublished) {
+					$this->updateStudy($study);
+					$dataverseNotificationMgr->createNotification(DATAVERSE_PLUGIN_HTTP_STATUS_OK);
+				}
 			}
+		} catch (RuntimeException $e) {
+			error_log($e->getMessage());
+			$dataverseNotificationMgr->createNotification($e->getCode());
 		}
-		return $dvReleased;
+		
+		return $studyPublished;
 	}
 
 	function updateStudy(DataverseStudy $study): void

@@ -14,6 +14,7 @@ define('DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED', 412);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE', 413);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE', 415);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE', 503);
+define('DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR', 0);
 
 class DataverseClient {
     private $configuration;
@@ -83,7 +84,7 @@ class DataverseClient {
             $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');	 
             $dataverseStudyDao->insertStudy($study);
         } else {
-            throw new DomainException(
+            throw new RuntimeException(
                 $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
                 $depositReceipt->sac_status
             );
@@ -97,9 +98,20 @@ class DataverseClient {
         return isset($depositReceipt) && $depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED;
     }
 
-    public function retrieveAtomStatement(string $url): SWORDAPPStatement
+    public function retrieveAtomStatement(string $url): ?SWORDAPPStatement
     {
-        return $this->swordClient->retrieveAtomStatement($url, $this->configuration->getApiToken(), '', '');
+        $dataverseNotificationMgr = new DataverseNotificationManager();
+        $dataverseUrl = $this->configuration->getDataverseUrl();
+        $params = ['dataverseUrl' => $dataverseUrl];
+
+        $statement = $this->swordClient->retrieveAtomStatement($url, $this->configuration->getApiToken(), '', '');
+
+        if (!empty($statement) && !empty($statement->sac_xml)) {
+			return $statement;
+		} else {
+            throw new RuntimeException($dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR));
+            return null;
+        }
     }
 
     public function retrieveDepositReceipt(string $url): ?SWORDAPPEntry
@@ -113,7 +125,7 @@ class DataverseClient {
         if($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK)
             return $depositReceipt;
         else
-            throw new DomainException(
+            throw new RuntimeException(
                 $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
                 $depositReceipt->sac_status
             );
@@ -121,8 +133,13 @@ class DataverseClient {
     }
 
     public function completeIncompleteDeposit(string $url): bool
-    {		
+    {
         $response = $this->swordClient->completeIncompleteDeposit($url, $this->configuration->getApiToken(), '', '');
+        if($response->sac_status != DATAVERSE_PLUGIN_HTTP_STATUS_OK)
+            throw new RuntimeException(
+                $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
+                $depositReceipt->sac_status
+            );
         return ($response->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
     }
 

@@ -1,5 +1,8 @@
 <?php
 
+import('lib.pkp.classes.notification.PKPNotification');
+import('plugins.generic.dataverse.classes.api.DataverseClient');
+
 class DataverseNotificationManager
 {
     private $notificationStatusMapping;
@@ -7,6 +10,7 @@ class DataverseNotificationManager
     public function __construct()
     {
         $this->notificationStatusMapping = [
+            DATAVERSE_PLUGIN_HTTP_STATUS_OK => NOTIFICATION_TYPE_SUCCESS,
             DATAVERSE_PLUGIN_HTTP_STATUS_CREATED => NOTIFICATION_TYPE_SUCCESS,
             DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST => NOTIFICATION_TYPE_ERROR,
             DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED => NOTIFICATION_TYPE_ERROR,
@@ -16,13 +20,14 @@ class DataverseNotificationManager
             DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE => NOTIFICATION_TYPE_ERROR,
             DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE => NOTIFICATION_TYPE_ERROR,
             DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE => NOTIFICATION_TYPE_ERROR,
+            DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR => NOTIFICATION_TYPE_ERROR,
         ];
     }
 
     public function getNotificationMessage(int $status, array $params = array()): string
     {
-        import('plugins.generic.dataverse.classes.api.DataverseClient');
         $notificationMessages = [
+            DATAVERSE_PLUGIN_HTTP_STATUS_OK => __('plugins.generic.dataverse.notification.statusPublished', $params),
             DATAVERSE_PLUGIN_HTTP_STATUS_CREATED => __('plugins.generic.dataverse.notification.statusCreated', $params),
             DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST => __('plugins.generic.dataverse.notification.statusBadRequest'),
             DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED => __('plugins.generic.dataverse.notification.statusUnauthorized'),
@@ -32,6 +37,7 @@ class DataverseNotificationManager
             DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE => __('plugins.generic.dataverse.notification.statusPayloadTooLarge'),
             DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE => __('plugins.generic.dataverse.notification.statusUnsupportedMediaType'),
             DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE => __('plugins.generic.dataverse.notification.statusUnavailable', $params),
+            DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR => __('plugins.generic.dataverse.notification.unknownError', $params),
         ];
 
         return $notificationMessages[$status];
