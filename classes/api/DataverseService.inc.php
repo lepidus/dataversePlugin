@@ -42,7 +42,7 @@ class DataverseService {
 		$dataverseNotificationMgr = new DataverseNotificationManager();
 		try {
 			$receipt = $this->dataverseClient->retrieveDepositReceipt($this->dataverseClient->getConfiguration()->getDataverseDepositUrl());
-		} catch (DomainException $e) {
+		} catch (RuntimeException $e) {
 			error_log($e->getMessage());
 			$dataverseNotificationMgr->createNotification($e->getCode());
 		}
@@ -94,7 +94,7 @@ class DataverseService {
 				);
 			}
 			$dataverseNotificationMgr->createNotification(DATAVERSE_PLUGIN_HTTP_STATUS_CREATED);
-		} catch (DomainException $e) {
+		} catch (RuntimeException $e) {
 			error_log($e->getMessage());
 			$dataverseNotificationMgr->createNotification($e->getCode());
 		}	
@@ -180,7 +180,7 @@ class DataverseService {
 					$dataverseNotificationMgr->createNotification(DATAVERSE_PLUGIN_HTTP_STATUS_OK);
 				}
 			}
-		} catch (DomainException $e) {
+		} catch (RuntimeException $e) {
 			error_log($e->getMessage());
 			$dataverseNotificationMgr->createNotification($e->getCode());
 		}

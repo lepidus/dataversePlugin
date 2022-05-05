@@ -84,7 +84,7 @@ class DataverseClient {
             $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');	 
             $dataverseStudyDao->insertStudy($study);
         } else {
-            throw new DomainException(
+            throw new RuntimeException(
                 $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
                 $depositReceipt->sac_status
             );
@@ -109,7 +109,7 @@ class DataverseClient {
         if (!empty($statement) && !empty($statement->sac_xml)) {
 			return $statement;
 		} else {
-            throw new DomainException($dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR));
+            throw new RuntimeException($dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR));
             return null;
         }
     }
@@ -125,7 +125,7 @@ class DataverseClient {
         if($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK)
             return $depositReceipt;
         else
-            throw new DomainException(
+            throw new RuntimeException(
                 $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
                 $depositReceipt->sac_status
             );
@@ -136,7 +136,7 @@ class DataverseClient {
     {
         $response = $this->swordClient->completeIncompleteDeposit($url, $this->configuration->getApiToken(), '', '');
         if($response->sac_status != DATAVERSE_PLUGIN_HTTP_STATUS_OK)
-            throw new DomainException(
+            throw new RuntimeException(
                 $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
                 $depositReceipt->sac_status
             );
