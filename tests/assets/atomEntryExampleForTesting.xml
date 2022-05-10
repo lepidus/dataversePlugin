@@ -4,5 +4,5 @@
 	<dcterms:description>An example abstract</dcterms:description>
 	<dcterms:creator>Irís Castanheiras</dcterms:creator>
 	<dcterms:subject>computer science</dcterms:subject>
-	<dcterms:contributor type="funder">capes</dcterms:contributor>
+	<dcterms:contributor type="Funder">CAPES</dcterms:contributor>
 </entry>
