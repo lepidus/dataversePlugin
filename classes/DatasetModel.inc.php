@@ -22,7 +22,7 @@ class DatasetModel
         $this->title = $title;
         $this->description = $description;
         $this->creator = $creator;
-        $this->subject = $subject;
+        $this->subject = $this->validateSubject($subject);
         $this->publisher = $publisher;
         $this->contributor = $contributor;
         $this->date = $date ? strftime('%Y-%m-%d', strtotime($date)) : $date;
@@ -44,5 +44,13 @@ class DatasetModel
             }
         }
         return $metadata;
+    }
+
+    private function validateSubject($subject)
+    {
+        if(empty($subject) || $subject[0] == "") { 
+            return array("N/A");
+        }
+        return $subject;
     }
 }

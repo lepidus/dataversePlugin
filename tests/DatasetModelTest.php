@@ -32,12 +32,14 @@ class DatasetModelTest extends PKPTestCase
         $this->title = "The Rise of The Machine Empire";
         $this->description = "An example abstract";
         array_push($this->creator, array("Irís Castanheiras"));
-        array_push($this->subject, "Computer and Information Science");
         array_push($this->contributor, array("iris@lepidus.com.br", "Contact"));
     }
-
-    private function setOptionalMetadata(): void
-    {
+    private function setMetadataWithoutSubject(){
+        $this->title = "The Rise of The Machine Empire";
+        $this->description = "An example abstract";
+        array_push($this->creator, array("Irís Castanheiras"));
+        array_push($this->contributor, array("iris@lepidus.com.br", "Contact"));
+        array_push($this->subject, "");
         $this->publisher = 'Lepidus Tecnologia Ltda.';
         $this->date = '2021-07-22';
         array_push($this->type, 'test data');
@@ -49,15 +51,29 @@ class DatasetModelTest extends PKPTestCase
         array_push($this->isReferencedBy, array('Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus', array()));
     }
 
+    private function setOptionalMetadata(): void
+    {
+        $this->publisher = 'Lepidus Tecnologia Ltda.';
+        $this->date = '2021-07-22';
+        array_push($this->type, 'test data');
+        array_push($this->subject, "Computer and Information Science");
+        $this->source = 'The Guide to SWORD API, Dataverse Project';
+        $this->relation = 'Peets, John. 2010. Roasting Coffee at the Coffee Shop. Coffeemill Press';
+        array_push($this->coverage, 'South America', 'North America');
+        $this->license = 'CC';
+        $this->rights = 'BY-NC-ND';
+        array_push($this->isReferencedBy, array('Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus', array()));
+    }
+
     public function testMetadataValuesContainsData(): void
     {
-        $this->datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
+        $this->datasetModel = new DatasetModel($this->title, $this->creator, array(""), $this->description, $this->contributor);
         $datasetModelMetadata = $this->datasetModel->getMetadataValues();
 
         $expectedMetadata = array(
             'title' => $this->title,
             'creator' => $this->creator,
-            'subject' => $this->subject,
+            'subject' => array("N/A"),
             'description' => $this->description,
             'contributor' => $this->contributor);
 
@@ -81,6 +97,48 @@ class DatasetModelTest extends PKPTestCase
             'title' => $this->title,
             'creator' => $this->creator,
             'subject' => $this->subject,
+            'description' => $this->description,
+            'contributor' => $this->contributor,
+            'publisher' => $this->publisher,
+            'date' => $this->date,
+            'type' => $this->type,
+            'source' => $this->source,
+            'relation' => $this->relation,
+            'coverage' => $this->coverage,
+            'license' => $this->license,
+            'rights' => $this->rights,
+            'isReferencedBy' => $this->isReferencedBy
+        );
+
+        $this->datasetModel = new DatasetModel(
+            $this->title,
+            $this->creator,
+            $this->subject,
+            $this->description,
+            $this->contributor,
+            $this->publisher,
+            $this->date,
+            $this->type,
+            $this->source,
+            $this->relation,
+            $this->coverage,
+            $this->license,
+            $this->rights,
+            $this->isReferencedBy
+        );
+
+        $datasetModelMetadata = $this->datasetModel->getMetadataValues();
+        $this->assertEquals($expectedMetadata, $datasetModelMetadata);
+    }
+
+    public function testValidateSubject(): void
+    {
+        $this->setMetadataWithoutSubject();
+
+        $expectedMetadata = array(
+            'title' => $this->title,
+            'creator' => $this->creator,
+            'subject' => array("N/A"),
             'description' => $this->description,
             'contributor' => $this->contributor,
             'publisher' => $this->publisher,

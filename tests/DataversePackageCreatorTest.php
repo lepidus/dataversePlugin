@@ -32,7 +32,7 @@ class DataversePackageCreatorTest extends PKPTestCase
     private $title       = 'The Rise of The Machine Empire';
     private $description = 'An example abstract';
     private $creator     = array("Irís Castanheiras");
-    private $subject     = array("computer science");
+    private $subject     = array();
     private $contributor = array(array('Funder' => 'CAPES'));
 
     public function setUp(): void
@@ -115,19 +115,18 @@ class DataversePackageCreatorTest extends PKPTestCase
         $this->createDefaultTestAtomEntry();
 
         $atom = DOMDocument::load($this->packageCreator->getAtomEntryPath());
-
         $atomEntryMetadata = array(
             'atomEntryTitle' => $atom->getElementsByTagName('title')->item(0)->nodeValue,
             'atomEntryDescription' => $atom->getElementsByTagName('description')->item(0)->nodeValue,
-            'atomEntryCreator' => $atom->getElementsByTagName('creator')->item(0)->nodeValue,
             'atomEntrySubject' => $atom->getElementsByTagName('subject')->item(0)->nodeValue,
+            'atomEntryCreator' => $atom->getElementsByTagName('creator')->item(0)->nodeValue,
             'atomEntryContributor' => $atom->getElementsByTagName('contributor')->item(0)->nodeValue
         );
         $expectedMetadata = array(
             'atomEntryTitle' => $this->title,
             'atomEntryDescription' => $this->description,
+            'atomEntrySubject' => 'N/A',
             'atomEntryCreator' => $this->creator[0],
-            'atomEntrySubject' => $this->subject[0],
             'atomEntryContributor' => $this->contributor[0]['Funder']
         );
 
@@ -143,15 +142,15 @@ class DataversePackageCreatorTest extends PKPTestCase
         $atomEntryMetadata = array(
             'atomEntryTitle' => $atom->getElementsByTagName('title')->item(0)->nodeValue,
             'atomEntryDescription' => $atom->getElementsByTagName('description')->item(0)->nodeValue,
-            'atomEntryCreator' => $atom->getElementsByTagName('creator')->item(0)->nodeValue,
             'atomEntrySubject' => $atom->getElementsByTagName('subject')->item(0)->nodeValue,
+            'atomEntryCreator' => $atom->getElementsByTagName('creator')->item(0)->nodeValue,
             'atomEntryContributor' => $atom->getElementsByTagName('contributor')->item(0)->nodeValue
         );
         $expectedMetadata = array(
             'atomEntryTitle' => $this->title,
             'atomEntryDescription' => $this->description,
+            'atomEntrySubject' => 'N/A',
             'atomEntryCreator' => $this->creator[0],
-            'atomEntrySubject' => $this->subject[0],
             'atomEntryContributor' => $this->contributor[0]['Funder']
         );
 
