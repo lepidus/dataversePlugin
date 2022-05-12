@@ -17,7 +17,7 @@ class DatasetModel
     private $rights;
     private $isReferencedBy;
 
-    public function __construct(string $title, array $creator, array $subject, string $description, array $contributor, string $publisher = '', string $date = '', array $type = array(), string $source = '', string $relation = '', array $coverage = array(), string $license = '', string $rights = '', array $isReferencedBy = array())
+    public function __construct(string $title, array $creator, ?array $subject, string $description, array $contributor, string $publisher = '', string $date = '', array $type = array(), string $source = '', string $relation = '', array $coverage = array(), string $license = '', string $rights = '', array $isReferencedBy = array())
     {
         $this->title = $title;
         $this->description = $description;
