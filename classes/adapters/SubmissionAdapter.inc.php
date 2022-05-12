@@ -9,7 +9,7 @@ class SubmissionAdapter
     private $keywords;
     private $reference;
 
-    public function __construct(int $id, string $title, array $authors, array $files, string $description, array $keywords, array $reference = array())
+    public function __construct(int $id, string $title, array $authors, array $files, string $description, ?array $keywords, array $reference = array())
     {
         $this->id = $id;
         $this->title = $title;
@@ -45,7 +45,7 @@ class SubmissionAdapter
         return $this->description;
     }
 
-    public function getKeywords(): array
+    public function getKeywords(): ?array
     {
         return $this->keywords;
     }
