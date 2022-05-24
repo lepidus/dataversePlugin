@@ -4,6 +4,6 @@ variables:
     
 include:
   - project: 'documentacao-e-tarefas/modelosparaintegracaocontinua'
-    ref: main
+    ref: motivosConflitoTemplates#324
     file:
       - 'templates/groups/pkp_plugin.yml'
