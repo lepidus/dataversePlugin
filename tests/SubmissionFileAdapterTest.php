@@ -3,17 +3,10 @@
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.adapters.SubmissionFileAdapter');
 
+define('DATASET_GENRE_ID', 7);
+
 class SubmissionFileAdapterTest extends PKPTestCase
 {
-
-    // public function testHasSubmissionFileId(): void
-    // {
-    //     $genreId = DATASET_GENRE_ID;
-    //     $submissionFileAdapter = new SubmissionFileAdapter($genreId, '', '', false, 'N/A');
-
-    //     $this->assertEquals($genreId, $submissionFileAdapter->getGenreId());
-    // }
-
     public function testHasDatasetGenreId(): void
     {
         $genreId = DATASET_GENRE_ID;

@@ -31,10 +31,15 @@ class DataverseService {
 
 	function hasDataSetComponent(): bool
 	{
+		$hasDataset = false;
+
+		$genreDAO = DAORegistry::getDAO('GenreDAO');
 		foreach($this->submission->getFiles() as $file) {
-			$filesGenres[] = $file->getGenreId();
+			$genre = $genreDAO->getById($file->getGenreId());
+			if($genre->getKey() == 'DATASET')
+				$hasDataset = true;
 		}
-		return in_array(DATASET_GENRE_ID, $filesGenres);
+		return $hasDataset;
 	}
 
 	function getDataverseName(): ?string
@@ -168,13 +173,14 @@ class DataverseService {
 		$studyPublished = false;
 		try {
 			$dvReleased = $this->dataverseIsReleased();
-			if(!$dvReleased) {
+			if(!$dvReleased)
 				$dvReleased = $this->releaseDataverse();
-			}else {
-				$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
-				$study = $dataverseStudyDao->getStudyBySubmissionId($this->submission->getId());
-				$studyPublished = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
 
+			$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+			$study = $dataverseStudyDao->getStudyBySubmissionId($this->submission->getId());
+
+			if(!empty($study)) {
+				$studyPublished = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
 				if ($studyPublished) {
 					$this->updateStudy($study);
 					$dataverseNotificationMgr->createNotification(DATAVERSE_PLUGIN_HTTP_STATUS_OK);
