@@ -7,7 +7,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class DataverseStudyDAO extends DAO {
 
-    function getStudy(int $studyId): DataverseStudy
+    function getStudy(int $studyId): ?DataverseStudy
     {
         $result = Capsule::table('dataverse_studies')
             ->where('study_id', $studyId)
@@ -21,7 +21,7 @@ class DataverseStudyDAO extends DAO {
 		return $study;
 	}
 
-    function getStudyBySubmissionId(int $submissionId): DataverseStudy
+    function getStudyBySubmissionId(int $submissionId): ?DataverseStudy
     {
         $result = Capsule::table('dataverse_studies')
             ->where('submission_id', $submissionId)

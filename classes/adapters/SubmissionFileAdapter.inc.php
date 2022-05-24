@@ -1,7 +1,5 @@
 <?php
 
-define('DATASET_GENRE_ID', 7);
-
 class SubmissionFileAdapter
 {
     private $id;
