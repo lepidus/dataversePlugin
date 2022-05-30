@@ -48,7 +48,7 @@ msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
 msgstr "Deposit file in Dataverse: <strong>{$dataverseName}</strong>, agreeing to the <a href=\"{$termsOfUseURL}\" target=\"_new\">Terms of Use</a>."
 
 msgid "plugins.generic.dataverse.notification.statusCreated"
-msgstr "Dataset successful created in {$dataverseName}"
+msgstr "Dataset successful created in {$dataverseUrl}"
 
 msgid "plugins.generic.dataverse.notification.statusPublished"
 msgstr "Dataset published in: {$dataverseUrl}."
