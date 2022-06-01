@@ -69,7 +69,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		$output =& $params[2];
 
 		$submission = $templateMgr->getTemplateVars('preprint');
-		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');			 
+		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
 		if(isset($study)) {
@@ -91,6 +91,9 @@ class TemplateDispatcher extends DataverseDispatcher
 			case 'frontend/pages/preprint.tpl':
 				$smarty->registerFilter("output", array($this, 'galleyLinkFilter'));
 				break;
+			case 'frontend/pages/indexJournal.tpl':
+				$smarty->registerFilter("output", array($this, 'galleyLinkFilter'));
+				break;
 			default:
 				return false;
 		}
@@ -100,7 +103,7 @@ class TemplateDispatcher extends DataverseDispatcher
 	{
 		$offset = 0;
 		$foundGalleyLinks = false;
-		while(preg_match('/<a[^>]+class="obj_galley_link[^>]*"[^>]+href="([^>]+)">[^<]+<\/a>/', $output, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+		while(preg_match('/<a[^>]+class="obj_galley_link[^>]*"[^>]+href="([^>]+)"*>[^<]+<\/a>/', $output, $matches, PREG_OFFSET_CAPTURE, $offset)) {
 			$foundGalleyLinks = true;
 			$matchAll = $matches[0][0];
 			$posMatchAll = $matches[0][1];
@@ -121,7 +124,7 @@ class TemplateDispatcher extends DataverseDispatcher
 				$offset = $posMatchAll + strlen($matchAll);
 			}
 		}
-		
+
 		if($foundGalleyLinks) $templateMgr->unregisterFilter('output', array($this, 'galleyLinkFilter'));
 		return $output;
 	}
