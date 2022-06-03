@@ -2,14 +2,13 @@ import '../support/commands';
 
 var adminUser = Cypress.env('adminUser');
 var adminPassword = Cypress.env('adminPassword');
+var serverName = Cypress.env('serverName');
 var currentYear = new Date().getFullYear();
 
 describe('Deposit Draft Dataverse on Submission', function() {
 
     it('Dataverse Plugin Configuration', function() {
-        cy.login(adminUser, adminPassword);
-        cy.get('a:contains(' + adminUser + '):visible').click();
-        cy.get('a:contains("Dashboard"):visible').click();
+        cy.login(adminUser, adminPassword, serverName);
         cy.get('.app__nav a').contains('Website').click();
         cy.get('button[id="plugins-button"]').click();
         cy.get('#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin > :nth-child(3) [type="checkbox"]').check();
@@ -20,14 +19,11 @@ describe('Deposit Draft Dataverse on Submission', function() {
         cy.get('input[name="dataverseUrl"]').invoke('val', Cypress.env('dataverseURI'));
         cy.get('input[name="apiToken"]').invoke('val', Cypress.env('dataverseAPIToken'));
         cy.get('form[id="dataverseAuthForm"] button[name="submitFormButton"]').click();
-        cy.get('div:contains(\'Your changes have been saved.\')');
+        cy.get('div:contains("Your changes have been saved.")');
     });
 
     it('Create Submission', function() {
-        cy.login(adminUser, adminPassword);
-        cy.get('a:contains(' + adminUser + '):visible').click();
-        cy.get('a:contains("Dashboard"):visible').click();
-
+        cy.login(adminUser, adminPassword, serverName);
         cy.get('.app__nav a').contains('Website').click();
         cy.get('button[id="plugins-button"]').click();
         cy.get('#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin > :nth-child(3) [type="checkbox"]').check();
@@ -37,11 +33,9 @@ describe('Deposit Draft Dataverse on Submission', function() {
 
 		cy.DataverseCreateSubmission({
             'submitterRole': 'Preprint Server manager',
-			'title': 'The Rise of The Machine Empire',
-			'abstract': 'An example abstract',
-			'keywords': [
-				'Modern History'
-			],
+            'title': 'The Rise of The Machine Empire',
+            'abstract': 'An example abstract',
+            'keywords': ['Modern History'],
             'files': [
                 {
                     'galleyLabel': 'CSV',
@@ -82,9 +76,7 @@ describe('Deposit Draft Dataverse on Submission', function() {
 describe('Publish Draft Dataverse on Submission Publish', function() {
 
     it('Publish Created Submission', function() {
-        cy.login(adminUser, adminPassword);
-        cy.get('a:contains(' + adminUser + '):visible').click();
-        cy.get('a:contains("Dashboard"):visible').click();
+        cy.login(adminUser, adminPassword, serverName);
         cy.get('#myQueue a:contains("View"):first').click();
         cy.wait(1000);
         cy.get('li > .pkpButton').click();
@@ -94,9 +86,17 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
         cy.get('.pkpPublication__versionPublished:contains("This version has been posted and can not be edited.")');
     });
 
-    it('Check Publication has Dataset Citation', function() {
-        cy.get('a.pkpButton:contains("View")').click();
+    it('Goes to preprint view page', function() {
+        cy.login(adminUser, adminPassword, serverName);
+        cy.get('.pkpTabs__buttons > #archive-button').click();
+        cy.wait(1000);
+        cy.get('#archive a:contains("View"):first').click();
+        cy.get('#publication-button').click();
+        cy.get('.pkpHeader > .pkpHeader__actions > a:contains("View")').click();
         cy.waitJQuery();
+    });
+
+    it('Check Publication has Dataset Citation', function() {
         cy.get('.label').contains('Research data');
         cy.get('.value > p').contains('Íris Castanheiras, ' + currentYear + ', "The Rise of The Machine Empire"');
     });
