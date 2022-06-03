@@ -100,4 +100,29 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
         cy.get('.label').contains('Research data');
         cy.get('.value > p').contains('Íris Castanheiras, ' + currentYear + ', "The Rise of The Machine Empire"');
     });
+
+    it('Checks "PDF" download button is hidden', function() {
+        cy.get('.supplementary_galleys_links > li > a:contains("PDF")').should('not.exist');
+    });
+
+    it('Checks "JPG" download button is shown', function() {
+        cy.get('.supplementary_galleys_links > li > a:contains("JPG")');
+    });
+});
+
+describe('Hides button for deposited components in "latest preprints" listing', function() {
+    it('Goes to index page', function() {
+    cy.login(adminUser, adminPassword, serverName);
+        cy.get('.app__header > a.app__contextTitle').click();
+    });
+
+    it('Checks "PDF" download button is hidden', function() {
+        cy.get(
+            '.obj_article_summary > .galleys_links > li > a:contains("PDF")'
+        ).should('not.exist');
+    });
+
+    it('Checks "JPG" download button is shown', function() {
+        cy.get('.obj_article_summary > .galleys_links > li > a:contains("JPG")');
+    });
 });
