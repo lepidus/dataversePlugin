@@ -66,7 +66,7 @@ describe('Deposit Draft Dataverse on Submission', function() {
                     'familyName': 'Castanheiras',
                     'email': 'iris@lepidus.com.br',
                     'affiliation': 'Preprints da Lepidus',
-                    'country': 'Brazil'
+                    'country': 'Argentina'
                 }
             ]
 		});
