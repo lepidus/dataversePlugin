@@ -4,7 +4,7 @@ variables:
     
 include:
   - project: 'documentacao-e-tarefas/modelosparaintegracaocontinua'
-    ref: main
+    ref: AddsUpdatesCopyrightCIReferences
     file:
       - 'templates/groups/pkp_plugin.yml'
       - 'templates/update_copyright.yml'
