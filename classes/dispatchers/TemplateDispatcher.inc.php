@@ -87,15 +87,16 @@ class TemplateDispatcher extends DataverseDispatcher
 		$smarty = $params[0];
 		$template = $params[1];
 
-		switch ($template) {
-			case 'frontend/pages/preprint.tpl':
-				$smarty->registerFilter("output", array($this, 'galleyLinkFilter'));
-				break;
-			case 'frontend/pages/indexJournal.tpl':
-				$smarty->registerFilter("output", array($this, 'galleyLinkFilter'));
-				break;
-			default:
-				return false;
+		$templateMapping = [
+			$template => frontend/pages/preprint.tpl,
+			$template => frontend/pages/indexJournal.tpl
+		];
+
+		if (array_key_exists($template, $templateMapping)){
+			$smarty->registerFilter("output", array($this, 'galleyLinkFilter'));
+		}
+		else {
+			return false;
 		}
 	}
 
