@@ -196,15 +196,21 @@ class DataverseService {
 
 	function updateStudy(DataverseStudy $study): void
 	{
-		$studyReleased = $this->studyIsReleased($study);
-		while (!$studyReleased) $studyReleased = $this->studyIsReleased($study);
-		if ($studyReleased) {
-			$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($study->getEditUri());
-			if (!empty($depositReceipt)) {
-				$study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
-				$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
-				$dataverseStudyDao->updateStudy($study);
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		try {
+			$studyReleased = $this->studyIsReleased($study);
+			while (!$studyReleased) $studyReleased = $this->studyIsReleased($study);
+			if ($studyReleased) {
+				$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($study->getEditUri());
+				if (!empty($depositReceipt)) {
+					$study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
+					$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+					$dataverseStudyDao->updateStudy($study);
+				}
 			}
+		} catch (RuntimeException $e) {
+			error_log($e->getMessage());
+			$dataverseNotificationMgr->createNotification($e->getCode());
 		}
 	}
 
