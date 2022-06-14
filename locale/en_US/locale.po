@@ -35,6 +35,9 @@ msgstr "API Token"
 msgid "plugins.generic.dataverse.settings.password"
 msgstr "Password"
 
+msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
+msgstr "Can't connect to Dataverse"
+
 msgid "plugins.generic.dataverse.settings.dataverseServerNotValid"
 msgstr "Can't connect to Dataverse."
 
@@ -79,3 +82,4 @@ msgstr "Service Unavailable. {$dataverseUrl} is temporarily busy. Please try aga
 
 msgid "plugins.generic.dataverse.notification.unknownError"
 msgstr "Unknown error. Could not connect to {$dataverseUrl}"
+
