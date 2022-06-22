@@ -9,11 +9,9 @@
  *
  *}
 
-{if $dataCitation}
-<section class="item data_citation">
+<section class="item data_citation" id="data_citation">
     <h2 class="label">{translate key="plugins.generic.dataverse.dataCitationLabel"}</h2>
     <span class="value">
-        <p>{$dataCitation}</p>
+        <p></p>
     </span>
 </section>
-{/if}
