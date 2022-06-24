@@ -2,6 +2,7 @@
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
+import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 
 class DataverseServiceDispatcher extends DataverseDispatcher
 {
@@ -10,9 +11,56 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 		HookRegistry::register('Schema::get::submissionFile', array($this, 'modifySubmissionFileSchema'));
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
+		HookRegistry::register('PreprintHandler::view', array($this, 'loadResources'));
 
 		parent::__construct($plugin);
     }
+
+	public function loadResources($hookName, $params) {
+		$request = $params[0];
+		$submission = $params[1];
+		$templateManager = TemplateManager::getManager($request);
+		$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
+		
+		$this->loadJavaScript($pluginPath, $templateManager);
+		$this->addJavaScriptVariables($request, $templateManager, $submission);
+	}
+
+	public function loadJavaScript($pluginPath, $templateManager) {
+		$templateManager->addJavaScript("Dataverse",  $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js', array(
+			'contexts' => ['backend', 'frontend']
+		));
+	}
+
+	function addJavaScriptVariables($request, $templateManager, $submission) {
+		$configuration = $this->getDataverseConfiguration();
+		$apiToken = $configuration->getApiToken();
+
+		$dataverseServer = $configuration->getDataverseServer();
+		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
+		$persistentUri = $study->getPersistentUri();
+		preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches); 
+		$persistentId =  "doi:" . $matches[0];
+
+		$editUri = "$dataverseServer/api/datasets/:persistentId/?persistentId=$persistentId";
+
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		$dataverseUrl = $configuration->getDataverseUrl();
+		$params = ['dataverseUrl' => $dataverseUrl];
+		$errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
+
+		$data = [
+			"editUri" => $editUri,
+			"apiToken" => $apiToken,
+			"errorMessage" => $errorMessage
+		];
+
+		$templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
+			'inline' => true,
+			'contexts' => ['backend', 'frontend']
+		]);
+	}
 
     public function modifySubmissionFileSchema(string $hookName, array $params): bool
 	{
@@ -41,6 +89,5 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 		
 		$service = $this->getDataverseService();
 		$service->setSubmission($submission);
-		$service->releaseStudy();
 	}
 }
