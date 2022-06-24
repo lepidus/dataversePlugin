@@ -182,7 +182,6 @@ class DataverseService {
 			if(!empty($study)) {
 				$studyPublished = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
 				if ($studyPublished) {
-					$this->updateStudy($study);
 					$dataverseNotificationMgr->createNotification(DATAVERSE_PLUGIN_HTTP_STATUS_OK);
 				}
 			}
@@ -194,25 +193,6 @@ class DataverseService {
 		return $studyPublished;
 	}
 
-	function updateStudy(DataverseStudy $study): void
-	{
-		$dataverseNotificationMgr = new DataverseNotificationManager();
-		try {
-			$studyReleased = $this->studyIsReleased($study);
-			while (!$studyReleased) $studyReleased = $this->studyIsReleased($study);
-			if ($studyReleased) {
-				$depositReceipt = $this->dataverseClient->retrieveDepositReceipt($study->getEditUri());
-				if (!empty($depositReceipt)) {
-					$study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
-					$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
-					$dataverseStudyDao->updateStudy($study);
-				}
-			}
-		} catch (RuntimeException $e) {
-			error_log($e->getMessage());
-			$dataverseNotificationMgr->createNotification($e->getCode());
-		}
-	}
 
 	function getTermsOfUse(): string
 	{
