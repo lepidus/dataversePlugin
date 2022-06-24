@@ -1,30 +1,4 @@
-function formatYear(date) {
-  return date.substring(0, 4)
-}
-
-function formatCitation(data) {
-  const {
-    publisher, 
-    persistentUrl,
-    publicationDate,
-    latestVersion: { metadataBlocks: { citation: { fields } } } 
-  } = data
-
-  let citation = {
-    publisher,
-    persistentUrl,
-    year: formatYear(publicationDate)
-  }
-  fields.forEach(field => {
-    field.typeName === "title" && (citation.title = field.value)
-    if(field.typeName === "author") {
-      citation.authors = field.value.map(({ authorName }) => authorName.value)
-    }
-  })
-  return citation
-}
-
-async function getDeposit() {
+async function getStudy() {
   const response = await fetch(appDataverse.editUri, {
     headers: {
       'X-Dataverse-key': appDataverse.apiToken
@@ -34,16 +8,23 @@ async function getDeposit() {
   return data
 }
 
+function getCitation(fields) {
+  const publication = fields.find(({ typeName }) => typeName === 'publication')
+  return publication.value[0].publicationCitation.value
+} 
 async function insertCitationInTemplate() {
-  const deposit = await getDeposit()
-  const { authors, year, title, persistentUrl, publisher } = formatCitation(deposit)
-
   const citationSection = document.getElementById('data_citation')
-  citationSection.querySelector('p').innerHTML = `
-    ${authors.join('; ')}, ${year}, "${title}",  
-    <a href="${persistentUrl}">${persistentUrl}</a>, 
-    ${publisher}
-  `
+  const citationParagraph = citationSection.querySelector('p')
+
+  citationParagraph.textContent = "loading..."
+  try {
+    const study = await getStudy()
+    const { latestVersion: { metadataBlocks: { citation: { fields } } } } = study
+    const citation = getCitation(fields)
+    citationParagraph.innerHTML = citation
+  } catch (error) {
+    citationParagraph.innerHTML = appDataverse.errorMessage
+  }
 }
 
 insertCitationInTemplate()
