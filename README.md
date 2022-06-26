@@ -31,7 +31,7 @@ To download the plugin, go to the [Releases page](https://github.com/lepidus/dat
 
 To clone [SWORD v2 PHP API library](https://github.com/swordapp/swordappv2-php-library/) submodule.
 
-3. To use the plugin into the PKP Appplication, copy it's folder to the /plugins/generic directory.
+3. To use the plugin into the PKP Application, copy it's folder to the /plugins/generic directory and make sure the folder is called "dataverse".
 4. And from the root of the PKP Appplication directory, execute this command to update the database, creating the tables used by the plugin:
     * php tools/upgrade.php upgrade
 ## Installation
