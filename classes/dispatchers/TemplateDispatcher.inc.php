@@ -8,6 +8,7 @@ class TemplateDispatcher extends DataverseDispatcher
 {
     public function __construct(Plugin $plugin)
 	{
+		HookRegistry::register('submissionsubmitstep2form::display', array($this, 'handleDatasetModal'));
         HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
@@ -16,6 +17,25 @@ class TemplateDispatcher extends DataverseDispatcher
 
 		parent::__construct($plugin);
     }
+
+	function handleDatasetModal(string $hookName, array $params): bool
+	{
+		$request = PKPApplication::get()->getRequest();
+
+		$templateMgr = TemplateManager::getManager($request);
+		$templateMgr->registerFilter("output", array($this, 'sendDataset'));
+		return false;
+	}
+
+	function sendDataset(string $output, Smarty_Internal_Template $templateMgr): string {
+		if (preg_match('/<div[^>]+class="[^>]*formButtons[^>]*"[^>]*>(.|\n)*?<\/div>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
+			$template = $templateMgr->fetch($this->plugin->getTemplateResource('sendDataset.tpl'));
+			$templateMgr->unregisterFilter('output', array($this, 'sendDataset'));
+			$output = $template . $output;
+		}
+		return $output;
+	}
+
 
     function handleSubmissionFilesMetadataFormDisplay(string $hookName, array $params): bool
 	{

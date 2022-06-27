@@ -50,6 +50,9 @@ msgstr "Informe uma chave de API para Dataverse."
 msgid "plugins.generic.dataverse.dataCitationLabel"
 msgstr "Dados de pesquisa"
 
+msgid "plugins.generic.dataverse.datasetButton"
+msgstr "Enviar dados de pesquisa"
+
 msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
 msgstr "Depositar arquivo no Dataverse: <strong>{$dataverseName}</strong>, concordando com os <a href=\"{$termsOfUseURL}\" target=\"_new\">Termos de Uso</a>."
 
