@@ -71,14 +71,14 @@ Creates a cypress.env.json file in root of the PKP Appplication directory, with 
 }
 ```
 
-Next, to execute the Cypress tests use the following command:
-```
-npx cypress open --config integrationFolder=plugins/generic/dataverse/cypress/tests
-```
-
-For execute the tests without opening the Cypress window, run:
+Next, to execute the Cypress tests run the following command from root of the PKP Appplication directory:
 ```
 npx cypress run --config integrationFolder=plugins/generic/dataverse/cypress/tests
+```
+
+For execute the tests with the Cypress UI, run:
+```
+npx cypress open --config integrationFolder=plugins/generic/dataverse/cypress/tests
 ```
 
 ## Instructions for use
