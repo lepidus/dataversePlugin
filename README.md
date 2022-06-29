@@ -41,6 +41,46 @@ To clone [SWORD v2 PHP API library](https://github.com/swordapp/swordappv2-php-l
 3. Under __Upload file__ select the file __dataverse.tar.gz__.
 4. Click __Save__ and the plugin will be installed on your website.
 
+## Running Tests
+
+### Unit Tests
+
+To execute the unit tests, run the following command from root of the PKP Appplication directory:
+```
+find plugins/generic/dataverse -name tests -type d -exec php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit-env2.xml -v "{}" ";"
+```
+
+### Integration Tests
+
+Creates a cypress.env.json file in root of the PKP Appplication directory, with the following environment variables:
+- baseUrl
+- adminUser
+- adminPassword
+- dataverseURI
+- dataverseAPIToken
+
+**Example**:
+
+```json
+{
+    "baseUrl": "http://localhost:8000",
+    "adminUser": "admin",
+    "adminPassword": "admin",
+    "dataverseURI": "https://demo.dataverse.org/dataverse/myDataverseAlias",
+    "dataverseAPIToken": "abcd-abcd-abcd-abcd-abcdefghijkl"
+}
+```
+
+Next, to execute the Cypress tests use the following command:
+```
+npx cypress open --config integrationFolder=plugins/generic/dataverse/cypress/tests
+```
+
+For execute the tests without opening the Cypress window, run:
+```
+npx cypress run --config integrationFolder=plugins/generic/dataverse/cypress/tests
+```
+
 ## Instructions for use
 
 After installation, it is necessary to enable the plugin. This is done in `Website Settings` > `Plugins` > `Installed Plugins`.
