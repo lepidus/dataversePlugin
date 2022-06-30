@@ -28,7 +28,7 @@ class DataverseDAOTest extends DatabaseTestCase
     public function testCredentialsAddedInDB(): void
     {
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
-        $pluginSettingsDao->updateSetting($this->contextId, 'dataverseplugin', 'dataverse', $this->dataverseUrl);
+        $pluginSettingsDao->updateSetting($this->contextId, 'dataverseplugin', 'dataverseUrl', $this->dataverseUrl);
         $pluginSettingsDao->updateSetting($this->contextId, 'dataverseplugin', 'apiToken', $this->apiToken);
         $expectedCredentials = [$this->apiToken, $this->dataverseUrl];
         $this->assertEquals($expectedCredentials, $this->dataverseDAO->getCredentialsFromDatabase($this->contextId));
