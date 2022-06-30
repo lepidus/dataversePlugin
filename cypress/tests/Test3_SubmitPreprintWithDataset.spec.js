@@ -98,7 +98,7 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 
     it('Check Publication has Dataset Citation', function() {
         cy.get('.label').contains('Research data');
-        cy.get('.value > p').contains('Íris Castanheiras, ' + currentYear + ', "The Rise of The Machine Empire"');
+        cy.get('.value > p').contains('Castanheiras, Í. (' + currentYear + '). The Rise of The Machine Empire');
     });
 
     it('Checks "PDF" download button is hidden', function() {
