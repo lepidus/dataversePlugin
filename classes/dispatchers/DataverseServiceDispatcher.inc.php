@@ -89,5 +89,6 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 		
 		$service = $this->getDataverseService();
 		$service->setSubmission($submission);
+		$service->releaseStudy();
 	}
 }
