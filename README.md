@@ -54,6 +54,7 @@ find plugins/generic/dataverse -name tests -type d -exec php lib/pkp/lib/vendor/
 
 Creates a cypress.env.json file in root of the PKP Application directory, with the following environment variables:
 - baseUrl
+- serverName
 - adminUser
 - adminPassword
 - dataverseURI
@@ -64,6 +65,7 @@ Creates a cypress.env.json file in root of the PKP Application directory, with t
 ```json
 {
     "baseUrl": "http://localhost:8000",
+    "serverName": "myPreprintServer",
     "adminUser": "admin",
     "adminPassword": "admin",
     "dataverseURI": "https://demo.dataverse.org/dataverse/myDataverseAlias",
