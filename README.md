@@ -10,7 +10,7 @@ The latest release of this plugin is compatible with the following PKP applicati
 
 * OPS 3.3 (or higher)
 
-Using PHP 7.3 or higher, but below PHP 8.0. 
+Using PHP 7.3 or higher, but below (<) PHP 8.0. 
 
 ## Plugin Download
 
@@ -52,7 +52,7 @@ find plugins/generic/dataverse -name tests -type d -exec php lib/pkp/lib/vendor/
 
 ### Integration Tests
 
-Creates a cypress.env.json file in root of the PKP Appplication directory, with the following environment variables:
+Creates a cypress.env.json file in root of the PKP Application directory, with the following environment variables:
 - baseUrl
 - adminUser
 - adminPassword
@@ -80,6 +80,7 @@ For execute the tests with the Cypress UI, run:
 ```
 npx cypress open --config integrationFolder=plugins/generic/dataverse/cypress/tests
 ```
+Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en_US` for passing into the tests.
 
 ## Instructions for use
 
