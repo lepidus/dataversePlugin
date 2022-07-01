@@ -6,5 +6,5 @@
   *}
 
 <div class="pkp_form" id="datasetMenu">
-    <p>{$citation}</p>
+    <h2>{$citation}</h2>
 </div>
