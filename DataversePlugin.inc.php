@@ -117,15 +117,18 @@ class DataversePlugin extends GenericPlugin {
 		$submission = $smarty->get_template_vars('submission');
 		$this->studyDao = new DataverseStudyDAO();
 		$study = $this->studyDao->getStudyBySubmissionId($submission->getId());
-        $apaCitation = new APACitation();
-        $studyCitationMarkup = $apaCitation->getCitationAsMarkupByStudy($study);
-		$smarty->assign('citation', $studyCitationMarkup);
 
-		$output .= sprintf(
-			'<tab id="datasetTab" label="%s">%s</tab>',
-			__("plugins.generic.dataverse.dataCitationLabel"),
-			$smarty->fetch($this->getTemplateResource('datasetMenu.tpl'))
-		);
+		if(!empty($study)) {
+			$apaCitation = new APACitation();
+			$studyCitationMarkup = $apaCitation->getCitationAsMarkupByStudy($study);
+			$smarty->assign('citation', $studyCitationMarkup);
+	
+			$output .= sprintf(
+				'<tab id="datasetTab" label="%s">%s</tab>',
+				__("plugins.generic.dataverse.dataCitationLabel"),
+				$smarty->fetch($this->getTemplateResource('datasetMenu.tpl'))
+			);
+		}
 	}
 }
 
