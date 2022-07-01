@@ -29,8 +29,8 @@
 			<span class="pkp_screen_reader">{translate key="common.closePanel"}</span>
 		</a>
 		<div class="content">
-			templates/controllers/wizard/fileUpload/form/submissionFileMetadataForm.tpl
-			<br>
+			{$submissionFileId}
+			{$stageId}
 			<div id="datasetButtonContainer">
 				{fbvElement type="submit" id="saveDatasetButton" label="common.save"}
 			</div>

@@ -20,9 +20,22 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function handleDatasetModal(string $hookName, array $params): bool
 	{
-		$request = PKPApplication::get()->getRequest();
+		$form =& $params[0];
+		$form->readUserVars(array('submissionId'));
+		$submissionId = $form->getData('submissionId');
+		$submission = Services::get('submission')->get($submissionId);
+		$galleys = $submission->getGalleys();
+		$filesIds = array();
+		foreach ($galleys as $galley) {
+			array_push($filesIds, $galley->getData('submissionFileId'));
+		}
+		$submissionFile = $filesIds[0];
+		$stageId = $submission->getData('stageId');
 
+		$request = PKPApplication::get()->getRequest();
 		$templateMgr = TemplateManager::getManager($request);
+		$templateMgr->assign('submissionFileId', $submissionFile);
+		$templateMgr->assign('stageId', $stageId);
 		$templateMgr->registerFilter("output", array($this, 'sendDataset'));
 		return false;
 	}
