@@ -3,6 +3,7 @@
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.APACitation');
 import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
+import('lib.pkp.classes.submission.SubmissionFile');
 
 class TemplateDispatcher extends DataverseDispatcher
 {
@@ -24,19 +25,22 @@ class TemplateDispatcher extends DataverseDispatcher
 		$form->readUserVars(array('submissionId'));
 		$submissionId = $form->getData('submissionId');
 		$submission = Services::get('submission')->get($submissionId);
-		$galleys = $submission->getGalleys();
-		$filesIds = array();
-		foreach ($galleys as $galley) {
-			array_push($filesIds, $galley->getData('submissionFileId'));
-		}
-		$submissionFile = $filesIds[0];
-		$stageId = $submission->getData('stageId');
-
 		$request = PKPApplication::get()->getRequest();
+		$galleys = $submission->getGalleys();
+		$datasetGalleys = array();
+		foreach ($galleys as $galley) {
+			$submissionFile = Services::get('submissionFile')->get($galley->getData('submissionFileId'));
+			if ($submissionFile) {
+				$DATASET_GENRE_ID = 7;
+				if ($submissionFile->getGenreId() == $DATASET_GENRE_ID)
+					array_push($datasetGalleys, $galley);
+			}
+		}
+
 		$templateMgr = TemplateManager::getManager($request);
-		$templateMgr->assign('submissionFileId', $submissionFile);
-		$templateMgr->assign('stageId', $stageId);
+		$templateMgr->assign('datasetGalleys', $datasetGalleys);
 		$templateMgr->registerFilter("output", array($this, 'sendDataset'));
+
 		return false;
 	}
 

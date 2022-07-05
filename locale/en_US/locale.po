@@ -82,3 +82,6 @@ msgstr "Service Unavailable. {$dataverseUrl} is temporarily busy. Please try aga
 
 msgid "plugins.generic.dataverse.notification.unknownError"
 msgstr "Unknown error. Could not connect to {$dataverseUrl}"
+
+msgid "plugins.generic.dataverse.modal.description"
+msgstr "You can select which files should be uploaded to {$dataverseUrl}."

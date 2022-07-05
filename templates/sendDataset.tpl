@@ -28,9 +28,20 @@
 			<span :aria-hidden="true">×</span>
 			<span class="pkp_screen_reader">{translate key="common.closePanel"}</span>
 		</a>
+		<div id="descriptionModal" class="header">{translate key="plugins.generic.dataverse.modal.description"}</div>
 		<div class="content">
-			{$submissionFileId}
-			{$stageId}
+			{if !$hideGalleys}
+				<ul class="galleys_links" style="list-style-type:none">
+					{foreach from=$datasetGalleys item=galley}
+						<li>{fbvElement type="checkbox" label=$galley->getLocalizedName() translate=false value=$galley id="galley-item-{$galley->getId()}" checked=false}</li>
+					{/foreach}
+				</ul>
+			{/if}
+
+			{fbvFormSection list="true" title="Dataverse Plugin" translate=false}
+				{fbvElement type="checkbox" label="plugins.generic.dataverse.submissionFileMetadata.publishData" id="publishData" checked=false}
+			{/fbvFormSection}
+
 			<div id="datasetButtonContainer">
 				{fbvElement type="submit" id="saveDatasetButton" label="common.save"}
 			</div>
