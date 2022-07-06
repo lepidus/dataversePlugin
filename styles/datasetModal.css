@@ -1,3 +1,18 @@
+.galleys_links {
+  padding: 0;
+  list-style-type: none;
+  margin-bottom: 40px;
+}
+
+#descriptionModal p {
+  line-height: normal;
+  font-weight: normal;
+}
+
+#descriptionModal {
+  margin-bottom: -30px;
+}
+
 #closeDatasetModal {
   cursor: pointer;
 }

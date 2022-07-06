@@ -36,7 +36,6 @@ class TemplateDispatcher extends DataverseDispatcher
 					array_push($datasetGalleys, $galley);
 			}
 		}
-
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('datasetGalleys', $datasetGalleys);
 		$templateMgr->registerFilter("output", array($this, 'sendDataset'));
@@ -48,7 +47,10 @@ class TemplateDispatcher extends DataverseDispatcher
 		if (preg_match('/<div[^>]+class="[^>]*formButtons[^>]*"[^>]*>(.|\n)*?<\/div>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
 			$template = $templateMgr->fetch($this->plugin->getTemplateResource('sendDataset.tpl'));
 			$templateMgr->unregisterFilter('output', array($this, 'sendDataset'));
-			$output = $template . $output;
+			$service = $this->getDataverseService();
+			$dataverseName = $service->getDataverseName();
+			$newOutput = str_replace("{\$dataverseName}", $dataverseName, $template);
+			$output = $newOutput . $output;
 		}
 		return $output;
 	}
@@ -125,8 +127,8 @@ class TemplateDispatcher extends DataverseDispatcher
 		$template = $params[1];
 
 		$templateMapping = [
-			$template => frontend/pages/preprint.tpl,
-			$template => frontend/pages/indexJournal.tpl
+			$template => 'frontend/pages/preprint.tpl',
+			$template => 'frontend/pages/indexJournal.tpl'
 		];
 
 		if (array_key_exists($template, $templateMapping)){

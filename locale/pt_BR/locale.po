@@ -90,4 +90,4 @@ msgid "plugins.generic.dataverse.notification.unknownError"
 msgstr "Erro desconhecido. Não foi possível conectar a {$dataverseUrl}"
 
 msgid "plugins.generic.dataverse.modal.description"
-msgstr "Você pode selecionar os arquivos que devem ser enviados ao {$dataverseUrl}."
+msgstr "Você pode selecionar os arquivos que devem ser enviados ao {$dataverseName}."

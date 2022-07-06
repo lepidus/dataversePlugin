@@ -22,16 +22,16 @@
 <link rel="stylesheet" type="text/css" href="/plugins/generic/dataverse/styles/datasetModal.css">
 
 <div id="datasetModal" class="pkp_modal pkpModalWrapper" tabIndex="-1">
-	<div class="pkp_modal_panel" role="dialog" aria-label="DOI Screening">
+	<div class="pkp_modal_panel" role="dialog" aria-label="Dataverse">
 		<div id="titleModal" class="header">{translate key="plugins.generic.dataverse.dataCitationLabel"}</div>
 		<a id="closeDatasetModal" class="close pkpModalCloseButton">
 			<span :aria-hidden="true">×</span>
 			<span class="pkp_screen_reader">{translate key="common.closePanel"}</span>
 		</a>
-		<div id="descriptionModal" class="header">{translate key="plugins.generic.dataverse.modal.description"}</div>
+		<div id="descriptionModal" class="header"><p>{translate key="plugins.generic.dataverse.modal.description"}</p></div>
 		<div class="content">
 			{if !$hideGalleys}
-				<ul class="galleys_links" style="list-style-type:none">
+				<ul class="galleys_links">
 					{foreach from=$datasetGalleys item=galley}
 						<li>{fbvElement type="checkbox" label=$galley->getLocalizedName() translate=false value=$galley id="galley-item-{$galley->getId()}" checked=false}</li>
 					{/foreach}
