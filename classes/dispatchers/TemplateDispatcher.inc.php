@@ -27,17 +27,16 @@ class TemplateDispatcher extends DataverseDispatcher
 		$submission = Services::get('submission')->get($submissionId);
 		$request = PKPApplication::get()->getRequest();
 		$galleys = $submission->getGalleys();
-		$datasetGalleys = array();
+		$dataverseGalleys = array();
+
 		foreach ($galleys as $galley) {
 			$submissionFile = Services::get('submissionFile')->get($galley->getData('submissionFileId'));
-			if ($submissionFile) {
-				$DATASET_GENRE_ID = 7;
-				if ($submissionFile->getGenreId() == $DATASET_GENRE_ID)
-					array_push($datasetGalleys, $galley);
-			}
+			if ($submissionFile) $dataverseGalleys[$galley] = $submissionFile->getGenreId();
 		}
+
 		$templateMgr = TemplateManager::getManager($request);
-		$templateMgr->assign('datasetGalleys', $datasetGalleys);
+		$templateMgr->assign('datasetGalleys', $dataverseGalleys);
+		$templateMgr->assign('dataverseName', $dataverseName);
 		$templateMgr->registerFilter("output", array($this, 'sendDataset'));
 
 		return false;
