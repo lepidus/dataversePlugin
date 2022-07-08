@@ -91,6 +91,3 @@ msgstr "Erro desconhecido. Não foi possível conectar a {$dataverseUrl}"
 
 msgid "plugins.generic.dataverse.modal.description"
 msgstr "Você pode selecionar os arquivos que devem ser enviados ao {$dataverseName}."
-
-msgid "plugins.generic.dataverse.modal.galleyView"
-msgstr "{$genreName} - {$galleyName}"

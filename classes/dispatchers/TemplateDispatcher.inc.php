@@ -28,15 +28,16 @@ class TemplateDispatcher extends DataverseDispatcher
 		$request = PKPApplication::get()->getRequest();
 		$galleys = $submission->getGalleys();
 		$dataverseGalleys = array();
-
+		$genreDAO = DAORegistry::getDAO('GenreDAO');
 		foreach ($galleys as $galley) {
 			$submissionFile = Services::get('submissionFile')->get($galley->getData('submissionFileId'));
-			if ($submissionFile) $dataverseGalleys[$galley] = $submissionFile->getGenreId();
+			if ($submissionFile) {
+				$genre = $genreDAO->getById($submissionFile->getGenreId());
+				$dataverseGalleys[$genre->getLocalizedName()] = $galley;
+			}
 		}
-
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('datasetGalleys', $dataverseGalleys);
-		$templateMgr->assign('dataverseName', $dataverseName);
 		$templateMgr->registerFilter("output", array($this, 'sendDataset'));
 
 		return false;

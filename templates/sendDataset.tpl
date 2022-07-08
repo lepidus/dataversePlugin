@@ -32,8 +32,9 @@
 		<div class="content">
 			{if !$hideGalleys}
 				<ul class="galleys_links">
-					{foreach from=$datasetGalleys item=galley}
-						<li>{fbvElement type="checkbox" label="plugins.generic.dataverse.modal.galleyView" value=$galley id="galley-item-{$galley->getId()}" checked=false}</li>
+					{foreach from=$datasetGalleys item=galley key=genreName}
+						{assign var="label" value=$genreName|cat:" - "|cat:$galley->getLocalizedName()}
+						<li>{fbvElement type="checkbox" label=$label translate=false value=$galley id="galley-item" checked=false}</li>
 					{/foreach}
 				</ul>
 			{/if}
