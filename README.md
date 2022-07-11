@@ -49,7 +49,7 @@ With the plugin enabled, you should expand its options by clicking the arrow nex
 
 After filling in the fields, just confirm the action by clicking `Save`. The plugin will only work after filling in these data.
 
-For authors: Currently only components of the "dataset" genre are depositable in Dataverse. So deposit dialog is only shown for these kind of components.
+For authors: A "Research Data" deposit dialog is shown in step 2 of the Submission proccess.
 
 # License
 
