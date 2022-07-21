@@ -4,6 +4,7 @@ import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.APACitation');
 import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
 import('lib.pkp.classes.submission.SubmissionFile');
+import('plugins.generic.dataverse.classes.form.DataverseModalForm');
 
 class TemplateDispatcher extends DataverseDispatcher
 {
@@ -45,12 +46,14 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function sendDataset(string $output, Smarty_Internal_Template $templateMgr): string {
 		if (preg_match('/<div[^>]+class="[^>]*formButtons[^>]*"[^>]*>(.|\n)*?<\/div>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
-			$template = $templateMgr->fetch($this->plugin->getTemplateResource('sendDataset.tpl'));
-			$templateMgr->unregisterFilter('output', array($this, 'sendDataset'));
+			$request = PKPApplication::get()->getRequest();
+			$dataverseModalForm = new DataverseModalForm($this->plugin);
+			$template = $dataverseModalForm->fetch($request);
 			$service = $this->getDataverseService();
 			$dataverseName = $service->getDataverseName();
 			$newOutput = str_replace("{\$dataverseName}", $dataverseName, $template);
 			$output = $newOutput . $output;
+			$templateMgr->unregisterFilter('output', array($this, 'sendDataset'));
 		}
 		return $output;
 	}

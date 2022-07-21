@@ -9,6 +9,13 @@
  *
  *}
 
+<script type="text/javascript">
+	$(function() {ldelim}
+		// Attach the form handler.
+		$('#dataverseModalForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
+	{rdelim});
+</script>
+
 <div id="sendDataset" class="pkp_controllers_grid">
 	<div class="header">
 		<h4>{translate key="plugins.generic.dataverse.dataCitationLabel"}</h4>
@@ -22,32 +29,34 @@
 <link rel="stylesheet" type="text/css" href="/plugins/generic/dataverse/styles/datasetModal.css">
 
 <div id="datasetModal" class="pkp_modal pkpModalWrapper" tabIndex="-1">
-	<div class="pkp_modal_panel" role="dialog" aria-label="Dataverse">
-		<div id="titleModal" class="header">{translate key="plugins.generic.dataverse.dataCitationLabel"}</div>
-		<a id="closeDatasetModal" class="close pkpModalCloseButton">
-			<span :aria-hidden="true">×</span>
-			<span class="pkp_screen_reader">{translate key="common.closePanel"}</span>
-		</a>
-		<div id="descriptionModal" class="header"><p>{translate key="plugins.generic.dataverse.modal.description"}</p></div>
-		<div class="content">
-			{if !$hideGalleys}
-				<ul class="galleys_links">
-					{foreach from=$datasetGalleys item=galley key=genreName}
-						{assign var="label" value=$genreName|cat:" - "|cat:$galley->getLocalizedName()}
-						<li>{fbvElement type="checkbox" label=$label translate=false value=$galley id="galley-item" checked=false}</li>
-					{/foreach}
-				</ul>
-			{/if}
+	<form class="pkp_form" id="dataverseModalForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" plugin=$pluginName verb="settings" save=true}">
+		<div class="pkp_modal_panel" role="dialog" aria-label="Dataverse">
+			<div id="titleModal" class="header">{translate key="plugins.generic.dataverse.dataCitationLabel"}</div>
+			<a id="closeDatasetModal" class="close pkpModalCloseButton">
+				<span :aria-hidden="true">×</span>
+				<span class="pkp_screen_reader">{translate key="common.closePanel"}</span>
+			</a>
+			<div id="descriptionModal" class="header"><p>{translate key="plugins.generic.dataverse.modal.description"}</p></div>
+			<div class="content">
+				{if !$hideGalleys}
+					<ul class="galleys_links">
+						{foreach from=$datasetGalleys item=galley key=genreName}
+							{assign var="label" value=$genreName|cat:" - "|cat:$galley->getLocalizedName()}
+							<li>{fbvElement type="checkbox" label=$label translate=false value=$galley id="galley-item" checked=false}</li>
+						{/foreach}
+					</ul>
+				{/if}
 
-			{fbvFormSection list="true" title="Dataverse Plugin" translate=false}
-				{fbvElement type="checkbox" label="plugins.generic.dataverse.submissionFileMetadata.publishData" id="publishData" checked=false}
-			{/fbvFormSection}
+				{fbvFormSection list="true" title="Dataverse Plugin" translate=false}
+					{fbvElement type="checkbox" label="plugins.generic.dataverse.submissionFileMetadata.publishData" id="publishData" checked=false}
+				{/fbvFormSection}
 
-			<div id="datasetButtonContainer">
-				{fbvElement type="submit" id="saveDatasetButton" label="common.save"}
+				<div id="datasetButtonContainer">
+					{fbvElement type="submit" id="saveDatasetButton" label="common.save"}
+				</div>
 			</div>
 		</div>
-	</div>
+	<form>
 </div>
 
 <script>
