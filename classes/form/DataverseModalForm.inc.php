@@ -21,10 +21,6 @@ class DataverseModalForm extends Form {
 	{
 	}
 
-	function fetch($request, $template = null, $display = false)
-	{
-	}
-
 	function execute(...$functionArgs)
 	{
 	}

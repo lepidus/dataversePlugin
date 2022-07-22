@@ -27,20 +27,22 @@ class TemplateDispatcher extends DataverseDispatcher
 		$submissionId = $form->getData('submissionId');
 		$submission = Services::get('submission')->get($submissionId);
 		$request = PKPApplication::get()->getRequest();
+		$dataverseModalForm = new DataverseModalForm($this->plugin);
+		$dataverseModalForm->fetch($request);
 		$galleys = $submission->getGalleys();
-		$dataverseGalleys = array();
+		$dataset = array();
 		$genreDAO = DAORegistry::getDAO('GenreDAO');
 		foreach ($galleys as $galley) {
 			$submissionFile = Services::get('submissionFile')->get($galley->getData('submissionFileId'));
 			if ($submissionFile) {
-				$genre = $genreDAO->getById($submissionFile->getGenreId());
-				$dataverseGalleys[$genre->getLocalizedName()] = $galley;
+				$genreName = $genreDAO->getById($submissionFile->getGenreId())->getLocalizedName();
+				array_push($dataset, [$genreName, $galley]);
 			}
 		}
 		$templateMgr = TemplateManager::getManager($request);
-		$templateMgr->assign('datasetGalleys', $dataverseGalleys);
+		$templateMgr->assign('dataset', $dataset);
 		$templateMgr->registerFilter("output", array($this, 'sendDataset'));
-
+		
 		return false;
 	}
 
@@ -49,10 +51,7 @@ class TemplateDispatcher extends DataverseDispatcher
 			$request = PKPApplication::get()->getRequest();
 			$dataverseModalForm = new DataverseModalForm($this->plugin);
 			$template = $dataverseModalForm->fetch($request);
-			$service = $this->getDataverseService();
-			$dataverseName = $service->getDataverseName();
-			$newOutput = str_replace("{\$dataverseName}", $dataverseName, $template);
-			$output = $newOutput . $output;
+			$output = str_replace("{\$dataverseName}", $dataverseName, $template) . $output;
 			$templateMgr->unregisterFilter('output', array($this, 'sendDataset'));
 		}
 		return $output;

@@ -1,11 +1,9 @@
 {**
- * templates/senDataset.tpl
+ * templates/sendDataset.tpl
  *
  * Copyright (c) 2019-2021 Lepidus Tecnologia
  * Copyright (c) 2020-2021 SciELO
  * Distributed under the GNU GPL v3. For full terms see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt
- *
- * Extensions to Submission File Metadata Form
  *
  *}
 
@@ -29,8 +27,8 @@
 <link rel="stylesheet" type="text/css" href="/plugins/generic/dataverse/styles/datasetModal.css">
 
 <div id="datasetModal" class="pkp_modal pkpModalWrapper" tabIndex="-1">
-	<form class="pkp_form" id="dataverseModalForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" plugin=$pluginName verb="settings" save=true}">
-		<div class="pkp_modal_panel" role="dialog" aria-label="Dataverse">
+	<div class="pkp_modal_panel" role="dialog" aria-label="Dataverse">
+		<form class="pkp_form" id="dataverseModalForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" plugin=$pluginName verb="settings" save=true}">
 			<div id="titleModal" class="header">{translate key="plugins.generic.dataverse.dataCitationLabel"}</div>
 			<a id="closeDatasetModal" class="close pkpModalCloseButton">
 				<span :aria-hidden="true">×</span>
@@ -40,9 +38,9 @@
 			<div class="content">
 				{if !$hideGalleys}
 					<ul class="galleys_links">
-						{foreach from=$datasetGalleys item=galley key=genreName}
-							{assign var="label" value=$genreName|cat:" - "|cat:$galley->getLocalizedName()}
-							<li>{fbvElement type="checkbox" label=$label translate=false value=$galley id="galley-item" checked=false}</li>
+						{foreach from=$dataset  item=set}
+							{assign var="label" value=$set[0]|cat:" - "|cat:$set[1]->getLocalizedName()}
+							<li>{fbvElement type="checkbox" label=$label translate=false value=$set[1] id="galley-item" checked=false}</li>
 						{/foreach}
 					</ul>
 				{/if}
@@ -55,8 +53,8 @@
 					{fbvElement type="submit" id="saveDatasetButton" label="common.save"}
 				</div>
 			</div>
-		</div>
-	<form>
+		<form>
+	</div>
 </div>
 
 <script>
