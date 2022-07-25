@@ -1,0 +1,2 @@
+{capture assign=datasetGridUrl}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.dataverse.handlers.UploadDatasetHandler" op="uploadDataset" escape=false}{/capture}
+{load_url_in_div id="datasetGridContainer"|uniqid url=$datasetGridUrl}

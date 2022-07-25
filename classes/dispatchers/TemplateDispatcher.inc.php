@@ -4,7 +4,6 @@ import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.APACitation');
 import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
 import('lib.pkp.classes.submission.SubmissionFile');
-import('plugins.generic.dataverse.classes.form.DataverseModalForm');
 
 class TemplateDispatcher extends DataverseDispatcher
 {
@@ -27,8 +26,6 @@ class TemplateDispatcher extends DataverseDispatcher
 		$submissionId = $form->getData('submissionId');
 		$submission = Services::get('submission')->get($submissionId);
 		$request = PKPApplication::get()->getRequest();
-		$dataverseModalForm = new DataverseModalForm($this->plugin);
-		$dataverseModalForm->fetch($request);
 		$galleys = $submission->getGalleys();
 		$dataset = array();
 		$genreDAO = DAORegistry::getDAO('GenreDAO');
@@ -41,18 +38,19 @@ class TemplateDispatcher extends DataverseDispatcher
 		}
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('dataset', $dataset);
-		$templateMgr->registerFilter("output", array($this, 'sendDataset'));
+		$templateMgr->registerFilter("output", array($this, 'datasetModalFilter'));
 		
 		return false;
 	}
 
-	function sendDataset(string $output, Smarty_Internal_Template $templateMgr): string {
+	function datasetModalFilter(string $output, Smarty_Internal_Template $templateMgr): string {
 		if (preg_match('/<div[^>]+class="[^>]*formButtons[^>]*"[^>]*>(.|\n)*?<\/div>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
 			$request = PKPApplication::get()->getRequest();
-			$dataverseModalForm = new DataverseModalForm($this->plugin);
-			$template = $dataverseModalForm->fetch($request);
-			$output = str_replace("{\$dataverseName}", $dataverseName, $template) . $output;
-			$templateMgr->unregisterFilter('output', array($this, 'sendDataset'));
+			$newOutput = substr($output, 0, $offset + strlen($match));
+			$newOutput .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetModal.tpl'));
+			$newOutput .= substr($output, $offset + strlen($match));
+			$output = $newOutput;
+			$templateMgr->unregisterFilter('output', array($this, 'datasetModalFilter'));
 		}
 		return $output;
 	}
@@ -173,8 +171,11 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function setupTermsOfUseHandler($hookName, $params) {
 		$component = &$params[0];
-		if ($component == 'plugins.generic.dataverse.handlers.TermsOfUseHandler') {
-			return true;
+		switch ($component) {
+			case 'plugins.generic.dataverse.handlers.TermsOfUseHandler':
+			case 'plugins.generic.dataverse.handlers.UploadDatasetHandler':
+				return true;
+				break;
 		}
 		return false;
 	}
