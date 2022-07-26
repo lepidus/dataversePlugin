@@ -10,6 +10,7 @@ class TemplateDispatcher extends DataverseDispatcher
     public function __construct(Plugin $plugin)
 	{
 		HookRegistry::register('submissionsubmitstep2form::display', array($this, 'handleDatasetModal'));
+		HookRegistry::register('uploaddatasetform::display', array($this, 'createDataetModalStructure'));
         HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
@@ -19,7 +20,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		parent::__construct($plugin);
     }
 
-	function handleDatasetModal(string $hookName, array $params): bool
+	function createDataetModalStructure(string $hookName, array $params)
 	{
 		$form =& $params[0];
 		$form->readUserVars(array('submissionId'));
@@ -38,6 +39,14 @@ class TemplateDispatcher extends DataverseDispatcher
 		}
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('dataset', $dataset);
+		
+		return false;
+	}
+
+	function handleDatasetModal(string $hookName, array $params): bool
+	{
+		$request = PKPApplication::get()->getRequest();
+		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->registerFilter("output", array($this, 'datasetModalFilter'));
 		
 		return false;
@@ -45,7 +54,6 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function datasetModalFilter(string $output, Smarty_Internal_Template $templateMgr): string {
 		if (preg_match('/<div[^>]+class="[^>]*formButtons[^>]*"[^>]*>(.|\n)*?<\/div>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
-			$request = PKPApplication::get()->getRequest();
 			$newOutput = substr($output, 0, $offset + strlen($match));
 			$newOutput .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetModal.tpl'));
 			$newOutput .= substr($output, $offset + strlen($match));
