@@ -24,4 +24,14 @@ class UploadDatasetForm extends Form {
 		$templateMgr->assign('submissionId', $this->submissionId);
 		return parent::fetch($request);
 	}
+
+	function readInputData(): void
+	{
+		$this->readUserVars(array('publishData'));
+	}
+
+	function execute(...$functionArgs)
+	{
+		parent::execute(...$functionArgs);
+	}
 }

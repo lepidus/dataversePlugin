@@ -36,7 +36,15 @@ class UploadDatasetHandler extends Handler {
         import('plugins.generic.dataverse.classes.form.UploadDatasetForm');
         $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
         $form = new UploadDatasetForm($plugin, $args['submissionId']);
-        $form->initData();
+        if ($request->getUserVar('save')) {
+            $form->readInputData();
+            $form->execute();
+            $notificationManager = new NotificationManager();
+            $notificationManager->createTrivialNotification($request->getUser()->getId());
+            return new JSONMessage(true);
+        } else {
+            $form->initData();
+        }
 		return new JSONMessage(true, $form->fetch($request));
     }
 }

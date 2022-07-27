@@ -10,7 +10,7 @@ class TemplateDispatcher extends DataverseDispatcher
     public function __construct(Plugin $plugin)
 	{
 		HookRegistry::register('submissionsubmitstep2form::display', array($this, 'handleDatasetModal'));
-		HookRegistry::register('uploaddatasetform::display', array($this, 'createDataetModalStructure'));
+		HookRegistry::register('uploaddatasetform::display', array($this, 'createDatasetModalStructure'));
         HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
@@ -20,7 +20,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		parent::__construct($plugin);
     }
 
-	function createDataetModalStructure(string $hookName, array $params)
+	function createDatasetModalStructure(string $hookName, array $params)
 	{
 		$form =& $params[0];
 		$form->readUserVars(array('submissionId'));
@@ -39,7 +39,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		}
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('dataset', $dataset);
-		
+
 		return false;
 	}
 
