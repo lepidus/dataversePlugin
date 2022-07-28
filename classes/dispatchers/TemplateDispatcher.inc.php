@@ -11,7 +11,6 @@ class TemplateDispatcher extends DataverseDispatcher
 	{
 		HookRegistry::register('submissionsubmitstep2form::display', array($this, 'handleDatasetModal'));
 		HookRegistry::register('uploaddatasetform::display', array($this, 'createDatasetModalStructure'));
-        HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('TemplateManager::display', array($this, 'changeGalleysLinks'));
@@ -39,7 +38,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		}
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('dataset', $dataset);
-
+		
 		return false;
 	}
 
@@ -48,7 +47,6 @@ class TemplateDispatcher extends DataverseDispatcher
 		$request = PKPApplication::get()->getRequest();
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->registerFilter("output", array($this, 'datasetModalFilter'));
-		
 		return false;
 	}
 
@@ -61,16 +59,6 @@ class TemplateDispatcher extends DataverseDispatcher
 			$templateMgr->unregisterFilter('output', array($this, 'datasetModalFilter'));
 		}
 		return $output;
-	}
-
-
-    function handleSubmissionFilesMetadataFormDisplay(string $hookName, array $params): bool
-	{
-		$request = PKPApplication::get()->getRequest();
-
-		$templateMgr = TemplateManager::getManager($request);
-		$templateMgr->registerFilter("output", array($this, 'publishDataFormFilter'));
-		return false;
 	}
 
 	function publishDataFormFilter(string $output, Smarty_Internal_Template $templateMgr): string
