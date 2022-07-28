@@ -31,9 +31,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 
 		$service = $this->getDataverseService();
 		$service->setSubmission($submission);
-		if($service->hasDataSetComponent()){
-			$service->depositPackage();
-		}
+		$service->depositPackage();
 	}
 
 	function publishDeposit(string $hookName, array $params): void {

@@ -12,7 +12,7 @@
             <ul class="galleys_links">
                 {foreach from=$dataset  item=set}
                     {assign var="label" value=$set[0]|cat:" - "|cat:$set[1]->getLocalizedName()}
-                    <li>{fbvElement type="checkbox" label=$label translate=false value=$set[1]->getId() id="galley-item" checked=false}</li>
+                    <li>{fbvElement type="checkbox" label=$label translate=false value=$set[1]->getId() id="galleyItems[]" checked=false}</li>
                 {/foreach}
             </ul>
         {/if}

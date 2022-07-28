@@ -27,11 +27,25 @@ class UploadDatasetForm extends Form {
 
 	function readInputData(): void
 	{
-		$this->readUserVars(array('publishData'));
+		$this->readUserVars(array('publishData', 'galleyItems'));
 	}
 
 	function execute(...$functionArgs)
 	{
+		if ($this->getData('publishData')) 
+        {
+            $galleysId = $this->getData('galleyItems');
+			$articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+            foreach ($galleysId as $galleyId) {
+                $galley = $articleGalleyDao->getById($galleyId);
+                $submissionFile = Services::get('submissionFile')->get($galley->getData('submissionFileId'));
+                $newSubmissionFile = Services::get('submissionFile')->edit(
+                    $submissionFile,
+                    ['publishData' => true],
+                    Application::get()->getRequest()
+                );
+            }
+        }
 		parent::execute(...$functionArgs);
 	}
 }
