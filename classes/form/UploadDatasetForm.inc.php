@@ -14,6 +14,7 @@ class UploadDatasetForm extends Form {
 
 		parent::__construct($this->plugin->getTemplateResource('sendDatasetForm.tpl'));
 
+		$this->addCheck(new FormValidator($this, 'publishData', 'required', 'editor.submissions.galleyLabelRequired'));
 		$this->addCheck(new FormValidatorPost($this));
 		$this->addCheck(new FormValidatorCSRF($this));
 	}
