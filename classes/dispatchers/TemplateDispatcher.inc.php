@@ -36,8 +36,15 @@ class TemplateDispatcher extends DataverseDispatcher
 				array_push($dataset, [$genreName, $galley]);
 			}
 		}
+
+		$service = $this->getDataverseService();
+		$dataverseName = $service->getDataverseName();
+		$termsOfUseURL = $request->getDispatcher()->url($request, ROUTE_PAGE) . '/$$$call$$$/plugins/generic/dataverse/handlers/terms-of-use/get';
+
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('dataset', $dataset);
+		$templateMgr->assign('dataverseName', $dataverseName);
+		$templateMgr->assign('termsOfUseURL', $termsOfUseURL);
 		
 		return false;
 	}
