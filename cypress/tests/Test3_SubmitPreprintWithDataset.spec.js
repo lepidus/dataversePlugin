@@ -1,9 +1,9 @@
 import '../support/commands';
 
-var adminUser = Cypress.env('adminUser');
-var adminPassword = Cypress.env('adminPassword');
-var serverName = Cypress.env('serverName');
-var currentYear = new Date().getFullYear();
+const adminUser = Cypress.env('adminUser');
+const adminPassword = Cypress.env('adminPassword');
+const serverName = Cypress.env('serverName');
+const currentYear = new Date().getFullYear();
 
 describe('Deposit Draft Dataverse on Submission', function() {
 
@@ -98,7 +98,9 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 
     it('Check Publication has Dataset Citation', function() {
         cy.get('.label').contains('Research data');
-        cy.get('.value > p').contains('Castanheiras, Í. (' + currentYear + '). The Rise of The Machine Empire');
+        cy.get('.value > p').contains('Castanheiras, Í. (' + currentYear + '). The Rise of The Machine Empire. '+ serverName +',');
+        cy.get('.value > p > a:contains("https://doi.org/10.70122/FK2/")');
+        cy.get('.value > p').contains(', Demo Dataverse, V1');
     });
 
     it('Checks "PDF" download button is hidden', function() {

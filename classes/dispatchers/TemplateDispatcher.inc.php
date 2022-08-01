@@ -88,8 +88,8 @@ class TemplateDispatcher extends DataverseDispatcher
 		$template = $params[1];
 
 		$templateMapping = [
-			$template => frontend/pages/preprint.tpl,
-			$template => frontend/pages/indexJournal.tpl
+			$template => "frontend/pages/preprint.tpl",
+			$template => "frontend/pages/indexJournal.tpl"
 		];
 
 		if (array_key_exists($template, $templateMapping)){
