@@ -96,13 +96,6 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
         cy.waitJQuery();
     });
 
-    // it('Check Publication has Dataset Citation', function() {
-    //     cy.get('.label').contains('Research data');
-    //     cy.get('.value > p').contains('Íris Castanheiras,' + currentYear + ', "The Rise of The Machine Empire",'+ serverName +',');
-    //     cy.get('.value > p > a:contains("https://doi.org/10.70122/FK2/")');
-    //     cy.get('.value > p').contains(', Demo Dataverse, V1');
-    // });
-
     it('Checks "PDF" download button is hidden', function() {
         cy.get('.supplementary_galleys_links > li > a:contains("PDF")').should('not.exist');
     });
