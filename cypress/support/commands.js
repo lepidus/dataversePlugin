@@ -103,9 +103,9 @@ Cypress.Commands.add("DataverseCreateSubmission", (data, context) => {
 
     // === Submission Step 3 ===
     // Metadata fields
-    cy.get('input[id^="title"').type(data.title, { delay: 0 });
+    cy.get('input[id^="title-"').type(data.title, { delay: 0 });
     cy.get("label").contains("Title").click(); // Close multilingual popover
-    cy.get('textarea[id^="abstract"]').then((node) => {
+    cy.get('textarea[id^="abstract-"').then((node) => {
         cy.setTinyMceContent(node.attr("id"), data.abstract);
     });
     cy.get('ul[id^="keywords-"]').then((node) => {
@@ -152,7 +152,7 @@ Cypress.Commands.add("DataverseCreateSubmission", (data, context) => {
         .click();
 
     // === Submission Step 4 ===
-    cy.waitJQuery();
+    cy.wait(3000);
     cy.get("form[id=submitStep4Form]")
         .find("button")
         .contains("Finish Submission")

@@ -10,7 +10,7 @@ The latest release of this plugin is compatible with the following PKP applicati
 
 * OPS 3.3 (or higher)
 
-Using PHP 7.3 or higher, but below PHP 8.0. 
+Using PHP 7.3 or higher, but below (<) PHP 8.0. 
 
 ## Plugin Download
 
@@ -31,7 +31,7 @@ To download the plugin, go to the [Releases page](https://github.com/lepidus/dat
 
 To clone [SWORD v2 PHP API library](https://github.com/swordapp/swordappv2-php-library/) submodule.
 
-3. To use the plugin into the PKP Appplication, copy it's folder to the /plugins/generic directory.
+3. To use the plugin into the PKP Application, copy it's folder to the /plugins/generic directory and make sure the folder is called "dataverse".
 4. And from the root of the PKP Appplication directory, execute this command to update the database, creating the tables used by the plugin:
     * php tools/upgrade.php upgrade
 ## Installation
@@ -40,6 +40,49 @@ To clone [SWORD v2 PHP API library](https://github.com/swordapp/swordappv2-php-l
 2. Enter the administration area of ​​your application and navigate to `Settings`>` Website`> `Plugins`> `Upload a new plugin`.
 3. Under __Upload file__ select the file __dataverse.tar.gz__.
 4. Click __Save__ and the plugin will be installed on your website.
+
+## Running Tests
+
+### Unit Tests
+
+To execute the unit tests, run the following command from root of the PKP Appplication directory:
+```
+find plugins/generic/dataverse -name tests -type d -exec php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit-env2.xml -v "{}" ";"
+```
+
+### Integration Tests
+
+Creates a cypress.env.json file in root of the PKP Application directory, with the following environment variables:
+- baseUrl
+- serverName
+- adminUser
+- adminPassword
+- dataverseURI
+- dataverseAPIToken
+
+**Example**:
+
+```json
+{
+    "baseUrl": "http://localhost:8000",
+    "serverName": "myPreprintServer",
+    "adminUser": "admin",
+    "adminPassword": "admin",
+    "dataverseURI": "https://demo.dataverse.org/dataverse/myDataverseAlias",
+    "dataverseAPIToken": "abcd-abcd-abcd-abcd-abcdefghijkl"
+}
+```
+
+Next, to execute the Cypress tests run the following command from root of the PKP Appplication directory:
+```
+npx cypress run --config integrationFolder=plugins/generic/dataverse/cypress/tests
+```
+
+For execute the tests with the Cypress UI, run:
+```
+npx cypress open --config integrationFolder=plugins/generic/dataverse/cypress/tests
+```
+Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en_US` for passing into the tests.
 
 ## Instructions for use
 
