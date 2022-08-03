@@ -84,15 +84,15 @@ Cypress.Commands.add("DataverseCreateSubmission", (data, context) => {
             cy.get("button").contains("Continue").click();
             cy.get("button").contains("Complete").click();
         });
-
-        cy.get('.pkp_controllers_grid > .header > .actions > #send_dataset_pkp_button > a').click();
-        cy.wait(2000);
-        cy.get('input[id^="galleyItems"]').click({ multiple: true });
-        cy.get('input[id=publishData]').click();
-        cy.get('button#saveDatasetButton').click();
-
         // Other applications use the submission files list panel
     }
+
+    cy.get('.pkp_controllers_grid > .header > .actions > #send_dataset_pkp_button > a').click();
+    cy.wait(2000);
+    cy.get('input[id^="galleyItems"]').click({ multiple: true });
+    cy.get('input[id=publishData]').click();
+    cy.get('button#saveDatasetButton').click();
+
     // Save the ID to the data object
     cy.location("search").then((search) => {
         // this.submission.id = parseInt(search.split('=')[1], 10);

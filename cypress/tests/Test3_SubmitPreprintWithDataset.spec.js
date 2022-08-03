@@ -96,13 +96,6 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
         cy.waitJQuery();
     });
 
-    it('Checks "PDF" download button is hidden', function() {
-        cy.get('.supplementary_galleys_links > li > a:contains("PDF")').should('not.exist');
-    });
-
-    it('Checks "JPG" download button is shown', function() {
-        cy.get('.supplementary_galleys_links > li > a:contains("JPG")');
-    });
 });
 
 describe('Hides button for deposited components in "latest preprints" listing', function() {
