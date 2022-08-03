@@ -1,0 +1,14 @@
+#send_dataset_pkp_button a {
+  text-decoration: none;
+  text-align: right;
+}
+
+.galleys_links {
+  padding: 0;
+  list-style-type: none;
+  margin-bottom: 40px;
+}
+
+#datasetButtonContainer {
+  text-align: right;
+}

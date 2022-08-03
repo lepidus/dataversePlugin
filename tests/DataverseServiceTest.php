@@ -84,16 +84,6 @@ class DataverseServiceTest extends PKPTestCase {
         return $submission;
     }
 
-    function testIfSubmissionAdapterHasDatasetComponent(): void
-    {
-        $client = $this->createDataverseClientMock();
-        $submission = $this->createTestSubmission();
-        $service = new DataverseService($client);
-        $service->setSubmission($submission);
-        
-        $this->assertTrue($service->hasDataSetComponent());
-    }
-
     function testReturnDataverseNameLikeDataverseDeExemploLepidus(): void
     {
         $client = $this->createDataverseClientMock();

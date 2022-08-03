@@ -29,19 +29,6 @@ class DataverseService {
 		$this->submission = $submissionAdapter;
 	}
 
-	function hasDataSetComponent(): bool
-	{
-		$hasDataset = false;
-
-		$genreDAO = DAORegistry::getDAO('GenreDAO');
-		foreach($this->submission->getFiles() as $file) {
-			$genre = $genreDAO->getById($file->getGenreId());
-			if($genre->getKey() == 'DATASET')
-				$hasDataset = true;
-		}
-		return $hasDataset;
-	}
-
 	function getDataverseName(): ?string
 	{
 		$dataverseNotificationMgr = new DataverseNotificationManager();

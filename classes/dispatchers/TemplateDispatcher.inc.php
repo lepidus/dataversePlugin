@@ -3,12 +3,14 @@
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.APACitation');
 import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
+import('lib.pkp.classes.submission.SubmissionFile');
 
 class TemplateDispatcher extends DataverseDispatcher
 {
     public function __construct(Plugin $plugin)
 	{
-        HookRegistry::register('submissionfilesmetadataform::display', array($this, 'handleSubmissionFilesMetadataFormDisplay'));
+		HookRegistry::register('submissionsubmitstep2form::display', array($this, 'handleDatasetModal'));
+		HookRegistry::register('uploaddatasetform::display', array($this, 'createDatasetModalStructure'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('TemplateManager::display', array($this, 'changeGalleysLinks'));
@@ -17,13 +19,53 @@ class TemplateDispatcher extends DataverseDispatcher
 		parent::__construct($plugin);
     }
 
-    function handleSubmissionFilesMetadataFormDisplay(string $hookName, array $params): bool
+	function createDatasetModalStructure(string $hookName, array $params)
 	{
+		$form =& $params[0];
+		$form->readUserVars(array('submissionId'));
+		$submissionId = $form->getData('submissionId');
+		$submission = Services::get('submission')->get($submissionId);
 		$request = PKPApplication::get()->getRequest();
+		$galleys = $submission->getGalleys();
+		$dataset = array();
+		$genreDAO = DAORegistry::getDAO('GenreDAO');
+		foreach ($galleys as $galley) {
+			$submissionFile = Services::get('submissionFile')->get($galley->getData('submissionFileId'));
+			if ($submissionFile) {
+				$genreName = $genreDAO->getById($submissionFile->getGenreId())->getLocalizedName();
+				array_push($dataset, [$genreName, $galley]);
+			}
+		}
+
+		$service = $this->getDataverseService();
+		$dataverseName = $service->getDataverseName();
+		$termsOfUseURL = $request->getDispatcher()->url($request, ROUTE_PAGE) . '/$$$call$$$/plugins/generic/dataverse/handlers/terms-of-use/get';
 
 		$templateMgr = TemplateManager::getManager($request);
-		$templateMgr->registerFilter("output", array($this, 'publishDataFormFilter'));
+		$templateMgr->assign('dataset', $dataset);
+		$templateMgr->assign('dataverseName', $dataverseName);
+		$templateMgr->assign('termsOfUseURL', $termsOfUseURL);
+		
 		return false;
+	}
+
+	function handleDatasetModal(string $hookName, array $params): bool
+	{
+		$request = PKPApplication::get()->getRequest();
+		$templateMgr = TemplateManager::getManager($request);
+		$templateMgr->registerFilter("output", array($this, 'datasetModalFilter'));
+		return false;
+	}
+
+	function datasetModalFilter(string $output, Smarty_Internal_Template $templateMgr): string {
+		if (preg_match('/<div[^>]+class="[^>]*formButtons[^>]*"[^>]*>(.|\n)*?<\/div>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
+			$newOutput = substr($output, 0, $offset + strlen($match));
+			$newOutput .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetModal.tpl'));
+			$newOutput .= substr($output, $offset + strlen($match));
+			$output = $newOutput;
+			$templateMgr->unregisterFilter('output', array($this, 'datasetModalFilter'));
+		}
+		return $output;
 	}
 
 	function publishDataFormFilter(string $output, Smarty_Internal_Template $templateMgr): string
@@ -132,8 +174,11 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function setupTermsOfUseHandler($hookName, $params) {
 		$component = &$params[0];
-		if ($component == 'plugins.generic.dataverse.handlers.TermsOfUseHandler') {
-			return true;
+		switch ($component) {
+			case 'plugins.generic.dataverse.handlers.TermsOfUseHandler':
+			case 'plugins.generic.dataverse.handlers.UploadDatasetHandler':
+				return true;
+				break;
 		}
 		return false;
 	}
