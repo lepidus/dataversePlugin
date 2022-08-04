@@ -102,14 +102,6 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
         cy.get('.value > p > a:contains("https://doi.org/10.70122/FK2/")');
         cy.get('.value > p').contains(', Demo Dataverse, V1');
     });
-
-    it('Checks "PDF" download button is hidden', function() {
-        cy.get('.supplementary_galleys_links > li > a:contains("PDF")').should('not.exist');
-    });
-
-    it('Checks "JPG" download button is shown', function() {
-        cy.get('.supplementary_galleys_links > li > a:contains("JPG")');
-    });
 });
 
 describe('Hides button for deposited components in "latest preprints" listing', function() {
