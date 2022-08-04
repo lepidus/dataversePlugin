@@ -44,6 +44,9 @@ msgstr "Please enter a API token."
 msgid "plugins.generic.dataverse.dataCitationLabel"
 msgstr "Research data"
 
+msgid "plugins.generic.dataverse.datasetButton"
+msgstr "Send research data"
+
 msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
 msgstr "Deposit file in Dataverse: <strong>{$dataverseName}</strong>, agreeing to the <a href=\"{$termsOfUseURL}\" target=\"_new\">Terms of Use</a>."
 
@@ -79,3 +82,9 @@ msgstr "Service Unavailable. {$dataverseUrl} is temporarily busy. Please try aga
 
 msgid "plugins.generic.dataverse.notification.unknownError"
 msgstr "Unknown error. Could not connect to {$dataverseUrl}"
+
+msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
+msgstr "Can't connect to Dataverse."
+
+msgid "plugins.generic.dataverse.modal.description"
+msgstr "You can select which files should be uploaded to {$dataverseName}"
