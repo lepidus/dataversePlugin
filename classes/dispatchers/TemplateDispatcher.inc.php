@@ -13,6 +13,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		HookRegistry::register('uploaddatasetform::display', array($this, 'createDatasetModalStructure'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
+		HookRegistry::register('Template::Workflow::Publication', array($this, 'addDataCitationSubmissionToWorkflow'));
 		HookRegistry::register('TemplateManager::display', array($this, 'changeGalleysLinks'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
 
@@ -115,10 +116,31 @@ class TemplateDispatcher extends DataverseDispatcher
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
 		if(isset($study)) {
-			$apaCitation = new APACitation();
-			$dataCitation = $apaCitation->getCitationAsMarkupByStudy($study);
-			$templateMgr->assign('dataCitation', $dataCitation);
 			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitationSubmission.tpl'));
+		}
+
+		return false;
+	}
+
+	function addDataCitationSubmissionToWorkflow(string $hookName, array $params): bool {
+		$request = Application::get()->getRequest();
+		$templateMgr = TemplateManager::getManager($request);
+		$output =& $params[2];
+		$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
+		$submission = $templateMgr->get_template_vars('submission');
+		$templateMgr->addJavaScript("Dataverse_Workflow",  $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js', array(
+			'inline' => true,
+			'contexts' => ['backend', 'frontend']
+		));
+		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
+		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
+
+		if(isset($study)) {
+			$output .= sprintf(
+				'<tab id="datasetTab" label="%s">%s</tab>',
+				__("plugins.generic.dataverse.dataCitationLabel"),
+				$templateMgr->fetch($this->plugin->getTemplateResource('dataCitationSubmission.tpl'))
+			);
 		}
 
 		return false;
