@@ -16,7 +16,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('Template::Workflow::Publication', array($this, 'addDataCitationSubmissionToWorkflow'));
 		HookRegistry::register('TemplateManager::display', array($this, 'changeGalleysLinks'));
-		HookRegistry::register('TemplateManager::display', array($this, 'loadResourceOnWorkflow'));
+		HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
 
 		parent::__construct($plugin);
@@ -188,7 +188,6 @@ class TemplateDispatcher extends DataverseDispatcher
 		$submission = $smarty->get_template_vars('submission');
 		$this->studyDao = new DataverseStudyDAO();
 		$study = $this->studyDao->getStudyBySubmissionId($submission->getId());
-
 
 		if(isset($study)) {
 			$output .= sprintf(
