@@ -4,6 +4,7 @@ import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.APACitation');
 import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
 import('lib.pkp.classes.submission.SubmissionFile');
+import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 
 class TemplateDispatcher extends DataverseDispatcher
 {
@@ -13,7 +14,9 @@ class TemplateDispatcher extends DataverseDispatcher
 		HookRegistry::register('uploaddatasetform::display', array($this, 'createDatasetModalStructure'));
 		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
+		HookRegistry::register('Template::Workflow::Publication', array($this, 'addDataCitationSubmissionToWorkflow'));
 		HookRegistry::register('TemplateManager::display', array($this, 'changeGalleysLinks'));
+		HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
 
 		parent::__construct($plugin);
@@ -115,10 +118,83 @@ class TemplateDispatcher extends DataverseDispatcher
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
 		if(isset($study)) {
-			$apaCitation = new APACitation();
-			$dataCitation = $apaCitation->getCitationAsMarkupByStudy($study);
-			$templateMgr->assign('dataCitation', $dataCitation);
 			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitationSubmission.tpl'));
+		}
+
+		return false;
+	}
+
+	function loadResourceToWorkflow(string $hookName, array $params)
+	{
+		$smarty = $params[0];
+		$template = $params[1];
+
+		$templateMapping = [
+			$template => "workflow/workflow.tpl",
+		];
+
+		if (array_key_exists($template, $templateMapping)){
+			$request = Application::get()->getRequest();
+			$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
+			$submission = $smarty->get_template_vars('submission');
+			
+			if ($submission) {
+				$smarty->addJavaScript("Dataverse_Workflow",  $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js', array(
+					'contexts' => ['backend', 'frontend']
+				));
+				$this->addJavaScriptVariables($request, $smarty, $submission);
+			}
+		}
+		else {
+			return false;
+		}
+	}
+
+	function addJavaScriptVariables($request, $templateManager, $submission) {
+		$configuration = $this->getDataverseConfiguration();
+		$apiToken = $configuration->getApiToken();
+
+		$dataverseServer = $configuration->getDataverseServer();
+		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
+
+		$persistentUri = $study->getPersistentUri();
+		preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches); 
+		$persistentId =  "doi:" . $matches[0];
+
+		$editUri = "$dataverseServer/api/datasets/:persistentId/?persistentId=$persistentId";
+
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		$dataverseUrl = $configuration->getDataverseUrl();
+		$params = ['dataverseUrl' => $dataverseUrl];
+		$errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
+
+		$data = [
+			"editUri" => $editUri,
+			"apiToken" => $apiToken,
+			"errorMessage" => $errorMessage
+		];
+
+		$templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
+			'inline' => true,
+			'contexts' => ['backend', 'frontend']
+		]);
+	}
+
+	function addDataCitationSubmissionToWorkflow(string $hookName, array $params): bool {
+		$smarty =& $params[1];
+		$output =& $params[2];
+		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
+		$submission = $smarty->get_template_vars('submission');
+		$this->studyDao = new DataverseStudyDAO();
+		$study = $this->studyDao->getStudyBySubmissionId($submission->getId());
+
+		if(isset($study)) {
+			$output .= sprintf(
+				'<tab id="datasetTab" label="%s">%s</tab>',
+				__("plugins.generic.dataverse.dataCitationLabel"),
+				$smarty->fetch($this->plugin->getTemplateResource('dataCitationSubmission.tpl'))
+			);
 		}
 
 		return false;

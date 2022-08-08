@@ -37,7 +37,6 @@ class DataversePlugin extends GenericPlugin {
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
 		$dataverseFileDAO = new DataverseFileDAO();
 		DAORegistry::registerDAO('DataverseFileDAO', $dataverseFileDAO);
-		HookRegistry::register('Template::Workflow::Publication', array($this, 'addDatasetTabToDashboard'));
 		return $success;
 	}
 
@@ -110,26 +109,6 @@ class DataversePlugin extends GenericPlugin {
         $this->import('classes.migration.DataverseMigration');
         return new DataverseMigration();
     }
-
-	public function addDatasetTabToDashboard($hookName, $params) {
-		$smarty =& $params[1];
-		$output =& $params[2];
-		$submission = $smarty->get_template_vars('submission');
-		$this->studyDao = new DataverseStudyDAO();
-		$study = $this->studyDao->getStudyBySubmissionId($submission->getId());
-
-		if(!empty($study)) {
-			$apaCitation = new APACitation();
-			$studyCitationMarkup = $apaCitation->getCitationAsMarkupByStudy($study);
-			$smarty->assign('citation', $studyCitationMarkup);
-	
-			$output .= sprintf(
-				'<tab id="datasetTab" label="%s">%s</tab>',
-				__("plugins.generic.dataverse.dataCitationLabel"),
-				$smarty->fetch($this->getTemplateResource('datasetMenu.tpl'))
-			);
-		}
-	}
 }
 
 ?>
