@@ -81,11 +81,15 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
         cy.wait(1000);
         cy.get('li > .pkpButton').click();
         cy.get('.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton').click();
+        cy.get('#datasetTab-button').click();
+        cy.get('.label').contains('Research data');
+        cy.get('.value > p').contains('Castanheiras, Í. (' + currentYear + '). The Rise of The Machine Empire. '+ serverName +',');
+        cy.get('.value > p > a:contains("https://doi.org/10.70122/FK2/")');
+        cy.get('.value > p').contains(', Demo Dataverse, Vundefined');
         cy.get('.pkp_modal_panel button:contains("Post")').click();
         cy.wait(2000);
         cy.get('.pkpPublication__versionPublished:contains("This version has been posted and can not be edited.")');
     });
-
     it('Goes to preprint view page', function() {
         cy.login(adminUser, adminPassword, serverName);
         cy.get('.pkpTabs__buttons > #archive-button').click();
