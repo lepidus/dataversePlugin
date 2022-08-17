@@ -20,7 +20,7 @@ class UploadDatasetHandler extends Handler {
         $uploadDatasetAction = new LinkAction(
             'uploadDataset',
             new AjaxModal(
-                $request->getRouter()->url($request, null, null, 'uploadDatasetForm', null, $args),
+                $request->getRouter()->url($request, null, null, 'uploadDatasetModal', null, $args),
                 __('plugins.generic.dataverse.dataCitationLabel'),
                 'modal_add_item'
             ),
@@ -30,6 +30,13 @@ class UploadDatasetHandler extends Handler {
 
 		$templateMgr->assign('uploadDatasetAction', $uploadDatasetAction);
         return $templateMgr->fetchJson($plugin->getTemplateResource('uploadDataset.tpl'));
+    }
+
+    function uploadDatasetModal($args, $request) {
+        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
+        $templateMgr = TemplateManager::getManager($request);
+		$templateMgr->assign('submissionId', $args['submissionId']);
+		return $templateMgr->fetchJson($plugin->getTemplateResource('uploadDatasetModal.tpl'));
     }
 
     function uploadDatasetForm($args, $request) {

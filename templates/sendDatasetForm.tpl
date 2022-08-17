@@ -1,25 +1,7 @@
 <script type="text/javascript">
-    function setExhibitorsToBeAddedAfterRequestsFinish() {ldelim}
-        var origOpen = XMLHttpRequest.prototype.open;
-
-        XMLHttpRequest.prototype.open = function() {ldelim}
-
-        this.addEventListener('loadstart', function() {ldelim}
-        i = 0;
-        setInterval(function() {ldelim}
-        let a = $("#loading").html("{translate key="plugins.generic.dataverse.modal.loading" dataverseName=$dataverseName}"+ Array(i + 1).join("."));
-        {rdelim}, 400);
-
-        {rdelim});
-        origOpen.apply(this, arguments);
-
-        {rdelim};
-    {rdelim}
-
-    $(document).ready(setExhibitorsToBeAddedAfterRequestsFinish);
     $(function() {ldelim}
-    // Attach the form handler.
-    $('#dataverseModalForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
+        // Attach the form handler.
+        $('#dataverseModalForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
     {rdelim});
 </script>
 
@@ -45,7 +27,7 @@
         {/fbvFormSection}
 
         <div id="datasetButtonContainer">
-            {fbvElement type="submit" id="saveDatasetButton" label="common.save"}
+            {fbvElement type="submit" id="saveDatasetButton" label="common.save" }
         </div>
     </div>
 <form>

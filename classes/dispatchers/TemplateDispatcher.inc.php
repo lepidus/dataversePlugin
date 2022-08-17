@@ -18,12 +18,14 @@ class TemplateDispatcher extends DataverseDispatcher
 		HookRegistry::register('TemplateManager::display', array($this, 'changeGalleysLinks'));
 		HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
-
+		
 		parent::__construct($plugin);
     }
-
+	
 	function createDatasetModalStructure(string $hookName, array $params)
 	{
+		$templateMgr = TemplateManager::getManager($request);
+
 		$form =& $params[0];
 		$form->readUserVars(array('submissionId'));
 		$submissionId = $form->getData('submissionId');
@@ -44,7 +46,6 @@ class TemplateDispatcher extends DataverseDispatcher
 		$dataverseName = $service->getDataverseName();
 		$termsOfUseURL = $request->getDispatcher()->url($request, ROUTE_PAGE) . '/$$$call$$$/plugins/generic/dataverse/handlers/terms-of-use/get';
 
-		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign('dataset', $dataset);
 		$templateMgr->assign('dataverseName', $dataverseName);
 		$templateMgr->assign('termsOfUseURL', $termsOfUseURL);
