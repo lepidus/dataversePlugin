@@ -71,18 +71,6 @@ describe('Deposit Draft Dataverse on Submission', function() {
             ]
 		});
     });
-
-    it('Check loading message', function() {
-        cy.login(adminUser, adminPassword, serverName);
-        cy.get('.app__nav a').contains('Submission').click();
-        cy.get('a:contains("Make a New Submission"), div#myQueue a:contains("New Submission")').click();
-        cy.get('input[id^="checklist-"]').click({ multiple: true });
-        cy.get('input[id^="privacyConsent"]').click({ multiple: true });
-        cy.get("button.submitFormButton").click();
-        cy.get('.pkp_controllers_grid > .header > .actions > #send_dataset_pkp_button > a').click();
-        cy.wait(2000);
-        cy.get('.pkp_loading').contains('Loading');  
-    });
 });
 
 describe('Publish Draft Dataverse on Submission Publish', function() {
