@@ -254,16 +254,12 @@ class TemplateDispatcher extends DataverseDispatcher
     public function setupTermsOfUseHandler($hookName, $params)
     {
         $component = &$params[0];
-
-        $componentMapping = [
-            $component => "plugins.generic.dataverse.handlers.TermsOfUseHandler",
-            $component => "plugins.generic.dataverse.handlers.UploadDatasetHandler"
-        ];
-
-        if (array_key_exists($component, $componentMapping)) {
-            return true;
+        switch ($component) {
+            case 'plugins.generic.dataverse.handlers.TermsOfUseHandler':
+            case 'plugins.generic.dataverse.handlers.UploadDatasetHandler':
+                return true;
+                break;
         }
-
         return false;
     }
 }
