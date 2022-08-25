@@ -8,7 +8,7 @@ class DataverseDAO extends DAO
     {
         $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
         $result = $pluginSettingsDao->getPluginSettings($contextId, 'dataverseplugin');
-        $credentials = [$result['apiToken'], $result['dataverseUrl']];
+        $credentials = [$result['apiToken'], $result['dataverse']];
         return $credentials;
     }
 
