@@ -8,7 +8,7 @@ import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 
 class TemplateDispatcher extends DataverseDispatcher
 {
-    public function __construct(Plugin $plugin)
+	public function __construct(Plugin $plugin)
 	{
 		HookRegistry::register('submissionsubmitstep2form::display', array($this, 'handleDatasetModal'));
 		HookRegistry::register('uploaddatasetform::display', array($this, 'createDatasetModalStructure'));
@@ -18,15 +18,15 @@ class TemplateDispatcher extends DataverseDispatcher
 		HookRegistry::register('TemplateManager::display', array($this, 'changeGalleysLinks'));
 		HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
-		
+
 		parent::__construct($plugin);
-    }
-	
+	}
+
 	function createDatasetModalStructure(string $hookName, array $params)
 	{
 		$templateMgr = TemplateManager::getManager($request);
 
-		$form =& $params[0];
+		$form = &$params[0];
 		$form->readUserVars(array('submissionId'));
 		$submissionId = $form->getData('submissionId');
 		$submission = Services::get('submission')->get($submissionId);
@@ -49,7 +49,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		$templateMgr->assign('dataset', $dataset);
 		$templateMgr->assign('dataverseName', $dataverseName);
 		$templateMgr->assign('termsOfUseURL', $termsOfUseURL);
-		
+
 		return false;
 	}
 
@@ -61,7 +61,8 @@ class TemplateDispatcher extends DataverseDispatcher
 		return false;
 	}
 
-	function datasetModalFilter(string $output, Smarty_Internal_Template $templateMgr): string {
+	function datasetModalFilter(string $output, Smarty_Internal_Template $templateMgr): string
+	{
 		if (preg_match('/<div[^>]+class="[^>]*formButtons[^>]*"[^>]*>(.|\n)*?<\/div>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
 			$newOutput = substr($output, 0, $offset + strlen($match));
 			$newOutput .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetModal.tpl'));
@@ -99,7 +100,7 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function handleSubmissionFilesMetadataFormExecute(string $hookName, array $params): void
 	{
-		$form =& $params[0];
+		$form = &$params[0];
 		$form->readUserVars(array('publishData'));
 		$submissionFile = $form->getSubmissionFile();
 
@@ -110,15 +111,16 @@ class TemplateDispatcher extends DataverseDispatcher
 		);
 	}
 
-	function addDataCitationSubmission(string $hookName, array $params): bool {
-		$templateMgr =& $params[1];
-		$output =& $params[2];
+	function addDataCitationSubmission(string $hookName, array $params): bool
+	{
+		$templateMgr = &$params[1];
+		$output = &$params[2];
 
 		$submission = $templateMgr->getTemplateVars('preprint');
 		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
-		if(isset($study)) {
+		if (isset($study)) {
 			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitationSubmission.tpl'));
 		}
 
@@ -134,33 +136,33 @@ class TemplateDispatcher extends DataverseDispatcher
 			$template => "workflow/workflow.tpl",
 		];
 
-		if (array_key_exists($template, $templateMapping)){
+		if (array_key_exists($template, $templateMapping)) {
 			$request = Application::get()->getRequest();
 			$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
 			$submission = $smarty->get_template_vars('submission');
-			
+
 			if ($submission) {
 				$smarty->addJavaScript("Dataverse_Workflow",  $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js', array(
 					'contexts' => ['backend', 'frontend']
 				));
 				$this->addJavaScriptVariables($request, $smarty, $submission);
 			}
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
 
-	function addJavaScriptVariables($request, $templateManager, $submission) {
+	function addJavaScriptVariables($request, $templateManager, $submission)
+	{
 		$configuration = $this->getDataverseConfiguration();
 		$apiToken = $configuration->getApiToken();
 
 		$dataverseServer = $configuration->getDataverseServer();
-		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+		$dataverseStudyDao = &DAORegistry::getDAO('DataverseStudyDAO');
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
 		$persistentUri = $study->getPersistentUri();
-		preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches); 
+		preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches);
 		$persistentId =  "doi:" . $matches[0];
 
 		$editUri = "$dataverseServer/api/datasets/:persistentId/?persistentId=$persistentId";
@@ -182,15 +184,16 @@ class TemplateDispatcher extends DataverseDispatcher
 		]);
 	}
 
-	function addDataCitationSubmissionToWorkflow(string $hookName, array $params): bool {
-		$smarty =& $params[1];
-		$output =& $params[2];
+	function addDataCitationSubmissionToWorkflow(string $hookName, array $params): bool
+	{
+		$smarty = &$params[1];
+		$output = &$params[2];
 		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
 		$submission = $smarty->get_template_vars('submission');
 		$this->studyDao = new DataverseStudyDAO();
 		$study = $this->studyDao->getStudyBySubmissionId($submission->getId());
 
-		if(isset($study)) {
+		if (isset($study)) {
 			$output .= sprintf(
 				'<tab id="datasetTab" label="%s">%s</tab>',
 				__("plugins.generic.dataverse.dataCitationLabel"),
@@ -211,10 +214,9 @@ class TemplateDispatcher extends DataverseDispatcher
 			$template => "frontend/pages/indexJournal.tpl"
 		];
 
-		if (array_key_exists($template, $templateMapping)){
+		if (array_key_exists($template, $templateMapping)) {
 			$smarty->registerFilter("output", array($this, 'galleyLinkFilter'));
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
@@ -223,33 +225,33 @@ class TemplateDispatcher extends DataverseDispatcher
 	{
 		$offset = 0;
 		$foundGalleyLinks = false;
-		while(preg_match('/<a[^>]+class="obj_galley_link[^>]*"[^>]+href="([^>]+)"*>[^<]+<\/a>/', $output, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+		while (preg_match('/<a[^>]+class="obj_galley_link[^>]*"[^>]+href="([^>]+)"*>[^<]+<\/a>/', $output, $matches, PREG_OFFSET_CAPTURE, $offset)) {
 			$foundGalleyLinks = true;
 			$matchAll = $matches[0][0];
 			$posMatchAll = $matches[0][1];
 			$linkGalley = $matches[1][0];
 
-			$galleyId = (int) substr($linkGalley, strrpos($linkGalley, '/')+1);
+			$galleyId = (int) substr($linkGalley, strrpos($linkGalley, '/') + 1);
 			$galleyService = Services::get('galley');
 			$galley = $galleyService->get($galleyId);
 			$submissionFile = $galley->getFile();
 			$dataverseFileDAO = DAORegistry::getDAO('DataverseFileDAO');
 			$dataverseFile = $dataverseFileDAO->getBySubmissionFileId($submissionFile->getId());
 
-			if(!empty($dataverseFile)) {
+			if (!empty($dataverseFile)) {
 				$output = substr_replace($output, "", $posMatchAll, strlen($matchAll));
 				$offset = $posMatchAll;
-			}
-			else {
+			} else {
 				$offset = $posMatchAll + strlen($matchAll);
 			}
 		}
 
-		if($foundGalleyLinks) $templateMgr->unregisterFilter('output', array($this, 'galleyLinkFilter'));
+		if ($foundGalleyLinks) $templateMgr->unregisterFilter('output', array($this, 'galleyLinkFilter'));
 		return $output;
 	}
 
-	function setupTermsOfUseHandler($hookName, $params) {
+	function setupTermsOfUseHandler($hookName, $params)
+	{
 		$component = &$params[0];
 		switch ($component) {
 			case 'plugins.generic.dataverse.handlers.TermsOfUseHandler':
