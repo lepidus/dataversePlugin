@@ -26,7 +26,7 @@ class TemplateDispatcher extends DataverseDispatcher
 	{
 		$templateMgr = TemplateManager::getManager($request);
 
-		$form = &$params[0];
+		$form =& $params[0];
 		$form->readUserVars(array('submissionId'));
 		$submissionId = $form->getData('submissionId');
 		$submission = Services::get('submission')->get($submissionId);
@@ -100,7 +100,7 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function handleSubmissionFilesMetadataFormExecute(string $hookName, array $params): void
 	{
-		$form = &$params[0];
+		$form =& $params[0];
 		$form->readUserVars(array('publishData'));
 		$submissionFile = $form->getSubmissionFile();
 
@@ -113,8 +113,8 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function addDataCitationSubmission(string $hookName, array $params): bool
 	{
-		$templateMgr = &$params[1];
-		$output = &$params[2];
+		$templateMgr =& $params[1];
+		$output =& $params[2];
 
 		$submission = $templateMgr->getTemplateVars('preprint');
 		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
@@ -158,7 +158,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		$apiToken = $configuration->getApiToken();
 
 		$dataverseServer = $configuration->getDataverseServer();
-		$dataverseStudyDao = &DAORegistry::getDAO('DataverseStudyDAO');
+		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
 		$persistentUri = $study->getPersistentUri();
@@ -186,8 +186,8 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function addDataCitationSubmissionToWorkflow(string $hookName, array $params): bool
 	{
-		$smarty = &$params[1];
-		$output = &$params[2];
+		$smarty =& $params[1];
+		$output =& $params[2];
 		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
 		$submission = $smarty->get_template_vars('submission');
 		$this->studyDao = new DataverseStudyDAO();
@@ -252,7 +252,7 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function setupTermsOfUseHandler($hookName, $params)
 	{
-		$component = &$params[0];
+		$component =& $params[0];
 		switch ($component) {
 			case 'plugins.generic.dataverse.handlers.TermsOfUseHandler':
 			case 'plugins.generic.dataverse.handlers.UploadDatasetHandler':
