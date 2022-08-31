@@ -14,15 +14,15 @@
             <ul class="galleys_links">
                 {foreach from=$dataset  item=set}
                     {assign var="label" value=$set[0]|cat:" - "|cat:$set[1]->getLocalizedName()}
-                    <li>{fbvElement type="checkbox" label=$label translate=false value=$set[1]->getId() id="galleyItems[]" checked=false}
-                    </li>
+                    {if $set[2] == true}{assign var="checked" value=true}{else}{assign var="checked" value=false}{/if}
+                    <li>{fbvElement type="checkbox" label=$label translate=false value=$set[1]->getId() id="galleyItems[]" checked=$checked}</li>
                 {/foreach}
             </ul>
         {/if}
 
         {fbvFormSection list="true" title="Dataverse Plugin" translate=false}
         {assign var="publishDataLabel" value={translate key="plugins.generic.dataverse.submissionFileMetadata.publishData" dataverseName=$dataverseName termsOfUseURL=$termsOfUseURL}}
-        {fbvElement type="checkbox" label=$publishDataLabel translate=false id="publishData" checked=false}
+        {fbvElement type="checkbox" label=$publishDataLabel translate=false id="publishData" checked=$checked}
         {/fbvFormSection}
 
         <div id="datasetButtonContainer">

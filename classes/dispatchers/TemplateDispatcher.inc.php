@@ -24,21 +24,22 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function createDatasetModalStructure(string $hookName, array $params)
 	{
+		$request = PKPApplication::get()->getRequest();
 		$templateMgr = TemplateManager::getManager($request);
 
 		$form =& $params[0];
 		$form->readUserVars(array('submissionId'));
 		$submissionId = $form->getData('submissionId');
 		$submission = Services::get('submission')->get($submissionId);
-		$request = PKPApplication::get()->getRequest();
 		$galleys = $submission->getGalleys();
 		$dataset = array();
 		$genreDAO = DAORegistry::getDAO('GenreDAO');
 		foreach ($galleys as $galley) {
 			$submissionFile = Services::get('submissionFile')->get($galley->getData('submissionFileId'));
 			if ($submissionFile) {
+				$publishData = $submissionFile->getData('publishData');
 				$genreName = $genreDAO->getById($submissionFile->getGenreId())->getLocalizedName();
-				array_push($dataset, [$genreName, $galley]);
+				array_push($dataset, [$genreName, $galley, $publishData]);
 			}
 		}
 
