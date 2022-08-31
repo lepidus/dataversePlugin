@@ -22,7 +22,7 @@
 
         {fbvFormSection list="true" title="Dataverse Plugin" translate=false}
         {assign var="publishDataLabel" value={translate key="plugins.generic.dataverse.submissionFileMetadata.publishData" dataverseName=$dataverseName termsOfUseURL=$termsOfUseURL}}
-        {fbvElement type="checkbox" label=$publishDataLabel translate=false id="publishData" checked=false}
+        {fbvElement type="checkbox" label=$publishDataLabel translate=false id="publishData" checked=$checked}
         {/fbvFormSection}
 
         <div id="datasetButtonContainer">
