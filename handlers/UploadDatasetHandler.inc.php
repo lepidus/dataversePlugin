@@ -32,6 +32,50 @@ class UploadDatasetHandler extends Handler {
         return $templateMgr->fetchJson($plugin->getTemplateResource('uploadDataset.tpl'));
     }
 
+    function addDatasetFiles($args, $request) {
+
+        AppLocale::requireComponents(
+			LOCALE_COMPONENT_PKP_SUBMISSION,
+			LOCALE_COMPONENT_PKP_USER,
+			LOCALE_COMPONENT_PKP_EDITOR,
+			LOCALE_COMPONENT_APP_EDITOR
+		);
+
+        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
+        $templateMgr = TemplateManager::getManager($request);
+        
+        import('lib.pkp.classes.linkAction.request.AjaxModal');
+        $uploadDatasetAction = new LinkAction(
+            'addDatasetFiles',
+            new AjaxModal(
+                $request->getRouter()->url($request, null, null, 'addGalley', null, $args),
+                __('plugins.generic.dataverse.dataCitationLabel'),
+                'modal_add_item'
+            ),
+            __('plugins.generic.dataverse.datasetButton'),
+            'add_item',
+        );
+
+		$templateMgr->assign('uploadDatasetAction', $uploadDatasetAction);
+        return $templateMgr->fetchJson($plugin->getTemplateResource('uploadDataset.tpl'));
+    }
+
+    function addGalley($args, $request) {
+		import('plugins.generic.dataverse.classes.form.AddDatasetFileForm');
+        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
+        $submissionId = $args['submissionId'];
+        $submission = Services::get('submission')->get($submissionId);
+        $publication = $submission->getCurrentPublication();
+
+		$addDatasetFileForm = new AddDatasetFileForm(
+			$plugin,
+			$submissionId,
+			$publication->getData('id')
+		);
+		$addDatasetFileForm->initData();
+		return new JSONMessage(true, $addDatasetFileForm->fetch($request));
+	}
+
     function uploadDatasetModal($args, $request) {
         $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
         $templateMgr = TemplateManager::getManager($request);

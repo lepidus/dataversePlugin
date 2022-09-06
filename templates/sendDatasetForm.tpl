@@ -6,6 +6,9 @@
 
 <form class="pkp_form" id="dataverseModalForm" method="post"
     action="{url router=$smarty.const.ROUTE_COMPONENT submissionId=$submissionId save=true}">
+
+    {capture assign=representationsGridUrl}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.dataverse.handlers.UploadDatasetHandler" op="addDatasetFiles" submissionId=$submissionId params=$requestArgs escape=false}{/capture}
+	{load_url_in_div id="datasetGridContainer"|uniqid url=$representationsGridUrl}
     <div id="descriptionModal" class="header">
         <p>{translate key="plugins.generic.dataverse.modal.description" dataverseName=$dataverseName}</p>
     </div>
