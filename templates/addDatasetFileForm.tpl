@@ -1,21 +1,25 @@
+<script>
+	$(function() {ldelim}
+		// Attach the upload form handler.
+		$('#articleGalleyForm').pkpHandler(
+			'$.pkp.controllers.form.FileUploadFormHandler',
+			{ldelim}
+				$uploader: $('#plupload'),
+				uploaderOptions: {ldelim}
+					uploadUrl: {url|json_encode router=$smarty.const.ROUTE_COMPONENT op="updateGalley" function=$function escape=false},
+					baseUrl: {$baseUrl|json_encode}
+				{rdelim}
+			{rdelim});
+	{rdelim});
+</script>
+
 <form class="pkp_form" id="articleGalleyForm" method="post" action="{url op="updateGalley" submissionId=$submissionId publicationId=$publicationId representationId=$representationId}">
 	{csrf}
 	{fbvFormArea id="galley"}
-		{fbvFormSection title="submission.layout.galleyLabel" required=true}
-			{fbvElement type="text" label="submission.layout.galleyLabelInstructions" value=$label id="label" size=$fbvStyles.size.MEDIUM inline=true required=true}
+		{fbvFormSection title="plugins.generic.dataverse.modal.addFile.datasetLabel" required=true}
+			{fbvElement type="text" label="plugins.generic.dataverse.modal.addFile.datasetLabelInstructions" value=$label id="label" size=$fbvStyles.size.MEDIUM inline=true required=true}
 		{/fbvFormSection}
-		{fbvFormSection}
-			{fbvElement type="select" id="galleyLocale" label="common.language" from=$supportedLocales selected=$galleyLocale|default:$formLocale size=$fbvStyles.size.MEDIUM translate=false inline=true required=true}
-		{/fbvFormSection}
-		{fbvFormSection for="remotelyHostedContent" list=true}
-			{fbvElement type="checkbox" label="submission.layout.galley.remotelyHostedContent" id="remotelyHostedContent"}
-			<div id="remote" style="display:none">
-				{fbvElement type="text" id="urlRemote" label="submission.layout.galley.remoteURL" value=$urlRemote}
-			</div>
-		{/fbvFormSection}
-		{fbvFormSection id="urlPathSection" title="publication.urlPath"}
-			{fbvElement type="text" label="publication.urlPath.description" value=$urlPath id="urlPath" size=$fbvStyles.size.MEDIUM inline=true}
-		{/fbvFormSection}
+		{include file="controllers/fileUploadContainer.tpl" id="plupload"}
 	{/fbvFormArea}
 
 	{if $supportsDependentFiles}

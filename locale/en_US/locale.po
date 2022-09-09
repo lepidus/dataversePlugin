@@ -91,3 +91,12 @@ msgstr "You can select which files should be uploaded to {$dataverseName}"
 
 msgid "plugins.generic.dataverse.modal.loading"
 msgstr "Loading data"
+
+msgid "plugins.generic.dataverse.modal.addFile.title"
+msgstr "Send file"
+
+msgid "plugins.generic.dataverse.modal.addFile.datasetLabel"
+msgstr "Dataset Label"
+
+msgid "plugins.generic.dataverse.modal.addFile.datasetLabelInstructions"
+msgstr "Typically used to identify the file format (e.g. PDF, HTML, etc.)"

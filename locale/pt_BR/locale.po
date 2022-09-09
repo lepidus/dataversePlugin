@@ -97,3 +97,13 @@ msgstr "Você pode selecionar os arquivos que devem ser enviados ao {$dataverseN
 
 msgid "plugins.generic.dataverse.modal.loading"
 msgstr "Carregando os dados"
+
+msgid "plugins.generic.dataverse.modal.addFile.title"
+msgstr "Enviar arquivo"
+
+msgid "plugins.generic.dataverse.modal.addFile.datasetLabel"
+msgstr "Rótulo do arquivo"
+
+msgid "plugins.generic.dataverse.modal.addFile.datasetLabelInstructions"
+msgstr "O rótulo é utilizado para identificar o formato do documento (ex.: HTML, PDF, etc)."
+
