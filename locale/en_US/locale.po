@@ -95,6 +95,9 @@ msgstr "Loading data"
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Send file"
 
+msgid "plugins.generic.dataverse.modal.addFile.titleModal"
+msgstr "File data"
+
 msgid "plugins.generic.dataverse.modal.addFile.datasetLabel"
 msgstr "Dataset Label"
 

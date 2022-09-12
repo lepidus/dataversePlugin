@@ -1,6 +1,7 @@
 <?php
 
 import('classes.handler.Handler');
+import('plugins.generic.dataverse.classes.form.AddDatasetFileForm');
 
 class UploadDatasetHandler extends Handler {
 
@@ -49,10 +50,10 @@ class UploadDatasetHandler extends Handler {
             'addDatasetFiles',
             new AjaxModal(
                 $request->getRouter()->url($request, null, null, 'addGalley', null, $args),
-                __('plugins.generic.dataverse.dataCitationLabel'),
+                __('plugins.generic.dataverse.modal.addFile.titleModal'),
                 'modal_add_item'
             ),
-            __('plugins.generic.dataverse.datasetButton'),
+            __('plugins.generic.dataverse.modal.addFile.title'),
             'add_item',
         );
 
@@ -61,20 +62,66 @@ class UploadDatasetHandler extends Handler {
     }
 
     function addGalley($args, $request) {
-		import('plugins.generic.dataverse.classes.form.AddDatasetFileForm');
         $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
         $submissionId = $args['submissionId'];
         $submission = Services::get('submission')->get($submissionId);
         $publication = $submission->getCurrentPublication();
+        $contextId = $submission->getContextId();
 
 		$addDatasetFileForm = new AddDatasetFileForm(
 			$plugin,
 			$submissionId,
-			$publication->getData('id')
+			$publication->getData('id'),
+            $contextId
 		);
 		$addDatasetFileForm->initData();
 		return new JSONMessage(true, $addDatasetFileForm->fetch($request));
 	}
+
+    function updateDatasetFile($args, $request) {
+        $router = $request->getRouter();
+		$context = $request->getContext();
+		$user = $request->getUser();
+
+		import('lib.pkp.classes.file.TemporaryFileManager');
+		$temporaryFileManager = new TemporaryFileManager();
+		$temporaryFile = $temporaryFileManager->handleUpload('uploadedFile', $user->getId());
+		if ($temporaryFile) {
+			$json = new JSONMessage(true);
+			$json->setAdditionalAttributes(array(
+				'temporaryFileId' => $temporaryFile->getId()
+			));
+			return $json;
+		} else {
+			return new JSONMessage(false, __('common.uploadFailed'));
+		}
+    }
+
+    function saveFile($args, $request) {
+        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
+        $submissionId = $args['submissionId'];
+        $submission = Services::get('submission')->get($submissionId);
+        $publication = $submission->getCurrentPublication();
+        $contextId = $submission->getContextId();
+
+		$addDatasetFileForm = new AddDatasetFileForm(
+			$plugin,
+			$submissionId,
+			$publication->getData('id'),
+            $contextId
+		);
+
+        $addDatasetFileForm->readInputData();
+
+		if ($addDatasetFileForm) {
+			$fileId = $addDatasetFileForm->execute();
+
+			// Let the calling grid reload itself
+			return DAO::getDataChangedEvent();
+		}
+
+		return new JSONMessage(false);
+    }
 
     function uploadDatasetModal($args, $request) {
         $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
