@@ -36,7 +36,6 @@ class TemplateDispatcher extends DataverseDispatcher
 		foreach ($libraryFiles as $libraryFile) {
 			$publishData = false;
 			$fileName = $libraryFile->getOriginalFileName();
-			error_log("NOME DO ARQUIVO: " . print_r($libraryFile, true));
 			array_push($dataset, [$fileName, $libraryFile, $publishData]);
 		}
 
