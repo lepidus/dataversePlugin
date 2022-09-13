@@ -104,6 +104,9 @@ msgstr "Enviar arquivo"
 msgid "plugins.generic.dataverse.modal.addFile.titleModal"
 msgstr "Dados do arquivo"
 
+msgid "plugins.generic.dataverse.modal.addFileTitle"
+msgstr "Arquivo"
+
 msgid "plugins.generic.dataverse.modal.addFile.datasetLabel"
 msgstr "Rótulo do arquivo"
 

@@ -98,6 +98,9 @@ msgstr "Send file"
 msgid "plugins.generic.dataverse.modal.addFile.titleModal"
 msgstr "File data"
 
+msgid "plugins.generic.dataverse.modal.addFileTitle"
+msgstr "File"
+
 msgid "plugins.generic.dataverse.modal.addFile.datasetLabel"
 msgstr "Dataset Label"
 

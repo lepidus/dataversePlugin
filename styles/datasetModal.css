@@ -1,6 +1,19 @@
+#send_dataset_pkp_button {
+  text-align: right;
+  text-decoration: none;
+}
+
 #send_dataset_pkp_button a {
   text-decoration: none;
-  text-align: right;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+}
+
+.header h4 {
+  flex: 1;
 }
 
 .galleys_links {
