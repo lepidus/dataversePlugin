@@ -18,7 +18,7 @@
                 {foreach from=$dataset  item=set}
                     {assign var="label" value=$set[0]|cat:" - "|cat:$set[1]->getLocalizedName()}
                     {if $set[2] == true}{assign var="checked" value=true}{else}{assign var="checked" value=false}{/if}
-                    <li>{fbvElement type="checkbox" label=$label translate=false value=$set[1]->getId() id="galleyItems[]" checked=$checked}</li>
+                    <li>{fbvElement type="checkbox" label=$label translate=false value=$set[1]->getData('id') id="galleyItems[]" checked=$checked}</li>
                 {/foreach}
             </ul>
         {/if}

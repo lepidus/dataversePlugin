@@ -35,33 +35,30 @@ class AddDatasetFileForm extends Form {
 
 	function readInputData()
 	{
-		$this->readUserVars(array('temporaryFileId', 'submissionId'));
+		$this->readUserVars(array('label', 'temporaryFileId', 'submissionId'));
 		return parent::readInputData();
 	}
 
 	function execute(...$functionArgs) {
 		$userId = Application::get()->getRequest()->getUser()->getId();
 
-		// Fetch the temporary file storing the uploaded library file
-		$temporaryFileDao = DAORegistry::getDAO('TemporaryFileDAO'); /* @var $temporaryFileDao TemporaryFileDAO */
+		$temporaryFileDao = DAORegistry::getDAO('TemporaryFileDAO');
 		$temporaryFile = $temporaryFileDao->getTemporaryFile(
 			$this->getData('temporaryFileId'),
 			$userId
 		);
-		$libraryFileDao = DAORegistry::getDAO('LibraryFileDAO'); /* @var $libraryFileDao LibraryFileDAO */
+		$libraryFileDao = DAORegistry::getDAO('LibraryFileDAO'); 
 		$libraryFileManager = new LibraryFileManager($this->contextId);
 		
-		// Convert the temporary file to a library file and store
 		$libraryFile =& $libraryFileManager->copyFromTemporaryFile($temporaryFile, $this->getData('fileType'));
 		assert(isset($libraryFile));
 		$libraryFile->setContextId($this->contextId);
-		$libraryFile->setName($this->getData('libraryFileName'), null); // Localized
+		$locale = AppLocale::getLocale();
+		$libraryFile->setName($this->getData('label'), $locale); 
 		$libraryFile->setType($this->getData('fileType'));
 		$libraryFile->setSubmissionId($this->getData('submissionId'));
-
 		$fileId = $libraryFileDao->insertObject($libraryFile);
 
-		// Clean up the temporary file
 		import('lib.pkp.classes.file.TemporaryFileManager');
 		$temporaryFileManager = new TemporaryFileManager();
 		$temporaryFileManager->deleteById($this->getData('temporaryFileId'), $userId);

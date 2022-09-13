@@ -26,21 +26,18 @@ class TemplateDispatcher extends DataverseDispatcher
 	{
 		$request = PKPApplication::get()->getRequest();
 		$templateMgr = TemplateManager::getManager($request);
-
+		$libraryFileDao = DAORegistry::getDAO('LibraryFileDAO');
 		$form =& $params[0];
 		$form->readUserVars(array('submissionId'));
 		$submissionId = $form->getData('submissionId');
-		$submission = Services::get('submission')->get($submissionId);
-		$galleys = $submission->getGalleys();
+		$libraryFiles = $libraryFileDao->getBySubmissionId($submissionId)->toAssociativeArray();
 		$dataset = array();
 		$genreDAO = DAORegistry::getDAO('GenreDAO');
-		foreach ($galleys as $galley) {
-			$submissionFile = Services::get('submissionFile')->get($galley->getData('submissionFileId'));
-			if ($submissionFile) {
-				$publishData = $submissionFile->getData('publishData');
-				$genreName = $genreDAO->getById($submissionFile->getGenreId())->getLocalizedName();
-				array_push($dataset, [$genreName, $galley, $publishData]);
-			}
+		foreach ($libraryFiles as $libraryFile) {
+			$publishData = false;
+			$fileName = $libraryFile->getOriginalFileName();
+			error_log("NOME DO ARQUIVO: " . print_r($libraryFile, true));
+			array_push($dataset, [$fileName, $libraryFile, $publishData]);
 		}
 
 		$service = $this->getDataverseService();
