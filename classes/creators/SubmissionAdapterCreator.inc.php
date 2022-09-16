@@ -16,7 +16,8 @@ class SubmissionAdapterCreator
         $id = $submission->getId();
         $title = $publication->getLocalizedData('title', $locale);
         $authors = $this->retrieveAuthors($publication, $locale);
-        $files = $this->retrieveFiles($publication);
+        $submissionId = $submission->getId();
+        $files = $this->retrieveFiles($submissionId);
         $description = $publication->getLocalizedData('abstract', $locale);
         $keywords = $publication->getData('keywords')[$locale];
         $citation = $apaCitation->getFormattedCitationBySubmission($submission);
@@ -44,15 +45,15 @@ class SubmissionAdapterCreator
         return $authorAdapters;
     }
 
-    private function retrieveFiles(Publication $publication): array
+    private function retrieveFiles(int $submissionId): array
     {
         $files = [];
-        $galleys = $publication->getData('galleys');
-        if(!empty($galleys)) {
-            foreach ($galleys as $galley) {
-                $submissionFile = $galley->getFile();
+        $libraryFileDao = DAORegistry::getDAO('LibraryFileDAO');
+        $libraryFiles = $libraryFileDao->getBySubmissionId($submissionId)->toAssociativeArray();
+        if(!empty($libraryFiles)) {
+            foreach ($libraryFiles as $file) {
                 $submissionFileAdapterCreator = new SubmissionFileAdapterCreator();
-                $files[] = $submissionFileAdapterCreator->createSubmissionFileAdapter($submissionFile);
+                $files[] = $submissionFileAdapterCreator->createSubmissionFileAdapter($file);
             }
         }
         return $files;

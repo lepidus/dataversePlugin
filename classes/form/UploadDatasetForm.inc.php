@@ -37,10 +37,6 @@ class UploadDatasetForm extends Form {
         {
 			$libraryFileDao = DAORegistry::getDAO('LibraryFileDAO'); 
 			$submissionId = $this->getData('submissionId');
-			$libraryFiles = $libraryFileDao->getBySubmissionId($submissionId)->toAssociativeArray();
-			foreach ($libraryFiles as $libraryFile) {
-				$libraryFileDao->deleteById($libraryFile->getId());
-			}
         }
 		parent::execute(...$functionArgs);
 	}

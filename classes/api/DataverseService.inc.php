@@ -89,6 +89,13 @@ class DataverseService {
 		} catch (RuntimeException $e) {
 			error_log($e->getMessage());
 			$dataverseNotificationMgr->createNotification($e->getCode());
+		}
+		finally {
+			$libraryFileDao = DAORegistry::getDAO('LibraryFileDAO');
+        	$libraryFiles = $libraryFileDao->getBySubmissionId($this->submission->getId())->toAssociativeArray();
+			foreach ($libraryFiles as $libraryFile) {
+				$libraryFileDao->deleteById($libraryFile->getId());
+			}
 		}	
 		return $study;
 	}
