@@ -20,12 +20,13 @@
         <p>{translate key="plugins.generic.dataverse.modal.description" dataverseName=$dataverseName}</p>
     </div>
     <div class="content">
+        <input type="hidden" name="submissionId" value="{$submissionId|escape}" />
         {if !$hideGalleys}
             <ul class="galleys_links">
                 {foreach from=$dataset  item=set}
                     {assign var="label" value=$set[0]|cat:" - "|cat:$set[1]->getLocalizedName()}
                     {if $set[2] == true}{assign var="checked" value=true}{else}{assign var="checked" value=false}{/if}
-                    <li>{fbvElement type="checkbox" label=$label translate=false value=$set[1]->getData('id') id="galleyItems[]" checked=$checked}</li>
+                    <li>{fbvElement type="checkbox" label=$label translate=false value=$set[1]->getId() id="galleyItems[]" checked=$checked}</li>
                 {/foreach}
             </ul>
         {/if}
