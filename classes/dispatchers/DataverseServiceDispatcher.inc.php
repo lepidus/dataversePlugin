@@ -9,6 +9,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
     public function __construct(Plugin $plugin)
 	{
 		HookRegistry::register('Schema::get::submissionFile', array($this, 'modifySubmissionFileSchema'));
+		HookRegistry::register('Schema::get::galley', array($this, 'modifyGalleySchema'));
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
 		HookRegistry::register('PreprintHandler::view', array($this, 'loadResources'));
@@ -66,6 +67,17 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 	{
 		$schema =& $params[0];
         $schema->properties->{'publishData'} = (object) [
+            'type' => 'boolean',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
+        return false;
+	}
+
+	public function modifyGalleySchema(string $hookName, array $params): bool
+	{
+		$schema =& $params[0];
+        $schema->properties->{'dataverseGalley'} = (object) [
             'type' => 'boolean',
             'apiSummary' => true,
             'validation' => ['nullable'],

@@ -12,7 +12,7 @@ class TemplateDispatcher extends DataverseDispatcher
 	{
 		HookRegistry::register('submissionsubmitstep2form::display', array($this, 'handleDatasetModal'));
 		HookRegistry::register('uploaddatasetform::display', array($this, 'createDatasetModalStructure'));
-		HookRegistry::register('submissionfilesmetadataform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
+		HookRegistry::register('submissionfilesuploadform::execute', array($this, 'handleSubmissionFilesMetadataFormExecute'));
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('Template::Workflow::Publication', array($this, 'addDataCitationSubmissionToWorkflow'));
 		HookRegistry::register('TemplateManager::display', array($this, 'changeGalleysLinks'));
@@ -104,15 +104,21 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function handleSubmissionFilesMetadataFormExecute(string $hookName, array $params): void
 	{
-		$form =& $params[0];
-		$form->readUserVars(array('publishData'));
-		$submissionFile = $form->getSubmissionFile();
-
-		$newSubmissionFile = Services::get('submissionFile')->edit(
-			$form->getSubmissionFile(),
-			['publishData' => $form->getData('publishData') ? true : false],
-			Application::get()->getRequest()
-		);
+		$request = PKPApplication::get()->getRequest();
+		$templateMgr = TemplateManager::getManager($request);
+		$submissionFile = $params[1];
+		$galleyId = $submissionFile->getData('assocId');
+		$articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+		$articleGalley = $articleGalleyDao->getById($galleyId);
+		if ($articleGalley->getData('dataverseGalley')) {
+			$newSubmissionFile = Services::get('submissionFile')->edit(
+				$submissionFile,
+				['publishData' => true],
+				$request
+			);
+			$articleGalley->setLabel($submissionFile->getLocalizedData('name', $submissionFile->getSubmissionLocale()));
+			$articleGalleyDao->updateObject($articleGalley);
+		}
 	}
 
 	function addDataCitationSubmission(string $hookName, array $params): bool

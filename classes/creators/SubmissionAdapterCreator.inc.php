@@ -50,9 +50,9 @@ class SubmissionAdapterCreator
         $galleys = $publication->getData('galleys');
         if(!empty($galleys)) {
             foreach ($galleys as $galley) {
-            $submissionFile = $galley->getFile();
-            $submissionFileAdapterCreator = new SubmissionFileAdapterCreator();
-            $files[] = $submissionFileAdapterCreator->createSubmissionFileAdapter($submissionFile);
+                $submissionFile = $galley->getFile();
+                $submissionFileAdapterCreator = new SubmissionFileAdapterCreator();
+                $files[] = $submissionFileAdapterCreator->createSubmissionFileAdapter($submissionFile);
             }
         }
         return $files;

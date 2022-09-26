@@ -7,6 +7,7 @@
 <form class="pkp_form" id="dataverseModalForm" method="post"
     action="{url router=$smarty.const.ROUTE_COMPONENT submissionId=$submissionId save=true}">
     <div id="sendfile" class="pkp_controllers_grid">
+        {include file="linkAction/linkAction.tpl" action=$uploadDatasetFileAction}
         <div class="header">
             <h4>{translate key="plugins.generic.dataverse.modal.addFileTitle"}</h4>
             <div class="pkp_button">
