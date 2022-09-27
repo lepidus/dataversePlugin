@@ -12,7 +12,6 @@ class SubmissionAdapterCreator
         $locale = $submission->getLocale();
         $publication = $submission->getCurrentPublication();
         $apaCitation = new APACitation();
-
         $id = $submission->getId();
         $title = $publication->getLocalizedData('title', $locale);
         $authors = $this->retrieveAuthors($publication, $locale);

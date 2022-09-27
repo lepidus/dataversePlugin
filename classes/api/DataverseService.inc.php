@@ -90,6 +90,20 @@ class DataverseService {
 			error_log($e->getMessage());
 			$dataverseNotificationMgr->createNotification($e->getCode());
 		}
+		finally {
+			$pkpSubmission = Services::get('submission')->get($this->submission->getId());
+			$publication = $pkpSubmission->getCurrentPublication();
+			$articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+			$articleGalleys = $articleGalleyDao->getByPublicationId($publication->getId())->toArray();
+
+			foreach ($articleGalleys as $galley) 
+			{
+				if ($galley->getData('id') != NULL)
+				{
+					$articleGalleyDao->deleteById($galley->getData('id'));
+				}
+			}
+		}
 			
 		return $study;
 	}
