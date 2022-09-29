@@ -69,6 +69,12 @@ class DataverseService {
 		$study = $this->depositStudy($package);
 		if(!empty($study)) {
 			$this->insertDataverseFilesInDB($study);
+
+			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
+			$persistentUri = $study->getPersistentUri();
+			preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches); 
+			$persistentId =  "doi:" . $matches[0];
+			$datasetUri = "$dataverseServer/dataset.xhtml?persistentId=$persistentId";
 		}
 	}
 
@@ -95,10 +101,9 @@ class DataverseService {
 			$publication = $pkpSubmission->getCurrentPublication();
 			$articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
 			$articleGalleys = $articleGalleyDao->getByPublicationId($publication->getId())->toArray();
-
 			foreach ($articleGalleys as $galley) 
 			{
-				if ($galley->getData('id') != NULL)
+				if ($galley->getData('dataverseGalley'))
 				{
 					$articleGalleyDao->deleteById($galley->getData('id'));
 				}
