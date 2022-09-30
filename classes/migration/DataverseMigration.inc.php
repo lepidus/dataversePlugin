@@ -18,6 +18,7 @@ class DataverseMigration extends Migration {
                 $table->string('statement_uri', 255);
                 $table->string('persistent_uri', 255);
                 $table->text('data_citation')->nullable();
+                $table->string('dataset_url', 255)->nullable();
             });
         }
 

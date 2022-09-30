@@ -69,12 +69,6 @@ class DataverseService {
 		$study = $this->depositStudy($package);
 		if(!empty($study)) {
 			$this->insertDataverseFilesInDB($study);
-
-			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
-			$persistentUri = $study->getPersistentUri();
-			preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches); 
-			$persistentId =  "doi:" . $matches[0];
-			$datasetUri = "$dataverseServer/dataset.xhtml?persistentId=$persistentId";
 		}
 	}
 
