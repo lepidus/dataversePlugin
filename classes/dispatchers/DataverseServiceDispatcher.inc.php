@@ -108,7 +108,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 	{
 		$router = $request->getRouter();
 		if ($router instanceof \APIRouter && str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
-			$this->import('api.v1.draftDatasetFiles.DraftDatasetFileHandler');
+			$this->plugin->import('api.v1.draftDatasetFiles.DraftDatasetFileHandler');
 			$handler = new DraftDatasetFileHandler();
 			$router->setHandler($handler);
 			$handler->getApp()->run();

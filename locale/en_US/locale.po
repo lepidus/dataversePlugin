@@ -106,3 +106,6 @@ msgstr "Dataset Label"
 
 msgid "plugins.generic.dataverse.modal.addFile.datasetLabelInstructions"
 msgstr "Typically used to identify the file format (e.g. PDF, HTML, etc.)"
+
+msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
+msgstr "The draft dataset file you requested was not found."

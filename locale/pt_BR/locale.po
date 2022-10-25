@@ -113,3 +113,5 @@ msgstr "Rótulo do arquivo"
 msgid "plugins.generic.dataverse.modal.addFile.datasetLabelInstructions"
 msgstr "O rótulo é utilizado para identificar o formato do documento (ex.: HTML, PDF, etc)."
 
+msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
+msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
