@@ -1,0 +1,101 @@
+var DraftDatasetFilesPage = $.extend(true, {}, pkp.controllers.Page, {
+    data() {
+        return {
+            notifications: [],
+            latestGetRequest: '',
+            isLoading: false,
+        }
+    },
+    methods: {
+        refreshItems() {
+            var self = this;
+
+            this.isLoading = true;
+
+            this.latestGetRequest = $.pkp.classes.Helper.uuid();
+
+            $.ajax({
+				url: this.components.draftDatasetFileForm.action,
+				type: 'GET',
+				_uuid: this.latestGetRequest,
+				error: function(r) {
+					if (self.latestGetRequest !== this._uuid) {
+						return;
+					}
+					self.ajaxErrorCallback(r);
+				},
+				success: function(r) {
+					if (self.latestGetRequest !== this._uuid) {
+						return;
+					}
+					self.setItems(r.items);
+				},
+				complete() {
+					if (self.latestGetRequest !== this._uuid) {
+						return;
+					}
+					self.isLoading = false;
+				}
+			});
+        },
+        setItems(items) {
+            items.map(item => item.title = item.fileName);
+			this.components.draftDatasetFilesList.items = items;
+		},
+        datasetFileModalClose() {
+            this.setFocusToRef('datasetModalButton');
+        },
+        datasetFileModalOpen() {
+            this.components.draftDatasetFileForm.fields.map(f => f.value = '');
+            this.$modal.show('datasetModal');
+        },
+        formSuccess(data) {
+            this.refreshItems();
+            this.$modal.hide('datasetModal');
+        },
+        openDeleteModal(id) {
+			const dataset = this.components.draftDatasetFilesList.items.find(d => d.id === id);
+			if (typeof dataset === 'undefined') {
+				this.openDialog({
+					confirmLabel: this.__('common.ok'),
+					modalName: 'unknownError',
+					message: this.__('common.unknownError'),
+					title: this.__('common.error'),
+					callback: () => {
+						this.$modal.hide('unknownError');
+					}
+				});
+				return;
+			}
+			this.openDialog({
+				cancelLabel: this.__('common.no'),
+				modalName: 'delete',
+				title: this.deleteDatasetFileLabel,
+				message: this.replaceLocaleParams(this.confirmDeleteMessage, {
+					title: this.localize(dataset.title)
+				}),
+				callback: () => {
+					var self = this;
+					$.ajax({
+						url: this.apiUrl + '/' + id,
+						type: 'POST',
+						headers: {
+							'X-Csrf-Token': pkp.currentUser.csrfToken,
+							'X-Http-Method-Override': 'DELETE'
+						},
+						error: self.ajaxErrorCallback,
+						success: function(r) {
+							self.setItems(
+								self.components.draftDatasetFilesList.items.filter(i => i.id !== id),
+							);
+							self.$modal.hide('delete');
+							self.setFocusIn(self.$el);
+						}
+					});
+				}
+			});
+		},
+    },
+});
+
+pkp.controllers['DraftDatasetFilesPage'] = DraftDatasetFilesPage;
