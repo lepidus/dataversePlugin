@@ -23,9 +23,9 @@ class DraftDatasetFileDAO extends SchemaDAO {
 		return new DraftDatasetFile();
 	}
 
-	public function getMax() {
+	public function getAll() {
 		$queryResults = new DAOResultFactory($this->retrieve('SELECT * FROM draft_dataset_files'), $this, '_fromRow');
-		return $queryResults->toIterator();
+		return $this->retrieveFiles($queryResults);
 	}
 
 	public function getBySubmissionId($submissionId) {
@@ -37,7 +37,7 @@ class DraftDatasetFileDAO extends SchemaDAO {
 			$this,
 			'_fromRow'
 		);
-		return $queryResults->toIterator();
+		return $this->retrieveFiles($queryResults);
 	}
 
 	public function deleteById($objectId) {
@@ -63,5 +63,13 @@ class DraftDatasetFileDAO extends SchemaDAO {
 		}
 
 		return $object;
+	}
+
+	private function retrieveFiles($result) {
+		$files = [];
+		while ($file = $result->next()) {
+			$files[] = $file;
+		}
+		return $files;
 	}
 }

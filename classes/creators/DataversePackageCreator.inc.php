@@ -94,4 +94,9 @@ class DataversePackageCreator extends PackagerAtomTwoStep
     {
 		return CONTENT_TYPE;
 	}
+
+    function hasFiles(): bool
+    {
+        return !empty($this->files);
+    }
 }

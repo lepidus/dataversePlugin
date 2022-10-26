@@ -42,14 +42,12 @@ class DraftDatasetFileHandler extends APIHandler {
                 $submissionId = $value;
         }
 
-        $result = is_null($submissionId) ? $draftDatasetFileDAO->getMax() : $draftDatasetFileDAO->getBySubmissionId($submissionId);
+        $result = is_null($submissionId) ? $draftDatasetFileDAO->getAll() : $draftDatasetFileDAO->getBySubmissionId($submissionId);
         
         $items = [];
-        if ($result->valid()) {
-			foreach ($result as $draftDatasetFile) {
-				$items[] = $this->getFullProperties($draftDatasetFile);
-			}
-		}
+        foreach ($result as $draftDatasetFile) {
+            $items[] = $this->getFullProperties($draftDatasetFile);
+        }
 
         ksort($items);
 

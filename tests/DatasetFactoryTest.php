@@ -4,7 +4,6 @@ import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
-import('plugins.generic.dataverse.classes.adapters.SubmissionFileAdapter');
 
 class DatasetFactoryTest extends PKPTestCase
 {
@@ -14,7 +13,7 @@ class DatasetFactoryTest extends PKPTestCase
     private $id = 1;
     private $title = "The Rise of The Machine Empire";
     private $authors;
-    private $files;
+    private $files = array();
     private $description = "This is a description/abstract.";
     private $keywords = array("Modern History", "Computer Science");
     private $contributor = array(array('Funder' => 'CAPES'));
@@ -24,8 +23,10 @@ class DatasetFactoryTest extends PKPTestCase
     {
         parent::setUp();
         $this->authors = array(new AuthorAdapter("Irís", "Castanheiras", "Lepidus", $this->authorsEmails[0]));
-        $this->files = array(new SubmissionFileAdapter(1, 1, 'testSample', 'path/to/file', true, 'CAPES'));
-        
+
+        $draftDatasetFile = new DraftDatasetFile();
+        $draftDatasetFile->setData('sponsor', 'CAPES');
+        array_push($this->files, $draftDatasetFile);
         $submissionAdapter = new SubmissionAdapter($this->id, $this->title, $this->authors, $this->files, $this->description, $this->keywords);
         $datasetFactory = new DatasetFactory();
         $this->dataset = $datasetFactory->build($submissionAdapter);

@@ -7,6 +7,7 @@ import('classes.publication.Publication');
 import('classes.article.Author');
 import('plugins.generic.dataverse.classes.APACitation');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
+import('plugins.generic.dataverse.classes.file.DraftDatasetFile');
 
 class SubmissionAdapterCreatorTest extends PKPTestCase
 {
@@ -31,16 +32,38 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
 
     public function setUp(): void
     {
-        parent::setUp();
-
+        $this->registerMockDAO();
+        
         $this->submissionAdapterCreator = new SubmissionAdapterCreator();
         $this->createTestSubmission();
         $this->createAuthors();
         $this->createTestPublication();
         $this->addCurrentPublicationToSubmission();
-
+        
         $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submission);
+        parent::setUp();
     }
+
+    protected function getMockedDAOs(): array
+    {
+		return array('DraftDatasetFileDAO');
+	}
+
+    private function registerMockDAO(): void
+    {
+		$draftDatasetFileDAO = $this->getMockBuilder(DraftDatasetFileDAO::class)
+			->setMethods(array('getBySubmissionId'))
+			->getMock();
+
+		$draftDatasetFile = new DraftDatasetFile();
+        $draftDatasetFile->setData('sponsor', 'CAPES');
+
+		$draftDatasetFileDAO->expects($this->any())
+		           ->method('getBySubmissionId')
+		           ->will($this->returnValue([$draftDatasetFile]));
+
+		DAORegistry::registerDAO('DraftDatasetFileDAO', $draftDatasetFileDAO);
+	}
 
     private function createAuthors(): void
     {

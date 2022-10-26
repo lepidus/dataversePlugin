@@ -42,26 +42,25 @@ class DraftDatasetFileUploadHandler extends Handler {
 		$draftDatasetFileForm = new DraftDatasetFileForm($draftDatasetFileUrl, $locales, $temporaryFileApiUrl, $termsOfUseParams);
 
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
-        $draftDatasetFilesIterator = $draftDatasetFileDAO->getBySubmissionId($args['submissionId']);
+        $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($args['submissionId']);
         
         $props = Services::get('schema')->getFullProps('draftDatasetFile');
         
-        $draftDatasetFiles = [];
-        if ($draftDatasetFilesIterator->valid()) {
-			foreach ($draftDatasetFilesIterator as $draftDatasetFile) {
-                $draftDatasetFileProps = [];
-                foreach ($props as $prop) {
-                    $draftDatasetFileProps[$prop] = $draftDatasetFile->getData($prop);
-                }
-				$draftDatasetFiles[] = $draftDatasetFileProps;
-			}
-		}
-        ksort($draftDatasetFiles);
+        $items = [];
+        foreach ($draftDatasetFiles as $draftDatasetFile) {
+            $draftDatasetFileProps = [];
+            foreach ($props as $prop) {
+                $draftDatasetFileProps[$prop] = $draftDatasetFile->getData($prop);
+            }
+            $items[] = $draftDatasetFileProps;
+        }
+        
+        ksort($items);
 
         $templateMgr->assign('state', [
 			'components' => [
                 'draftDatasetFilesList' => [
-                    'items' => $draftDatasetFiles
+                    'items' => $items
                 ],
                 'draftDatasetFileForm' => $draftDatasetFileForm->getConfig(),
             ],
