@@ -3,7 +3,7 @@ var DraftDatasetFilesPage = $.extend(true, {}, pkp.controllers.Page, {
         return {
             notifications: [],
             latestGetRequest: '',
-            isLoading: false,
+            isLoading: false
         }
     },
     methods: {
@@ -39,7 +39,6 @@ var DraftDatasetFilesPage = $.extend(true, {}, pkp.controllers.Page, {
 			});
         },
         setItems(items) {
-            items.map(item => item.title = item.fileName);
 			this.components.draftDatasetFilesList.items = items;
 		},
         datasetFileModalClose() {
@@ -54,8 +53,8 @@ var DraftDatasetFilesPage = $.extend(true, {}, pkp.controllers.Page, {
             this.$modal.hide('datasetModal');
         },
         openDeleteModal(id) {
-			const dataset = this.components.draftDatasetFilesList.items.find(d => d.id === id);
-			if (typeof dataset === 'undefined') {
+			const draftDatasetFile = this.components.draftDatasetFilesList.items.find(d => d.id === id);
+			if (typeof draftDatasetFile === 'undefined') {
 				this.openDialog({
 					confirmLabel: this.__('common.ok'),
 					modalName: 'unknownError',
@@ -70,9 +69,9 @@ var DraftDatasetFilesPage = $.extend(true, {}, pkp.controllers.Page, {
 			this.openDialog({
 				cancelLabel: this.__('common.no'),
 				modalName: 'delete',
-				title: this.deleteDatasetFileLabel,
+				title: this.deleteDraftDatasetFileLabel,
 				message: this.replaceLocaleParams(this.confirmDeleteMessage, {
-					title: this.localize(dataset.title)
+					title: draftDatasetFile.fileName
 				}),
 				callback: () => {
 					var self = this;

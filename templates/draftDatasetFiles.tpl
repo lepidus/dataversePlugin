@@ -1,11 +1,11 @@
 <div id="draftDatasetFilesContainer">
 	<list-panel :items="components.draftDatasetFilesList.items" style="margin-bottom: 1rem">
         <pkp-header slot="header">
-            <h2>Datasets</h2>
+            <h2>{translate key="plugins.generic.dataverse.dataCitationLabel"}</h2>
 			<spinner v-if="isLoading"></spinner>
             <template slot="actions">
                 <pkp-button ref="datasetModalButton" @click="datasetFileModalOpen">
-                    Add file
+                    {translate key="plugins.generic.dataverse.datasetButton"}
                 </pkp-button>
             </template>
         </pkp-header>
@@ -32,7 +32,7 @@
 		<modal-content
 			close-label="common.close"
 			modal-name="datasetModal"
-			title="Dataset File Upload"
+			title="{translate key="plugins.generic.dataverse.modal.addFile.title"}"
 		>
             <pkp-form 
 				v-bind="components.draftDatasetFileForm"

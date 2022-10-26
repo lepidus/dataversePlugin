@@ -45,7 +45,7 @@ msgid "plugins.generic.dataverse.dataCitationLabel"
 msgstr "Research data"
 
 msgid "plugins.generic.dataverse.datasetButton"
-msgstr "Send research data"
+msgstr "Upload research data"
 
 msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
 msgstr "Deposit file in Dataverse: <strong>{$dataverseName}</strong>, agreeing to the <a href=\"{$termsOfUseURL}\" target=\"_new\">Terms of Use</a>."
@@ -93,19 +93,16 @@ msgid "plugins.generic.dataverse.modal.loading"
 msgstr "Loading data"
 
 msgid "plugins.generic.dataverse.modal.addFile.title"
-msgstr "Send file"
+msgstr "Upload dataset file"
 
-msgid "plugins.generic.dataverse.modal.addFile.titleModal"
-msgstr "File data"
+msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
+msgstr "Dataset file"
 
-msgid "plugins.generic.dataverse.modal.addFileTitle"
-msgstr "File"
+msgid "plugins.generic.dataverse.modal.deleteDraftDatasetFile"
+msgstr "Delete Dataset file"
 
-msgid "plugins.generic.dataverse.modal.addFile.datasetLabel"
-msgstr "Dataset Label"
-
-msgid "plugins.generic.dataverse.modal.addFile.datasetLabelInstructions"
-msgstr "Typically used to identify the file format (e.g. PDF, HTML, etc.)"
+msgid "plugins.generic.dataverse.modal.confirmDelete"
+msgstr "Are you sure you want to permanently delete the dataset file {$title}?"
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "The draft dataset file you requested was not found."

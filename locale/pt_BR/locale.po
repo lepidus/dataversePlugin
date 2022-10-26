@@ -99,19 +99,16 @@ msgid "plugins.generic.dataverse.modal.loading"
 msgstr "Carregando os dados"
 
 msgid "plugins.generic.dataverse.modal.addFile.title"
-msgstr "Enviar arquivo"
+msgstr "Enviar arquivo de dados de pesquisa"
 
-msgid "plugins.generic.dataverse.modal.addFile.titleModal"
-msgstr "Dados do arquivo"
+msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
+msgstr "Arquivo de dados de pesquisa"
 
-msgid "plugins.generic.dataverse.modal.addFileTitle"
-msgstr "Arquivo"
+msgid "plugins.generic.dataverse.modal.deleteDraftDatasetFile"
+msgstr "Excluir arquivo de dados de pesquisa"
 
-msgid "plugins.generic.dataverse.modal.addFile.datasetLabel"
-msgstr "Rótulo do arquivo"
-
-msgid "plugins.generic.dataverse.modal.addFile.datasetLabelInstructions"
-msgstr "O rótulo é utilizado para identificar o formato do documento (ex.: HTML, PDF, etc)."
+msgid "plugins.generic.dataverse.modal.confirmDelete"
+msgstr "Deseja realmente excluir permanentemente o arquivo de dados de pesquisa <strong>{$title}</strong>?"
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
