@@ -46,7 +46,11 @@ class TemplateDispatcher extends DataverseDispatcher
 		$form->readUserVars(array('submissionId'));
 		$submissionId = $form->getData('submissionId');
 
+		$service = $this->getDataverseService();
+		$dataverseName = $service->getDataverseName();
+
 		$templateMgr->assign('submissionId', $submissionId);
+		$templateMgr->assign('dataverseName', $dataverseName);
 
 		$templateMgr->registerFilter("output", array($this, 'draftDatasetFilesContainerFilter'));
 
@@ -78,6 +82,7 @@ class TemplateDispatcher extends DataverseDispatcher
                     component="plugins.generic.dataverse.handlers.DraftDatasetFileUploadHandler" 
                     op="draftDatasetFiles"
                     submissionId=$submissionId
+					dataverseName=$dataverseName
                     escape=false
                 }
             {/capture}

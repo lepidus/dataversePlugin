@@ -53,9 +53,6 @@ msgstr "Dados de pesquisa"
 msgid "plugins.generic.dataverse.datasetButton"
 msgstr "Enviar dados de pesquisa"
 
-msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
-msgstr "Depositar arquivo no Dataverse: <strong>{$dataverseName}</strong>, concordando com os <a href=\"{$termsOfUseURL}\" target=\"_new\">Termos de Uso</a>."
-
 msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Dataset depositado com sucesso em {$dataverseUrl}."
 
@@ -92,17 +89,17 @@ msgstr "Erro desconhecido. Não foi possível conectar a {$dataverseUrl}"
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
 msgstr "Impossível conectar ao Dataverse."
 
-msgid "plugins.generic.dataverse.modal.description"
-msgstr "Você pode selecionar os arquivos que devem ser enviados ao {$dataverseName}."
-
-msgid "plugins.generic.dataverse.modal.loading"
-msgstr "Carregando os dados"
-
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar arquivo de dados de pesquisa"
 
 msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
 msgstr "Arquivo de dados de pesquisa"
+
+msgid "plugins.generic.dataverse.termsOfUse.label"
+msgstr "Termos de uso do Dataverse"
+
+msgid "plugins.generic.dataverse.termsOfUse.description"
+msgstr "Depositar arquivo no Dataverse: <strong>{$dataverseName}</strong>, concordando com os <a href=\"{$termsOfUseURL}\" target=\"_new\">Termos de Uso</a>."
 
 msgid "plugins.generic.dataverse.modal.deleteDraftDatasetFile"
 msgstr "Excluir arquivo de dados de pesquisa"

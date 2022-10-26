@@ -20,6 +20,18 @@ class DraftDatasetFileUploadHandler extends Handler {
         $draftDatasetFileUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, $params);
         $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles');
 
+        $termsOfUseParams = array(
+            'dataverseName' => $args['dataverseName'],
+            'termsOfUseURL' => $dispatcher->url(
+                $request,
+                ROUTE_COMPONENT, 
+                null,
+                'plugins.generic.dataverse.handlers.TermsOfUseHandler',
+                'get'
+            ),
+        );
+
+
         $supportedFormLocales = $context->getSupportedFormLocales();
 		$localeNames = AppLocale::getAllLocales();
 		$locales = array_map(function($localeKey) use ($localeNames) {
@@ -27,7 +39,7 @@ class DraftDatasetFileUploadHandler extends Handler {
 		}, $supportedFormLocales);
 
         $plugin->import('classes.form.DraftDatasetFileForm');
-		$draftDatasetFileForm = new DraftDatasetFileForm($draftDatasetFileUrl, $locales, $temporaryFileApiUrl);
+		$draftDatasetFileForm = new DraftDatasetFileForm($draftDatasetFileUrl, $locales, $temporaryFileApiUrl, $termsOfUseParams);
 
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
         $draftDatasetFilesIterator = $draftDatasetFileDAO->getBySubmissionId($args['submissionId']);

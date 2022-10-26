@@ -47,9 +47,6 @@ msgstr "Research data"
 msgid "plugins.generic.dataverse.datasetButton"
 msgstr "Upload research data"
 
-msgid "plugins.generic.dataverse.submissionFileMetadata.publishData"
-msgstr "Deposit file in Dataverse: <strong>{$dataverseName}</strong>, agreeing to the <a href=\"{$termsOfUseURL}\" target=\"_new\">Terms of Use</a>."
-
 msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Dataset successful created in {$dataverseUrl}"
 
@@ -86,23 +83,23 @@ msgstr "Unknown error. Could not connect to {$dataverseUrl}"
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
 msgstr "Can't connect to Dataverse."
 
-msgid "plugins.generic.dataverse.modal.description"
-msgstr "You can select which files should be uploaded to {$dataverseName}"
-
-msgid "plugins.generic.dataverse.modal.loading"
-msgstr "Loading data"
-
 msgid "plugins.generic.dataverse.modal.addFile.title"
-msgstr "Upload dataset file"
+msgstr "Upload research data file"
+
+msgid "plugins.generic.dataverse.termsOfUse.label"
+msgstr "Dataverse terms of use"
+
+msgid "plugins.generic.dataverse.termsOfUse.description"
+msgstr "Deposit file in Dataverse: <strong>{$dataverseName}</strong>, agreeing to the <a href=\"{$termsOfUseURL}\" target=\"_new\">Terms of Use</a>."
 
 msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
-msgstr "Dataset file"
+msgstr "Research data file"
 
 msgid "plugins.generic.dataverse.modal.deleteDraftDatasetFile"
-msgstr "Delete Dataset file"
+msgstr "Delete research data file"
 
 msgid "plugins.generic.dataverse.modal.confirmDelete"
-msgstr "Are you sure you want to permanently delete the dataset file {$title}?"
+msgstr "Are you sure you want to permanently delete the research data file <strong>{$title}</strong>?"
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "The draft dataset file you requested was not found."
