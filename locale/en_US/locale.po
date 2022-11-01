@@ -92,6 +92,9 @@ msgstr "Dataverse terms of use"
 msgid "plugins.generic.dataverse.termsOfUse.description"
 msgstr "Deposit file in Dataverse: <strong>{$dataverseName}</strong>, agreeing to the <a href=\"{$termsOfUseURL}\" target=\"_new\">Terms of Use</a>."
 
+msgid "plugins.generic.dataverse.termsOfUse.error"
+msgstr "To deposit this file you must accept the terms of use."
+
 msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
 msgstr "Research data file"
 

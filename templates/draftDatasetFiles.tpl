@@ -27,6 +27,7 @@
     <modal
 		v-bind="MODAL_PROPS"
 		name="datasetModal"
+		@opened="checkTermsOfUse"
 		@closed="datasetFileModalClose"
 	>
 		<modal-content
@@ -36,6 +37,7 @@
 		>
             <pkp-form 
 				v-bind="components.draftDatasetFileForm"
+				:errors="errors"
 				@set="set"
 				@success="formSuccess"
 			>

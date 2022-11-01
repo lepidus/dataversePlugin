@@ -67,6 +67,11 @@ class DraftDatasetFileUploadHandler extends Handler {
             'deleteDraftDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDraftDatasetFile'),
             'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete'),
             'apiUrl' => $apiUrl,
+            'formErrors' => [
+                'termsOfUse' => [
+                    __('plugins.generic.dataverse.termsOfUse.error')
+                ]
+            ]
 		]);
         
         return $templateMgr->fetchJson($plugin->getTemplateResource('draftDatasetFiles.tpl'));

@@ -24,7 +24,8 @@ class DraftDatasetFileForm extends FormComponent {
 			'label' => __('plugins.generic.dataverse.termsOfUse.label'),
 			'options' => [
 				['value' => true, 'label' => __('plugins.generic.dataverse.termsOfUse.description', $termsOfUseParams)],
-			]
+			],
+			'value' => false
 		]));
 	}
 }

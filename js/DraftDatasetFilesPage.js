@@ -2,6 +2,7 @@ var DraftDatasetFilesPage = $.extend(true, {}, pkp.controllers.Page, {
     data() {
         return {
             notifications: [],
+			errors: [],
             latestGetRequest: '',
             isLoading: false
         }
@@ -52,6 +53,30 @@ var DraftDatasetFilesPage = $.extend(true, {}, pkp.controllers.Page, {
             this.refreshItems();
             this.$modal.hide('datasetModal');
         },
+		checkTermsOfUse() {
+			let self = this;
+			console.log($('input[name="termsOfUse"]').is(':checked'));
+			$('input[name="termsOfUse"]').on('change', (e) => {
+				this.validateTermsOfUse($(e.target).is(':checked'));
+			});
+		},
+		validateTermsOfUse(value) {
+			let newErrors = {...this.errors};
+			if(!!value) {
+				if (!this.errors['termsOfUse']) {
+					return;
+				}
+				delete newErrors['termsOfUse'];
+				this.errors = newErrors;
+			}
+			else {
+				if (this.errors['termsOfUse']) {
+					return;
+				}
+				newErrors['termsOfUse'] = this.formErrors['termsOfUse'];
+				this.errors = newErrors;
+			}
+		},
         openDeleteModal(id) {
 			const draftDatasetFile = this.components.draftDatasetFilesList.items.find(d => d.id === id);
 			if (typeof draftDatasetFile === 'undefined') {
@@ -95,6 +120,9 @@ var DraftDatasetFilesPage = $.extend(true, {}, pkp.controllers.Page, {
 			});
 		},
     },
+	mounted() {
+		this.errors = this.formErrors;
+	}
 });
 
 pkp.controllers['DraftDatasetFilesPage'] = DraftDatasetFilesPage;
