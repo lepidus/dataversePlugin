@@ -54,8 +54,6 @@ var DraftDatasetFilesPage = $.extend(true, {}, pkp.controllers.Page, {
             this.$modal.hide('datasetModal');
         },
 		checkTermsOfUse() {
-			let self = this;
-			console.log($('input[name="termsOfUse"]').is(':checked'));
 			$('input[name="termsOfUse"]').on('change', (e) => {
 				this.validateTermsOfUse($(e.target).is(':checked'));
 			});
