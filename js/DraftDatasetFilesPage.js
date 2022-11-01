@@ -47,6 +47,7 @@ var DraftDatasetFilesPage = $.extend(true, {}, pkp.controllers.Page, {
         },
         datasetFileModalOpen() {
             this.components.draftDatasetFileForm.fields.map(f => f.value = '');
+			this.errors = this.formErrors;
             this.$modal.show('datasetModal');
         },
         formSuccess(data) {
@@ -117,10 +118,7 @@ var DraftDatasetFilesPage = $.extend(true, {}, pkp.controllers.Page, {
 				}
 			});
 		},
-    },
-	mounted() {
-		this.errors = this.formErrors;
-	}
+    }
 });
 
 pkp.controllers['DraftDatasetFilesPage'] = DraftDatasetFilesPage;
