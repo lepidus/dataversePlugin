@@ -37,6 +37,10 @@ class DataversePlugin extends GenericPlugin {
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
 		$dataverseFileDAO = new DataverseFileDAO();
 		DAORegistry::registerDAO('DataverseFileDAO', $dataverseFileDAO);
+		$this->import('classes.file.DraftDatasetFileDAO');
+		$draftDatasetFileDAO = new DraftDatasetFileDAO;
+		DAORegistry::registerDAO('DraftDatasetFileDAO', $draftDatasetFileDAO);
+		
 		return $success;
 	}
 

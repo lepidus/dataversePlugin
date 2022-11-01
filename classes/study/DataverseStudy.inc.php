@@ -72,6 +72,16 @@ class DataverseStudy extends DataObject {
 		$this->setData('dataCitation', $dataCitation);
 	}
 
+	function getDatasetUrl(): string
+	{
+		return $this->getData('datasetUrl');
+	}
+	
+	function setDatasetUrl($datasetUrl): void
+	{
+		$this->setData('datasetUrl', $datasetUrl);
+	}
+
 }
 
 ?>

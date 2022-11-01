@@ -1,0 +1,27 @@
+{
+	"title": "DraftDatasetFiles",
+	"description": "A temporary file from a Dataverse dataset.",
+	"properties": {
+		"id": {
+			"type": "integer",
+			"readOnly": true,
+			"apiSummary": true
+		},
+		"submissionId": {
+			"type": "integer",
+			"apiSummary": true
+		},
+		"userId": {
+			"type": "integer",
+			"apiSummary": true
+		},
+		"fileId": {
+			"type": "integer",
+			"apiSummary": true
+		},
+		"fileName": {
+			"type": "string",
+			"apiSummary": true
+		}
+	}
+}

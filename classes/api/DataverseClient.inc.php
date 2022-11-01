@@ -74,10 +74,12 @@ class DataverseClient {
             $study->setEditMediaUri($depositReceipt->sac_edit_media_iri);
             $study->setStatementUri($depositReceipt->sac_state_iri_atom);
             $study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
-            
+
             foreach ($depositReceipt->sac_links as $link) {
                 if ($link->sac_linkrel == 'alternate') {
                     $study->setPersistentUri($link->sac_linkhref);
+                    $datasetUrl = $this->retrieveDataverseUrl($study->getPersistentUri());
+                    $study->setDatasetUrl($datasetUrl);
                     break;
                 }
             }
@@ -90,6 +92,17 @@ class DataverseClient {
             );
         }    
 		return $study;
+    }
+
+    private function retrieveDataverseUrl(string $persistentUri)
+    {
+        $dataverseServer = $this->getConfiguration()->getDataverseServer();
+        $persistentUri = $persistentUri;
+        preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches); 
+        $persistentId =  "doi:" . $matches[0];
+        $datasetUrl = "$dataverseServer/dataset.xhtml?persistentId=$persistentId";
+
+        return $datasetUrl;
     }
 
     public function depositFiles(string $editMediaUri, string $packageFilePath, string $packaging, string $contentType): bool

@@ -44,7 +44,8 @@ class DataverseStudyDAO extends DAO {
                 'edit_media_uri'    =>  $study->getEditMediaUri(),
                 'statement_uri'     =>  $study->getStatementUri(),
                 'persistent_uri'    =>  $study->getPersistentUri(),
-                'data_citation'     =>  $study->getDataCitation()
+                'data_citation'     =>  $study->getDataCitation(),
+                'dataset_url'     =>  $study->getDatasetUrl()
             ));
 
         $study->setId($this->getInsertStudyId());
@@ -60,7 +61,8 @@ class DataverseStudyDAO extends DAO {
                 'edit_media_uri'    =>  $study->getEditMediaUri(),
                 'statement_uri'     =>  $study->getStatementUri(),
                 'persistent_uri'    =>  $study->getPersistentUri(),
-                'data_citation'     =>  $study->getDataCitation()
+                'data_citation'     =>  $study->getDataCitation(),
+                'dataset_url'       =>  $study->getDatasetUrl()
             ));
 	}	 
 
@@ -79,6 +81,7 @@ class DataverseStudyDAO extends DAO {
 		$study->setStatementUri($row['statement_uri']);
 		$study->setPersistentUri($row['persistent_uri']);
 		$study->setDataCitation($row['data_citation']);
+        $study->setDatasetUrl($row['dataset_url']);
 		
 		return $study;
     }

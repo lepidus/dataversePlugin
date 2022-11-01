@@ -13,6 +13,7 @@ final class DataverseStudyTest extends PKPTestCase
     private $statementUri;
     private $persistentUri;
     private $dataCitation;
+    private $datasetUrl;
 
     public function setUp(): void
     {
@@ -23,6 +24,7 @@ final class DataverseStudyTest extends PKPTestCase
         $this->statementUri = "https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/statement/study/doi:00.00000/ABC/DFG8HI";
         $this->persistentUri = 'https://doi.org/00.00000/ABC/DFG8HI';
         $this->dataCitation = 'Íris Castanheira, 2021, "The Rise of The Machine Empire", https://doi.org/00.00000/ABC/DFG8HI, Demo Dataverse, DRAFT VERSION';
+        $this->datasetUrl = 'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.70122/FK2/W20QWI';
 
         $this->study = new DataverseStudy();
         $this->study->setId($this->studyId);
@@ -32,6 +34,7 @@ final class DataverseStudyTest extends PKPTestCase
         $this->study->setStatementUri($this->statementUri);
         $this->study->setDataCitation($this->dataCitation);
         $this->study->setPersistentUri($this->persistentUri);
+        $this->study->setDatasetUrl($this->datasetUrl);
     }
 
     public function testDataverseStudyHasId(): void
@@ -67,5 +70,10 @@ final class DataverseStudyTest extends PKPTestCase
     public function testDataverseStudyHasPersistentUri(): void
     {
         $this->assertEquals($this->persistentUri, $this->study->getPersistentUri());
+    }
+
+    public function testDatasetUrl(): void
+    {
+        $this->assertEquals($this->datasetUrl, $this->study->getDatasetUrl());
     }
 }

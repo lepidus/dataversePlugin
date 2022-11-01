@@ -2,7 +2,6 @@
 
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
 import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
-import('plugins.generic.dataverse.classes.creators.SubmissionFileAdapterCreator');
 import('plugins.generic.dataverse.classes.APACitation');
 
 class SubmissionAdapterCreator
@@ -12,11 +11,10 @@ class SubmissionAdapterCreator
         $locale = $submission->getLocale();
         $publication = $submission->getCurrentPublication();
         $apaCitation = new APACitation();
-
         $id = $submission->getId();
         $title = $publication->getLocalizedData('title', $locale);
         $authors = $this->retrieveAuthors($publication, $locale);
-        $files = $this->retrieveFiles($publication);
+        $files = $this->retrieveFiles($id);
         $description = $publication->getLocalizedData('abstract', $locale);
         $keywords = $publication->getData('keywords')[$locale];
         $citation = $apaCitation->getFormattedCitationBySubmission($submission);
@@ -44,17 +42,11 @@ class SubmissionAdapterCreator
         return $authorAdapters;
     }
 
-    private function retrieveFiles(Publication $publication): array
+    private function retrieveFiles(int $submissionId): array
     {
-        $files = [];
-        $galleys = $publication->getData('galleys');
-        if(!empty($galleys)) {
-            foreach ($galleys as $galley) {
-                $submissionFile = $galley->getFile();
-                $submissionFileAdapterCreator = new SubmissionFileAdapterCreator();
-                $files[] = $submissionFileAdapterCreator->createSubmissionFileAdapter($submissionFile);
-            }
-        }
-        return $files;
+        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+        $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submissionId);
+        return $draftDatasetFiles;
     }
+
 }

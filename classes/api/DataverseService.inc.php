@@ -50,12 +50,11 @@ class DataverseService {
 		$package->loadMetadata($datasetModel);
 		$package->createAtomEntry();
 
-		$publicFilesDir = Config::getVar('files', 'files_dir');
-		foreach($this->submission->getFiles() as $file) {
-			if ($file->getPublishData()) {
-				$filePath = $publicFilesDir . DIRECTORY_SEPARATOR  . $file->getPath();
-				$package->addFileToPackage($filePath, $file->getName());
-			}
+		import('lib.pkp.classes.file.TemporaryFileManager');
+        $temporaryFileManager = new TemporaryFileManager();
+		foreach($this->submission->getFiles() as $draftDatasetFile) {
+			$file = $temporaryFileManager->getFile($draftDatasetFile->getData('fileId'), $draftDatasetFile->getData('userId'));
+			$package->addFileToPackage($file->getFilePath(), $file->getOriginalFileName());
 		}
 		$package->createPackage();
 
@@ -65,10 +64,9 @@ class DataverseService {
 	function depositPackage(): void
 	{
 		$package = $this->createPackage();
-
 		$study = $this->depositStudy($package);
-		if(!empty($study)) {
-			$this->insertDataverseFilesInDB($study);
+		if (!empty($study)) {
+			$this->deleteDraftDatasetFiles();
 		}
 	}
 
@@ -77,7 +75,7 @@ class DataverseService {
 		$dataverseNotificationMgr = new DataverseNotificationManager();
 		try {
 			$study = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath(), $this->submission->getId());
-			if(!is_null($study)) {
+			if(!is_null($study) && $package->hasFiles()) {
 				$this->dataverseClient->depositFiles(
 					$study->getEditMediaUri(),
 					$package->getPackageFilePath(),
@@ -89,32 +87,32 @@ class DataverseService {
 		} catch (RuntimeException $e) {
 			error_log($e->getMessage());
 			$dataverseNotificationMgr->createNotification($e->getCode());
-		}	
+		}
+		finally {
+			$pkpSubmission = Services::get('submission')->get($this->submission->getId());
+			$publication = $pkpSubmission->getCurrentPublication();
+			$articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+			$articleGalleys = $articleGalleyDao->getByPublicationId($publication->getId())->toArray();
+			foreach ($articleGalleys as $galley) 
+			{
+				if ($galley->getData('dataverseGalley'))
+				{
+					$articleGalleyDao->deleteById($galley->getData('id'));
+				}
+			}
+		}
+			
 		return $study;
 	}
 
-	public function insertDataverseFilesInDB(DataverseStudy $study): void
-	{
-		$statement = $this->dataverseClient->retrieveAtomStatement($study->getStatementUri());
-		if(!empty($statement)) {
-			foreach ($statement->sac_entries as $entry) {
-				$dataverseFileKey = substr($entry->sac_content_source, strrpos($entry->sac_content_source, '/')+1);
-				$dataverseFiles[$dataverseFileKey] = $entry->sac_content_source;
+	private function deleteDraftDatasetFiles() {
+		try {
+			$draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+			foreach($this->submission->getFiles() as $draftDatasetFile) {
+				$draftDatasetFileDAO->deleteObject($draftDatasetFile);
 			}
-
-			$files = $this->submission->getFiles();
-			foreach ($files as $file) {
-				$fileKey = str_replace(' ', '_', $file->getName());
-				if(array_key_exists($fileKey, $dataverseFiles)) {
-					$dataverseFile = new DataverseFile();
-					$dataverseFile->setStudyId($study->getId());
-					$dataverseFile->setSubmissionId($this->submission->getId());
-					$dataverseFile->setSubmissionFileId($file->getId());
-					$dataverseFile->setContentUri($dataverseFiles[$fileKey]);
-					$dataverseFileDAO = DAORegistry::getDAO('DataverseFileDAO');
-					$dataverseFileDAO->insertObject($dataverseFile);
-				}
-			}
+		} catch (RuntimeException $e) {
+			error_log($e->getMessage());
 		}
 	}
 
