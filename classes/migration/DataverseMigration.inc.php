@@ -38,7 +38,7 @@ class DataverseMigration extends Migration {
                 $table->bigInteger('submission_id');
                 $table->bigInteger('user_id');
                 $table->bigInteger('file_id');
-                $table->string('file_name', 30);
+                $table->string('file_name', 255);
                 $table->unique(['file_id'], 'temporary_files_id');
             });
 		}

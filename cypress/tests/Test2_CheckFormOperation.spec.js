@@ -10,6 +10,12 @@ describe('Check form operation', function() {
         cy.get('a:contains("Dashboard"):visible').click();
         cy.get('.app__nav a').contains('Website').click();
         cy.get('button[id="plugins-button"]').click();
+        cy.get("body").then($body => {
+			if (!($body.find('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > :nth-child(3) > :nth-child(1) > :checked').length > 0)) {
+				cy.get('#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin > :nth-child(3) >').click();
+				cy.get('div:contains(\'The plugin "Dataverse Plugin" has been enabled.\')');
+			}
+		});
 		cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > .first_column > .show_extras').click();
         cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-control-row"] > td > :nth-child(1)').click();
         cy.get('input[name="dataverseUrl"]').invoke('val', Cypress.env('dataverseURI'));
