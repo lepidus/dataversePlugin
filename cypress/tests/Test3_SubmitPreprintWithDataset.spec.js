@@ -7,7 +7,9 @@ const currentYear = new Date().getFullYear();
 
 describe('Deposit Draft Dataverse on Submission', function() {
 	it('Dataverse Plugin Configuration', function() {
-		cy.login(adminUser, adminPassword, serverName);
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a').contains('Dashboard').click();
 		cy.get('.app__nav a')
 			.contains('Website')
 			.click();
@@ -40,7 +42,9 @@ describe('Deposit Draft Dataverse on Submission', function() {
 	});
 
 	it('Create Submission', function() {
-		cy.login(adminUser, adminPassword, serverName);
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a').contains('Dashboard').click();
 		cy.get('.app__nav a')
 			.contains('Website')
 			.click();
@@ -65,24 +69,12 @@ describe('Deposit Draft Dataverse on Submission', function() {
 				{
 					galleyLabel: 'CSV',
 					file: 'dummy.pdf',
-					fileName: 'Data Table.pdf',
-					fileTitle: 'Data Table',
-					genre: 'Data Set',
-					publishData: true,
-					metadata: {
-						sponsor: 'CAPES'
-					}
+					fileName: 'Data Table.pdf'
 				},
 				{
 					galleyLabel: 'JPG',
 					file: 'dummy.pdf',
-					fileName: 'Amostra.pdf',
-					fileTitle: 'Amostra',
-					genre: 'Data Set',
-					publishData: false,
-					metadata: {
-						sponsor: 'SciELO'
-					}
+					fileName: 'Amostra.pdf'
 				}
 			],
 			additionalAuthors: [
@@ -100,7 +92,9 @@ describe('Deposit Draft Dataverse on Submission', function() {
 
 describe('Publish Draft Dataverse on Submission Publish', function() {
 	it('Publish Created Submission', function() {
-		cy.login(adminUser, adminPassword, serverName);
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a').contains('Dashboard').click();
 		cy.get('#myQueue a:contains("View"):first').click();
 		cy.wait(1000);
 		cy.get('li > .pkpButton').click();
@@ -125,7 +119,9 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 		);
 	});
 	it('Goes to preprint view page', function() {
-		cy.login(adminUser, adminPassword, serverName);
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a').contains('Dashboard').click();
 		cy.get('.pkpTabs__buttons > #archive-button').click();
 		cy.wait(1000);
 		cy.get('#archive a:contains("View"):first').click();
@@ -145,24 +141,5 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 		);
 		cy.get('.value > p > a:contains("https://doi.org/10.70122/FK2/")');
 		cy.get('.value > p').contains(', Demo Dataverse, V1');
-	});
-});
-
-describe('Hides button for deposited components in "latest preprints" listing', function() {
-	it('Goes to index page', function() {
-		cy.login(adminUser, adminPassword, serverName);
-		cy.get('.app__header > a.app__contextTitle').click();
-	});
-
-	it('Checks "PDF" download button is hidden', function() {
-		cy.get(
-			'.obj_article_summary > .galleys_links > li > a:contains("PDF")'
-		).should('not.exist');
-	});
-
-	it('Checks "JPG" download button is shown', function() {
-		cy.get(
-			'.obj_article_summary > .galleys_links > li > a:contains("JPG")'
-		).should('not.exist');
 	});
 });
