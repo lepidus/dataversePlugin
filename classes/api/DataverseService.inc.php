@@ -2,8 +2,7 @@
 
 import('plugins.generic.dataverse.classes.api.DataverseClient');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
-import('plugins.generic.dataverse.classes.file.DataverseFile');
-import('plugins.generic.dataverse.classes.file.DataverseFileDAO');
+import('plugins.generic.dataverse.classes.study.DataverseStudy');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
 
@@ -74,7 +73,8 @@ class DataverseService {
 	{
 		$dataverseNotificationMgr = new DataverseNotificationManager();
 		try {
-			$study = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath(), $this->submission->getId());
+			$depositReceipt = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath());
+			$study = $this->insertDataverseStudy($depositReceipt);
 			if(!is_null($study) && $package->hasFiles()) {
 				$this->dataverseClient->depositFiles(
 					$study->getEditMediaUri(),
@@ -88,20 +88,52 @@ class DataverseService {
 			error_log($e->getMessage());
 			$dataverseNotificationMgr->createNotification($e->getCode());
 		}
-		finally {
-			$pkpSubmission = Services::get('submission')->get($this->submission->getId());
-			$publication = $pkpSubmission->getCurrentPublication();
-			$articleGalleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
-			$articleGalleys = $articleGalleyDao->getByPublicationId($publication->getId())->toArray();
-			foreach ($articleGalleys as $galley) 
-			{
-				if ($galley->getData('dataverseGalley'))
-				{
-					$articleGalleyDao->deleteById($galley->getData('id'));
-				}
-			}
-		}
 			
+		return $study;
+	}
+
+	private function retrieveDataverseUrl(string $persistentUri)
+    {
+        $dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
+        $persistentUri = $persistentUri;
+        preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches); 
+        $persistentId =  "doi:" . $matches[0];
+        $datasetUrl = "$dataverseServer/dataset.xhtml?persistentId=$persistentId";
+
+        return $datasetUrl;
+    }
+
+	private function insertDataverseStudy(SWORDAPPEntry $depositReceipt): ?DataverseStudy
+	{
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+        $dataverseUrl = $this->dataverseClient->getConfiguration()->getDataverseUrl();
+
+        $params = ['dataverseUrl' => $dataverseUrl];
+
+        $study = null;
+        if($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED) {
+            $study = new DataverseStudy();
+            $study->setSubmissionId($this->submission->getId());
+            $study->setEditUri($depositReceipt->sac_edit_iri);
+            $study->setEditMediaUri($depositReceipt->sac_edit_media_iri);
+            $study->setStatementUri($depositReceipt->sac_state_iri_atom);
+
+            foreach ($depositReceipt->sac_links as $link) {
+                if ($link->sac_linkrel == 'alternate') {
+                    $study->setPersistentUri($link->sac_linkhref);
+                    $datasetUrl = $this->retrieveDataverseUrl($study->getPersistentUri());
+                    $study->setDatasetUrl($datasetUrl);
+                    break;
+                }
+            }
+            $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');	 
+            $dataverseStudyDao->insertStudy($study);
+        } else {
+            throw new RuntimeException(
+                $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
+                $depositReceipt->sac_status
+            );
+        }    
 		return $study;
 	}
 

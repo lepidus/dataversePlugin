@@ -1,6 +1,5 @@
 <?php 
 
-import('plugins.generic.dataverse.classes.study.DataverseStudy');
 import('plugins.generic.dataverse.classes.DataverseNotificationManager');
 require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
 
@@ -58,51 +57,10 @@ class DataverseClient {
         return isset($serviceDocument) && $serviceDocument->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK;
 	}
 
-    public function depositAtomEntry(string $atomEntryPath, int $submissionId): DataverseStudy
+    public function depositAtomEntry(string $atomEntryPath): ?SWORDAPPEntry
     {
         $depositReceipt = $this->swordClient->depositAtomEntry($this->configuration->getDataverseDepositUrl(), $this->configuration->getApiToken(), '', '', $atomEntryPath);
-        $dataverseNotificationMgr = new DataverseNotificationManager();
-        $dataverseUrl = $this->configuration->getDataverseUrl();
-
-        $params = ['dataverseUrl' => $dataverseUrl];
-
-        $study = null;
-        if($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_CREATED) {
-            $study = new DataverseStudy();
-            $study->setSubmissionId($submissionId);
-            $study->setEditUri($depositReceipt->sac_edit_iri);
-            $study->setEditMediaUri($depositReceipt->sac_edit_media_iri);
-            $study->setStatementUri($depositReceipt->sac_state_iri_atom);
-            $study->setDataCitation($depositReceipt->sac_dcterms['bibliographicCitation'][0]);
-
-            foreach ($depositReceipt->sac_links as $link) {
-                if ($link->sac_linkrel == 'alternate') {
-                    $study->setPersistentUri($link->sac_linkhref);
-                    $datasetUrl = $this->retrieveDataverseUrl($study->getPersistentUri());
-                    $study->setDatasetUrl($datasetUrl);
-                    break;
-                }
-            }
-            $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');	 
-            $dataverseStudyDao->insertStudy($study);
-        } else {
-            throw new RuntimeException(
-                $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
-                $depositReceipt->sac_status
-            );
-        }    
-		return $study;
-    }
-
-    private function retrieveDataverseUrl(string $persistentUri)
-    {
-        $dataverseServer = $this->getConfiguration()->getDataverseServer();
-        $persistentUri = $persistentUri;
-        preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches); 
-        $persistentId =  "doi:" . $matches[0];
-        $datasetUrl = "$dataverseServer/dataset.xhtml?persistentId=$persistentId";
-
-        return $datasetUrl;
+        return $depositReceipt;
     }
 
     public function depositFiles(string $editMediaUri, string $packageFilePath, string $packaging, string $contentType): bool

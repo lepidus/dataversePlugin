@@ -15,7 +15,8 @@ class TemplateDispatcher extends DataverseDispatcher
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
 		HookRegistry::register('Template::Workflow::Publication', array($this, 'addDataCitationSubmissionToWorkflow'));
 		HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
-		HookRegistry::register('LoadComponentHandler', array($this, 'setupTermsOfUseHandler'));
+		HookRegistry::register('PreprintHandler::view', array($this, 'loadResources'));
+		HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
 
 		parent::__construct($plugin);
 	}
@@ -106,7 +107,26 @@ class TemplateDispatcher extends DataverseDispatcher
 		return false;
 	}
 
-	function loadResourceToWorkflow(string $hookName, array $params)
+	public function loadResources(string $hookName, array $params): bool
+	{
+		$request = $params[0];
+		$submission = $params[1];
+		$templateManager = TemplateManager::getManager($request);
+		$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
+		
+		$this->loadJavaScript($pluginPath, $templateManager);
+		$this->addJavaScriptVariables($request, $templateManager, $submission);
+
+		return false;
+	}
+
+	public function loadJavaScript($pluginPath, $templateManager) {
+		$templateManager->addJavaScript("Dataverse",  $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js', array(
+			'contexts' => ['backend', 'frontend']
+		));
+	}
+
+	function loadResourceToWorkflow(string $hookName, array $params): bool
 	{
 		$smarty = $params[0];
 		$template = $params[1];
@@ -126,12 +146,11 @@ class TemplateDispatcher extends DataverseDispatcher
 				));
 				$this->addJavaScriptVariables($request, $smarty, $submission);
 			}
-		} else {
-			return false;
 		}
+		return false;
 	}
 
-	function addJavaScriptVariables($request, $templateManager, $submission)
+	function addJavaScriptVariables($request, $templateManager, $submission): void
 	{
 		$configuration = $this->getDataverseConfiguration();
 		$apiToken = $configuration->getApiToken();
@@ -183,7 +202,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		return false;
 	}
 
-	function setupTermsOfUseHandler($hookName, $params)
+	function setupDataverseHandlers($hookName, $params): bool
 	{
 		$component =& $params[0];
 		switch ($component) {
