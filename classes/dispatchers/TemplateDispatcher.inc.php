@@ -159,27 +159,30 @@ class TemplateDispatcher extends DataverseDispatcher
 		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
-		$persistentUri = $study->getPersistentUri();
-		preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches);
-		$persistentId =  "doi:" . $matches[0];
+		if (!empty($study)) {
+			$persistentUri = $study->getPersistentUri();
+			preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches);
+			$persistentId =  "doi:" . $matches[0];
+	
+			$editUri = "$dataverseServer/api/datasets/:persistentId/?persistentId=$persistentId";
+	
+			$dataverseNotificationMgr = new DataverseNotificationManager();
+			$dataverseUrl = $configuration->getDataverseUrl();
+			$params = ['dataverseUrl' => $dataverseUrl];
+			$errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
+	
+			$data = [
+				"editUri" => $editUri,
+				"apiToken" => $apiToken,
+				"errorMessage" => $errorMessage
+			];
+	
+			$templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
+				'inline' => true,
+				'contexts' => ['backend', 'frontend']
+			]);
+		}
 
-		$editUri = "$dataverseServer/api/datasets/:persistentId/?persistentId=$persistentId";
-
-		$dataverseNotificationMgr = new DataverseNotificationManager();
-		$dataverseUrl = $configuration->getDataverseUrl();
-		$params = ['dataverseUrl' => $dataverseUrl];
-		$errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
-
-		$data = [
-			"editUri" => $editUri,
-			"apiToken" => $apiToken,
-			"errorMessage" => $errorMessage
-		];
-
-		$templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
-			'inline' => true,
-			'contexts' => ['backend', 'frontend']
-		]);
 	}
 
 	function addDataCitationSubmissionToWorkflow(string $hookName, array $params): bool
