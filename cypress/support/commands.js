@@ -85,10 +85,9 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 		// this.submission.id = parseInt(search.split('=')[1], 10);
 		data.id = parseInt(search.split('=')[1], 10);
 	});
-
-	cy.get('button')
-		.contains('Save and continue')
-		.click();
+	
+	cy.waitJQuery();
+	cy.get('button.submitFormButton').click();
 
 	// === Submission Step 3 ===
 	// Metadata fields

@@ -63,7 +63,9 @@ class DataverseService {
 	function depositPackage(): void
 	{
 		$package = $this->createPackage();
-		$study = $this->depositStudy($package);
+		if ($package->hasFiles()) {
+			$study = $this->depositStudy($package);
+		}
 		if (!empty($study)) {
 			$this->deleteDraftDatasetFiles();
 		}
@@ -75,7 +77,7 @@ class DataverseService {
 		try {
 			$depositReceipt = $this->dataverseClient->depositAtomEntry($package->getAtomEntryPath());
 			$study = $this->insertDataverseStudy($depositReceipt);
-			if(!is_null($study) && $package->hasFiles()) {
+			if(!is_null($study)) {
 				$this->dataverseClient->depositFiles(
 					$study->getEditMediaUri(),
 					$package->getPackageFilePath(),

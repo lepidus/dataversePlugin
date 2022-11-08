@@ -143,3 +143,52 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 		cy.get('.value > p').contains(', Demo Dataverse, V1');
 	});
 });
+
+describe('Create Submission without research data files', function() {
+	it('Create Submission', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a').contains('Dashboard').click();
+		cy.get('.app__nav a')
+			.contains('Website')
+			.click();
+		cy.get('button[id="plugins-button"]').click();
+		cy.get(
+			'#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin > :nth-child(3) [type="checkbox"]'
+		).check();
+		cy.wait(2000);
+		cy.get(
+			'#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin > :nth-child(3) [type="checkbox"]'
+		).should('be.checked');
+		cy.get('.app__nav a')
+			.contains('Submissions')
+			.click();
+
+		cy.DataverseCreateSubmission({
+			submitterRole: 'Preprint Server manager',
+			title: 'The Rise of The Machine Empire (no files)',
+			abstract: 'An example abstract',
+			keywords: ['Modern History'],
+			files: [],
+			additionalAuthors: [
+				{
+					givenName: 'Íris',
+					familyName: 'Castanheiras',
+					email: 'iris@lepidus.com.br',
+					affiliation: 'Preprints da Lepidus',
+					country: 'Argentina'
+				}
+			]
+		});
+	});
+
+	it('Verify "Research Data" tab is not visible', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a').contains('Dashboard').click();
+		cy.get('#myQueue a:contains("View"):first').click();
+		cy.wait(1000);
+		cy.get('li > .pkpButton').click();
+		cy.get('#datasetTab-button').should('not.visible');
+	});
+});
