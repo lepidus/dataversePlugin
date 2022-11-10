@@ -47,7 +47,7 @@ msgstr "Senha"
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Informe uma chave de API para Dataverse."
 
-msgid "plugins.generic.dataverse.dataCitationLabel"
+msgid "plugins.generic.dataverse.researchData"
 msgstr "Dados de pesquisa"
 
 msgid "plugins.generic.dataverse.datasetButton"
@@ -112,3 +112,15 @@ msgstr "Deseja realmente excluir permanentemente o arquivo de dados de pesquisa 
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
+
+msgid "plugins.generic.dataverse.researchData.metadata"
+msgstr "Metadados"
+
+msgid "plugins.generic.dataverse.metadataForm.title"
+msgstr "Título"
+
+msgid "plugins.generic.dataverse.metadataForm.description"
+msgstr "Descrição"
+
+msgid "plugins.generic.dataverse.metadataForm.keyword"
+msgstr "Palavras-chave"

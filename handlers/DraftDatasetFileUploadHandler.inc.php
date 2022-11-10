@@ -8,7 +8,7 @@ class DraftDatasetFileUploadHandler extends Handler {
 		$plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
         $dispatcher = $request->getDispatcher();
         $context = $request->getContext();
-        $currentUser = Application::get()->getRequest()->getUser();
+        $currentUser = $request->getUser();
         $templateMgr = TemplateManager::getManager($request);
 
         $params = [

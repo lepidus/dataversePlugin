@@ -41,7 +41,7 @@ msgstr "Can't connect to Dataverse."
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Please enter a API token."
 
-msgid "plugins.generic.dataverse.dataCitationLabel"
+msgid "plugins.generic.dataverse.researchData"
 msgstr "Research data"
 
 msgid "plugins.generic.dataverse.datasetButton"
@@ -106,3 +106,15 @@ msgstr "Are you sure you want to permanently delete the research data file <stro
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "The draft dataset file you requested was not found."
+
+msgid "plugins.generic.dataverse.researchData.metadata"
+msgstr "Metadata"
+
+msgid "plugins.generic.dataverse.metadataForm.title"
+msgstr "Title"
+
+msgid "plugins.generic.dataverse.metadataForm.description"
+msgstr "Description"
+
+msgid "plugins.generic.dataverse.metadataForm.keyword"
+msgstr "Keyword"

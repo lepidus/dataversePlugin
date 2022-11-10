@@ -10,8 +10,15 @@
  *}
 
 <section class="item data_citation" id="data_citation">
-    <h2 class="label">{translate key="plugins.generic.dataverse.dataCitationLabel"}</h2>
+    <h2 class="label">{translate key="plugins.generic.dataverse.researchData"}</h2>
     <span class="value">
         <p></p>
     </span>
+    <tabs label="Dataset data" :is-side-tabs="false">
+        <tab id="metadata" label={translate key="plugins.generic.dataverse.researchData.metadata"}>
+            <pkp-form
+                v-bind="components.{$smarty.const.FORM_DATASET_METADATA}"
+                @set="set"
+            ></pkp-form>
+    </tabs>
 </section>
