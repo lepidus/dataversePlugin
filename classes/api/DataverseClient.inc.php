@@ -116,21 +116,50 @@ class DataverseClient {
 
     public function retrieveJsonRepresentation(string $apiUrl): ?string
     {
+        $dataverseRequest = $this->curlInit($apiUrl);
+        return $this->execRequest($dataverseRequest);
+    }
+
+    public function updateMetadata($apiUrl, $jsonFile): ?string
+    {
+        $headers = ['Content-Type: application/json'];
+
+        $dataverseRequest = $this->curlInit($apiUrl, $headers);
+
+        curl_setopt($dataverseRequest, CURLOPT_PUT, true);
+        curl_setopt($dataverseRequest, CURLOPT_INFILE, fopen($jsonFile, 'rb'));
+        curl_setopt($dataverseRequest, CURLOPT_INFILESIZE, filesize($jsonFile));
+
+        return $this->execRequest($dataverseRequest);
+    }
+
+    private function curlInit(string $url, array $headers = [])
+    {
         $dataverseRequest = curl_init();
+
+        array_push($headers, 'X-Dataverse-key:' . $this->configuration->getApiToken());
+        
 		curl_setopt($dataverseRequest, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($dataverseRequest, CURLOPT_URL, $apiUrl);
-        curl_setopt($dataverseRequest, CURLOPT_HTTPHEADER, ['X-Dataverse-key:' . $this->configuration->getApiToken()]);
+		curl_setopt($dataverseRequest, CURLOPT_URL, $url);
+        curl_setopt($dataverseRequest, CURLOPT_HTTPHEADER, $headers);
 
-        $dataverseResponse = curl_exec($dataverseRequest);
-        $dataverseResponseStatus = curl_getinfo($dataverseRequest, CURLINFO_HTTP_CODE);
-        curl_close($dataverseRequest);
+        $type = gettype($dataverseRequest);
 
-        if ($dataverseResponseStatus == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
-            return $dataverseResponse;
+        return $dataverseRequest;
+    }
+
+    private function execRequest($request): ?string
+    {
+        $resp = curl_exec($request);
+        $status = curl_getinfo($request, CURLINFO_HTTP_CODE);
+        curl_close($request);
+
+        if ($status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
+            return $resp;
         }
         else {
-            $errorMessage = json_decode($dataverseResponse)->message;
-            throw new RuntimeException($errorMessage, $dataverseResponseStatus);
+            $errorMessage = json_decode($resp)->message;
+            throw new RuntimeException($errorMessage, $status);
             return null;
         }
     }

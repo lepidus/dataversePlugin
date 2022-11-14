@@ -9,6 +9,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
     public function __construct(Plugin $plugin)
 	{
 		HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDraftDatasetFileHandler'));
+		HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDatasetsHandler'));
 		HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
 		HookRegistry::register('Schema::get::submissionFile', array($this, 'modifySubmissionFileSchema'));
 		HookRegistry::register('Schema::get::galley', array($this, 'modifyGalleySchema'));
@@ -63,6 +64,19 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 		if ($router instanceof \APIRouter && str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
 			$this->plugin->import('api.v1.draftDatasetFiles.DraftDatasetFileHandler');
 			$handler = new DraftDatasetFileHandler();
+			$router->setHandler($handler);
+			$handler->getApp()->run();
+			exit;
+		}
+		return false;
+	}
+
+	public function setupDatasetsHandler(string $hookname, Request $request): bool
+	{
+		$router = $request->getRouter();
+		if ($router instanceof \APIRouter && str_contains($request->getRequestPath(), 'api/v1/datasets')) {
+			$this->plugin->import('api.v1.datasets.DatasetsHandler');
+			$handler = new DatasetsHandler();
 			$router->setHandler($handler);
 			$handler->getApp()->run();
 			exit;

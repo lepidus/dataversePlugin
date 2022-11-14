@@ -2,6 +2,7 @@
 
 use PKP\components\forms\FormComponent;
 use PKP\components\forms\FieldText;
+use PKP\components\forms\FieldRichTextarea;
 
 import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
 
@@ -25,8 +26,10 @@ class DatasetMetadataForm extends FormComponent {
             'label' => __('plugins.generic.dataverse.metadataForm.title'),
             'value' => $datasetData->getData('title'),
         ]))
-        ->addField(new FieldText('description', [
+        ->addField(new FieldRichTextarea('dsDescription', [
             'label' => __('plugins.generic.dataverse.metadataForm.description'),
+            'toolbar' => 'bold italic superscript subscript | link | blockquote bullist numlist | image | code',
+            'plugins' => 'paste,link,lists,image,code',
             'value' => $datasetData->getData('dsDescription'),
         ]))
         ->addField(new FieldText('keyword', [

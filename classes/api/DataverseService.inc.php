@@ -214,6 +214,20 @@ class DataverseService {
 		return $this->dataverseClient->getDataverseTermsOfUse();
 	}
 
+	private function createJsonFile(string $jsonMatadata): string
+	{
+		$fileDir = tempnam('/tmp', 'datasetUpdateMetadata');
+		unlink($fileDir);
+		mkdir($fileDir);
+
+		$fileJsonPath = $fileDir . DIRECTORY_SEPARATOR . 'metadata.json';
+		$jsonFile = fopen($fileJsonPath, 'w');
+		fwrite($jsonFile, $jsonMatadata);
+		fclose($jsonFile);
+
+		return $fileJsonPath;
+	}
+
 	public function getDatasetResponse($study): ?stdClass
 	{
 		try {
@@ -221,6 +235,29 @@ class DataverseService {
 			$apiUrl = $dataverseServer . '/api/datasets/:persistentId/?persistentId=' . $study->getPersistentId();
 
 			$response = $this->dataverseClient->retrieveJsonRepresentation($apiUrl);
+
+			if (!empty($response)) {
+				return json_decode($response);
+			}
+			return null;
+
+		} catch (RuntimeException $e) {
+			$dataverseNotificationMgr = new DataverseNotificationManager();
+			$dataverseNotificationMgr->createNotification($e->getCode());
+			error_log($e->getMessage());
+		}
+	}
+
+	public function updateDatasetData(string $jsonMatadata, DataverseStudy $study): ?stdClass
+	{
+		
+		try {
+			$fileJsonPath = $this->createJsonFile($jsonMatadata);
+
+			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
+			$apiUrl = $dataverseServer . '/api/datasets/:persistentId/versions/:draft?persistentId=' . $study->getPersistentId();
+
+			$response = $this->dataverseClient->updateMetadata($apiUrl, $fileJsonPath);
 
 			if (!empty($response)) {
 				return json_decode($response);

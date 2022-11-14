@@ -138,6 +138,7 @@ class TemplateDispatcher extends DataverseDispatcher
 
 		if ($template == 'workflow/workflow.tpl') {
 			$request = Application::get()->getRequest();
+			$dispatcher = $request->getDispatcher();
 			$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
 			$submission = $templateMgr->get_template_vars('submission');
 
@@ -152,7 +153,7 @@ class TemplateDispatcher extends DataverseDispatcher
 				);
 				$this->addJavaScriptVariables($request, $templateMgr, $study);
 
-				$apiUrl = 'apiUrl';
+				$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
 
 				$datasetResponse = $this->getDataverseService()->getDatasetResponse($study);
 
