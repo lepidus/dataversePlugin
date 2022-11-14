@@ -154,6 +154,8 @@ class TemplateDispatcher extends DataverseDispatcher
 
 				$apiUrl = 'apiUrl';
 
+				$datasetResponse = $this->getDataverseService()->getDatasetResponse($study);
+
 				$supportedFormLocales = $context->getSupportedFormLocales();
 				$localeNames = AppLocale::getAllLocales();
 				$locales = array_map(function($localeKey) use ($localeNames) {
@@ -161,7 +163,7 @@ class TemplateDispatcher extends DataverseDispatcher
 				}, $supportedFormLocales);
 
 				$this->plugin->import('classes.form.DatasetMetadataForm');
-				$datasetMetadataForm = new DatasetMetadataForm($apiUrl, $locales);
+				$datasetMetadataForm = new DatasetMetadataForm($apiUrl, $locales, $datasetResponse);
 
 				$workflowComponents = $templateMgr->getState('components');
 				$components = array_merge($workflowComponents, [FORM_DATASET_METADATA => $datasetMetadataForm->getConfig()]);
@@ -222,7 +224,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		return false;
 	}
 
-	private function getSubmissionStudy($submission): DataverseStudy
+	private function getSubmissionStudy($submission): ?DataverseStudy
 	{
 		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());

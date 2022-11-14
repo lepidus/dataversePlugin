@@ -72,14 +72,14 @@ class DataverseStudy extends DataObject {
 		$this->setData('dataCitation', $dataCitation);
 	}
 
-	function getDatasetUrl(): string
+	function getPersistentId(): string
 	{
-		return $this->getData('datasetUrl');
+		return $this->getData('persistentId');
 	}
 	
-	function setDatasetUrl($datasetUrl): void
+	function setPersistentId($persistentId): void
 	{
-		$this->setData('datasetUrl', $datasetUrl);
+		$this->setData('persistentId', $persistentId);
 	}
 
 }

@@ -114,4 +114,25 @@ class DataverseClient {
         return ($response->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
     }
 
+    public function retrieveJsonRepresentation(string $apiUrl): ?string
+    {
+        $dataverseRequest = curl_init();
+		curl_setopt($dataverseRequest, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($dataverseRequest, CURLOPT_URL, $apiUrl);
+        curl_setopt($dataverseRequest, CURLOPT_HTTPHEADER, ['X-Dataverse-key:' . $this->configuration->getApiToken()]);
+
+        $dataverseResponse = curl_exec($dataverseRequest);
+        $dataverseResponseStatus = curl_getinfo($dataverseRequest, CURLINFO_HTTP_CODE);
+        curl_close($dataverseRequest);
+
+        if ($dataverseResponseStatus == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
+            return $dataverseResponse;
+        }
+        else {
+            $errorMessage = json_decode($dataverseResponse)->message;
+            throw new RuntimeException($errorMessage, $dataverseResponseStatus);
+            return null;
+        }
+    }
+    
 }

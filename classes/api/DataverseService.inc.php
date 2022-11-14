@@ -94,15 +94,12 @@ class DataverseService {
 		return $study;
 	}
 
-	private function retrieveDataverseUrl(string $persistentUri)
+	private function retrievePersistentId(string $persistentUri)
     {
-        $dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
-        $persistentUri = $persistentUri;
         preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches); 
         $persistentId =  "doi:" . $matches[0];
-        $datasetUrl = "$dataverseServer/dataset.xhtml?persistentId=$persistentId";
 
-        return $datasetUrl;
+        return $persistentId;
     }
 
 	private function insertDataverseStudy(SWORDAPPEntry $depositReceipt): ?DataverseStudy
@@ -123,8 +120,8 @@ class DataverseService {
             foreach ($depositReceipt->sac_links as $link) {
                 if ($link->sac_linkrel == 'alternate') {
                     $study->setPersistentUri($link->sac_linkhref);
-                    $datasetUrl = $this->retrieveDataverseUrl($study->getPersistentUri());
-                    $study->setDatasetUrl($datasetUrl);
+                    $persistentId = $this->retrievePersistentId($study->getPersistentUri());
+                    $study->setPersistentId($persistentId);
                     break;
                 }
             }
@@ -212,9 +209,28 @@ class DataverseService {
 		return $studyPublished;
 	}
 
-
 	function getTermsOfUse(): string
 	{
 		return $this->dataverseClient->getDataverseTermsOfUse();
+	}
+
+	public function getDatasetResponse($study): ?stdClass
+	{
+		try {
+			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
+			$apiUrl = $dataverseServer . '/api/datasets/:persistentId/?persistentId=' . $study->getPersistentId();
+
+			$response = $this->dataverseClient->retrieveJsonRepresentation($apiUrl);
+
+			if (!empty($response)) {
+				return json_decode($response);
+			}
+			return null;
+
+		} catch (RuntimeException $e) {
+			$dataverseNotificationMgr = new DataverseNotificationManager();
+			$dataverseNotificationMgr->createNotification($e->getCode());
+			error_log($e->getMessage());
+		}
 	}
 }
