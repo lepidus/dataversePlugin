@@ -14,7 +14,7 @@
     <span class="value">
         <p></p>
     </span>
-    <tabs label="Dataset data" :is-side-tabs="false">
+    <tabs label="Dataset data">
         <tab id="metadata" label={translate key="plugins.generic.dataverse.researchData.metadata"}>
             <pkp-form
                 v-bind="components.{$smarty.const.FORM_DATASET_METADATA}"

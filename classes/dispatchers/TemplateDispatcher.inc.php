@@ -151,6 +151,14 @@ class TemplateDispatcher extends DataverseDispatcher
 						'contexts' => ['backend', 'frontend']
 					]
 				);
+				$templateMgr->addJavaScript(
+					'dataverseHelper', 
+					$pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dataverseHelper.js',
+					[
+						'inline' => false,
+						'contexts' => ['backend']
+					]
+				);
 				$this->addJavaScriptVariables($request, $templateMgr, $study);
 
 				$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
@@ -167,10 +175,13 @@ class TemplateDispatcher extends DataverseDispatcher
 				$datasetMetadataForm = new DatasetMetadataForm($apiUrl, $locales, $datasetResponse);
 
 				$workflowComponents = $templateMgr->getState('components');
-				$components = array_merge($workflowComponents, [FORM_DATASET_METADATA => $datasetMetadataForm->getConfig()]);
+				$workflowPublicationFormIds = $templateMgr->getState('publicationFormIds');
+				$workflowComponents[FORM_DATASET_METADATA] = $datasetMetadataForm->getConfig();
+				$workflowPublicationFormIds[] = FORM_DATASET_METADATA;
 
 				$templateMgr->setState([
-					'components' => $components
+					'components' => $workflowComponents,
+					'publicationFormIds' => $workflowPublicationFormIds
 				]);
 			}
 		}

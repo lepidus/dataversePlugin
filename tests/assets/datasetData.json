@@ -1,0 +1,46 @@
+{
+    "metadataBlocks": {
+        "citation": {
+            "displayName": "Citation Metadata",
+            "name": "citation",
+            "fields": [
+                {
+                    "typeName": "title",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "The Rise of the Empire Machine"
+                },
+                {
+                    "typeName": "dsDescription",
+                    "multiple": true,
+                    "typeClass": "compound",
+                    "value": [
+                        {
+                            "dsDescriptionValue": {
+                                "typeName": "dsDescriptionValue",
+                                "multiple": false,
+                                "typeClass": "primitive",
+                                "value": "<p>An example abstract</p>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "typeName": "keyword",
+                    "multiple": true,
+                    "typeClass": "compound",
+                    "value": [
+                        {
+                            "keywordValue": {
+                                "typeName": "keywordValue",
+                                "multiple": false,
+                                "typeClass": "primitive",
+                                "value": "Modern History"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

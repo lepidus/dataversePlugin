@@ -25,17 +25,19 @@ class DatasetMetadataForm extends FormComponent {
             $datasetData = $datasetDataCreator->create($metadataBlocks);
         }
 
-        $this->addField(new FieldText('title', [
+        $this->addField(new FieldText('datasetTitle', [
             'label' => __('plugins.generic.dataverse.metadataForm.title'),
+            'isRequired' => true,
             'value' => $datasetData->getData('title'),
         ]))
-        ->addField(new FieldRichTextarea('dsDescription', [
+        ->addField(new FieldRichTextarea('datasetDescription', [
             'label' => __('plugins.generic.dataverse.metadataForm.description'),
+            'isRequired' => true,
             'toolbar' => 'bold italic superscript subscript | link | blockquote bullist numlist | image | code',
             'plugins' => 'paste,link,lists,image,code',
             'value' => $datasetData->getData('dsDescription'),
         ]))
-        ->addField(new FieldText('keyword', [
+        ->addField(new FieldText('datasetKeywords', [
             'label' => __('plugins.generic.dataverse.metadataForm.keyword'),
             'value' => $datasetData->getData('keyword'),
         ]));
