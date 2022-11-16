@@ -72,13 +72,16 @@ msgid "plugins.generic.dataverse.notification.statusNotFound"
 msgstr "O servidor não conseguiu encontrar o recurso solicitado."
 
 msgid "plugins.generic.dataverse.notification.statusPreconditionFailed" 
-msgstr "As codições do cabeçalho da solicitação não foram satisfeitas."
+msgstr "As codições do cabeçalho da requisição não foram satisfeitas."
 
 msgid "plugins.generic.dataverse.notification.statusPayloadTooLarge" 
-msgstr "A entidade de solicitação é maior que os limites definidos pelo servidor"
+msgstr "A entidade de requisição é maior que os limites definidos pelo servidor"
 
 msgid "plugins.generic.dataverse.notification.statusUnsupportedMediaType" 
 msgstr "O formato da mídia enviada na requisição não é suportado pelo servidor"
+
+msgid "plugins.generic.dataverse.notification.statusInternalServerError" 
+msgstr "O servidor encontrou um erro interno que o impediu de atender a esta requisição."
 
 msgid "plugins.generic.dataverse.notification.statusUnavailable"
 msgstr "Servidor não disponível. {$dataverseUrl} está temporariamente fora do ar. Por favor, tente novamente mais tarde"

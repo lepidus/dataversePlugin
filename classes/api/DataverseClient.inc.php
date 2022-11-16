@@ -12,6 +12,7 @@ define('DATAVERSE_PLUGIN_HTTP_STATUS_NOT_FOUND', 404);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED', 412);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE', 413);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE', 415);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_INTERNAL_SERVER_ERROR', 500);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE', 503);
 define('DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR', 0);
 
@@ -143,8 +144,6 @@ class DataverseClient {
 		curl_setopt($dataverseRequest, CURLOPT_URL, $url);
         curl_setopt($dataverseRequest, CURLOPT_HTTPHEADER, $headers);
 
-        $type = gettype($dataverseRequest);
-
         return $dataverseRequest;
     }
 
@@ -158,9 +157,9 @@ class DataverseClient {
             return $resp;
         }
         else {
-            $errorMessage = json_decode($resp)->message;
+            $error = json_decode($resp);
+            $errorMessage = empty($error) ? $resp : $error->message;
             throw new RuntimeException($errorMessage, $status);
-            return null;
         }
     }
     

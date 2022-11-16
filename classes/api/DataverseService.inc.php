@@ -239,13 +239,13 @@ class DataverseService {
 			if (!empty($response)) {
 				return json_decode($response);
 			}
-			return null;
 
 		} catch (RuntimeException $e) {
 			$dataverseNotificationMgr = new DataverseNotificationManager();
 			$dataverseNotificationMgr->createNotification($e->getCode());
 			error_log($e->getMessage());
 		}
+		return null;
 	}
 
 	public function updateDatasetData(string $jsonMatadata, DataverseStudy $study): ?stdClass
@@ -262,12 +262,12 @@ class DataverseService {
 			if (!empty($response)) {
 				return json_decode($response);
 			}
-			return null;
 
 		} catch (RuntimeException $e) {
 			$dataverseNotificationMgr = new DataverseNotificationManager();
 			$dataverseNotificationMgr->createNotification($e->getCode());
 			error_log($e->getMessage());
 		}
+		return null;
 	}
 }

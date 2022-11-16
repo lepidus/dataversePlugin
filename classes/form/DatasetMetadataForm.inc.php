@@ -18,9 +18,12 @@ class DatasetMetadataForm extends FormComponent {
 		$this->action = $action;
 		$this->locales = $locales;
 
-        $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks->citation->fields;
-        $datasetDataCreator = new DataverseDatasetDataCreator();
-        $datasetData = $datasetDataCreator->create($metadataBlocks);
+        $datasetData = new DataverseDatasetData();
+        if (!empty($datasetResponse)) {
+            $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks->citation->fields;
+            $datasetDataCreator = new DataverseDatasetDataCreator();
+            $datasetData = $datasetDataCreator->create($metadataBlocks);
+        }
 
         $this->addField(new FieldText('title', [
             'label' => __('plugins.generic.dataverse.metadataForm.title'),

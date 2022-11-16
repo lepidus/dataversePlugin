@@ -38,37 +38,51 @@ class DatasetsHandler extends APIHandler
 		$serviceFactory = new DataverseServiceFactory();
 		$service = $serviceFactory->build($configuration);
 
-        $datasetResponse = $service->getDatasetResponse($study);
+        try {
+            $datasetResponse = $service->getDatasetResponse($study);
 
-        $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks;
+            if (!empty($datasetResponse)) {
+                $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks;
 
-        foreach ($requestParams as $key => $value) {
-            foreach ($metadataBlocks->citation->fields as $metadata) {
-                if ($metadata->typeName == $key) {
-                    if (gettype($metadata->value) == 'array') {
-                        foreach ($metadata->value as $class) {
-                            $attr = $metadata->typeName . 'Value';
-                            $class->$attr->value = $value;
+                foreach ($requestParams as $key => $value) {
+                    foreach ($metadataBlocks->citation->fields as $metadata) {
+                        if ($metadata->typeName == $key) {
+                            if (gettype($metadata->value) == 'array') {
+                                foreach ($metadata->value as $class) {
+                                    $attr = $metadata->typeName . 'Value';
+                                    $class->$attr->value = $value;
+                                }
+                            }
+                            else {
+                                $metadata->value = $value;
+                            }
+                        }
+                        elseif ($metadata->typeName == 'subject' && in_array('N/A', $metadata->value)) {
+                            $metadata->value = ['Other'];
                         }
                     }
-                    else {
-                        $metadata->value = $value;
-                    }
                 }
-                elseif ($metadata->typeName == 'subject' && in_array('N/A', $metadata->value)) {
-                    $metadata->value = ['Other'];
-                }
+
+                $datasetMetadata = new stdClass();
+                $datasetMetadata->metadataBlocks = $metadataBlocks;
+
+                $jsonMetadata = json_encode($datasetMetadata);
+
+                $dataverseResponse = $service->updateDatasetData($jsonMetadata, $study);
+
+                return $response->withJson($dataverseResponse, 200);
             }
+            else {
+                return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
+            }
+
+        } catch (RuntimeException $e) {
+            $dataverseNotificationMgr = new DataverseNotificationManager();
+			$dataverseNotificationMgr->createNotification($e->getCode());
+			error_log($e->getMessage());
+            return $response->withStatus($e->getCode())->withJsonError($e->getMessage());
         }
 
-        $datasetMetadata = new stdClass();
-        $datasetMetadata->metadataBlocks = $metadataBlocks;
-
-        $jsonMetadata = json_encode($datasetMetadata);
-
-        $dataverseResponse = $service->updateDatasetData($jsonMetadata, $study);
-
-        return $response->withJson($dataverseResponse, 200);
     }
 
 }

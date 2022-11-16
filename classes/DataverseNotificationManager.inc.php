@@ -19,6 +19,7 @@ class DataverseNotificationManager
             DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED => NOTIFICATION_TYPE_ERROR,
             DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE => NOTIFICATION_TYPE_ERROR,
             DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE => NOTIFICATION_TYPE_ERROR,
+            DATAVERSE_PLUGIN_HTTP_STATUS_INTERNAL_SERVER_ERROR => NOTIFICATION_TYPE_WARNING,
             DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE => NOTIFICATION_TYPE_ERROR,
             DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR => NOTIFICATION_TYPE_ERROR,
         ];
@@ -36,6 +37,7 @@ class DataverseNotificationManager
             DATAVERSE_PLUGIN_HTTP_STATUS_PRECONDITION_FAILED => __('plugins.generic.dataverse.notification.statusPreconditionFailed'),
             DATAVERSE_PLUGIN_HTTP_STATUS_PAYLOAD_TOO_LARGE => __('plugins.generic.dataverse.notification.statusPayloadTooLarge'),
             DATAVERSE_PLUGIN_HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE => __('plugins.generic.dataverse.notification.statusUnsupportedMediaType'),
+            DATAVERSE_PLUGIN_HTTP_STATUS_INTERNAL_SERVER_ERROR => __('plugins.generic.dataverse.notification.statusInternalServerError'),
             DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE => __('plugins.generic.dataverse.notification.statusUnavailable', $params),
             DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR => __('plugins.generic.dataverse.notification.unknownError', $params),
         ];
