@@ -136,7 +136,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		$template = $params[1];
 		$context = Application::get()->getRequest()->getContext();
 
-		if ($template == 'workflow/workflow.tpl') {
+		if ($template == 'workflow/workflow.tpl' || $template == 'authorDashboard/authorDashboard.tpl') {
 			$request = Application::get()->getRequest();
 			$dispatcher = $request->getDispatcher();
 			$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
@@ -164,7 +164,7 @@ class TemplateDispatcher extends DataverseDispatcher
 				$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
 
 				$datasetResponse = $this->getDataverseService()->getDatasetResponse($study);
-
+				
 				$supportedFormLocales = $context->getSupportedFormLocales();
 				$localeNames = AppLocale::getAllLocales();
 				$locales = array_map(function($localeKey) use ($localeNames) {
