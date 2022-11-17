@@ -250,7 +250,7 @@ class DataverseService {
 
 	public function updateDatasetData(string $jsonMatadata, DataverseStudy $study): ?stdClass
 	{
-		
+		$dataverseNotificationMgr = new DataverseNotificationManager();
 		try {
 			$fileJsonPath = $this->createJsonFile($jsonMatadata);
 
@@ -260,11 +260,14 @@ class DataverseService {
 			$response = $this->dataverseClient->updateMetadata($apiUrl, $fileJsonPath);
 
 			if (!empty($response)) {
+				$dataverseNotificationMgr->createCustomNotification(
+					NOTIFICATION_TYPE_SUCCESS,
+					__('plugins.generic.dataverse.notification.metadataUpdated')
+				);
 				return json_decode($response);
 			}
 
 		} catch (RuntimeException $e) {
-			$dataverseNotificationMgr = new DataverseNotificationManager();
 			$dataverseNotificationMgr->createNotification($e->getCode());
 			error_log($e->getMessage());
 		}

@@ -107,11 +107,15 @@ class DataverseClient {
     public function completeIncompleteDeposit(string $url): bool
     {
         $response = $this->swordClient->completeIncompleteDeposit($url, $this->configuration->getApiToken(), '', '');
-        if($response->sac_status != DATAVERSE_PLUGIN_HTTP_STATUS_OK)
+        if ($response->sac_status != DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
+            $dataverseNotificationMgr = new DataverseNotificationManager();
+            $dataverseUrl = $this->configuration->getDataverseUrl();
+            $params = ['dataverseUrl' => $dataverseUrl];
             throw new RuntimeException(
-                $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
-                $depositReceipt->sac_status
+                $dataverseNotificationMgr->getNotificationMessage($response->sac_status, $params),
+                $response->sac_status
             );
+        }
         return ($response->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
     }
 
@@ -158,7 +162,7 @@ class DataverseClient {
         }
         else {
             $error = json_decode($resp);
-            $errorMessage = empty($error) ? $resp : $error->message;
+            $errorMessage = empty($error->message) ? $resp : $error->message;
             throw new RuntimeException($errorMessage, $status);
         }
     }

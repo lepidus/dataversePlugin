@@ -190,6 +190,8 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function addJavaScriptVariables($request, $templateManager, $study): void
 	{
+		$dispatcher = $request->getDispatcher();
+		$context = $request->getContext();
 		$configuration = $this->getDataverseConfiguration();
 		$apiToken = $configuration->getApiToken();
 		$dataverseServer = $configuration->getDataverseServer();
@@ -199,6 +201,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		$persistentId =  "doi:" . $matches[0];
 
 		$editUri = "$dataverseServer/api/datasets/:persistentId/?persistentId=$persistentId";
+		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
 
 		$dataverseNotificationMgr = new DataverseNotificationManager();
 		$dataverseUrl = $configuration->getDataverseUrl();
@@ -208,7 +211,8 @@ class TemplateDispatcher extends DataverseDispatcher
 		$data = [
 			"editUri" => $editUri,
 			"apiToken" => $apiToken,
-			"errorMessage" => $errorMessage
+			"errorMessage" => $errorMessage,
+			"datasetApiUrl" => $apiUrl
 		];
 
 		$templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [

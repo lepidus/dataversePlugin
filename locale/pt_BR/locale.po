@@ -89,6 +89,9 @@ msgstr "Servidor não disponível. {$dataverseUrl} está temporariamente fora do
 msgid "plugins.generic.dataverse.notification.unknownError"
 msgstr "Erro desconhecido. Não foi possível conectar a {$dataverseUrl}"
 
+msgid "plugins.generic.dataverse.notification.metadataUpdated"
+msgstr "Metadados do dataset atualizados com sucesso."
+
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
 msgstr "Impossível conectar ao Dataverse."
 

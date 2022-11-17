@@ -70,6 +70,16 @@ class DataverseNotificationManager
             array('contents' => $this->getNotificationMessage($dataverseResponseStatus, $params))
         );
     }
+
+    public function createCustomNotification(string $type, string $message) {
+        $user = Application::get()->getRequest()->getUser();
+        $notificationManager = new NotificationManager();
+        $notificationManager->createTrivialNotification(
+            $user->getId(),
+            $type,
+            array('contents' => $message)
+        );
+    }
 }
 
 ?>

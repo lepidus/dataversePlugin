@@ -38,31 +38,23 @@ class DatasetsHandler extends APIHandler
 		$serviceFactory = new DataverseServiceFactory();
 		$service = $serviceFactory->build($configuration);
 
-        try {
-            $datasetResponse = $service->getDatasetResponse($study);
+        $datasetResponse = $service->getDatasetResponse($study);
 
-            if (!empty($datasetResponse)) {
-                $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks;
+        if (!empty($datasetResponse)) {
+            $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks;
 
-                import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
-                $datasetDataCreator = new DataverseDatasetDataCreator();
-                $datasetMetadata = $datasetDataCreator->updataMetadataBlocks($metadataBlocks);
+            import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
+            $datasetDataCreator = new DataverseDatasetDataCreator();
+            $datasetMetadata = $datasetDataCreator->updataMetadataBlocks($metadataBlocks, $requestParams);
 
-                $jsonMetadata = json_encode($datasetMetadata);
+            $jsonMetadata = json_encode($datasetMetadata);
 
-                $dataverseResponse = $service->updateDatasetData($jsonMetadata, $study);
+            $dataverseResponse = $service->updateDatasetData($jsonMetadata, $study);
 
-                return $response->withJson($dataverseResponse, 200);
-            }
-            else {
-                return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
-            }
-
-        } catch (RuntimeException $e) {
-			error_log($e->getMessage());
-            $dataverseNotificationMgr = new DataverseNotificationManager();
-			$dataverseNotificationMgr->createNotification($e->getCode());
-            return $response->withStatus($e->getCode())->withJsonError($e->getMessage());
+            return $response->withJson($dataverseResponse, 200);
+        }
+        else {
+            return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
         }
 
     }

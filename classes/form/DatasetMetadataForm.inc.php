@@ -22,7 +22,7 @@ class DatasetMetadataForm extends FormComponent {
         if (!empty($datasetResponse)) {
             $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks->citation->fields;
             $datasetDataCreator = new DataverseDatasetDataCreator();
-            $datasetData = $datasetDataCreator->create($metadataBlocks);
+            $datasetData = $datasetDataCreator->createDatasetData($metadataBlocks);
         }
 
         $this->addField(new FieldText('datasetTitle', [
