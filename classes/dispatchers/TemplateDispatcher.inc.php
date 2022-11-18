@@ -113,16 +113,19 @@ class TemplateDispatcher extends DataverseDispatcher
 		$submission = $params[1];
 		$templateManager = TemplateManager::getManager($request);
 		$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
-		
-		$this->loadJavaScript($pluginPath, $templateManager);
-		$this->addJavaScriptVariables($request, $templateManager, $submission);
+
+		$study = $this->getSubmissionStudy($submission);
+		if (isset($study)) {
+			$this->loadJavaScript($pluginPath, $templateManager);
+			$this->addJavaScriptVariables($request, $templateManager, $study);
+		}
 
 		return false;
 	}
 
 	public function loadJavaScript($pluginPath, $templateManager) {
 		$templateManager->addJavaScript(
-			'dataverse',
+			'dataverseScripts',
 			$pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js',
 			[
 				'contexts' => ['backend', 'frontend']
