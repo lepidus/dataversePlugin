@@ -19,11 +19,14 @@ class DatasetsHandler extends APIHandler
     }
 
     function authorize($request, &$args, $roleAssignments) {
+        import('lib.pkp.classes.security.authorization.PolicySet');
+		$rolePolicy = new PolicySet(COMBINING_PERMIT_OVERRIDES);
 
 		import('lib.pkp.classes.security.authorization.RoleBasedHandlerOperationPolicy');
 		foreach ($roleAssignments as $role => $operations) {
-			$this->addPolicy(new RoleBasedHandlerOperationPolicy($request, $role, $operations));
+			$rolePolicy->addPolicy(new RoleBasedHandlerOperationPolicy($request, $role, $operations));
 		}
+		$this->addPolicy($rolePolicy);
 
 		return parent::authorize($request, $args, $roleAssignments);
 	}

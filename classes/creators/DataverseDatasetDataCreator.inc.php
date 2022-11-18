@@ -40,7 +40,7 @@ class DataverseDatasetDataCreator
         $obj->$objName->typeName = $objName;
         $obj->$objName->multiple = false;
         $obj->$objName->typeClass = 'primitive';
-        $obj->$objName->typeName = $value;
+        $obj->$objName->value = $value;
 
         return $obj;
     }
@@ -51,9 +51,11 @@ class DataverseDatasetDataCreator
             foreach ($metadataBlocks->citation->fields as $obj) {
                 if ($obj->typeName == $this->metadata[$key]) {
                     if (gettype($obj->value) == 'array') {
+                        $values = [];
                         foreach ($obj->value as $class) {
-                            $obj->value[] = $this->createMetadataObject($key, $value);
+                            $values[] = $this->createMetadataObject($key, $value);
                         }
+                        $obj->value = $values;
                     }
                     else {
                         $obj->value = $value;
