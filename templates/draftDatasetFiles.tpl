@@ -1,7 +1,7 @@
 <div id="draftDatasetFilesContainer">
 	<list-panel :items="components.draftDatasetFilesList.items" style="margin-bottom: 1rem">
         <pkp-header slot="header">
-            <h2>{translate key="plugins.generic.dataverse.dataCitationLabel"}</h2>
+            <h2>{translate key="plugins.generic.dataverse.researchData"}</h2>
 			<spinner v-if="isLoading"></spinner>
             <template slot="actions">
                 <pkp-button ref="datasetModalButton" @click="datasetFileModalOpen">

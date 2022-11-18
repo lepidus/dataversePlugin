@@ -13,7 +13,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFilesContainer'));
 		HookRegistry::register('TemplateManager::display', array($this, 'loadDraftDatasetFilePageComponent'));
 		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
-		HookRegistry::register('Template::Workflow::Publication', array($this, 'addDataCitationSubmissionToWorkflow'));
+		HookRegistry::register('Template::Workflow::Publication', array($this, 'addDatasetDataToWorkflow'));
 		HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
 		HookRegistry::register('PreprintHandler::view', array($this, 'loadResources'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
@@ -113,96 +113,141 @@ class TemplateDispatcher extends DataverseDispatcher
 		$submission = $params[1];
 		$templateManager = TemplateManager::getManager($request);
 		$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
-		
-		$this->loadJavaScript($pluginPath, $templateManager);
-		$this->addJavaScriptVariables($request, $templateManager, $submission);
+
+		$study = $this->getSubmissionStudy($submission);
+		if (isset($study)) {
+			$this->loadJavaScript($pluginPath, $templateManager);
+			$this->addJavaScriptVariables($request, $templateManager, $study);
+		}
 
 		return false;
 	}
 
 	public function loadJavaScript($pluginPath, $templateManager) {
-		$templateManager->addJavaScript("Dataverse",  $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js', array(
-			'contexts' => ['backend', 'frontend']
-		));
+		$templateManager->addJavaScript(
+			'dataverseScripts',
+			$pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js',
+			[
+				'contexts' => ['backend', 'frontend']
+			]
+		);
 	}
 
 	function loadResourceToWorkflow(string $hookName, array $params): bool
 	{
-		$smarty = $params[0];
+		$templateMgr = $params[0];
 		$template = $params[1];
+		$context = Application::get()->getRequest()->getContext();
 
-		$templateMapping = [
-			$template => "workflow/workflow.tpl",
-		];
-
-		if (array_key_exists($template, $templateMapping)) {
+		if ($template == 'workflow/workflow.tpl' || $template == 'authorDashboard/authorDashboard.tpl') {
 			$request = Application::get()->getRequest();
+			$dispatcher = $request->getDispatcher();
 			$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
-			$submission = $smarty->get_template_vars('submission');
+			$submission = $templateMgr->get_template_vars('submission');
 
-			if ($submission) {
-				$smarty->addJavaScript("Dataverse_Workflow",  $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js', array(
-					'contexts' => ['backend', 'frontend']
-				));
-				$this->addJavaScriptVariables($request, $smarty, $submission);
+			$study = $this->getSubmissionStudy($submission);
+			if (!empty($study)) {
+				$templateMgr->addJavaScript(
+					'dataverseWorkflow', 
+					$pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js',
+					[
+						'contexts' => ['backend', 'frontend']
+					]
+				);
+				$templateMgr->addJavaScript(
+					'dataverseHelper', 
+					$pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dataverseHelper.js',
+					[
+						'inline' => false,
+						'contexts' => ['backend']
+					]
+				);
+				$this->addJavaScriptVariables($request, $templateMgr, $study);
+
+				$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+
+				$datasetResponse = $this->getDataverseService()->getDatasetResponse($study);
+				
+				$supportedFormLocales = $context->getSupportedFormLocales();
+				$localeNames = AppLocale::getAllLocales();
+				$locales = array_map(function($localeKey) use ($localeNames) {
+					return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+				}, $supportedFormLocales);
+
+				$this->plugin->import('classes.form.DatasetMetadataForm');
+				$datasetMetadataForm = new DatasetMetadataForm($apiUrl, $locales, $datasetResponse);
+
+				$workflowComponents = $templateMgr->getState('components');
+				$workflowPublicationFormIds = $templateMgr->getState('publicationFormIds');
+				$workflowComponents[FORM_DATASET_METADATA] = $datasetMetadataForm->getConfig();
+				$workflowPublicationFormIds[] = FORM_DATASET_METADATA;
+
+				$templateMgr->setState([
+					'components' => $workflowComponents,
+					'publicationFormIds' => $workflowPublicationFormIds
+				]);
 			}
 		}
 		return false;
 	}
 
-	function addJavaScriptVariables($request, $templateManager, $submission): void
+	function addJavaScriptVariables($request, $templateManager, $study): void
 	{
+		$dispatcher = $request->getDispatcher();
+		$context = $request->getContext();
 		$configuration = $this->getDataverseConfiguration();
 		$apiToken = $configuration->getApiToken();
-
 		$dataverseServer = $configuration->getDataverseServer();
-		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
-		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
-		if (!empty($study)) {
-			$persistentUri = $study->getPersistentUri();
-			preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches);
-			$persistentId =  "doi:" . $matches[0];
-	
-			$editUri = "$dataverseServer/api/datasets/:persistentId/?persistentId=$persistentId";
-	
-			$dataverseNotificationMgr = new DataverseNotificationManager();
-			$dataverseUrl = $configuration->getDataverseUrl();
-			$params = ['dataverseUrl' => $dataverseUrl];
-			$errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
-	
-			$data = [
-				"editUri" => $editUri,
-				"apiToken" => $apiToken,
-				"errorMessage" => $errorMessage
-			];
-	
-			$templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
-				'inline' => true,
-				'contexts' => ['backend', 'frontend']
-			]);
-		}
+		$persistentUri = $study->getPersistentUri();
+		preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches);
+		$persistentId =  "doi:" . $matches[0];
 
+		$editUri = "$dataverseServer/api/datasets/:persistentId/?persistentId=$persistentId";
+		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		$dataverseUrl = $configuration->getDataverseUrl();
+		$params = ['dataverseUrl' => $dataverseUrl];
+		$errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
+
+		$data = [
+			"editUri" => $editUri,
+			"apiToken" => $apiToken,
+			"errorMessage" => $errorMessage,
+			"datasetApiUrl" => $apiUrl
+		];
+
+		$templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
+			'inline' => true,
+			'contexts' => ['backend', 'frontend']
+		]);
 	}
 
-	function addDataCitationSubmissionToWorkflow(string $hookName, array $params): bool
+	function addDatasetDataToWorkflow(string $hookName, array $params): bool
 	{
-		$smarty =& $params[1];
+		$templateMgr =& $params[1];
 		$output =& $params[2];
-		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
-		$submission = $smarty->get_template_vars('submission');
-		$this->studyDao = new DataverseStudyDAO();
-		$study = $this->studyDao->getStudyBySubmissionId($submission->getId());
+		$context = Application::get()->getRequest()->getContext();
+		$submission = $templateMgr->get_template_vars('submission');
 
+		$study = $this->getSubmissionStudy($submission);
 		if (isset($study)) {
 			$output .= sprintf(
 				'<tab id="datasetTab" label="%s">%s</tab>',
-				__("plugins.generic.dataverse.dataCitationLabel"),
-				$smarty->fetch($this->plugin->getTemplateResource('dataCitationSubmission.tpl'))
+				__("plugins.generic.dataverse.researchData"),
+				$templateMgr->fetch($this->plugin->getTemplateResource('dataCitationSubmission.tpl'))
 			);
 		}
 
 		return false;
+	}
+
+	private function getSubmissionStudy($submission): ?DataverseStudy
+	{
+		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
+		return $study;
 	}
 
 	function setupDataverseHandlers($hookName, $params): bool

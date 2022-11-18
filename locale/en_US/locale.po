@@ -41,7 +41,7 @@ msgstr "Can't connect to Dataverse."
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Please enter a API token."
 
-msgid "plugins.generic.dataverse.dataCitationLabel"
+msgid "plugins.generic.dataverse.researchData"
 msgstr "Research data"
 
 msgid "plugins.generic.dataverse.datasetButton"
@@ -74,11 +74,17 @@ msgstr "The request entity is larger than limits defined by server"
 msgid "plugins.generic.dataverse.notification.statusUnsupportedMediaType" 
 msgstr "The format of the media sent in the request is not supported by the server"
 
+msgid "plugins.generic.dataverse.notification.statusInternalServerError" 
+msgstr "The server encountered an internal error that prevented it from fulfilling this request."
+
 msgid "plugins.generic.dataverse.notification.statusUnavailable" 
 msgstr "Service Unavailable. {$dataverseUrl} is temporarily busy. Please try again later"
 
 msgid "plugins.generic.dataverse.notification.unknownError"
 msgstr "Unknown error. Could not connect to {$dataverseUrl}"
+
+msgid "plugins.generic.dataverse.notification.metadataUpdated"
+msgstr "Dataset metadata successfully updated."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
 msgstr "Can't connect to Dataverse."
@@ -106,3 +112,15 @@ msgstr "Are you sure you want to permanently delete the research data file <stro
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "The draft dataset file you requested was not found."
+
+msgid "plugins.generic.dataverse.researchData.metadata"
+msgstr "Metadata"
+
+msgid "plugins.generic.dataverse.metadataForm.title"
+msgstr "Title"
+
+msgid "plugins.generic.dataverse.metadataForm.description"
+msgstr "Description"
+
+msgid "plugins.generic.dataverse.metadataForm.keyword"
+msgstr "Keyword"

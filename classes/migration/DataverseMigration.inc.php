@@ -17,7 +17,7 @@ class DataverseMigration extends Migration {
                 $table->string('edit_media_uri', 255);
                 $table->string('statement_uri', 255);
                 $table->string('persistent_uri', 255);
-                $table->string('dataset_url', 255)->nullable();
+                $table->string('persistent_id', 255)->nullable();
             });
         }
 

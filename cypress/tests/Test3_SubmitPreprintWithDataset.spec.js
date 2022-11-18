@@ -3,6 +3,7 @@ import '../support/commands';
 const adminUser = Cypress.env('adminUser');
 const adminPassword = Cypress.env('adminPassword');
 const serverName = Cypress.env('serverName');
+const dataverseServerName = Cypress.env('dataverseServerName');
 const currentYear = new Date().getFullYear();
 
 describe('Deposit Draft Dataverse on Submission', function() {
@@ -107,8 +108,8 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 				serverName +
 				','
 		);
-		cy.get('.value > p > a:contains("https://doi.org/10.70122/FK2/")');
-		cy.get('.value > p').contains(', Demo Dataverse, Vundefined');
+		cy.get('.value > p > a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
+		cy.get('.value > p').contains(', ' + dataverseServerName + ', Vundefined');
 		cy.get(
 			'.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton'
 		).click();
@@ -139,8 +140,8 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 				serverName +
 				','
 		);
-		cy.get('.value > p > a:contains("https://doi.org/10.70122/FK2/")');
-		cy.get('.value > p').contains(', Demo Dataverse, V1');
+		cy.get('.value > p > a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
+		cy.get('.value > p').contains(', ' + dataverseServerName + ', V1');
 	});
 });
 

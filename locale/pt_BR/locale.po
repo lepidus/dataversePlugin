@@ -47,7 +47,7 @@ msgstr "Senha"
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Informe uma chave de API para Dataverse."
 
-msgid "plugins.generic.dataverse.dataCitationLabel"
+msgid "plugins.generic.dataverse.researchData"
 msgstr "Dados de pesquisa"
 
 msgid "plugins.generic.dataverse.datasetButton"
@@ -72,19 +72,25 @@ msgid "plugins.generic.dataverse.notification.statusNotFound"
 msgstr "O servidor não conseguiu encontrar o recurso solicitado."
 
 msgid "plugins.generic.dataverse.notification.statusPreconditionFailed" 
-msgstr "As codições do cabeçalho da solicitação não foram satisfeitas."
+msgstr "As codições do cabeçalho da requisição não foram satisfeitas."
 
 msgid "plugins.generic.dataverse.notification.statusPayloadTooLarge" 
-msgstr "A entidade de solicitação é maior que os limites definidos pelo servidor"
+msgstr "A entidade de requisição é maior que os limites definidos pelo servidor"
 
 msgid "plugins.generic.dataverse.notification.statusUnsupportedMediaType" 
 msgstr "O formato da mídia enviada na requisição não é suportado pelo servidor"
+
+msgid "plugins.generic.dataverse.notification.statusInternalServerError" 
+msgstr "O servidor encontrou um erro interno que o impediu de atender a esta requisição."
 
 msgid "plugins.generic.dataverse.notification.statusUnavailable"
 msgstr "Servidor não disponível. {$dataverseUrl} está temporariamente fora do ar. Por favor, tente novamente mais tarde"
 
 msgid "plugins.generic.dataverse.notification.unknownError"
 msgstr "Erro desconhecido. Não foi possível conectar a {$dataverseUrl}"
+
+msgid "plugins.generic.dataverse.notification.metadataUpdated"
+msgstr "Metadados do dataset atualizados com sucesso."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
 msgstr "Impossível conectar ao Dataverse."
@@ -112,3 +118,15 @@ msgstr "Deseja realmente excluir permanentemente o arquivo de dados de pesquisa 
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
+
+msgid "plugins.generic.dataverse.researchData.metadata"
+msgstr "Metadados"
+
+msgid "plugins.generic.dataverse.metadataForm.title"
+msgstr "Título"
+
+msgid "plugins.generic.dataverse.metadataForm.description"
+msgstr "Descrição"
+
+msgid "plugins.generic.dataverse.metadataForm.keyword"
+msgstr "Palavras-chave"
