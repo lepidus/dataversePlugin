@@ -5,11 +5,9 @@ import('plugins.generic.dataverse.classes.api.DataverseClient');
 
 class DataverseNotificationManager
 {
-    private $notificationStatusMapping;
-
-    public function __construct()
+    private function getNotificationType(int $status): string
     {
-        $this->notificationStatusMapping = [
+        $notificationStatusMapping = [
             DATAVERSE_PLUGIN_HTTP_STATUS_OK => NOTIFICATION_TYPE_SUCCESS,
             DATAVERSE_PLUGIN_HTTP_STATUS_CREATED => NOTIFICATION_TYPE_SUCCESS,
             DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST => NOTIFICATION_TYPE_ERROR,
@@ -23,6 +21,12 @@ class DataverseNotificationManager
             DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE => NOTIFICATION_TYPE_ERROR,
             DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR => NOTIFICATION_TYPE_ERROR,
         ];
+
+        if (!in_array($status, array_keys($notificationStatusMapping))) {
+            return $notificationStatusMapping[DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR];
+        }
+
+        return $notificationStatusMapping[$status];
     }
 
     public function getNotificationMessage(int $status, array $params = array()): string
@@ -41,6 +45,10 @@ class DataverseNotificationManager
             DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE => __('plugins.generic.dataverse.notification.statusUnavailable', $params),
             DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR => __('plugins.generic.dataverse.notification.unknownError', $params),
         ];
+
+        if (!in_array($status, array_keys($notificationMessages))) {
+            return $notificationMessages[DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR];
+        }
 
         return $notificationMessages[$status];
     }
@@ -66,7 +74,7 @@ class DataverseNotificationManager
         $notificationManager = new NotificationManager();
         $notificationManager->createTrivialNotification(
             $user->getId(),
-            $this->notificationStatusMapping[$dataverseResponseStatus],
+            $this->getNotificationType($dataverseResponseStatus),
             array('contents' => $this->getNotificationMessage($dataverseResponseStatus, $params))
         );
     }
