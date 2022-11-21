@@ -123,11 +123,11 @@ describe('Edit Dataset Metadata Draft', function() {
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').type('The Rise of the Empire Machine', {delay: 0});
         cy.get('div[id^="datasetMetadata-datasetDescription-control"').clear();
 		cy.get('div[id^="datasetMetadata-datasetDescription-control"').type('An example abstract', {delay: 0});
-        cy.get('input[id^="datasetMetadata-datasetKeywords-control"').clear()
-		cy.get('input[id^="datasetMetadata-datasetKeywords-control"').type('Modern History', {delay: 0});
+		cy.get('#datasetMetadata-datasetKeywords-control').type('Modern History', {delay: 0});
+		cy.wait(500);
+		cy.get('#datasetMetadata-datasetKeywords-control').type('{enter}', {delay: 0});
         cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').click();
         cy.wait(3000);
-		
 	});
 
 	it('Check dataset metadata has been changed', function() {
@@ -140,7 +140,61 @@ describe('Edit Dataset Metadata Draft', function() {
         cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should('be.visible');
         cy.get('input[id^="datasetMetadata-datasetTitle-control"').should('have.value', 'The Rise of the Empire Machine');
         cy.get('div[id^="datasetMetadata-datasetDescription-control"] > p').contains('An example abstract');
-        cy.get('input[id^="datasetMetadata-datasetKeywords-control"').should('have.value', 'Modern History');
+        cy.get('#datasetMetadata-datasetKeywords-selected').contains('Modern History');
+	});
+
+	it('Removes keyword metadata from dataset', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a').contains('Dashboard').click();
+		cy.get('#myQueue a:contains("View"):first').click();
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+        cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should('be.visible');
+        cy.get('.pkpPublication__status span').contains('Unposted');
+        cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('not.be.disabled');
+		cy.get('#datasetMetadata-datasetKeywords-control').clear();
+        cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').click();
+        cy.wait(3000);
+	});
+
+	it('Check keyword metadata has empty', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a').contains('Dashboard').click();
+		cy.get('#myQueue a:contains("View"):first').click();
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+        cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should('be.visible');
+		cy.get('#datasetMetadata-datasetKeywords-selected').should('not.include.text', 'Modern History');
+	});
+
+	it('Adds keyword metadata to dataset', function (){
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a').contains('Dashboard').click();
+		cy.get('#myQueue a:contains("View"):first').click();
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+        cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should('be.visible');
+        cy.get('.pkpPublication__status span').contains('Unposted');
+        cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('not.be.disabled');
+		cy.get('#datasetMetadata-datasetKeywords-control').type('Documentary', {delay: 0});
+		cy.wait(500);
+		cy.get('#datasetMetadata-datasetKeywords-control').type('{enter}', {delay: 0});
+        cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').click();
+        cy.wait(3000);
+	});
+
+	it('Check keyword metadata has value', function () {
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a').contains('Dashboard').click();
+		cy.get('#myQueue a:contains("View"):first').click();
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+        cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should('be.visible');
+		cy.get('#datasetMetadata-datasetKeywords-selected').contains('Documentary');
 	});
 
     it('Check dataset metadata edit is disabled when preprint is published', function() {
