@@ -43,6 +43,7 @@ class DatasetsHandler extends APIHandler
         }
 
         $requestParams = $slimRequest->getParsedBody();
+        $requestParams['datasetDescription'] = [$requestParams['datasetDescription']];
 
         $request = Application::get()->getRequest();
         $contextId = $request->getContext()->getId();

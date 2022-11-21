@@ -137,11 +137,10 @@ class TemplateDispatcher extends DataverseDispatcher
 	{
 		$templateMgr = $params[0];
 		$template = $params[1];
-		$context = Application::get()->getRequest()->getContext();
+		
 
 		if ($template == 'workflow/workflow.tpl' || $template == 'authorDashboard/authorDashboard.tpl') {
 			$request = Application::get()->getRequest();
-			$dispatcher = $request->getDispatcher();
 			$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
 			$submission = $templateMgr->get_template_vars('submission');
 
@@ -164,28 +163,7 @@ class TemplateDispatcher extends DataverseDispatcher
 				);
 				$this->addJavaScriptVariables($request, $templateMgr, $study);
 
-				$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
-
-				$datasetResponse = $this->getDataverseService()->getDatasetResponse($study);
-				
-				$supportedFormLocales = $context->getSupportedFormLocales();
-				$localeNames = AppLocale::getAllLocales();
-				$locales = array_map(function($localeKey) use ($localeNames) {
-					return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-				}, $supportedFormLocales);
-
-				$this->plugin->import('classes.form.DatasetMetadataForm');
-				$datasetMetadataForm = new DatasetMetadataForm($apiUrl, $locales, $datasetResponse);
-
-				$workflowComponents = $templateMgr->getState('components');
-				$workflowPublicationFormIds = $templateMgr->getState('publicationFormIds');
-				$workflowComponents[FORM_DATASET_METADATA] = $datasetMetadataForm->getConfig();
-				$workflowPublicationFormIds[] = FORM_DATASET_METADATA;
-
-				$templateMgr->setState([
-					'components' => $workflowComponents,
-					'publicationFormIds' => $workflowPublicationFormIds
-				]);
+				$this->setupMetadataForm($request, $templateMgr, $study);
 			}
 		}
 		return false;
@@ -248,6 +226,36 @@ class TemplateDispatcher extends DataverseDispatcher
 		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 		return $study;
+	}
+
+	private function setupMetadataForm($request, $templateMgr, $study): void
+	{
+		$context = $request->getContext();
+		$dispatcher = $request->getDispatcher();
+
+		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+		$vocabSuggestionUrlBase =$request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'vocabs', null, null, ['vocab' => 'submissionKeyword']);
+
+		$datasetResponse = $this->getDataverseService()->getDatasetResponse($study);
+		
+		$supportedFormLocales = $context->getSupportedFormLocales();
+		$localeNames = AppLocale::getAllLocales();
+		$locales = array_map(function($localeKey) use ($localeNames) {
+			return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+		}, $supportedFormLocales);
+
+		$this->plugin->import('classes.form.DatasetMetadataForm');
+		$datasetMetadataForm = new DatasetMetadataForm($apiUrl, $locales, $datasetResponse, $vocabSuggestionUrlBase);
+
+		$workflowComponents = $templateMgr->getState('components');
+		$workflowPublicationFormIds = $templateMgr->getState('publicationFormIds');
+		$workflowComponents[FORM_DATASET_METADATA] = $datasetMetadataForm->getConfig();
+		$workflowPublicationFormIds[] = FORM_DATASET_METADATA;
+
+		$templateMgr->setState([
+			'components' => $workflowComponents,
+			'publicationFormIds' => $workflowPublicationFormIds
+		]);
 	}
 
 	function setupDataverseHandlers($hookName, $params): bool

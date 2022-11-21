@@ -18,11 +18,14 @@ class DataverseDatasetDataCreator
             if (!in_array($metadata->typeName, $this->metadata)){
                 continue;
             }
-            if (gettype($metadata->value) == 'array') {
+            if (is_array($metadata->value)) {
+                $values = [];
                 foreach ($metadata->value as $value) {
                     $attr = $metadata->typeName . 'Value';
-                    $datasetData->setData($metadata->typeName, $value->$attr->value);
+                    $values[] = $value->$attr->value;
+
                 }
+                $datasetData->setData($metadata->typeName, $values);
             }
             else {
                 $datasetData->setData($metadata->typeName, $metadata->value);
@@ -32,9 +35,30 @@ class DataverseDatasetDataCreator
         return $datasetData;
     }
 
-    public function createMetadataObject($typeName, $value): stdClass
+    public function createMetadataObjects($typeName, $values): stdClass
     {
-        $objName = $this->metadata[$typeName] . 'Value';
+        $field = new stdClass();
+        $field->typeName = $typeName;
+        $field->multiple = is_array($values);
+        $field->typeClass = is_array($values) ? 'compound' : 'primitive';
+
+        if (is_array($values)) {
+            $objects = [];
+            foreach ($values as $value) {
+                $objects[] = $this->createValueObject($typeName, $value);
+            }
+            $field->value = $objects;
+        }
+        else {
+            $field->value = $values;
+        }        
+
+        return $field;
+    }
+
+    private function createValueObject($typeName, $value): stdClass
+    {
+        $objName = $typeName . 'Value';
         $obj = new stdClass();
         $obj->$objName = new stdClass();
         $obj->$objName->typeName = $objName;
@@ -47,29 +71,49 @@ class DataverseDatasetDataCreator
 
     public function updataMetadataBlocks($metadataBlocks, $metadata): stdClass
     {
+        $metadataFields = [];
         foreach ($metadata as $key => $value) {
-            foreach ($metadataBlocks->citation->fields as $obj) {
-                if ($obj->typeName == $this->metadata[$key]) {
-                    if (gettype($obj->value) == 'array') {
-                        $values = [];
-                        foreach ($obj->value as $class) {
-                            $values[] = $this->createMetadataObject($key, $value);
-                        }
-                        $obj->value = $values;
-                    }
-                    else {
-                        $obj->value = $value;
-                    }
-                }
-                elseif ($obj->typeName == 'subject' && in_array('N/A', $obj->value)) {
-                    $obj->value = ['Other'];
-                }
+            if (!empty($value)) {
+                $metadataFields[$key] = $this->createMetadataObjects($this->metadata[$key], $value);
             }
         }
+
+        foreach ($metadata as $key => $data) {
+            $hasMetadata = false;
+            foreach ($metadataBlocks->citation->fields as $index => $field) {
+                if ($field->typeName == $this->metadata[$key]) {
+                    $hasMetadata = true;
+                    $metadataKey = $index;
+                }
+            }
+            if ($hasMetadata && !empty($data)) {
+                $metadataBlocks->citation->fields[$metadataKey] = $metadataFields[$key];
+            }
+            elseif ($hasMetadata && empty($data)) {
+                $field =& $metadataBlocks->citation->fields[$metadataKey];
+                $multiple = $field->multiple;
+                $fieldValue = $this->createValueObject($field->typeName, $data);
+
+                $field->value = $multiple ? [$fieldValue] : $fieldValue;
+            }
+            elseif (!$hasMetadata && !empty($data)) {
+                $metadataBlocks->citation->fields[] = $metadataFields[$key];
+            }
+        }
+        $this->defineSubjectMetadata($metadataBlocks);
 
         $datasetMetadata = new stdClass();
         $datasetMetadata->metadataBlocks = $metadataBlocks;
 
         return $datasetMetadata;
+    }
+
+    private function defineSubjectMetadata(&$metadataBlocks): void
+    {
+        foreach ($metadataBlocks->citation->fields as $obj) {
+            if ($obj->typeName == 'subject' && in_array('N/A', $obj->value)) {
+                $obj->value = ['Other'];
+            }
+        }
     }
 }
