@@ -164,7 +164,7 @@ class TemplateDispatcher extends DataverseDispatcher
 				$this->addJavaScriptVariables($request, $templateMgr, $study);
 
 				$this->setupMetadataForm($request, $templateMgr, $study);
-				$this->setupDatasetFilesList($request, $templateMgr);
+				$this->setupDatasetFilesList($request, $templateMgr, $study);
 			}
 		}
 		return false;
@@ -259,15 +259,22 @@ class TemplateDispatcher extends DataverseDispatcher
 		]);
 	}
 
-	private function setupDatasetFilesList($request, $templateMgr): void
+	private function setupDatasetFilesList($request, $templateMgr, $study): void
 	{
+		$datasetFilesResponse = $this->getDataverseService()->getDatasetFiles($study);
+		$datasetFiles = array();
+
+		foreach ($datasetFilesResponse->data as $data) {
+			$datasetFiles[] = ["title" => $data->label];
+		}
+
 		import('plugins.generic.dataverse.classes.listPanel.DatasetFilesListPanel');
 		$datasetFilesListPanel = new DatasetFilesListPanel(
 			'datasetFiles',
 			__('plugins.generic.dataverse.researchData.files'),
 			[
 				'apiUrl' => '',
-				'items' => []
+				'items' => $datasetFiles
 			]
 		);
 

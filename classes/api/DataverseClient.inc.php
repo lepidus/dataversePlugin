@@ -138,6 +138,12 @@ class DataverseClient {
         return $this->execRequest($dataverseRequest);
     }
 
+    public function getDatasetFiles(string $apiUrl): ?string
+    {
+        $dataverseRequest = $this->curlInit($apiUrl);
+        return $this->execRequest($dataverseRequest);
+    }
+
     private function curlInit(string $url, array $headers = [])
     {
         $dataverseRequest = curl_init();
