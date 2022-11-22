@@ -214,3 +214,17 @@ describe('Edit Dataset Metadata Draft', function() {
         cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
 	});
 });
+
+describe('Edit Draft Dataset Files', function() {
+	it('Check dataset files list is visible', function (){
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a').contains('Dashboard').click();
+		cy.get('#myQueue a:contains("View"):first').click();
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+        cy.get('button[aria-controls="dataset_files"]').click();
+		cy.get('#datasetFiles').should('be.visible');
+		cy.get('#datasetFiles .listPanel__items').contains('Data Table.pdf');
+	});
+});

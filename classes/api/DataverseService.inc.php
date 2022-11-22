@@ -273,4 +273,24 @@ class DataverseService {
 		}
 		return null;
 	}
+
+	public function getDatasetFiles(DataverseStudy $study): ?stdClass
+	{
+		try {
+			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
+			$apiUrl = $dataverseServer . '/api/datasets/:persistentId/versions/:draft/files?persistentId=' . $study->getPersistentId();
+
+			$files = $this->dataverseClient->getDatasetFiles($apiUrl);
+
+			if (!empty($files)) {
+				return json_decode($files);
+			}
+
+		} catch (RuntimeException $e) {
+			$dataverseNotificationMgr = new DataverseNotificationManager();
+			$dataverseNotificationMgr->createNotification($e->getCode());
+			error_log($e->getMessage());
+		}
+		return null;
+	}
 }

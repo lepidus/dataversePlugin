@@ -101,7 +101,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
 		if (isset($study)) {
-			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitationSubmission.tpl'));
+			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetData.tpl'));
 		}
 
 		return false;
@@ -164,6 +164,7 @@ class TemplateDispatcher extends DataverseDispatcher
 				$this->addJavaScriptVariables($request, $templateMgr, $study);
 
 				$this->setupMetadataForm($request, $templateMgr, $study);
+				$this->setupDatasetFilesList($request, $templateMgr, $study);
 			}
 		}
 		return false;
@@ -214,7 +215,7 @@ class TemplateDispatcher extends DataverseDispatcher
 			$output .= sprintf(
 				'<tab id="datasetTab" label="%s">%s</tab>',
 				__("plugins.generic.dataverse.researchData"),
-				$templateMgr->fetch($this->plugin->getTemplateResource('dataCitationSubmission.tpl'))
+				$templateMgr->fetch($this->plugin->getTemplateResource('datasetData.tpl'))
 			);
 		}
 
@@ -255,6 +256,33 @@ class TemplateDispatcher extends DataverseDispatcher
 		$templateMgr->setState([
 			'components' => $workflowComponents,
 			'publicationFormIds' => $workflowPublicationFormIds
+		]);
+	}
+
+	private function setupDatasetFilesList($request, $templateMgr, $study): void
+	{
+		$datasetFilesResponse = $this->getDataverseService()->getDatasetFiles($study);
+		$datasetFiles = array();
+
+		foreach ($datasetFilesResponse->data as $data) {
+			$datasetFiles[] = ["title" => $data->label];
+		}
+
+		import('plugins.generic.dataverse.classes.listPanel.DatasetFilesListPanel');
+		$datasetFilesListPanel = new DatasetFilesListPanel(
+			'datasetFiles',
+			__('plugins.generic.dataverse.researchData.files'),
+			[
+				'apiUrl' => '',
+				'items' => $datasetFiles
+			]
+		);
+
+		$workflowComponents = $templateMgr->getState('components');
+		$workflowComponents[$datasetFilesListPanel->id] = $datasetFilesListPanel->getConfig();
+
+		$templateMgr->setState([
+			'components' => $workflowComponents
 		]);
 	}
 

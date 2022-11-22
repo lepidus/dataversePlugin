@@ -1,11 +1,11 @@
 {**
- * templates/dataCitationSubmission.tpl
+ * templates/datasetData.tpl
  *
  * Copyright (c) 2019-2021 Lepidus Tecnologia
  * Copyright (c) 2020-2021 SciELO
  * Distributed under the GNU GPL v3. For full terms see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt
  *
- * Dataverse submission data citation
+ * Dataverse dataset data
  *
  *}
 
@@ -20,5 +20,12 @@
                 v-bind="components.{$smarty.const.FORM_DATASET_METADATA}"
                 @set="set"
             ></pkp-form>
+        </tab>
+        <tab id="dataset_files" label={translate key="plugins.generic.dataverse.researchData.files"}>
+            <list-panel 
+                v-bind="components.datasetFiles"
+				@set="set"
+            ></list-panel>
+        </tab>
     </tabs>
 </section>
