@@ -68,6 +68,7 @@ Creates a cypress.env.json file in root of the PKP Application directory, with t
     "serverName": "myPreprintServer",
     "adminUser": "admin",
     "adminPassword": "admin",
+    "dataverseServer": "Demo Dataverse",
     "dataverseURI": "https://demo.dataverse.org/dataverse/myDataverseAlias",
     "dataverseAPIToken": "abcd-abcd-abcd-abcd-abcdefghijkl"
 }
