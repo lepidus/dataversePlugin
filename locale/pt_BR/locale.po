@@ -122,6 +122,9 @@ msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
 msgid "plugins.generic.dataverse.researchData.metadata"
 msgstr "Metadados"
 
+msgid "plugins.generic.dataverse.researchData.files"
+msgstr "Arquivos"
+
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Título"
 
