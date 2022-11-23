@@ -25,7 +25,16 @@
             <list-panel 
                 v-bind="components.datasetFiles"
 				@set="set"
-            ></list-panel>
+            >
+                <pkp-header slot="header">
+                    <h2>{translate key="plugins.generic.dataverse.researchData"}</h2>
+                    <template slot="actions">
+                        <pkp-button>
+                            {translate key="plugins.generic.dataverse.datasetButton"}
+                        </pkp-button>
+                    </template>
+                </pkp-header>
+            </list-panel>
         </tab>
     </tabs>
 </section>
