@@ -20,6 +20,13 @@ class DatasetsHandler extends APIHandler
                     'handler' => array($this, 'addFile'),
                     'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
                 ),
+            ),
+            'GET' => array(
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/files',
+                    'handler' => array($this, 'getFiles'),
+                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                ),
             )
         );
         parent::__construct();
@@ -102,6 +109,26 @@ class DatasetsHandler extends APIHandler
         }
 
         return $response->withJson($datasetFileData, 200);
+    }
+
+    public function getFiles($slimRequest, $response, $args)
+    {
+        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
+
+        $service = $this->getDataverseService($this->getRequest());
+
+        $datasetFilesResponse = $service->getDatasetFiles($study);
+
+        $datasetFiles = array();
+
+		foreach ($datasetFilesResponse->data as $data) {
+			$datasetFiles[] = ["id" => $data->dataFile->id, "title" => $data->label];
+		}
+
+        ksort($datasetFiles);
+
+        return $response->withJson(['items' => $datasetFiles], 200);
     }
 
     private function getDataverseService($request): DataverseService

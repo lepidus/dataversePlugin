@@ -5,6 +5,7 @@
       const pageRootComponent =
         $.pkp.plugins.generic.dataverse.pageRootComponent;
 
+      $.pkp.plugins.generic.dataverse.refreshItems();
       pageRootComponent.$modal.hide('datasetFileModal');
     },
     datasetFileModalOpen: function () {
@@ -16,6 +17,30 @@
       );
       pageRootComponent.$modal.show('datasetFileModal');
     },
+    refreshItems: function () {
+      const pageRootComponent =
+        $.pkp.plugins.generic.dataverse.pageRootComponent;
+
+      console.log('ok');
+
+      $.ajax({
+        url: pageRootComponent.components.datasetFileForm.action.replace(
+          'file',
+          'files'
+        ),
+        type: 'GET',
+
+        error: function (r) {
+          console.log('error');
+          pageRootComponent.ajaxErrorCallback(r);
+        },
+
+        success: function (r) {
+          console.log(r);
+          pageRootComponent.components.datasetFiles.items = r.items;
+        },
+      });
+    },
   };
 
   $(document).ready(function () {
@@ -23,14 +48,14 @@
 
     $.pkp.plugins.generic.dataverse.pageRootComponent = pageRootComponent;
 
-    pkp.registry._instances.app.components.datasetMetadata.action =
+    pageRootComponent.components.datasetMetadata.action =
       appDataverse.datasetApiUrl;
 
-    const workingPublication = pkp.registry._instances.app.workingPublication;
+    const workingPublication = pageRootComponent.workingPublication;
 
     pkp.eventBus.$on('form-success', (formId, newPublication) => {
       if (formId === 'datasetMetadata') {
-        pkp.registry._instances.app.workingPublication = workingPublication;
+        pageRootComponent.workingPublication = workingPublication;
       }
     });
 
@@ -39,7 +64,7 @@
     const observer = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
         if (mutation.attributeName === 'action') {
-          pkp.registry._instances.app.components.datasetMetadata.action =
+          pageRootComponent.components.datasetMetadata.action =
             appDataverse.datasetApiUrl;
         }
       });
