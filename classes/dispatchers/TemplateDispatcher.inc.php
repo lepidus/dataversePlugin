@@ -163,8 +163,9 @@ class TemplateDispatcher extends DataverseDispatcher
 				);
 				$this->addJavaScriptVariables($request, $templateMgr, $study);
 
-				$this->setupMetadataForm($request, $templateMgr, $study);
+				$this->setupDatasetMetadataForm($request, $templateMgr, $study);
 				$this->setupDatasetFilesList($request, $templateMgr, $study);
+				$this->setupDatasetFileForm($request, $templateMgr, $study);
 			}
 		}
 		return false;
@@ -229,7 +230,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		return $study;
 	}
 
-	private function setupMetadataForm($request, $templateMgr, $study): void
+	private function setupDatasetMetadataForm($request, $templateMgr, $study): void
 	{
 		$context = $request->getContext();
 		$dispatcher = $request->getDispatcher();
@@ -248,13 +249,12 @@ class TemplateDispatcher extends DataverseDispatcher
 		$this->plugin->import('classes.form.DatasetMetadataForm');
 		$datasetMetadataForm = new DatasetMetadataForm($apiUrl, $locales, $datasetResponse, $vocabSuggestionUrlBase);
 
-		$workflowComponents = $templateMgr->getState('components');
+		$this->addComponent($templateMgr, $datasetMetadataForm);
+
 		$workflowPublicationFormIds = $templateMgr->getState('publicationFormIds');
-		$workflowComponents[FORM_DATASET_METADATA] = $datasetMetadataForm->getConfig();
 		$workflowPublicationFormIds[] = FORM_DATASET_METADATA;
 
 		$templateMgr->setState([
-			'components' => $workflowComponents,
 			'publicationFormIds' => $workflowPublicationFormIds
 		]);
 	}
@@ -278,8 +278,60 @@ class TemplateDispatcher extends DataverseDispatcher
 			]
 		);
 
+		$this->addComponent($templateMgr, $datasetFilesListPanel);
+	}
+
+	function setupDatasetFileForm($request, $templateMgr, $study): void
+	{
+		$dispatcher = $request->getDispatcher();
+        $context = $request->getContext();
+		
+		$temporaryFileApiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'temporaryFiles');
+		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+
+		$termsOfUseParams = array(
+            'dataverseName' => $args['dataverseName'],
+            'termsOfUseURL' => $dispatcher->url(
+                $request,
+                ROUTE_COMPONENT, 
+                null,
+                'plugins.generic.dataverse.handlers.TermsOfUseHandler',
+                'get'
+            ),
+        );
+
+		$supportedFormLocales = $context->getSupportedFormLocales();
+		$localeNames = AppLocale::getAllLocales();
+		$locales = array_map(function($localeKey) use ($localeNames) {
+			return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+		}, $supportedFormLocales);
+
+		import('plugins.generic.dataverse.classes.form.DraftDatasetFileForm');
+		$draftDatasetFileForm = new DraftDatasetFileForm($apiUrl, $locales, $temporaryFileApiUrl, $termsOfUseParams);
+
+		$this->addComponent(
+			$templateMgr,
+			$draftDatasetFileForm,
+			[
+				'errors' => [
+					'termsOfUse' => [
+						__('plugins.generic.dataverse.termsOfUse.error')
+					]
+				]
+			]
+		);
+	}
+
+	private function addComponent($templateMgr, $component, $args = []): void
+	{
 		$workflowComponents = $templateMgr->getState('components');
-		$workflowComponents[$datasetFilesListPanel->id] = $datasetFilesListPanel->getConfig();
+		$workflowComponents[$component->id] = $component->getConfig();
+
+		if (!empty($args)) {
+			foreach ($args as $prop => $value) {
+				$workflowComponents[$component->id][$prop] = $value;
+			}
+		}
 
 		$templateMgr->setState([
 			'components' => $workflowComponents

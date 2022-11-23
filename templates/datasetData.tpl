@@ -17,7 +17,7 @@
     <tabs label="Dataset data">
         <tab id="dataset_metadata" label={translate key="plugins.generic.dataverse.researchData.metadata"}>
             <pkp-form
-                v-bind="components.{$smarty.const.FORM_DATASET_METADATA}"
+                v-bind="components.datasetMetadata"
                 @set="set"
             ></pkp-form>
         </tab>
@@ -29,12 +29,29 @@
                 <pkp-header slot="header">
                     <h2>{translate key="plugins.generic.dataverse.researchData"}</h2>
                     <template slot="actions">
-                        <pkp-button>
+                        <pkp-button ref="datasetFileModalButton" @click="$modal.show('datasetFileModal')">
                             {translate key="plugins.generic.dataverse.datasetButton"}
                         </pkp-button>
                     </template>
                 </pkp-header>
             </list-panel>
+            <modal
+                v-bind="MODAL_PROPS"
+                name="datasetFileModal"
+                @closed="setFocusToRef('datasetFileModalButton')"
+            >
+                <modal-content
+                    close-label="common.close"
+                    modal-name="datasetFileModal"
+                    title="{translate key="plugins.generic.dataverse.modal.addFile.title"}"
+                >
+                    <pkp-form style="margin: -1rem"
+                        v-bind="components.datasetFileForm"
+                        @set="set"
+                    >
+                    </pkp-form>
+                </modal-content>
+            </modal>
         </tab>
     </tabs>
 </section>
