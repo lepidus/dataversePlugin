@@ -1,30 +1,52 @@
-(function($) {
+(function ($) {
+  $.pkp.plugins.generic.dataverse = {
+    pageRootComponent: null,
+    formSuccess: function (data) {
+      const pageRootComponent =
+        $.pkp.plugins.generic.dataverse.pageRootComponent;
 
-    $(document).ready(function() {
-        pkp.registry._instances.app.components.datasetMetadata.action = appDataverse.datasetApiUrl;
+      pageRootComponent.$modal.hide('datasetFileModal');
+    },
+    datasetFileModalOpen: function () {
+      const pageRootComponent =
+        $.pkp.plugins.generic.dataverse.pageRootComponent;
 
-        const workingPublication = pkp.registry._instances.app.workingPublication;
+      pageRootComponent.components.datasetFileForm.fields.map(
+        (f) => (f.value = '')
+      );
+      pageRootComponent.$modal.show('datasetFileModal');
+    },
+  };
 
-        pkp.eventBus.$on('form-success', (formId, newPublication) => {
-            if (formId === 'datasetMetadata') {
-                pkp.registry._instances.app.workingPublication = workingPublication;
-            }
-		});
+  $(document).ready(function () {
+    const pageRootComponent = pkp.registry._instances.app;
 
-        const datasetMetadataForm = $('#dataset_metadata > form');
+    $.pkp.plugins.generic.dataverse.pageRootComponent = pageRootComponent;
 
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.attributeName === 'action') {
-                    pkp.registry._instances.app.components.datasetMetadata.action = appDataverse.datasetApiUrl;
-                }
-            });
-        });
+    pkp.registry._instances.app.components.datasetMetadata.action =
+      appDataverse.datasetApiUrl;
 
-        observer.observe(datasetMetadataForm.get(0), {
-            attributeFilter: ['action']
-        });
+    const workingPublication = pkp.registry._instances.app.workingPublication;
+
+    pkp.eventBus.$on('form-success', (formId, newPublication) => {
+      if (formId === 'datasetMetadata') {
+        pkp.registry._instances.app.workingPublication = workingPublication;
+      }
     });
-    
 
-}(jQuery));
+    const datasetMetadataForm = $('#dataset_metadata > form');
+
+    const observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if (mutation.attributeName === 'action') {
+          pkp.registry._instances.app.components.datasetMetadata.action =
+            appDataverse.datasetApiUrl;
+        }
+      });
+    });
+
+    observer.observe(datasetMetadataForm.get(0), {
+      attributeFilter: ['action'],
+    });
+  });
+})(jQuery);

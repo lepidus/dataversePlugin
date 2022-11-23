@@ -29,7 +29,7 @@
                 <pkp-header slot="header">
                     <h2>{translate key="plugins.generic.dataverse.researchData"}</h2>
                     <template slot="actions">
-                        <pkp-button ref="datasetFileModalButton" @click="$modal.show('datasetFileModal')">
+                        <pkp-button ref="datasetFileModalButton" @click="$.pkp.plugins.generic.dataverse.datasetFileModalOpen">
                             {translate key="plugins.generic.dataverse.datasetButton"}
                         </pkp-button>
                     </template>
@@ -48,6 +48,7 @@
                     <pkp-form style="margin: -1rem"
                         v-bind="components.datasetFileForm"
                         @set="set"
+                        @success="$.pkp.plugins.generic.dataverse.formSuccess"
                     >
                     </pkp-form>
                 </modal-content>
