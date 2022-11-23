@@ -60,7 +60,7 @@ class DraftDatasetFileHandler extends APIHandler {
         $queryParams = $slimRequest->getQueryParams();
         $requestParams = $slimRequest->getParsedBody();
 
-        $fileId = $requestParams['draftDatasetFile']['temporaryFileId'];
+        $fileId = $requestParams['datasetFile']['temporaryFileId'];
 
         import('lib.pkp.classes.file.TemporaryFileManager');
         $temporaryFileManager = new TemporaryFileManager();

@@ -12,7 +12,7 @@ class DraftDatasetFileForm extends FormComponent {
 		$this->id = 'datasetFileForm';
 		$this->method = 'POST';
 
-        $this->addField(new FieldUpload('draftDatasetFile', [
+        $this->addField(new FieldUpload('datasetFile', [
 			'isRequired' => true,
 			'label' => __('plugins.generic.dataverse.modal.addFile.datasetFileLabel'),
 			'options' => [

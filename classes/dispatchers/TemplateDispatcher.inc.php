@@ -285,12 +285,14 @@ class TemplateDispatcher extends DataverseDispatcher
 	{
 		$dispatcher = $request->getDispatcher();
         $context = $request->getContext();
+		$service = $this->getDataverseService();
+		$dataverseName = $service->getDataverseName();
 		
 		$temporaryFileApiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'temporaryFiles');
-		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
 
 		$termsOfUseParams = array(
-            'dataverseName' => $args['dataverseName'],
+            'dataverseName' => $dataverseName,
             'termsOfUseURL' => $dispatcher->url(
                 $request,
                 ROUTE_COMPONENT, 

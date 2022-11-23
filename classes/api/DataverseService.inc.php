@@ -293,4 +293,22 @@ class DataverseService {
 		}
 		return null;
 	}
+
+	public function addDatasetFile(DataverseStudy $study, TemporaryFile $file): ?string
+	{
+		try {
+			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
+			$apiUrl = $dataverseServer . '/api/datasets/:persistentId/add?persistentId=' . $study->getPersistentId();
+
+			$datasetFile = new CURLFile($file->getFilePath() ,null, $file->getOriginalFileName());
+
+			return $this->dataverseClient->depositFileToDataset($apiUrl, $datasetFile);
+		}
+		catch (RuntimeException $e) {
+			$dataverseNotificationMgr = new DataverseNotificationManager();
+			$dataverseNotificationMgr->createNotification($e->getCode());
+			error_log($e->getMessage());
+		}
+		return null;
+	}
 }

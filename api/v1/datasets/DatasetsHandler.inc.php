@@ -13,6 +13,13 @@ class DatasetsHandler extends APIHandler
                     'handler' => array($this, 'edit'),
                     'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
                 ),
+            ),
+            'POST' => array(
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
+                    'handler' => array($this, 'addFile'),
+                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                ),
             )
         );
         parent::__construct();
@@ -45,13 +52,7 @@ class DatasetsHandler extends APIHandler
         $requestParams = $slimRequest->getParsedBody();
         $requestParams['datasetDescription'] = [$requestParams['datasetDescription']];
 
-        $request = Application::get()->getRequest();
-        $contextId = $request->getContext()->getId();
-        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
-		$dispatcher = new DataverseDispatcher($plugin);
-		$configuration = $dispatcher->getDataverseConfiguration($contextId);
-		$serviceFactory = new DataverseServiceFactory();
-		$service = $serviceFactory->build($configuration);
+        $service = $this->getDataverseService($this->getRequest());
 
         $datasetResponse = $service->getDatasetResponse($study);
 
@@ -71,7 +72,47 @@ class DatasetsHandler extends APIHandler
         else {
             return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
         }
+    }
 
+    public function addFile($slimRequest, $response, $args)
+    {
+        $requestParams = $slimRequest->getParsedBody();
+        $request = $this->getRequest();
+		$user = $request->getUser();
+
+        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
+        $fileId = $requestParams['datasetFile']['temporaryFileId'];
+
+        import('lib.pkp.classes.file.TemporaryFileManager');
+        $temporaryFileManager = new TemporaryFileManager();
+        $file = $temporaryFileManager->getFile($fileId, $user->getId());
+        
+        $service = $this->getDataverseService($request);
+        $dataverseResponse = $service->addDatasetFile($study, $file);
+
+        $datasetFileData = [
+            'fileName' => $file->getOriginalFileName()
+        ];
+
+        $temporaryFileManager->deleteById($file->getId(), $user->getId());
+        
+        if (!$dataverseResponse) {
+            return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
+        }
+
+        return $response->withJson($datasetFileData, 200);
+    }
+
+    private function getDataverseService($request): DataverseService
+    {
+        $contextId = $request->getContext()->getId();
+        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
+		$dataverseDispatcher = new DataverseDispatcher($plugin);
+		$configuration = $dataverseDispatcher->getDataverseConfiguration($contextId);
+		$serviceFactory = new DataverseServiceFactory();
+
+		return $serviceFactory->build($configuration);
     }
 
 }
