@@ -110,7 +110,7 @@ msgstr "Depositar arquivo no Dataverse: <strong>{$dataverseName}</strong>, conco
 msgid "plugins.generic.dataverse.termsOfUse.error"
 msgstr "Para depositar este arquivo você deve aceitar os termos de uso."
 
-msgid "plugins.generic.dataverse.modal.deleteDraftDatasetFile"
+msgid "plugins.generic.dataverse.modal.deleteDatasetFile"
 msgstr "Excluir arquivo de dados de pesquisa"
 
 msgid "plugins.generic.dataverse.modal.confirmDelete"

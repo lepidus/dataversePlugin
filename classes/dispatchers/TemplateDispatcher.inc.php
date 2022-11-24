@@ -265,7 +265,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		$datasetFiles = array();
 
 		foreach ($datasetFilesResponse->data as $data) {
-			$datasetFiles[] = ["title" => $data->label];
+			$datasetFiles[] = ["id" => $data->dataFile->id, "title" => $data->label];
 		}
 
 		import('plugins.generic.dataverse.classes.listPanel.DatasetFilesListPanel');
@@ -279,6 +279,11 @@ class TemplateDispatcher extends DataverseDispatcher
 		);
 
 		$this->addComponent($templateMgr, $datasetFilesListPanel);
+
+		$templateMgr->setState([
+			'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
+            'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete'),
+		]);
 	}
 
 	function setupDatasetFileForm($request, $templateMgr, $study): void

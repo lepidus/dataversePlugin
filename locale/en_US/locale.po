@@ -104,7 +104,7 @@ msgstr "To deposit this file you must accept the terms of use."
 msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
 msgstr "Research data file"
 
-msgid "plugins.generic.dataverse.modal.deleteDraftDatasetFile"
+msgid "plugins.generic.dataverse.modal.deleteDatasetFile"
 msgstr "Delete research data file"
 
 msgid "plugins.generic.dataverse.modal.confirmDelete"
