@@ -1,30 +1,111 @@
-(function($) {
+(function ($) {
+  $.pkp.plugins.generic.dataverse = {
+    pageRootComponent: null,
+    errors: [],
+    formSuccess: function (data) {
+      const pageRootComponent =
+        $.pkp.plugins.generic.dataverse.pageRootComponent;
 
-    $(document).ready(function() {
-        pkp.registry._instances.app.components.datasetMetadata.action = appDataverse.datasetApiUrl;
+      $.pkp.plugins.generic.dataverse.refreshItems();
+      pageRootComponent.$modal.hide('datasetFileModal');
+    },
+    datasetFileModalOpen: function () {
+      const pageRootComponent =
+        $.pkp.plugins.generic.dataverse.pageRootComponent;
 
-        const workingPublication = pkp.registry._instances.app.workingPublication;
+      pageRootComponent.components.datasetFileForm.fields.map(
+        (f) => (f.value = '')
+      );
 
-        pkp.eventBus.$on('form-success', (formId, newPublication) => {
-            if (formId === 'datasetMetadata') {
-                pkp.registry._instances.app.workingPublication = workingPublication;
-            }
-		});
+      pageRootComponent.components.datasetFileForm.errors =
+        $.pkp.plugins.generic.dataverse.formErrors;
 
-        const datasetMetadataForm = $('#dataset_metadata > form');
+      pageRootComponent.$modal.show('datasetFileModal');
+    },
+    refreshItems: function () {
+      const pageRootComponent =
+        $.pkp.plugins.generic.dataverse.pageRootComponent;
 
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.attributeName === 'action') {
-                    pkp.registry._instances.app.components.datasetMetadata.action = appDataverse.datasetApiUrl;
-                }
-            });
-        });
+      $.ajax({
+        url: pageRootComponent.components.datasetFileForm.action.replace(
+          'file',
+          'files'
+        ),
+        type: 'GET',
+        error: function (r) {
+          pageRootComponent.ajaxErrorCallback(r);
+        },
+        success: function (r) {
+          pageRootComponent.components.datasetFiles.items = r.items;
+        },
+      });
+    },
+    defineTermsOfUseErrors() {
+      $('input[name="termsOfUse"]').on('change', (e) => {
+        $.pkp.plugins.generic.dataverse.validateTermsOfUse(
+          $(e.target).is(':checked')
+        );
+      });
+    },
+    validateTermsOfUse(value) {
+      const pageRootComponent =
+        $.pkp.plugins.generic.dataverse.pageRootComponent;
 
-        observer.observe(datasetMetadataForm.get(0), {
-            attributeFilter: ['action']
-        });
+      let newErrors = {
+        ...pageRootComponent.components.datasetFileForm.errors,
+      };
+
+      if (!!value) {
+        if (
+          !pageRootComponent.components.datasetFileForm.errors['termsOfUse']
+        ) {
+          return;
+        }
+        delete newErrors['termsOfUse'];
+        pageRootComponent.components.datasetFileForm.errors = newErrors;
+      } else {
+        if (pageRootComponent.components.datasetFileForm.errors['termsOfUse']) {
+          return;
+        }
+        newErrors['termsOfUse'] =
+          $.pkp.plugins.generic.dataverse.formErrors['termsOfUse'];
+
+        pageRootComponent.components.datasetFileForm.errors = newErrors;
+      }
+    },
+  };
+
+  $(document).ready(function () {
+    const pageRootComponent = pkp.registry._instances.app;
+
+    $.pkp.plugins.generic.dataverse.pageRootComponent = pageRootComponent;
+    $.pkp.plugins.generic.dataverse.formErrors =
+      pageRootComponent.components.datasetFileForm.errors;
+
+    pageRootComponent.components.datasetMetadata.action =
+      appDataverse.datasetApiUrl;
+
+    const workingPublication = pageRootComponent.workingPublication;
+
+    pkp.eventBus.$on('form-success', (formId, newPublication) => {
+      if (formId === 'datasetMetadata') {
+        pageRootComponent.workingPublication = workingPublication;
+      }
     });
-    
 
-}(jQuery));
+    const datasetMetadataForm = $('#dataset_metadata > form');
+
+    const observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if (mutation.attributeName === 'action') {
+          pageRootComponent.components.datasetMetadata.action =
+            appDataverse.datasetApiUrl;
+        }
+      });
+    });
+
+    observer.observe(datasetMetadataForm.get(0), {
+      attributeFilter: ['action'],
+    });
+  });
+})(jQuery);

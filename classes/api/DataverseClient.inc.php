@@ -144,6 +144,17 @@ class DataverseClient {
         return $this->execRequest($dataverseRequest);
     }
 
+    public function depositFileToDataset(string $apiUrl, CURLFile $file): ?string
+    {
+        $dataverseRequest = $this->curlInit($apiUrl);
+
+        curl_setopt($dataverseRequest, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($dataverseRequest, CURLOPT_POST, true);
+        curl_setopt($dataverseRequest, CURLOPT_POSTFIELDS, ['file' => $file]);
+
+        return $this->execRequest($dataverseRequest);
+    }
+
     private function curlInit(string $url, array $headers = [])
     {
         $dataverseRequest = curl_init();
