@@ -261,6 +261,9 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	private function setupDatasetFilesList($request, $templateMgr, $study): void
 	{
+		$context = $request->getContext();
+		$dispatcher = $request->getDispatcher();
+
 		$datasetFilesResponse = $this->getDataverseService()->getDatasetFiles($study);
 		$datasetFiles = array();
 
@@ -268,12 +271,14 @@ class TemplateDispatcher extends DataverseDispatcher
 			$datasetFiles[] = ["id" => $data->dataFile->id, "title" => $data->label];
 		}
 
+		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file', null, null, ['fileId' => '__id__']);
+
 		import('plugins.generic.dataverse.classes.listPanel.DatasetFilesListPanel');
 		$datasetFilesListPanel = new DatasetFilesListPanel(
 			'datasetFiles',
 			__('plugins.generic.dataverse.researchData.files'),
 			[
-				'apiUrl' => '',
+				'apiUrl' => $apiUrl,
 				'items' => $datasetFiles
 			]
 		);

@@ -26,6 +26,8 @@
       const pageRootComponent =
         $.pkp.plugins.generic.dataverse.pageRootComponent;
 
+      pageRootComponent.components.datasetFiles.isLoading = true;
+
       $.ajax({
         url: pageRootComponent.components.datasetFileForm.action.replace(
           'file',
@@ -37,6 +39,7 @@
         },
         success: function (r) {
           pageRootComponent.components.datasetFiles.items = r.items;
+          pageRootComponent.components.datasetFiles.isLoading = false;
         },
       });
     },
@@ -100,8 +103,9 @@
 				}),
 				callback: () => {
 					var self = pageRootComponent;
+          pageRootComponent.components.datasetFiles.isLoading = true;
 					$.ajax({
-						url: pageRootComponent.apiUrl + '/' + id,
+						url: pageRootComponent.components.datasetFiles.apiUrl.replace('__id__', id),
 						type: 'POST',
 						headers: {
 							'X-Csrf-Token': pkp.currentUser.csrfToken,
@@ -109,10 +113,12 @@
 						},
 						error: self.ajaxErrorCallback,
 						success: function(r) {
-              console.log(r);
 							self.components.datasetFiles.items = r.items;
               
 							self.$modal.hide('delete');
+
+              pageRootComponent.components.datasetFiles.isLoading = false;
+
 							self.setFocusIn(self.$el);
 						}
 					});

@@ -28,6 +28,7 @@
             >
                 <pkp-header slot="header">
                     <h2>{translate key="plugins.generic.dataverse.researchData"}</h2>
+                    <spinner v-if="components.datasetFiles.isLoading"></spinner>
                     <template slot="actions">
                         <pkp-button ref="datasetFileModalButton" @click="$.pkp.plugins.generic.dataverse.datasetFileModalOpen">
                             {translate key="plugins.generic.dataverse.datasetButton"}

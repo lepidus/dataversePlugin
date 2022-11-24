@@ -6,6 +6,8 @@ class DatasetFilesListPanel extends ListPanel
 {
 	public $apiUrl = '';
 
+	public $isLoading = false;
+
     function __construct($id, $title, $args = [])
 	{
 		parent::__construct($id, $title, $args);
@@ -19,6 +21,7 @@ class DatasetFilesListPanel extends ListPanel
 			$config,
 			[
 				'apiUrl' => $this->apiUrl,
+				'isLoading' => $this->isLoading,
 			]
 		);
 
