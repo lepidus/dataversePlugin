@@ -38,6 +38,7 @@
             <modal
                 v-bind="MODAL_PROPS"
                 name="datasetFileModal"
+                @opened="$.pkp.plugins.generic.dataverse.defineTermsOfUseErrors"
                 @closed="setFocusToRef('datasetFileModalButton')"
             >
                 <modal-content

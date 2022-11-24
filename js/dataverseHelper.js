@@ -1,6 +1,7 @@
 (function ($) {
   $.pkp.plugins.generic.dataverse = {
     pageRootComponent: null,
+    errors: [],
     formSuccess: function (data) {
       const pageRootComponent =
         $.pkp.plugins.generic.dataverse.pageRootComponent;
@@ -15,13 +16,15 @@
       pageRootComponent.components.datasetFileForm.fields.map(
         (f) => (f.value = '')
       );
+
+      pageRootComponent.components.datasetFileForm.errors =
+        $.pkp.plugins.generic.dataverse.formErrors;
+
       pageRootComponent.$modal.show('datasetFileModal');
     },
     refreshItems: function () {
       const pageRootComponent =
         $.pkp.plugins.generic.dataverse.pageRootComponent;
-
-      console.log('ok');
 
       $.ajax({
         url: pageRootComponent.components.datasetFileForm.action.replace(
@@ -29,17 +32,46 @@
           'files'
         ),
         type: 'GET',
-
         error: function (r) {
-          console.log('error');
           pageRootComponent.ajaxErrorCallback(r);
         },
-
         success: function (r) {
-          console.log(r);
           pageRootComponent.components.datasetFiles.items = r.items;
         },
       });
+    },
+    defineTermsOfUseErrors() {
+      $('input[name="termsOfUse"]').on('change', (e) => {
+        $.pkp.plugins.generic.dataverse.validateTermsOfUse(
+          $(e.target).is(':checked')
+        );
+      });
+    },
+    validateTermsOfUse(value) {
+      const pageRootComponent =
+        $.pkp.plugins.generic.dataverse.pageRootComponent;
+
+      let newErrors = {
+        ...pageRootComponent.components.datasetFileForm.errors,
+      };
+
+      if (!!value) {
+        if (
+          !pageRootComponent.components.datasetFileForm.errors['termsOfUse']
+        ) {
+          return;
+        }
+        delete newErrors['termsOfUse'];
+        pageRootComponent.components.datasetFileForm.errors = newErrors;
+      } else {
+        if (pageRootComponent.components.datasetFileForm.errors['termsOfUse']) {
+          return;
+        }
+        newErrors['termsOfUse'] =
+          $.pkp.plugins.generic.dataverse.formErrors['termsOfUse'];
+
+        pageRootComponent.components.datasetFileForm.errors = newErrors;
+      }
     },
   };
 
@@ -47,6 +79,8 @@
     const pageRootComponent = pkp.registry._instances.app;
 
     $.pkp.plugins.generic.dataverse.pageRootComponent = pageRootComponent;
+    $.pkp.plugins.generic.dataverse.formErrors =
+      pageRootComponent.components.datasetFileForm.errors;
 
     pageRootComponent.components.datasetMetadata.action =
       appDataverse.datasetApiUrl;
