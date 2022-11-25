@@ -34,6 +34,11 @@ class DatasetsHandler extends APIHandler
                     'handler' => array($this, 'deleteFile'),
                     'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
                 ),
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}',
+                    'handler' => array($this, 'deleteDataset'),
+                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                ),
             )
         );
         parent::__construct();
@@ -147,6 +152,23 @@ class DatasetsHandler extends APIHandler
         
         $items = $this->getDatasetFiles($study);
         return $response->withJson(['items' => $items], 200);
+
+    }
+
+    public function deleteDataset($slimRequest, $response, $args)
+    {
+        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
+
+        $service = $this->getDataverseService($this->getRequest());
+
+        $datasetDeleted = $service->deleteDraftDataset($study);
+
+        if (!$datasetDeleted) {
+            return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
+        }
+        
+        return $response->withJson(['message' => 'ok'], 200);
 
     }
 

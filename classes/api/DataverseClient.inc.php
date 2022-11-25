@@ -135,6 +135,14 @@ class DataverseClient {
         return true;
     }
 
+    public function deleteDataset(string $url): bool
+    {
+        $dataverseRequest = $this->curlInit($url);
+        curl_setopt($dataverseRequest, CURLOPT_CUSTOMREQUEST, "DELETE");
+
+        return $this->execRequest($dataverseRequest);
+    }
+
     public function retrieveJsonRepresentation(string $apiUrl): ?string
     {
         $dataverseRequest = $this->curlInit($apiUrl);

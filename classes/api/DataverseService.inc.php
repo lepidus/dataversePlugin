@@ -324,6 +324,29 @@ class DataverseService {
 			$dataverseNotificationMgr->createNotification($e->getCode());
 			error_log($e->getMessage());
 		}
-		return null;
+		return false;
+	}
+
+	public function deleteDraftDataset($study): bool
+	{
+		try {
+			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
+			$apiUrl = $dataverseServer . 'api/datasets/:persistentId/versions/:draft?persistentId=' . $study->getPersistentId();
+
+			$response = $this->dataverseClient->deleteDataset($apiUrl);
+
+			if(json_decode($response)->status == 'OK') {
+				$dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+				return $dataverseStudyDAO->deleteStudy($study);
+			}
+		}
+		catch (RuntimeException $e) {
+			$dataverseNotificationMgr = new DataverseNotificationManager();
+			$dataverseNotificationMgr->createNotification($e->getCode());
+
+			error_log($e->getMessage());
+
+			return false;
+		}
 	}
 }
