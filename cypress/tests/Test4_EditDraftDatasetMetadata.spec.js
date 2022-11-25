@@ -3,8 +3,7 @@ import '../support/commands';
 const adminUser = Cypress.env('adminUser');
 const adminPassword = Cypress.env('adminPassword');
 const serverName = Cypress.env('serverName');
-const dataverseServerName = Cypress.env('dataverseServerName');
-const currentYear = new Date().getFullYear();
+const serverPath = Cypress.env('serverPath') || 'publicknowledge';
 
 let submissionData = {
 	submitterRole: 'Preprint Server manager',
@@ -312,7 +311,7 @@ describe('Edit Draft Dataset Files', function() {
 	it('Adds file to dataset', function() {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
-			'index.php/' + serverName + '/workflow/access/' + submissionData.id
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
@@ -334,6 +333,26 @@ describe('Edit Draft Dataset Files', function() {
 			'riseOfEmpireMachine.pdf'
 		);
 	});
+
+	it('Delete Dataset file', function() {
+		cy.login(adminUser, adminPassword);
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('button[aria-controls="dataset_files"]').click();
+		cy.get('.listPanel__item:contains(riseOfEmpireMachine.pdf) button:contains(Delete)').click();
+		cy.get('#datasetFiles .listPanel__items').contains(
+			'riseOfEmpireMachine.pdf'
+		);
+		cy.get('[data-modal="delete"] button:contains(Yes)').click();
+		cy.waitJQuery();
+		cy.get('#datasetFiles .listPanel__items').should(
+			'not.include.text',
+			'riseOfEmpireMachine.pdf'
+		);
+	});
 });
 
 describe('Check dataset data edit is disabled', function() {
@@ -346,7 +365,7 @@ describe('Check dataset data edit is disabled', function() {
 			.contains('Dashboard')
 			.click();
 		cy.visit(
-			'index.php/' + serverName + '/workflow/access/' + submissionData.id
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
