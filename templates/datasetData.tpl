@@ -9,8 +9,15 @@
  *
  *}
 
-<section class="item data_citation" id="data_citation">
-    <h2 class="label">{translate key="plugins.generic.dataverse.researchData"}</h2>
+<section class="item datasetData" id="datasetData">
+<pkp-header>
+    <h1>{translate key="plugins.generic.dataverse.researchData"}</h1>
+    <template slot="actions">
+        <pkp-button class="pkpButton--isWarnable">
+            {translate key="plugins.generic.dataverse.researchData.delete"}
+        </pkp-button>
+    </template>
+    </pkp-header>
     <span class="value">
         <p></p>
     </span>
@@ -22,53 +29,55 @@
             ></pkp-form>
         </tab>
         <tab id="dataset_files" label={translate key="plugins.generic.dataverse.researchData.files"}>
-            <list-panel 
-                v-bind="components.datasetFiles"
-				@set="set"
-            >
-                <pkp-header slot="header">
-                    <h2>{translate key="plugins.generic.dataverse.researchData"}</h2>
-                    <spinner v-if="components.datasetFiles.isLoading"></spinner>
-                    <template slot="actions">
-                        <pkp-button ref="datasetFileModalButton" @click="$.pkp.plugins.generic.dataverse.datasetFileModalOpen">
-                            {translate key="plugins.generic.dataverse.datasetButton"}
-                        </pkp-button>
-                    </template>
-                </pkp-header>
-                <template v-slot:item="item">
-                    <div class="listPanel__itemSummary">
-                        <div class="listPanel__itemIdentity">
-                            <div class="listPanel__itemTitle">
-                                {{ item.item.title }}
+            <div class="filesList">
+                <list-panel 
+                    v-bind="components.datasetFiles"
+                    @set="set"
+                >
+                    <pkp-header slot="header">
+                        <h2>{translate key="plugins.generic.dataverse.researchData"}</h2>
+                        <spinner v-if="components.datasetFiles.isLoading"></spinner>
+                        <template slot="actions">
+                            <pkp-button ref="datasetFileModalButton" @click="$.pkp.plugins.generic.dataverse.datasetFileModalOpen">
+                                {translate key="plugins.generic.dataverse.datasetButton"}
+                            </pkp-button>
+                        </template>
+                    </pkp-header>
+                    <template v-slot:item="item">
+                        <div class="listPanel__itemSummary">
+                            <div class="listPanel__itemIdentity">
+                                <div class="listPanel__itemTitle">
+                                    {{ item.item.title }}
+                                </div>
+                            </div>
+                            <div class="listPanel__itemActions">
+                                <pkp-button @click="$.pkp.plugins.generic.dataverse.openDeleteModal(item.item.id)" class="pkpButton--isWarnable">
+                                    {{ __('common.delete') }}
+                                </pkp-button>
                             </div>
                         </div>
-                        <div class="listPanel__itemActions">
-                            <pkp-button @click="$.pkp.plugins.generic.dataverse.openDeleteModal(item.item.id)" class="pkpButton--isWarnable">
-                                {{ __('common.delete') }}
-                            </pkp-button>
-                        </div>
-                    </div>
-			    </template>
-            </list-panel>
-            <modal
-                v-bind="MODAL_PROPS"
-                name="datasetFileModal"
-                @opened="$.pkp.plugins.generic.dataverse.defineTermsOfUseErrors"
-                @closed="setFocusToRef('datasetFileModalButton')"
-            >
-                <modal-content
-                    close-label="common.close"
-                    modal-name="datasetFileModal"
-                    title="{translate key="plugins.generic.dataverse.modal.addFile.title"}"
+                    </template>
+                </list-panel>
+                <modal
+                    v-bind="MODAL_PROPS"
+                    name="datasetFileModal"
+                    @opened="$.pkp.plugins.generic.dataverse.defineTermsOfUseErrors"
+                    @closed="setFocusToRef('datasetFileModalButton')"
                 >
-                    <pkp-form style="margin: -1rem"
-                        v-bind="components.datasetFileForm"
-                        @set="set"
-                        @success="$.pkp.plugins.generic.dataverse.formSuccess"
+                    <modal-content
+                        close-label="common.close"
+                        modal-name="datasetFileModal"
+                        title="{translate key="plugins.generic.dataverse.modal.addFile.title"}"
                     >
-                    </pkp-form>
-                </modal-content>
-            </modal>
+                        <pkp-form style="margin: -1rem"
+                            v-bind="components.datasetFileForm"
+                            @set="set"
+                            @success="$.pkp.plugins.generic.dataverse.formSuccess"
+                        >
+                        </pkp-form>
+                    </modal-content>
+                </modal>
+            </div>
         </tab>
     </tabs>
 </section>

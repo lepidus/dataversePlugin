@@ -119,6 +119,9 @@ msgstr "Metadata"
 msgid "plugins.generic.dataverse.researchData.files"
 msgstr "Files"
 
+msgid "plugins.generic.dataverse.researchData.delete"
+msgstr "Delele research data"
+
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Title"
 

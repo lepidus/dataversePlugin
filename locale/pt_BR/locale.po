@@ -125,6 +125,9 @@ msgstr "Metadados"
 msgid "plugins.generic.dataverse.researchData.files"
 msgstr "Arquivos"
 
+msgid "plugins.generic.dataverse.researchData.delete"
+msgstr "Excluir dados de pesquisa"
+
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Título"
 
