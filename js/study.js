@@ -14,7 +14,7 @@ function getCitation(fields) {
 } 
 
 async function insertCitationInTemplate() {
-  const citationSection = document.getElementById('data_citation')
+  const citationSection = document.getElementById('datasetData')
   const citationParagraph = citationSection.querySelector('p')
 
   citationParagraph.textContent = "loading..."

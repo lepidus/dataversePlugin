@@ -342,7 +342,9 @@ describe('Edit Draft Dataset Files', function() {
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('button[aria-controls="dataset_files"]').click();
-		cy.get('.listPanel__item:contains(riseOfEmpireMachine.pdf) button:contains(Delete)').click();
+		cy.get(
+			'.listPanel__item:contains(riseOfEmpireMachine.pdf) button:contains(Delete)'
+		).click();
 		cy.get('#datasetFiles .listPanel__items').contains(
 			'riseOfEmpireMachine.pdf'
 		);
@@ -355,8 +357,8 @@ describe('Edit Draft Dataset Files', function() {
 	});
 });
 
-describe('Check dataset data edit is disabled', function() {
-	it('Check dataset metadata edit is disabled when preprint is published', function() {
+describe('Delete draft dataset', function() {
+	it('Check draft dataset button delete', function() {
 		cy.login(adminUser, adminPassword);
 		cy.get('a')
 			.contains(adminUser)
@@ -369,21 +371,30 @@ describe('Check dataset data edit is disabled', function() {
 		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
-		cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should(
-			'be.visible'
+		cy.get('button')
+			.contains('Delete research data')
+			.should('be.visible');
+	});
+
+	it('Delete draft dataset', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
-		cy.get('.pkpPublication__status span').contains('Unposted');
-		cy.get(
-			'.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton'
-		).click();
-		cy.get('.pkp_modal_panel button:contains("Post")').click();
-		cy.wait(2000);
-		cy.get(
-			'.pkpPublication__versionPublished:contains("This version has been posted and can not be edited.")'
-		);
-		cy.get('.pkpPublication__status span').contains('Posted');
-		cy.get(
-			'div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]'
-		).should('be.disabled');
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('button')
+			.contains('Delete research data')
+			.click();
+		cy.get('[data-modal="delete"] button')
+			.contains('Yes')
+			.click();
+		cy.get('button[aria-controls="datasetTab"]').should('not.exist');
 	});
 });

@@ -116,6 +116,9 @@ msgstr "Excluir arquivo de dados de pesquisa"
 msgid "plugins.generic.dataverse.modal.confirmDelete"
 msgstr "Deseja realmente excluir permanentemente o arquivo de dados de pesquisa <strong>{$title}</strong>?"
 
+msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
+msgstr "Deseja realmente excluir permanentemente os dados de pesquisa relacionados a esse preprint?"
+
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
 
@@ -124,6 +127,9 @@ msgstr "Metadados"
 
 msgid "plugins.generic.dataverse.researchData.files"
 msgstr "Arquivos"
+
+msgid "plugins.generic.dataverse.researchData.delete"
+msgstr "Excluir dados de pesquisa"
 
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Título"

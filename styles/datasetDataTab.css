@@ -1,0 +1,24 @@
+#datasetData, #datasetData .filesList {
+    margin: 0px 0px 0px calc(-1px - 2rem);
+    border: 1px solid #ddd;
+    border-top: none;
+}
+
+#datasetData .value > p{
+    padding: 0 2rem;
+}
+
+#datasetData .pkpTabs {
+    margin: 0;
+}
+
+#datasetData .pkpTabs::before {
+    content: "";
+    display: table;
+    border-bottom: 1px solid #ddd;
+    width: 100%;
+}
+
+#datasetData .filesList {
+    padding: 2rem;
+}

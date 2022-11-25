@@ -161,6 +161,13 @@ class TemplateDispatcher extends DataverseDispatcher
 						'contexts' => ['backend']
 					]
 				);
+				$templateMgr->addStyleSheet(
+					'datasetData',
+					$request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/styles/datasetDataTab.css',
+					[
+						'contexts' => ['backend']
+					]
+				);
 				$this->addJavaScriptVariables($request, $templateMgr, $study);
 
 				$this->setupDatasetMetadataForm($request, $templateMgr, $study);
@@ -287,7 +294,9 @@ class TemplateDispatcher extends DataverseDispatcher
 
 		$templateMgr->setState([
 			'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
+			'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
             'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete'),
+            'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
 		]);
 	}
 

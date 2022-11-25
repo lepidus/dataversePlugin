@@ -56,28 +56,28 @@ msgstr "Dataset published in: {$dataverseUrl}."
 msgid "plugins.generic.dataverse.notification.statusBadRequest"
 msgstr "The request could not be processed by the Dataverse server due to request errors"
 
-msgid "plugins.generic.dataverse.notification.statusUnauthorized" 
+msgid "plugins.generic.dataverse.notification.statusUnauthorized"
 msgstr "Unauthorized access. You do not have permission to access content on this server"
 
 msgid "plugins.generic.dataverse.notification.statusForbidden"
 msgstr "Access forbidden. Verify your credential to access the {$dataverseUrl}"
 
-msgid "plugins.generic.dataverse.notification.statusNotFound" 
+msgid "plugins.generic.dataverse.notification.statusNotFound"
 msgstr "The server cannot find the requested resource"
 
-msgid "plugins.generic.dataverse.notification.statusPreconditionFailed" 
+msgid "plugins.generic.dataverse.notification.statusPreconditionFailed"
 msgstr "Request header conditions not satisfied"
 
-msgid "plugins.generic.dataverse.notification.statusPayloadTooLarge" 
+msgid "plugins.generic.dataverse.notification.statusPayloadTooLarge"
 msgstr "The request entity is larger than limits defined by server"
 
-msgid "plugins.generic.dataverse.notification.statusUnsupportedMediaType" 
+msgid "plugins.generic.dataverse.notification.statusUnsupportedMediaType"
 msgstr "The format of the media sent in the request is not supported by the server"
 
-msgid "plugins.generic.dataverse.notification.statusInternalServerError" 
+msgid "plugins.generic.dataverse.notification.statusInternalServerError"
 msgstr "The server encountered an internal error that prevented it from fulfilling this request."
 
-msgid "plugins.generic.dataverse.notification.statusUnavailable" 
+msgid "plugins.generic.dataverse.notification.statusUnavailable"
 msgstr "Service Unavailable. {$dataverseUrl} is temporarily busy. Please try again later"
 
 msgid "plugins.generic.dataverse.notification.unknownError"
@@ -110,6 +110,9 @@ msgstr "Delete research data file"
 msgid "plugins.generic.dataverse.modal.confirmDelete"
 msgstr "Are you sure you want to permanently delete the research data file <strong>{$title}</strong>?"
 
+msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
+msgstr "Are you sure you want to permanently delete the research data related to this preprint?"
+
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "The draft dataset file you requested was not found."
 
@@ -118,6 +121,9 @@ msgstr "Metadata"
 
 msgid "plugins.generic.dataverse.researchData.files"
 msgstr "Files"
+
+msgid "plugins.generic.dataverse.researchData.delete"
+msgstr "Delete research data"
 
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Title"

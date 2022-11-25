@@ -135,6 +135,14 @@ class DataverseClient {
         return true;
     }
 
+    public function deleteDataset(string $url): ?string
+    {
+        $dataverseRequest = $this->curlInit($url);
+        curl_setopt($dataverseRequest, CURLOPT_CUSTOMREQUEST, 'DELETE');
+
+        return $this->execRequest($dataverseRequest);
+    }
+
     public function retrieveJsonRepresentation(string $apiUrl): ?string
     {
         $dataverseRequest = $this->curlInit($apiUrl);
@@ -187,6 +195,7 @@ class DataverseClient {
     private function execRequest($request): ?string
     {
         $resp = curl_exec($request);
+        if (empty($resp)) $cError = curl_error($request);
         $status = curl_getinfo($request, CURLINFO_HTTP_CODE);
         curl_close($request);
 
@@ -194,9 +203,14 @@ class DataverseClient {
             return $resp;
         }
         else {
-            $error = json_decode($resp);
-            $errorMessage = empty($error->message) ? $resp : $error->message;
-            throw new RuntimeException($errorMessage, $status);
+            if (!empty($curlError)) {
+                throw new RuntimeException($curlError, $status);
+            }
+            else {
+                $error = json_decode($resp);
+                $errorMessage = empty($error->message) ? $resp : $error->message;
+                throw new RuntimeException($errorMessage, $status);
+            }
         }
     }
     
