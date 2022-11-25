@@ -13,7 +13,10 @@
 <pkp-header>
     <h1>{translate key="plugins.generic.dataverse.researchData"}</h1>
     <template slot="actions">
-        <pkp-button class="pkpButton--isWarnable">
+        <pkp-button
+            @click="$.pkp.plugins.generic.dataverse.openDeleteDatasetModal"
+            class="pkpButton--isWarnable"
+        >
             {translate key="plugins.generic.dataverse.researchData.delete"}
         </pkp-button>
     </template>
@@ -22,7 +25,10 @@
         <p></p>
     </span>
     <tabs label="Dataset data">
-        <tab id="dataset_metadata" label={translate key="plugins.generic.dataverse.researchData.metadata"}>
+        <tab 
+            id="dataset_metadata" 
+            label={translate key="plugins.generic.dataverse.researchData.metadata"}
+        >
             <pkp-form
                 v-bind="components.datasetMetadata"
                 @set="set"
@@ -38,7 +44,10 @@
                         <h2>{translate key="plugins.generic.dataverse.researchData"}</h2>
                         <spinner v-if="components.datasetFiles.isLoading"></spinner>
                         <template slot="actions">
-                            <pkp-button ref="datasetFileModalButton" @click="$.pkp.plugins.generic.dataverse.datasetFileModalOpen">
+                            <pkp-button 
+                                ref="datasetFileModalButton" 
+                                @click="$.pkp.plugins.generic.dataverse.datasetFileModalOpen"
+                            >
                                 {translate key="plugins.generic.dataverse.datasetButton"}
                             </pkp-button>
                         </template>
@@ -51,7 +60,10 @@
                                 </div>
                             </div>
                             <div class="listPanel__itemActions">
-                                <pkp-button @click="$.pkp.plugins.generic.dataverse.openDeleteModal(item.item.id)" class="pkpButton--isWarnable">
+                                <pkp-button 
+                                    @click="$.pkp.plugins.generic.dataverse.openDeleteModal(item.item.id)" 
+                                    class="pkpButton--isWarnable"
+                                >
                                     {{ __('common.delete') }}
                                 </pkp-button>
                             </div>

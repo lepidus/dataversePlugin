@@ -51,7 +51,7 @@ class DataverseStudyDAO extends DAO {
 		return $study->getId();
 	}
 
-    function deleteStudy(DataverseStudy $study): void
+    function deleteStudy(DataverseStudy $study): bool
     {
         return $this->update('DELETE FROM dataverse_studies WHERE study_id = ?', [(int) $study->getId()]);
     }

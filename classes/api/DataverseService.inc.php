@@ -331,7 +331,7 @@ class DataverseService {
 	{
 		try {
 			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
-			$apiUrl = $dataverseServer . 'api/datasets/:persistentId/versions/:draft?persistentId=' . $study->getPersistentId();
+			$apiUrl = $dataverseServer . '/api/datasets/:persistentId/versions/:draft?persistentId=' . $study->getPersistentId();
 
 			$response = $this->dataverseClient->deleteDataset($apiUrl);
 

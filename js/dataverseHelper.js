@@ -80,51 +80,77 @@
       const pageRootComponent =
         $.pkp.plugins.generic.dataverse.pageRootComponent;
 
-			const datasetFile = pageRootComponent.components.datasetFiles.items.find(d => d.id === id);
-			
+      const datasetFile = pageRootComponent.components.datasetFiles.items.find(d => d.id === id);
+
       if (typeof datasetFile === 'undefined') {
-				pageRootComponent.openDialog({
-					confirmLabel: pageRootComponent.__('common.ok'),
-					modalName: 'unknownError',
-					message: pageRootComponent.__('common.unknownError'),
-					title: pageRootComponent.__('common.error'),
-					callback: () => {
-						pageRootComponent.$modal.hide('unknownError');
-					}
-				});
-				return;
-			}
-			pageRootComponent.openDialog({
-				cancelLabel: pageRootComponent.__('common.no'),
-				modalName: 'delete',
-				title: pageRootComponent.deleteDatasetFileLabel,
-				message: pageRootComponent.replaceLocaleParams(pageRootComponent.confirmDeleteMessage, {
-					title: datasetFile.title
-				}),
-				callback: () => {
-					var self = pageRootComponent;
+        pageRootComponent.openDialog({
+          confirmLabel: pageRootComponent.__('common.ok'),
+          modalName: 'unknownError',
+          message: pageRootComponent.__('common.unknownError'),
+          title: pageRootComponent.__('common.error'),
+          callback: () => {
+            pageRootComponent.$modal.hide('unknownError');
+          }
+        });
+        return;
+      }
+      pageRootComponent.openDialog({
+        cancelLabel: pageRootComponent.__('common.no'),
+        modalName: 'delete',
+        title: pageRootComponent.deleteDatasetFileLabel,
+        message: pageRootComponent.replaceLocaleParams(pageRootComponent.confirmDeleteMessage, {
+          title: datasetFile.title
+        }),
+        callback: () => {
+          var self = pageRootComponent;
           pageRootComponent.components.datasetFiles.isLoading = true;
-					$.ajax({
-						url: pageRootComponent.components.datasetFiles.apiUrl.replace('__id__', id),
-						type: 'POST',
-						headers: {
-							'X-Csrf-Token': pkp.currentUser.csrfToken,
-							'X-Http-Method-Override': 'DELETE'
-						},
-						error: self.ajaxErrorCallback,
-						success: function(r) {
-							self.components.datasetFiles.items = r.items;
-              
-							self.$modal.hide('delete');
+          $.ajax({
+            url: pageRootComponent.components.datasetFiles.apiUrl.replace('__id__', id),
+            type: 'POST',
+            headers: {
+              'X-Csrf-Token': pkp.currentUser.csrfToken,
+              'X-Http-Method-Override': 'DELETE'
+            },
+            error: self.ajaxErrorCallback,
+            success: function(r) {
+              self.components.datasetFiles.items = r.items;
+
+              self.$modal.hide('delete');
 
               pageRootComponent.components.datasetFiles.isLoading = false;
 
-							self.setFocusIn(self.$el);
-						}
-					});
-				}
-			});
-		},
+              self.setFocusIn(self.$el);
+            }
+          });
+        }
+      });
+    },
+    openDeleteDatasetModal() {
+      const pageRootComponent =
+        $.pkp.plugins.generic.dataverse.pageRootComponent;
+      
+      pageRootComponent.openDialog({
+        cancelLabel: pageRootComponent.__('common.no'),
+        modalName: 'delete',
+        title: pageRootComponent.deleteDatasetLabel,
+        message: pageRootComponent.confirmDeleteDatasetMessage,
+        callback: () => {
+          $.ajax({
+            url: appDataverse.datasetApiUrl,
+            type: 'POST',
+            headers: {
+              'X-Csrf-Token': pkp.currentUser.csrfToken,
+              'X-Http-Method-Override': 'DELETE'
+            },
+            error: pageRootComponent.ajaxErrorCallback,
+            success: function(r) {
+              pageRootComponent.$modal.hide('delete');
+              location.reload();
+            }
+          });
+        }
+      });
+    },
   };
 
   $(document).ready(function () {

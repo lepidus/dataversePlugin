@@ -110,6 +110,9 @@ msgstr "Delete research data file"
 msgid "plugins.generic.dataverse.modal.confirmDelete"
 msgstr "Are you sure you want to permanently delete the research data file <strong>{$title}</strong>?"
 
+msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
+msgstr "Are you sure you want to permanently delete the research data related to this preprint?"
+
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "The draft dataset file you requested was not found."
 
