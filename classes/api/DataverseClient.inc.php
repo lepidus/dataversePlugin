@@ -5,6 +5,7 @@ require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclie
 
 define('DATAVERSE_PLUGIN_HTTP_STATUS_OK', 200);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_CREATED', 201);
+define('DATAVERSE_PLUGIN_HTTP_STATUS_FILE_DELETED', 204);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST', 400);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_UNAUTHORIZED', 401);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_FORBIDDEN', 403);
@@ -117,6 +118,21 @@ class DataverseClient {
             );
         }
         return ($response->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK);
+    }
+
+    public function deleteFile(string $url): bool
+    {
+        $response = $this->swordClient->deleteResourceContent($url, $this->configuration->getApiToken(), '', '');
+
+        if ($response->sac_status != DATAVERSE_PLUGIN_HTTP_STATUS_FILE_DELETED) {
+            throw new RuntimeException(
+                $response->sac_statusmessage,
+                $response->sac_status
+            );
+            return false;
+        }
+
+        return true;
     }
 
     public function retrieveJsonRepresentation(string $apiUrl): ?string

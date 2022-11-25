@@ -26,6 +26,8 @@
       const pageRootComponent =
         $.pkp.plugins.generic.dataverse.pageRootComponent;
 
+      pageRootComponent.components.datasetFiles.isLoading = true;
+
       $.ajax({
         url: pageRootComponent.components.datasetFileForm.action.replace(
           'file',
@@ -37,6 +39,7 @@
         },
         success: function (r) {
           pageRootComponent.components.datasetFiles.items = r.items;
+          pageRootComponent.components.datasetFiles.isLoading = false;
         },
       });
     },
@@ -73,6 +76,55 @@
         pageRootComponent.components.datasetFileForm.errors = newErrors;
       }
     },
+    openDeleteModal(id) {
+      const pageRootComponent =
+        $.pkp.plugins.generic.dataverse.pageRootComponent;
+
+			const datasetFile = pageRootComponent.components.datasetFiles.items.find(d => d.id === id);
+			
+      if (typeof datasetFile === 'undefined') {
+				pageRootComponent.openDialog({
+					confirmLabel: pageRootComponent.__('common.ok'),
+					modalName: 'unknownError',
+					message: pageRootComponent.__('common.unknownError'),
+					title: pageRootComponent.__('common.error'),
+					callback: () => {
+						pageRootComponent.$modal.hide('unknownError');
+					}
+				});
+				return;
+			}
+			pageRootComponent.openDialog({
+				cancelLabel: pageRootComponent.__('common.no'),
+				modalName: 'delete',
+				title: pageRootComponent.deleteDatasetFileLabel,
+				message: pageRootComponent.replaceLocaleParams(pageRootComponent.confirmDeleteMessage, {
+					title: datasetFile.title
+				}),
+				callback: () => {
+					var self = pageRootComponent;
+          pageRootComponent.components.datasetFiles.isLoading = true;
+					$.ajax({
+						url: pageRootComponent.components.datasetFiles.apiUrl.replace('__id__', id),
+						type: 'POST',
+						headers: {
+							'X-Csrf-Token': pkp.currentUser.csrfToken,
+							'X-Http-Method-Override': 'DELETE'
+						},
+						error: self.ajaxErrorCallback,
+						success: function(r) {
+							self.components.datasetFiles.items = r.items;
+              
+							self.$modal.hide('delete');
+
+              pageRootComponent.components.datasetFiles.isLoading = false;
+
+							self.setFocusIn(self.$el);
+						}
+					});
+				}
+			});
+		},
   };
 
   $(document).ready(function () {

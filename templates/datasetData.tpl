@@ -28,12 +28,27 @@
             >
                 <pkp-header slot="header">
                     <h2>{translate key="plugins.generic.dataverse.researchData"}</h2>
+                    <spinner v-if="components.datasetFiles.isLoading"></spinner>
                     <template slot="actions">
                         <pkp-button ref="datasetFileModalButton" @click="$.pkp.plugins.generic.dataverse.datasetFileModalOpen">
                             {translate key="plugins.generic.dataverse.datasetButton"}
                         </pkp-button>
                     </template>
                 </pkp-header>
+                <template v-slot:item="item">
+                    <div class="listPanel__itemSummary">
+                        <div class="listPanel__itemIdentity">
+                            <div class="listPanel__itemTitle">
+                                {{ item.item.title }}
+                            </div>
+                        </div>
+                        <div class="listPanel__itemActions">
+                            <pkp-button @click="$.pkp.plugins.generic.dataverse.openDeleteModal(item.item.id)" class="pkpButton--isWarnable">
+                                {{ __('common.delete') }}
+                            </pkp-button>
+                        </div>
+                    </div>
+			    </template>
             </list-panel>
             <modal
                 v-bind="MODAL_PROPS"

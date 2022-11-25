@@ -64,7 +64,7 @@ class DraftDatasetFileUploadHandler extends Handler {
                 ],
                 'draftDatasetFileForm' => $draftDatasetFileForm->getConfig(),
             ],
-            'deleteDraftDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDraftDatasetFile'),
+            'deleteDraftDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
             'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete'),
             'apiUrl' => $apiUrl,
             'formErrors' => [

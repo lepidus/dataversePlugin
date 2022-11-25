@@ -27,6 +27,13 @@ class DatasetsHandler extends APIHandler
                     'handler' => array($this, 'getFiles'),
                     'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
                 ),
+            ),
+            'DELETE' => array(
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
+                    'handler' => array($this, 'deleteFile'),
+                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                ),
             )
         );
         parent::__construct();
@@ -116,19 +123,31 @@ class DatasetsHandler extends APIHandler
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        $service = $this->getDataverseService($this->getRequest());
-
-        $datasetFilesResponse = $service->getDatasetFiles($study);
-
-        $datasetFiles = array();
-
-		foreach ($datasetFilesResponse->data as $data) {
-			$datasetFiles[] = ["id" => $data->dataFile->id, "title" => $data->label];
-		}
+        $datasetFiles = $this->getDatasetFiles($study);
 
         ksort($datasetFiles);
 
         return $response->withJson(['items' => $datasetFiles], 200);
+    }
+
+    public function deleteFile($slimRequest, $response, $args)
+    {
+        $queryParams = $slimRequest->getQueryParams();
+
+        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
+
+        $service = $this->getDataverseService($this->getRequest());
+
+        $fileDeleted = $service->deleteDatasetFile($study, $queryParams['fileId']);
+
+        if (!$fileDeleted) {
+            return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
+        }
+        
+        $items = $this->getDatasetFiles($study);
+        return $response->withJson(['items' => $items], 200);
+
     }
 
     private function getDataverseService($request): DataverseService
@@ -140,6 +159,20 @@ class DatasetsHandler extends APIHandler
 		$serviceFactory = new DataverseServiceFactory();
 
 		return $serviceFactory->build($configuration);
+    }
+
+    private function getDatasetFiles($study): array
+    {
+        $service = $this->getDataverseService($this->getRequest());
+        $datasetFilesResponse = $service->getDatasetFiles($study);
+
+        $datasetFiles = array();
+
+		foreach ($datasetFilesResponse->data as $data) {
+			$datasetFiles[] = ['id' => $data->dataFile->id, 'title' => $data->label];
+		}
+
+        return $datasetFiles;
     }
 
 }

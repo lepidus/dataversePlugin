@@ -261,24 +261,34 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	private function setupDatasetFilesList($request, $templateMgr, $study): void
 	{
+		$context = $request->getContext();
+		$dispatcher = $request->getDispatcher();
+
 		$datasetFilesResponse = $this->getDataverseService()->getDatasetFiles($study);
 		$datasetFiles = array();
 
 		foreach ($datasetFilesResponse->data as $data) {
-			$datasetFiles[] = ["title" => $data->label];
+			$datasetFiles[] = ["id" => $data->dataFile->id, "title" => $data->label];
 		}
+
+		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file', null, null, ['fileId' => '__id__']);
 
 		import('plugins.generic.dataverse.classes.listPanel.DatasetFilesListPanel');
 		$datasetFilesListPanel = new DatasetFilesListPanel(
 			'datasetFiles',
 			__('plugins.generic.dataverse.researchData.files'),
 			[
-				'apiUrl' => '',
+				'apiUrl' => $apiUrl,
 				'items' => $datasetFiles
 			]
 		);
 
 		$this->addComponent($templateMgr, $datasetFilesListPanel);
+
+		$templateMgr->setState([
+			'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
+            'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete'),
+		]);
 	}
 
 	function setupDatasetFileForm($request, $templateMgr, $study): void

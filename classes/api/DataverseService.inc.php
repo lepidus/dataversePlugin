@@ -300,9 +300,24 @@ class DataverseService {
 			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
 			$apiUrl = $dataverseServer . '/api/datasets/:persistentId/add?persistentId=' . $study->getPersistentId();
 
-			$datasetFile = new CURLFile($file->getFilePath() ,null, $file->getOriginalFileName());
+			$datasetFile = new CURLFile($file->getFilePath(), null, $file->getOriginalFileName());
 
 			return $this->dataverseClient->depositFileToDataset($apiUrl, $datasetFile);
+		}
+		catch (RuntimeException $e) {
+			$dataverseNotificationMgr = new DataverseNotificationManager();
+			$dataverseNotificationMgr->createNotification($e->getCode());
+			error_log($e->getMessage());
+		}
+		return null;
+	}
+
+	public function deleteDatasetFile(DataverseStudy $study, string $fileId): ?bool
+	{
+		try {
+			$url = preg_replace('/study\/.*/', 'file/' . $fileId, $study->getEditMediaUri());
+
+			return $this->dataverseClient->deleteFile($url);
 		}
 		catch (RuntimeException $e) {
 			$dataverseNotificationMgr = new DataverseNotificationManager();
