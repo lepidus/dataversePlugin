@@ -9,8 +9,12 @@ const currentYear = new Date().getFullYear();
 describe('Deposit Draft Dataverse on Submission', function() {
 	it('Dataverse Plugin Configuration', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a').contains(adminUser).click();
-		cy.get('a').contains('Dashboard').click();
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
 		cy.get('.app__nav a')
 			.contains('Website')
 			.click();
@@ -44,8 +48,12 @@ describe('Deposit Draft Dataverse on Submission', function() {
 
 	it('Create Submission', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a').contains(adminUser).click();
-		cy.get('a').contains('Dashboard').click();
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
 		cy.get('.app__nav a')
 			.contains('Website')
 			.click();
@@ -94,14 +102,18 @@ describe('Deposit Draft Dataverse on Submission', function() {
 describe('Publish Draft Dataverse on Submission Publish', function() {
 	it('Publish Created Submission', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a').contains(adminUser).click();
-		cy.get('a').contains('Dashboard').click();
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
 		cy.get('#myQueue a:contains("View"):first').click();
 		cy.wait(1000);
 		cy.get('li > .pkpButton').click();
 		cy.get('#datasetTab-button').click();
-		cy.get('.label').contains('Research data');
-		cy.get('#data_citation > .value > p').contains(
+		cy.get('.pkpHeader__title h1').contains('Research data');
+		cy.get('#datasetData > .value > p').contains(
 			'Castanheiras, Í. (' +
 				currentYear +
 				'). The Rise of The Machine Empire. ' +
@@ -121,8 +133,12 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 	});
 	it('Goes to preprint view page', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a').contains(adminUser).click();
-		cy.get('a').contains('Dashboard').click();
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
 		cy.get('.pkpTabs__buttons > #archive-button').click();
 		cy.wait(1000);
 		cy.get('#archive a:contains("View"):first').click();
@@ -132,7 +148,7 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 	});
 
 	it('Check Publication has Dataset Citation', function() {
-		cy.get('.label').contains('Research data');
+		cy.get('.pkpHeader__title h1').contains('Research data');
 		cy.get('.value > p').contains(
 			'Castanheiras, Í. (' +
 				currentYear +
@@ -148,8 +164,12 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 describe('Create Submission without research data files', function() {
 	it('Create Submission', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a').contains(adminUser).click();
-		cy.get('a').contains('Dashboard').click();
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
 		cy.get('.app__nav a')
 			.contains('Website')
 			.click();
@@ -185,11 +205,48 @@ describe('Create Submission without research data files', function() {
 
 	it('Verify "Research Data" tab is not visible', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a').contains(adminUser).click();
-		cy.get('a').contains('Dashboard').click();
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
 		cy.get('#myQueue a:contains("View"):first').click();
 		cy.wait(1000);
 		cy.get('li > .pkpButton').click();
 		cy.get('#datasetTab-button').should('not.visible');
+	});
+});
+
+describe('Check dataset data edit is disabled', function() {
+	it('Check dataset metadata edit is disabled when preprint is published', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should(
+			'be.visible'
+		);
+		cy.get('.pkpPublication__status span').contains('Unposted');
+		cy.get(
+			'.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton'
+		).click();
+		cy.get('.pkp_modal_panel button:contains("Post")').click();
+		cy.wait(2000);
+		cy.get(
+			'.pkpPublication__versionPublished:contains("This version has been posted and can not be edited.")'
+		);
+		cy.get('.pkpPublication__status span').contains('Posted');
+		cy.get(
+			'div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]'
+		).should('be.disabled');
 	});
 });
