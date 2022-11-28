@@ -244,8 +244,15 @@ describe('Check dataset data edit is disabled', function() {
 			'.pkpPublication__versionPublished:contains("This version has been posted and can not be edited.")'
 		);
 		cy.get('.pkpPublication__status span').contains('Posted');
+		cy.get('button')
+			.contains('Delete research data')
+			.should('be.disabled');
 		cy.get(
 			'div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]'
 		).should('be.disabled');
+		cy.get('button')
+			.contains('Upload research data')
+			.should('be.disabled');
+		cy.get('#datasetFiles .listPanel__item .listPanel__itemActions button').should('be.disabled');
 	});
 });
