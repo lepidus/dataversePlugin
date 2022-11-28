@@ -101,7 +101,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
 		if (isset($study)) {
-			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetData.tpl'));
+			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
 		}
 
 		return false;
