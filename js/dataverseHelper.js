@@ -179,11 +179,18 @@
           pageRootComponent.components.datasetMetadata.action =
             appDataverse.datasetApiUrl;
         }
+        if (mutation.attributeName === 'disabled') {
+          let disabled = mutation.target.disabled;
+
+          $('#datasetData > .pkpHeader > .pkpHeader__actions > button').prop('disabled', disabled);
+          $('#datasetFiles .pkpHeader > .pkpHeader__actions button').prop('disabled', disabled);
+          $('#datasetFiles .listPanel__item .listPanel__itemActions button').prop('disabled', disabled);
+        }
       });
     });
 
     observer.observe(datasetMetadataForm.get(0), {
-      attributeFilter: ['action'],
+      attributes: true, subtree: true
     });
   });
 })(jQuery);
