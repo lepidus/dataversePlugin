@@ -4,7 +4,53 @@ const adminUser = Cypress.env('adminUser');
 const adminPassword = Cypress.env('adminPassword');
 const serverName = Cypress.env('serverName');
 const dataverseServerName = Cypress.env('dataverseServerName');
+const serverPath = Cypress.env('serverPath') || 'publicknowledge';
 const currentYear = new Date().getFullYear();
+
+const submissionData = {
+	submitterRole: 'Preprint Server manager',
+	title: 'The Rise of The Machine Empire',
+	abstract: 'An example abstract',
+	keywords: ['Modern History'],
+	files: [
+		{
+			galleyLabel: 'CSV',
+			file: 'dummy.pdf',
+			fileName: 'Data Table.pdf'
+		},
+		{
+			galleyLabel: 'JPG',
+			file: 'dummy.pdf',
+			fileName: 'Amostra.pdf'
+		}
+	],
+	additionalAuthors: [
+		{
+			givenName: 'Íris',
+			familyName: 'Castanheiras',
+			email: 'iris@lepidus.com.br',
+			affiliation: 'Preprints da Lepidus',
+			country: 'Argentina'
+		}
+	]
+};
+
+const submissionDataNoFiles = {
+	submitterRole: 'Preprint Server manager',
+	title: 'The Rise of The Machine Empire (no files)',
+	abstract: 'An example abstract',
+	keywords: ['Modern History'],
+	files: [],
+	additionalAuthors: [
+		{
+			givenName: 'Íris',
+			familyName: 'Castanheiras',
+			email: 'iris@lepidus.com.br',
+			affiliation: 'Preprints da Lepidus',
+			country: 'Argentina'
+		}
+	]
+};
 
 describe('Deposit Draft Dataverse on Submission', function() {
 	it('Dataverse Plugin Configuration', function() {
@@ -69,33 +115,7 @@ describe('Deposit Draft Dataverse on Submission', function() {
 			.contains('Submissions')
 			.click();
 
-		cy.DataverseCreateSubmission({
-			submitterRole: 'Preprint Server manager',
-			title: 'The Rise of The Machine Empire',
-			abstract: 'An example abstract',
-			keywords: ['Modern History'],
-			files: [
-				{
-					galleyLabel: 'CSV',
-					file: 'dummy.pdf',
-					fileName: 'Data Table.pdf'
-				},
-				{
-					galleyLabel: 'JPG',
-					file: 'dummy.pdf',
-					fileName: 'Amostra.pdf'
-				}
-			],
-			additionalAuthors: [
-				{
-					givenName: 'Íris',
-					familyName: 'Castanheiras',
-					email: 'iris@lepidus.com.br',
-					affiliation: 'Preprints da Lepidus',
-					country: 'Argentina'
-				}
-			]
-		});
+		cy.DataverseCreateSubmission(submissionData);
 	});
 });
 
@@ -148,7 +168,7 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 	});
 
 	it('Check Publication has Dataset Citation', function() {
-		cy.get('.pkpHeader__title h1').contains('Research data');
+		cy.get('.label').contains('Research data');
 		cy.get('.value > p').contains(
 			'Castanheiras, Í. (' +
 				currentYear +
@@ -185,22 +205,7 @@ describe('Create Submission without research data files', function() {
 			.contains('Submissions')
 			.click();
 
-		cy.DataverseCreateSubmission({
-			submitterRole: 'Preprint Server manager',
-			title: 'The Rise of The Machine Empire (no files)',
-			abstract: 'An example abstract',
-			keywords: ['Modern History'],
-			files: [],
-			additionalAuthors: [
-				{
-					givenName: 'Íris',
-					familyName: 'Castanheiras',
-					email: 'iris@lepidus.com.br',
-					affiliation: 'Preprints da Lepidus',
-					country: 'Argentina'
-				}
-			]
-		});
+		cy.DataverseCreateSubmission(submissionDataNoFiles);
 	});
 
 	it('Verify "Research Data" tab is not visible', function() {
@@ -235,12 +240,6 @@ describe('Check dataset data edit is disabled', function() {
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should(
 			'be.visible'
 		);
-		cy.get('.pkpPublication__status span').contains('Unposted');
-		cy.get(
-			'.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton'
-		).click();
-		cy.get('.pkp_modal_panel button:contains("Post")').click();
-		cy.wait(2000);
 		cy.get(
 			'.pkpPublication__versionPublished:contains("This version has been posted and can not be edited.")'
 		);
