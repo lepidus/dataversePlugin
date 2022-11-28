@@ -278,7 +278,7 @@ class DataverseService {
 	{
 		try {
 			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
-			$apiUrl = $dataverseServer . '/api/datasets/:persistentId/versions/:draft/files?persistentId=' . $study->getPersistentId();
+			$apiUrl = $dataverseServer . '/api/datasets/:persistentId/versions/:latest/files?persistentId=' . $study->getPersistentId();
 
 			$files = $this->dataverseClient->getDatasetFiles($apiUrl);
 
