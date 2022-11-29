@@ -196,6 +196,7 @@
     pkp.eventBus.$on('form-success', (formId, newPublication) => {
       if (formId === 'datasetMetadata') {
         pageRootComponent.workingPublication = workingPublication;
+        insertCitationInTemplate();
       }
     });
   });

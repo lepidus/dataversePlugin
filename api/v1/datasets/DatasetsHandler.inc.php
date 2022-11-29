@@ -27,6 +27,11 @@ class DatasetsHandler extends APIHandler
                     'handler' => array($this, 'getFiles'),
                     'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
                 ),
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}',
+                    'handler' => array($this, 'getCitation'),
+                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                ),
             ),
             'DELETE' => array(
                 array(
@@ -135,6 +140,23 @@ class DatasetsHandler extends APIHandler
         return $response->withJson(['items' => $datasetFiles], 200);
     }
 
+    public function getCitation($slimRequest, $response, $args)
+    {
+        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
+
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $service = $this->getDataverseService($this->getRequest());
+
+        $citation = $service->getStudyCitation($study);
+
+        $data = ['citation' => $citation];
+        return $response->withJson(['data' => $data], 200);
+    }
+    
     public function deleteFile($slimRequest, $response, $args)
     {
         $queryParams = $slimRequest->getQueryParams();
