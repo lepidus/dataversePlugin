@@ -141,8 +141,6 @@ class TemplateDispatcher extends DataverseDispatcher
 
 		if ($template == 'workflow/workflow.tpl' || $template == 'authorDashboard/authorDashboard.tpl') {
 			$request = Application::get()->getRequest();
-			$dispatcher = $request->getDispatcher();
-			$context = $request->getContext();
 			
 			$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
 			$submission = $templateMgr->get_template_vars('submission');
@@ -150,20 +148,6 @@ class TemplateDispatcher extends DataverseDispatcher
 			$study = $this->getSubmissionStudy($submission);
 			if (!empty($study)) {
 
-				$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
-				$data = [
-					'datasetApiUrl' => $apiUrl,
-				];
-
-				$templateMgr->addJavaScript(
-					'dataverseWorkflow',
-					'appDataverse = ' . json_encode($data) . ';',
-					[
-						'inline' => true,
-						'contexts' => ['backend']
-					]
-				);
-				
 				$templateMgr->addJavaScript(
 					'dataverseHelper', 
 					$pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dataverseHelper.js',
@@ -180,10 +164,8 @@ class TemplateDispatcher extends DataverseDispatcher
 					]
 				);
 
-				$service = $this->getDataverseService();
-				$citation = $service->getStudyCitation($study);
-
-				$templateMgr->assign('citation', $citation);
+				$this->loadJavaScript($pluginPath, $templateMgr);
+				$this->addJavaScriptVariables($request, $templateMgr, $study);
 
 				$this->setupDatasetMetadataForm($request, $templateMgr, $study);
 				$this->setupDatasetFilesList($request, $templateMgr, $study);
@@ -195,23 +177,22 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function addJavaScriptVariables($request, $templateManager, $study): void
 	{
+		$dispatcher = $request->getDispatcher();
+		$context = $request->getContext();
+
 		$configuration = $this->getDataverseConfiguration();
 		$dataverseServer = $configuration->getDataverseServer();
-
-		$persistentUri = $study->getPersistentUri();
-		preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches);
-		$persistentId =  "doi:" . $matches[0];
-
-		$editUri = "$dataverseServer/api/datasets/:persistentId/?persistentId=$persistentId";
 
 		$dataverseNotificationMgr = new DataverseNotificationManager();
 		$dataverseUrl = $configuration->getDataverseUrl();
 		$params = ['dataverseUrl' => $dataverseUrl];
 		$errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
 
+		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+
 		$data = [
-			"editUri" => $editUri,
-			"errorMessage" => $errorMessage
+			'datasetApiUrl' => $apiUrl,
+			"errorMessage" => $errorMessage,
 		];
 
 		$templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [

@@ -1,13 +1,8 @@
-async function getStudy() {
-  const response = await fetch(appDataverse.editUri)
+async function getDatasetData() {
+  const response = await fetch(appDataverse.datasetApiUrl)
   const { data } = await response.json()
   return data
 }
-
-function getCitation(fields) {
-  const publication = fields.find(({ typeName }) => typeName === 'publication')
-  return publication.value[0].publicationCitation.value
-} 
 
 async function insertCitationInTemplate() {
   const citationSection = document.getElementById('datasetData')
@@ -15,10 +10,8 @@ async function insertCitationInTemplate() {
 
   citationParagraph.textContent = "loading..."
   try {
-    const study = await getStudy()
-    const { latestVersion: { metadataBlocks: { citation: { fields } } } } = study
-    const citation = getCitation(fields)
-    citationParagraph.innerHTML = citation + ", <a href='"+study.persistentUrl+"'>"+ study.persistentUrl +"</a>" + ", " + study.publisher + ", V" + study.latestVersion.versionNumber
+    const datasetData = await getDatasetData()
+    citationParagraph.innerHTML = datasetData.citation
   } catch (error) {
     citationParagraph.innerHTML = appDataverse.errorMessage
   }
