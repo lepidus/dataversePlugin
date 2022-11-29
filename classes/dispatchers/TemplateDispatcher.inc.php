@@ -17,7 +17,8 @@ class TemplateDispatcher extends DataverseDispatcher
 		HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
 		HookRegistry::register('PreprintHandler::view', array($this, 'loadResources'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
-
+		HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addSubjectField'));
+		
 		parent::__construct($plugin);
 	}
 	
@@ -331,6 +332,16 @@ class TemplateDispatcher extends DataverseDispatcher
 				]
 			]
 		);
+	}
+
+	public function addSubjectField($hookName, $args): string
+	{
+		$templateMgr =& $args[1];
+		$output = &$args[2];
+
+		$output .= $templateMgr->fetch($this->plugin->getTemplateResource('subjectField.tpl'));
+
+		return $output;
 	}
 
 	private function addComponent($templateMgr, $component, $args = []): void

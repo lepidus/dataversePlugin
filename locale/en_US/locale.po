@@ -133,3 +133,9 @@ msgstr "Description"
 
 msgid "plugins.generic.dataverse.metadataForm.keyword"
 msgstr "Keyword"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.label"
+msgstr "Research Data Subject"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.description"
+msgstr "Select the subject of research data to be deposited in Dataverse"
