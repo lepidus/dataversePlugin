@@ -141,16 +141,26 @@ class TemplateDispatcher extends DataverseDispatcher
 
 		if ($template == 'workflow/workflow.tpl' || $template == 'authorDashboard/authorDashboard.tpl') {
 			$request = Application::get()->getRequest();
+			$dispatcher = $request->getDispatcher();
+			$context = $request->getContext();
+			
 			$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
 			$submission = $templateMgr->get_template_vars('submission');
 
 			$study = $this->getSubmissionStudy($submission);
 			if (!empty($study)) {
+
+				$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+				$data = [
+					'apiUrl' => $apiUrl,
+				];
+
 				$templateMgr->addJavaScript(
-					'dataverseWorkflow', 
-					$pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js',
+					'dataverseWorkflow',
+					'appDataverse = ' . json_encode($data) . ';',
 					[
-						'contexts' => ['backend', 'frontend']
+						'inline' => true,
+						'contexts' => ['backend']
 					]
 				);
 				$templateMgr->addJavaScript(
@@ -168,7 +178,11 @@ class TemplateDispatcher extends DataverseDispatcher
 						'contexts' => ['backend']
 					]
 				);
-				$this->addJavaScriptVariables($request, $templateMgr, $study);
+
+				$service = $this->getDataverseService();
+				$citation = $service->getStudyCitation($study);
+
+				$templateMgr->assign('citation', $citation);
 
 				$this->setupDatasetMetadataForm($request, $templateMgr, $study);
 				$this->setupDatasetFilesList($request, $templateMgr, $study);
@@ -180,10 +194,7 @@ class TemplateDispatcher extends DataverseDispatcher
 
 	function addJavaScriptVariables($request, $templateManager, $study): void
 	{
-		$dispatcher = $request->getDispatcher();
-		$context = $request->getContext();
 		$configuration = $this->getDataverseConfiguration();
-		$apiToken = $configuration->getApiToken();
 		$dataverseServer = $configuration->getDataverseServer();
 
 		$persistentUri = $study->getPersistentUri();
@@ -191,7 +202,6 @@ class TemplateDispatcher extends DataverseDispatcher
 		$persistentId =  "doi:" . $matches[0];
 
 		$editUri = "$dataverseServer/api/datasets/:persistentId/?persistentId=$persistentId";
-		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
 
 		$dataverseNotificationMgr = new DataverseNotificationManager();
 		$dataverseUrl = $configuration->getDataverseUrl();
@@ -200,7 +210,6 @@ class TemplateDispatcher extends DataverseDispatcher
 
 		$data = [
 			"editUri" => $editUri,
-			"apiToken" => $apiToken,
 			"errorMessage" => $errorMessage,
 			"datasetApiUrl" => $apiUrl
 		];

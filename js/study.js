@@ -1,9 +1,5 @@
 async function getStudy() {
-  const response = await fetch(appDataverse.editUri, {
-    headers: {
-      'X-Dataverse-key': appDataverse.apiToken
-    }
-  })
+  const response = await fetch(appDataverse.editUri)
   const { data } = await response.json()
   return data
 }
