@@ -164,7 +164,7 @@ class DataverseService {
 
 	public function studyIsReleased(DataverseStudy $study): bool
 	{
-		$statement = $this->dataverseClient->retrieveAtomStatement($study->getStatementUri());
+		$statement = $this->getStudyStatement($study->getStatementUri());
 		$studyReleased = false;
 		if (!empty($statement)) {
 			$sac_xml = new SimpleXMLElement($statement->sac_xml);
@@ -176,6 +176,38 @@ class DataverseService {
 			}
 		}
 		return $studyReleased;
+	}
+
+	public function getStudyStatement(string $url): ?SWORDAPPStatement
+	{
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		try {
+			$statement = $this->dataverseClient->retrieveAtomStatement($url);
+
+			return $statement;
+		}
+		catch (RuntimeException $e){
+			error_log($e->getMessage());
+			$dataverseNotificationMgr->createNotification($e->getCode());
+		}
+		return null;
+	}
+
+	public function getStudyCitation(DataverseStudy $study): ?string
+	{
+		$statement = $this->getStudyStatement($study->getEditUri());
+		if (!empty($statement)) {
+			$sac_xml = new SimpleXMLElement($statement->sac_xml);
+			$citation = $sac_xml->bibliographicCitation[0];
+			$persistentUrl = $sac_xml->link[4]->attributes()->href[0];
+			$citation = str_replace(
+				$persistentUrl,
+				'<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>',
+				$citation
+			);
+			return $citation;
+		}
+		return null;
 	}
 
 	function releaseDataverse(): bool

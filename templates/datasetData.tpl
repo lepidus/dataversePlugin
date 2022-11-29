@@ -22,7 +22,7 @@
     </template>
     </pkp-header>
     <span class="value">
-        <p></p>
+        <p>{$citation}</p>
     </span>
     <tabs label="Dataset data">
         <tab 

@@ -56,7 +56,7 @@ class DataverseDatasetDataCreator
         return $field;
     }
 
-    private function createValueObject($typeName, $value): stdClass
+    public function createValueObject($typeName, $value): stdClass
     {
         $objName = $typeName . 'Value';
         $obj = new stdClass();

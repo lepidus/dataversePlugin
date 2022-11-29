@@ -30,6 +30,7 @@ class DatasetMetadataForm extends FormComponent {
             'label' => __('plugins.generic.dataverse.metadataForm.title'),
             'isRequired' => true,
             'value' => $datasetData->getData('title'),
+            'size' => 'large',
         ]))
         ->addField(new FieldRichTextarea('datasetDescription', [
             'label' => __('plugins.generic.dataverse.metadataForm.description'),
