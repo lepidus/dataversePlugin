@@ -152,7 +152,7 @@ class TemplateDispatcher extends DataverseDispatcher
 
 				$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
 				$data = [
-					'apiUrl' => $apiUrl,
+					'datasetApiUrl' => $apiUrl,
 				];
 
 				$templateMgr->addJavaScript(
@@ -163,6 +163,7 @@ class TemplateDispatcher extends DataverseDispatcher
 						'contexts' => ['backend']
 					]
 				);
+				
 				$templateMgr->addJavaScript(
 					'dataverseHelper', 
 					$pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dataverseHelper.js',
@@ -210,8 +211,7 @@ class TemplateDispatcher extends DataverseDispatcher
 
 		$data = [
 			"editUri" => $editUri,
-			"errorMessage" => $errorMessage,
-			"datasetApiUrl" => $apiUrl
+			"errorMessage" => $errorMessage
 		];
 
 		$templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [

@@ -134,14 +134,12 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 		cy.get('#datasetTab-button').click();
 		cy.get('.pkpHeader__title h1').contains('Research data');
 		cy.get('#datasetData > .value > p').contains(
-			'Castanheiras, Í. (' +
+			'Íris Castanheiras, ' +
 				currentYear +
-				'). The Rise of The Machine Empire. ' +
-				serverName +
-				','
+				', "The Rise of The Machine Empire"'
 		);
 		cy.get('.value > p > a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
-		cy.get('.value > p').contains(', ' + dataverseServerName + ', Vundefined');
+		cy.get('.value > p').contains(', ' + dataverseServerName + ', DRAFT VERSION');
 		cy.get(
 			'.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton'
 		).click();

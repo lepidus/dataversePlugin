@@ -98,13 +98,9 @@ describe('Deposit Draft Dataset', function() {
 describe('Edit Dataset Metadata Draft', function() {
 	it('Check dataset metadata form exists', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a')
-			.contains(adminUser)
-			.click();
-		cy.get('a')
-			.contains('Dashboard')
-			.click();
-		cy.get('#myQueue a:contains("View"):first').click();
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should(
@@ -114,13 +110,9 @@ describe('Edit Dataset Metadata Draft', function() {
 
 	it('Check dataset metadata edit is enabled when preprint is unpublished', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a')
-			.contains(adminUser)
-			.click();
-		cy.get('a')
-			.contains('Dashboard')
-			.click();
-		cy.get('#myQueue a:contains("View"):first').click();
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should(
@@ -134,13 +126,9 @@ describe('Edit Dataset Metadata Draft', function() {
 
 	it('Change dataset metadata if preprint is unpublished', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a')
-			.contains(adminUser)
-			.click();
-		cy.get('a')
-			.contains('Dashboard')
-			.click();
-		cy.get('#myQueue a:contains("View"):first').click();
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should(
@@ -168,18 +156,14 @@ describe('Edit Dataset Metadata Draft', function() {
 		cy.get(
 			'div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]'
 		).click();
-		cy.wait(3000);
+		cy.wait(5000);
 	});
 
 	it('Check dataset metadata has been changed', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a')
-			.contains(adminUser)
-			.click();
-		cy.get('a')
-			.contains('Dashboard')
-			.click();
-		cy.get('#myQueue a:contains("View"):first').click();
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should(
@@ -199,13 +183,9 @@ describe('Edit Dataset Metadata Draft', function() {
 
 	it('Removes keyword metadata from dataset', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a')
-			.contains(adminUser)
-			.click();
-		cy.get('a')
-			.contains('Dashboard')
-			.click();
-		cy.get('#myQueue a:contains("View"):first').click();
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should(
@@ -224,13 +204,9 @@ describe('Edit Dataset Metadata Draft', function() {
 
 	it('Check keyword metadata has empty', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a')
-			.contains(adminUser)
-			.click();
-		cy.get('a')
-			.contains('Dashboard')
-			.click();
-		cy.get('#myQueue a:contains("View"):first').click();
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should(
@@ -244,13 +220,9 @@ describe('Edit Dataset Metadata Draft', function() {
 
 	it('Adds keyword metadata to dataset', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a')
-			.contains(adminUser)
-			.click();
-		cy.get('a')
-			.contains('Dashboard')
-			.click();
-		cy.get('#myQueue a:contains("View"):first').click();
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should(
@@ -275,13 +247,9 @@ describe('Edit Dataset Metadata Draft', function() {
 
 	it('Check keyword metadata has value', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a')
-			.contains(adminUser)
-			.click();
-		cy.get('a')
-			.contains('Dashboard')
-			.click();
-		cy.get('#myQueue a:contains("View"):first').click();
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form').should(
@@ -294,13 +262,9 @@ describe('Edit Dataset Metadata Draft', function() {
 describe('Edit Draft Dataset Files', function() {
 	it('Check dataset files list exists', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a')
-			.contains(adminUser)
-			.click();
-		cy.get('a')
-			.contains('Dashboard')
-			.click();
-		cy.get('#myQueue a:contains("View"):first').click();
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('button[aria-controls="dataset_files"]').click();
