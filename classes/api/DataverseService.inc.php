@@ -5,6 +5,7 @@ import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
 import('plugins.generic.dataverse.classes.study.DataverseStudy');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DatasetFactory');
+import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
 
 class DataverseService {
 
@@ -67,6 +68,7 @@ class DataverseService {
 			$study = $this->depositStudy($package);
 		}
 		if (!empty($study)) {
+			$this->defineDatasetSubject($study);
 			$this->deleteDraftDatasetFiles();
 		}
 	}
@@ -134,6 +136,37 @@ class DataverseService {
             );
         }    
 		return $study;
+	}
+
+	public function defineDatasetSubject($study): void
+	{
+		$dataverseNotificationMgr = new DataverseNotificationManager();
+		
+		try {
+			$url = 'https://demo.dataverse.org/api/datasets/:persistentId/editMetadata?persistentId=' . $study->getPersistentId() . '&replace=true';
+
+			$datasetSubject = $this->submission->getSubject();
+
+			$datasetDataCreator = new DataverseDatasetDataCreator();
+			$subjectField = $datasetDataCreator->createMetadataObjects('subject', $datasetSubject);
+
+			$updatedFields = [
+				'fields' => [
+					$subjectField
+				]
+			];
+
+			$updatedFieldsJson = json_encode($updatedFields);
+
+			$jsonFilePath = $this->createJsonFile($updatedFieldsJson);
+
+			$this->dataverseClient->updateMetadata($url, $jsonFilePath);
+
+		}
+		catch (RuntimeException $e){
+			error_log($e->getMessage());
+			$dataverseNotificationMgr->createNotification($e->getCode());
+		}
 	}
 
 	private function deleteDraftDatasetFiles() {

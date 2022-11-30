@@ -19,8 +19,9 @@ class SubmissionAdapterCreator
         $keywords = $publication->getData('keywords')[$locale];
         $citation = $apaCitation->getFormattedCitationBySubmission($submission);
         $reference = array($citation, array());
+        $subject = $submission->getData('datasetSubject');
 
-        return new SubmissionAdapter($id, $title, $authors, $files, $description, $keywords, $reference);
+        return new SubmissionAdapter($id, $title, $authors, $files, $description, $keywords, $reference, $subject);
     }
 
     private function retrieveAuthors(Publication $publication, string $locale): array
