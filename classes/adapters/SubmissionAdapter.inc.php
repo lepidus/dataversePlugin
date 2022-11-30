@@ -10,7 +10,7 @@ class SubmissionAdapter
     private $reference;
     private $subject;
 
-    public function __construct(int $id, string $title, array $authors, array $files, string $description, ?array $keywords, array $reference = array(), ?string $subject)
+    public function __construct(int $id, string $title, array $authors, array $files, string $description, ?array $keywords, array $reference = array(), ?string $subject = null)
     {
         $this->id = $id;
         $this->title = $title;
