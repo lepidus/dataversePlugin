@@ -339,9 +339,33 @@ class TemplateDispatcher extends DataverseDispatcher
 		$templateMgr =& $args[1];
 		$output = &$args[2];
 
+		$dataverseSubjectVocab = $this->getDataverseSubjectVocab();
+
+		$templateMgr->assign('dataverseSubjectVocab', $dataverseSubjectVocab);
+
 		$output .= $templateMgr->fetch($this->plugin->getTemplateResource('subjectField.tpl'));
 
 		return $output;
+	}
+
+	private function getDataverseSubjectVocab(): array
+	{
+		return [
+			'Agricultural Sciences',
+			'Arts and Humanities',
+			'Astronomy and Astrophysics',
+			'Business and Management',
+			'Chemistry',
+			'Computer and Information Science',		  
+			'Earth and Environmental Sciences',
+			'Engineering',
+			'Law',
+			'Mathematical Sciences',
+			'Medicine, Health and Life Sciences',
+			'Physics',
+			'Social Sciences',
+			'Other'
+		];
 	}
 
 	private function addComponent($templateMgr, $component, $args = []): void

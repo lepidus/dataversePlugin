@@ -3,5 +3,5 @@
     description="plugins.generic.dataverse.metadataForm.subject.description" 
     required=true
 }
-    {fbvElement type="select" name="datasetSubject" id="datasetSubject" defaultLabel="" defaultValue="" from=$authSourceOptions}
+    {fbvElement type="select" name="datasetSubject" id="datasetSubject" from=$dataverseSubjectVocab translate=false}
 {/fbvFormSection}
