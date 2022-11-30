@@ -341,13 +341,17 @@ class TemplateDispatcher extends DataverseDispatcher
 		$output = &$args[2];
 
 		$submissionId = $templateMgr->get_template_vars('submissionId');
+		$submission = Services::get('submission')->get($submissionId);
 
 		$draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
 		$draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submissionId);
 
 		if (!empty($draftDatasetFiles)) {
 			$dataverseSubjectVocab = $this->getDataverseSubjectVocab();
-			$templateMgr->assign('dataverseSubjectVocab', $dataverseSubjectVocab);
+			$templateMgr->assign([
+				'dataverseSubjectVocab' => $dataverseSubjectVocab,
+				'subjectId' => array_search($submission->getData('datasetSubject'), $dataverseSubjectVocab)
+			]);
 
 			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('subjectField.tpl'));
 		}
