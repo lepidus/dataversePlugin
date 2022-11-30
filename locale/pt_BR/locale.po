@@ -144,4 +144,4 @@ msgid "plugins.generic.dataverse.metadataForm.subject.label"
 msgstr "Assunto dos Dados de Pesquisa"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.description"
-msgstr "Selecione o assunto dos dados de pesquisa a serem depositado do Dataverse"
+msgstr "Selecione o assunto dos dados de pesquisa a serem depositados do Dataverse"

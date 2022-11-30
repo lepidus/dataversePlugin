@@ -334,18 +334,22 @@ class TemplateDispatcher extends DataverseDispatcher
 		);
 	}
 
-	public function addSubjectField($hookName, $args): string
+	public function addSubjectField($hookName, $args): void
 	{
 		$templateMgr =& $args[1];
 		$output = &$args[2];
 
-		$dataverseSubjectVocab = $this->getDataverseSubjectVocab();
+		$submissionId = $templateMgr->get_template_vars('submissionId');
 
-		$templateMgr->assign('dataverseSubjectVocab', $dataverseSubjectVocab);
+		$draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+		$draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submissionId);
 
-		$output .= $templateMgr->fetch($this->plugin->getTemplateResource('subjectField.tpl'));
+		if (!empty($draftDatasetFiles)) {
+			$dataverseSubjectVocab = $this->getDataverseSubjectVocab();
+			$templateMgr->assign('dataverseSubjectVocab', $dataverseSubjectVocab);
 
-		return $output;
+			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('subjectField.tpl'));
+		}
 	}
 
 	private function getDataverseSubjectVocab(): array
