@@ -18,6 +18,7 @@ class TemplateDispatcher extends DataverseDispatcher
 		HookRegistry::register('PreprintHandler::view', array($this, 'loadResources'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
 		HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addSubjectField'));
+		HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'readSubjectField'));
 		
 		parent::__construct($plugin);
 	}
@@ -350,6 +351,25 @@ class TemplateDispatcher extends DataverseDispatcher
 
 			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('subjectField.tpl'));
 		}
+	}
+
+	public function readSubjectField($hookName, $args): bool
+	{
+		$form =& $args[0];
+		$submission =& $form->submission;
+		
+        $form->readUserVars(array('datasetSubject'));
+		$subject = $form->getData('datasetSubject');
+
+		$datasetSubject = $this->getDataverseSubjectVocab()[$subject];
+
+		Services::get('submission')->edit(
+			$submission,
+			['datasetSubject' => $datasetSubject],
+			Application::get()->getRequest()
+		);
+
+		return false;
 	}
 
 	private function getDataverseSubjectVocab(): array
