@@ -2,8 +2,8 @@ import '../../../../../lib/pkp/cypress/support/commands';
 
 Cypress.on('uncaught:exception', (err, runnable) => {
 	// returning false here prevents Cypress from failing the test
-	return false
-})
+	return false;
+});
 
 Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 	// Initialize some data defaults before starting
@@ -75,7 +75,6 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 				cy.get('input[name="termsOfUse"').check();
 				cy.get('[data-modal="datasetModal"] button:contains("Save")').click();
 			});
-			
 		});
 		// Other applications use the submission files list panel
 	}
@@ -85,7 +84,7 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 		// this.submission.id = parseInt(search.split('=')[1], 10);
 		data.id = parseInt(search.split('=')[1], 10);
 	});
-	
+
 	cy.waitJQuery();
 	cy.get('button.submitFormButton').click();
 
@@ -103,6 +102,11 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 			node.tagit('createTag', keyword);
 		});
 	});
+
+	if (data.files.length > 0) {
+		if (!('datasetSubject' in data)) data.datasetSubject = 'Other';
+		cy.get('select[id^="datasetSubject"').select(data.datasetSubject);
+	}
 
 	cy.get('#authorsGridContainer .first_column > .show_extras').click();
 	cy.get('#authorsGridContainer td a:contains("Delete")').click();
@@ -143,7 +147,9 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 		);
 	});
 	cy.waitJQuery();
-	cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
+	cy.get(
+		'form[id=submitStep3Form] button:contains("Save and continue"):visible'
+	).click();
 
 	// === Submission Step 4 ===
 	cy.wait(3000);

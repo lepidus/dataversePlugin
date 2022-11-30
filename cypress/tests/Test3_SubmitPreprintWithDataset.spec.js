@@ -134,12 +134,12 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 		cy.get('#datasetTab-button').click();
 		cy.get('.pkpHeader__title h1').contains('Research data');
 		cy.get('#datasetData > .value > p').contains(
-			'Íris Castanheiras, ' +
-				currentYear +
-				', "The Rise of The Machine Empire"'
+			'Íris Castanheiras, ' + currentYear + ', "The Rise of The Machine Empire"'
 		);
 		cy.get('.value > p > a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
-		cy.get('.value > p').contains(', ' + dataverseServerName + ', DRAFT VERSION');
+		cy.get('.value > p').contains(
+			', ' + dataverseServerName + ', DRAFT VERSION'
+		);
 		cy.get(
 			'.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton'
 		).click();
@@ -167,12 +167,8 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 
 	it('Check Publication has Dataset Citation', function() {
 		cy.get('.label').contains('Research data');
-		cy.get('.value > p').contains(
-			'Castanheiras, Í. (' +
-				currentYear +
-				'). The Rise of The Machine Empire. ' +
-				serverName +
-				','
+		cy.get('#datasetData > .value > p').contains(
+			'Íris Castanheiras, ' + currentYear + ', "The Rise of The Machine Empire"'
 		);
 		cy.get('.value > p > a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
 		cy.get('.value > p').contains(', ' + dataverseServerName + ', V1');
@@ -251,6 +247,8 @@ describe('Check dataset data edit is disabled', function() {
 		cy.get('button')
 			.contains('Upload research data')
 			.should('be.disabled');
-		cy.get('#datasetFiles .listPanel__item .listPanel__itemActions button').should('be.disabled');
+		cy.get(
+			'#datasetFiles .listPanel__item .listPanel__itemActions button'
+		).should('be.disabled');
 	});
 });

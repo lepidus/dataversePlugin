@@ -11,30 +11,18 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 		HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDraftDatasetFileHandler'));
 		HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDatasetsHandler'));
 		HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
-		HookRegistry::register('Schema::get::submissionFile', array($this, 'modifySubmissionFileSchema'));
-		HookRegistry::register('Schema::get::galley', array($this, 'modifyGalleySchema'));
+		HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
 		HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
 		HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
 
 		parent::__construct($plugin);
     }
 
-    public function modifySubmissionFileSchema(string $hookName, array $params): bool
+    public function modifySubmissionSchema(string $hookName, array $params): bool
 	{
 		$schema =& $params[0];
-        $schema->properties->{'publishData'} = (object) [
-            'type' => 'boolean',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        return false;
-	}
-
-	public function modifyGalleySchema(string $hookName, array $params): bool
-	{
-		$schema =& $params[0];
-        $schema->properties->{'dataverseGalley'} = (object) [
-            'type' => 'boolean',
+        $schema->properties->{'datasetSubject'} = (object) [
+            'type' => 'string',
             'apiSummary' => true,
             'validation' => ['nullable'],
         ];

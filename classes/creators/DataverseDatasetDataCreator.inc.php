@@ -42,6 +42,9 @@ class DataverseDatasetDataCreator
         $field->multiple = is_array($values);
         $field->typeClass = is_array($values) ? 'compound' : 'primitive';
 
+        if ($typeName == 'subject')
+            $field->typeClass = 'controlledVocabulary';
+
         if (is_array($values)) {
             $objects = [];
             foreach ($values as $value) {
@@ -50,7 +53,7 @@ class DataverseDatasetDataCreator
             $field->value = $objects;
         }
         else {
-            $field->value = $values;
+            $field->value = ($typeName == 'subject') ? [$values] : $values;
         }        
 
         return $field;
