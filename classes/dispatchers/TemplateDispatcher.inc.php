@@ -17,7 +17,8 @@ class TemplateDispatcher extends DataverseDispatcher
 		HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
 		HookRegistry::register('PreprintHandler::view', array($this, 'loadResources'));
 		HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
-
+		HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addSubjectField'));
+		
 		parent::__construct($plugin);
 	}
 	
@@ -331,6 +332,44 @@ class TemplateDispatcher extends DataverseDispatcher
 				]
 			]
 		);
+	}
+
+	public function addSubjectField($hookName, $args): void
+	{
+		$templateMgr =& $args[1];
+		$output = &$args[2];
+
+		$submissionId = $templateMgr->get_template_vars('submissionId');
+
+		$draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+		$draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submissionId);
+
+		if (!empty($draftDatasetFiles)) {
+			$dataverseSubjectVocab = $this->getDataverseSubjectVocab();
+			$templateMgr->assign('dataverseSubjectVocab', $dataverseSubjectVocab);
+
+			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('subjectField.tpl'));
+		}
+	}
+
+	private function getDataverseSubjectVocab(): array
+	{
+		return [
+			'Agricultural Sciences',
+			'Arts and Humanities',
+			'Astronomy and Astrophysics',
+			'Business and Management',
+			'Chemistry',
+			'Computer and Information Science',		  
+			'Earth and Environmental Sciences',
+			'Engineering',
+			'Law',
+			'Mathematical Sciences',
+			'Medicine, Health and Life Sciences',
+			'Physics',
+			'Social Sciences',
+			'Other'
+		];
 	}
 
 	private function addComponent($templateMgr, $component, $args = []): void

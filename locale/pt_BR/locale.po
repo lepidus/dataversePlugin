@@ -139,3 +139,9 @@ msgstr "Descrição"
 
 msgid "plugins.generic.dataverse.metadataForm.keyword"
 msgstr "Palavras-chave"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.label"
+msgstr "Assunto dos Dados de Pesquisa"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.description"
+msgstr "Selecione o assunto dos dados de pesquisa a serem depositados do Dataverse"
