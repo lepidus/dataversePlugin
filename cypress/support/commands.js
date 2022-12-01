@@ -108,12 +108,12 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 		cy.get('select[id^="datasetSubject"').select(data.datasetSubject);
 	}
 
-	cy.get('#authorsGridContainer .first_column > .show_extras').click();
-	cy.get('#authorsGridContainer td a:contains("Delete")').click();
-	cy.wait(250);
-	cy.get('button')
-		.contains('OK')
-		.click();
+	if (data.additionalAuthors.length > 0) {
+		cy.get('#authorsGridContainer .first_column > .show_extras').click();
+		cy.get('#authorsGridContainer td a:contains("Delete")').click();
+		cy.wait(250);
+		cy.get('button').contains('OK').click();
+	}
 
 	data.additionalAuthors.forEach(author => {
 		if (!('role' in author)) author.role = 'Author';
