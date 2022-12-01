@@ -65,7 +65,8 @@ Creates a cypress.env.json file in root of the PKP Application directory, with t
 ```json
 {
     "baseUrl": "http://localhost:8000",
-    "serverName": "myPreprintServer",
+    "serverName": "My Preprint Server",
+    "serverPath": "myPreprintServer",
     "adminUser": "admin",
     "adminPassword": "admin",
     "dataverseServer": "Demo Dataverse",
