@@ -6,43 +6,44 @@ class DatasetsHandler extends APIHandler
 {
     public function __construct() {
 		$this->_handlerPath = 'datasets';
+        $roles = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
         $this->_endpoints = array(
             'PUT' => array(
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
                     'handler' => array($this, 'edit'),
-                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                    'roles' => $roles
                 ),
             ),
             'POST' => array(
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
                     'handler' => array($this, 'addFile'),
-                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                    'roles' => $roles
                 ),
             ),
             'GET' => array(
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/files',
                     'handler' => array($this, 'getFiles'),
-                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                    'roles' => $roles
                 ),
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
                     'handler' => array($this, 'getCitation'),
-                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                    'roles' => $roles
                 ),
             ),
             'DELETE' => array(
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
                     'handler' => array($this, 'deleteFile'),
-                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                    'roles' => $roles
                 ),
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
                     'handler' => array($this, 'deleteDataset'),
-                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                    'roles' => $roles
                 ),
             )
         );
