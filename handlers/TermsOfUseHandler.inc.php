@@ -13,6 +13,6 @@ class TermsOfUseHandler extends Handler
 		$service = $serviceFactory->build($configuration);
 		$termsOfUse = $service->getTermsOfUse();
 
-		return htmlentities("<html><body>". $termsOfUse . "</body></html>");
+		return "<html><body>". htmlentities($termsOfUse) . "</body></html>";
 	}
 }
