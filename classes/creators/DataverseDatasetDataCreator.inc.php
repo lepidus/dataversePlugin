@@ -7,7 +7,8 @@ class DataverseDatasetDataCreator
     private $metadata = [
         'datasetTitle' => 'title',
         'datasetDescription' => 'dsDescription',
-        'datasetKeywords' => 'keyword'
+        'datasetKeywords' => 'keyword',
+        'datasetSubject' => 'subject'
     ];
 
     public function createDatasetData($metadataBlocks): DataverseDatasetData
@@ -21,11 +22,15 @@ class DataverseDatasetDataCreator
             if (is_array($metadata->value)) {
                 $values = [];
                 foreach ($metadata->value as $value) {
-                    $attr = $metadata->typeName . 'Value';
-                    $values[] = $value->$attr->value;
-
+                    if ($metadata->typeName == 'subject') {
+                        $datasetData->setData($metadata->typeName, $value);
+                    }
+                    else {
+                        $attr = $metadata->typeName . 'Value';
+                        $values[] = $value->$attr->value;
+                        $datasetData->setData($metadata->typeName, $values);
+                    }
                 }
-                $datasetData->setData($metadata->typeName, $values);
             }
             else {
                 $datasetData->setData($metadata->typeName, $metadata->value);

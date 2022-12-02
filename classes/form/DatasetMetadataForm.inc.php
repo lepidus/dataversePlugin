@@ -54,7 +54,7 @@ class DatasetMetadataForm extends FormComponent {
             'label' => __('plugins.generic.dataverse.metadataForm.subject.label'),
             'isRequired' => true,
             'options' => $dataverseSubjectVocab,
-            'value' => '',
+            'value' => $datasetData->getData('subject'),
         ]));
 	}
 }
