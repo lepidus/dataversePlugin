@@ -143,7 +143,8 @@ class DataverseService {
 		$dataverseNotificationMgr = new DataverseNotificationManager();
 		
 		try {
-			$url = 'https://demo.dataverse.org/api/datasets/:persistentId/editMetadata?persistentId=' . $study->getPersistentId() . '&replace=true';
+			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
+			$url =  $dataverseServer . '/api/datasets/:persistentId/editMetadata?persistentId=' . $study->getPersistentId() . '&replace=true';
 
 			$datasetSubject = $this->submission->getSubject();
 
