@@ -348,9 +348,10 @@ class TemplateDispatcher extends DataverseDispatcher
 
 		if (!empty($draftDatasetFiles)) {
 			$dataverseSubjectVocab = $this->getDataverseSubjectVocab();
+			$datasetSubjectLabels = array_column($dataverseSubjectVocab, 'label');
 			$templateMgr->assign([
-				'dataverseSubjectVocab' => $dataverseSubjectVocab,
-				'subjectId' => array_search($submission->getData('datasetSubject'), $dataverseSubjectVocab)
+				'dataverseSubjectVocab' => $datasetSubjectLabels,
+				'subjectId' => array_search($submission->getData('datasetSubject'), $datasetSubjectLabels)
 			]);
 
 			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('subjectField.tpl'));
@@ -365,11 +366,12 @@ class TemplateDispatcher extends DataverseDispatcher
         $form->readUserVars(array('datasetSubject'));
 		$subject = $form->getData('datasetSubject');
 
-		$datasetSubject = $this->getDataverseSubjectVocab()[$subject];
+		$dataverseSubjectVocab = $this->getDataverseSubjectVocab();
+		$datasetSubjectValues = array_column($dataverseSubjectVocab, 'value');
 
 		Services::get('submission')->edit(
 			$submission,
-			['datasetSubject' => $datasetSubject],
+			['datasetSubject' => $datasetSubjectValues[$subject]],
 			Application::get()->getRequest()
 		);
 
@@ -379,20 +381,62 @@ class TemplateDispatcher extends DataverseDispatcher
 	private function getDataverseSubjectVocab(): array
 	{
 		return [
-			'Agricultural Sciences',
-			'Arts and Humanities',
-			'Astronomy and Astrophysics',
-			'Business and Management',
-			'Chemistry',
-			'Computer and Information Science',		  
-			'Earth and Environmental Sciences',
-			'Engineering',
-			'Law',
-			'Mathematical Sciences',
-			'Medicine, Health and Life Sciences',
-			'Physics',
-			'Social Sciences',
-			'Other'
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.agriculturalSciences'),
+				'value' => 'Agricultural Sciences',
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.artsAndHumanities'),
+				'value' => 'Arts and Humanities'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.astronomyAndAstrophysics'),
+				'value' => 'Astronomy and Astrophysics'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.businessAndManagement'),
+				'value' => 'Business and Management'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.chemistry'),
+				'value' => 'Chemistry'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.computerAndInformationScience'),
+				'value' => 'Computer and Information Science'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.earthAndEnvironmentalSciences'),
+				'value' => 'Earth and Environmental Sciences'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.Engineering'),
+				'value' => 'Engineering'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.Law'),
+				'value' => 'Law'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.mathematicalSciences'),
+				'value' => 'Mathematical Sciences'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.medicineHealthAndLifeSciences'),
+				'value' => 'Medicine, Health and Life Sciences'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.Physics'),
+				'value' => 'Physics'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.socialSciences'),
+				'value' => 'Social Sciences'
+			],
+			[
+				'label' => __('plugins.generic.dataverse.metadataForm.subject.Other'),
+				'value' => 'Other'
+			],
 		];
 	}
 
