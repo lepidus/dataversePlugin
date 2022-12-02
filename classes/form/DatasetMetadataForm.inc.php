@@ -4,8 +4,10 @@ use PKP\components\forms\FormComponent;
 use PKP\components\forms\FieldText;
 use PKP\components\forms\FieldRichTextarea;
 use PKP\components\forms\FieldControlledVocab;
+use \PKP\components\forms\FieldSelect;
 
 import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
+import('plugins.generic.dataverse.classes.DataverseControlledVocab');
 
 define('FORM_DATASET_METADATA', 'datasetMetadata');
 
@@ -26,6 +28,8 @@ class DatasetMetadataForm extends FormComponent {
             $datasetData = $datasetDataCreator->createDatasetData($metadataBlocks);
         }
 
+        $dataverseSubjectVocab = DataverseControlledVocab::getDataverseSubjects();
+
         $this->addField(new FieldText('datasetTitle', [
             'label' => __('plugins.generic.dataverse.metadataForm.title'),
             'isRequired' => true,
@@ -45,6 +49,12 @@ class DatasetMetadataForm extends FormComponent {
             'apiUrl' => $vocabSuggestionUrlBase,
             'locales' => $this->locales,
             'selected' => (array) $datasetData->getData('keyword'),
+        ]))
+        ->addField(new FieldSelect('datasetSubject', [
+            'label' => __('plugins.generic.dataverse.metadataForm.subject.label'),
+            'isRequired' => true,
+            'options' => $dataverseSubjectVocab,
+            'value' => '',
         ]));
 	}
 }
