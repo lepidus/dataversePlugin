@@ -144,4 +144,46 @@ msgid "plugins.generic.dataverse.metadataForm.subject.label"
 msgstr "Assunto dos Dados de Pesquisa"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.description"
-msgstr "Selecione o assunto dos dados de pesquisa a serem depositados do Dataverse"
+msgstr "Selecione o assunto dos dados de pesquisa a serem depositados no Dataverse"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.agriculturalSciences"
+msgstr "Ciências Agrárias"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.artsAndHumanities"
+msgstr "Artes e Humanidades"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.astronomyAndAstrophysics"
+msgstr "Astronomia e Astrofísica"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.businessAndManagement"
+msgstr "Negócios e Gestão"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.chemistry"
+msgstr "Química"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.computerAndInformationScience"
+msgstr "Computação e Ciência da Informação"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.earthAndEnvironmentalSciences"
+msgstr "Ciências da Terra e do meio ambiente"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.Engineering"
+msgstr "Engenharia"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.Law"
+msgstr "Lei"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.mathematicalSciences"
+msgstr "Ciências Matemáticas"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.medicineHealthAndLifeSciences"
+msgstr "Medicina, Saúde e Ciência da Vida"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.Physics"
+msgstr "Física"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.socialSciences"
+msgstr "Ciências Sociais"
+
+msgid "plugins.generic.dataverse.metadataForm.subject.Other"
+msgstr "Outros"

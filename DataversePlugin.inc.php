@@ -16,10 +16,6 @@ import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-import('plugins.generic.dataverse.classes.dispatchers.DataverseServiceDispatcher');
-import('plugins.generic.dataverse.classes.dispatchers.TemplateDispatcher');
-import('plugins.generic.dataverse.classes.DataverseDAO');
-import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 
 class DataversePlugin extends GenericPlugin {
 
@@ -28,17 +24,38 @@ class DataversePlugin extends GenericPlugin {
 	 */
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
+		
+		$this->importDispatcherClasses();
+		$this->registerDAOClasses();
+
+		return $success;
+	}
+
+	private function importDispatcherClasses(): void
+	{
+		import('plugins.generic.dataverse.classes.dispatchers.TemplateDispatcher');
 		$templateDispatcher = new TemplateDispatcher($this);
+
+		import('plugins.generic.dataverse.classes.dispatchers.DataverseServiceDispatcher');
 		$serviceDispatcher = new DataverseServiceDispatcher($this);
+
+		import('plugins.generic.dataverse.classes.dispatchers.DatasetSubjectDispatcher');
+		$datasetSubjectDispatcher = new DatasetSubjectDispatcher($this);
+	}
+
+	private function registerDAOClasses(): void
+	{
+		import('plugins.generic.dataverse.classes.DataverseDAO');
 		$dataverseDAO = new DataverseDAO();
 		DAORegistry::registerDAO('DataverseDAO', $dataverseDAO);
+		
+		import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 		$dataverseStudyDAO = new DataverseStudyDAO();
 		DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
-		$this->import('classes.file.DraftDatasetFileDAO');
+
+		import('plugins.generic.dataverse.classes.file.DraftDatasetFileDAO');
 		$draftDatasetFileDAO = new DraftDatasetFileDAO;
 		DAORegistry::registerDAO('DraftDatasetFileDAO', $draftDatasetFileDAO);
-		
-		return $success;
 	}
 
 	/**
