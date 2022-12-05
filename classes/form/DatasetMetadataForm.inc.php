@@ -7,7 +7,7 @@ use PKP\components\forms\FieldControlledVocab;
 use \PKP\components\forms\FieldSelect;
 
 import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
-import('plugins.generic.dataverse.classes.DataverseControlledVocab');
+import('plugins.generic.dataverse.classes.DataverseMetadata');
 
 define('FORM_DATASET_METADATA', 'datasetMetadata');
 
@@ -28,7 +28,7 @@ class DatasetMetadataForm extends FormComponent {
             $datasetData = $datasetDataCreator->createDatasetData($metadataBlocks);
         }
 
-        $dataverseSubjectVocab = DataverseControlledVocab::getDataverseSubjects();
+        $dataverseSubjectVocab = DataverseMetadata::getDataverseSubjects();
 
         $this->addField(new FieldText('datasetTitle', [
             'label' => __('plugins.generic.dataverse.metadataForm.title'),

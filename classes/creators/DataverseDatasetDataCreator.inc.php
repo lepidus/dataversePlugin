@@ -47,8 +47,10 @@ class DataverseDatasetDataCreator
         $field->multiple = is_array($values);
         $field->typeClass = is_array($values) ? 'compound' : 'primitive';
 
-        if ($typeName == 'subject')
+        if ($typeName == 'subject') {
             $field->typeClass = 'controlledVocabulary';
+            $field->multiple = true;
+        }
 
         if (is_array($values)) {
             $objects = [];
@@ -108,20 +110,10 @@ class DataverseDatasetDataCreator
                 $metadataBlocks->citation->fields[] = $metadataFields[$key];
             }
         }
-        $this->defineSubjectMetadata($metadataBlocks);
 
         $datasetMetadata = new stdClass();
         $datasetMetadata->metadataBlocks = $metadataBlocks;
 
         return $datasetMetadata;
-    }
-
-    private function defineSubjectMetadata(&$metadataBlocks): void
-    {
-        foreach ($metadataBlocks->citation->fields as $obj) {
-            if ($obj->typeName == 'subject' && in_array('N/A', $obj->value)) {
-                $obj->value = ['Other'];
-            }
-        }
     }
 }

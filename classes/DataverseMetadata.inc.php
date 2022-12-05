@@ -1,6 +1,6 @@
 <?php
 
-class DataverseControlledVocab
+class DataverseMetadata
 {
     static function getDataverseSubjects(): array
 	{
@@ -60,6 +60,32 @@ class DataverseControlledVocab
 			[
 				'label' => __('plugins.generic.dataverse.metadataForm.subject.Other'),
 				'value' => 'Other'
+			],
+		];
+	}
+
+	static function getMetadataAttributes(): array
+	{
+		return [
+			'datasetTitle' => [
+				'typeName' => 'title',
+				'multiple' => false,
+				'typeClass' => 'primitive'
+			],
+			'datasetDescription' => [
+				'typeName' => 'dsDescription',
+				'multiple' => true,
+				'typeClass' => 'compound'
+			],
+			'datasetKeyword' => [
+				'typeName' => 'keyword',
+				'multiple' => true,
+				'typeClass' => 'compound'
+			],
+			'datasetSubject' => [
+				'typeName' => 'subject',
+				'multiple' => true,
+				'typeClass' => 'controlledVocabulary'
 			],
 		];
 	}

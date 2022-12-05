@@ -1,7 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.classes.DataverseControlledVocab');
+import('plugins.generic.dataverse.classes.DataverseMetadata');
 
 class DatasetSubjectDispatcher extends DataverseDispatcher
 {
@@ -25,7 +25,7 @@ class DatasetSubjectDispatcher extends DataverseDispatcher
 		$draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submissionId);
 
 		if (!empty($draftDatasetFiles)) {
-			$dataverseSubjectVocab = DataverseControlledVocab::getDataverseSubjects();
+			$dataverseSubjectVocab = DataverseMetadata::getDataverseSubjects();
             $datasetSubjectLabels = array_column($dataverseSubjectVocab, 'label');
             $datasetSubjectValues = array_column($dataverseSubjectVocab, 'value');
 
@@ -46,7 +46,7 @@ class DatasetSubjectDispatcher extends DataverseDispatcher
         $form->readUserVars(array('datasetSubject'));
 		$subject = $form->getData('datasetSubject');
 
-		$dataverseSubjectVocab = DataverseControlledVocab::getDataverseSubjects();
+		$dataverseSubjectVocab = DataverseMetadata::getDataverseSubjects();
 		$datasetSubjectValues = array_column($dataverseSubjectVocab, 'value');
 
 		Services::get('submission')->edit(
