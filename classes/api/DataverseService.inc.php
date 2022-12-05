@@ -149,13 +149,7 @@ class DataverseService {
 			$datasetSubject = $this->submission->getSubject();
 
 			$datasetDataCreator = new DataverseDatasetDataCreator();
-			$subjectField = $datasetDataCreator->createMetadataObjects('subject', $datasetSubject);
-
-			$updatedFields = [
-				'fields' => [
-					$subjectField
-				]
-			];
+			$updatedFields = $datasetDataCreator->createMetadataFields(['datasetSubject' => $datasetSubject]);
 
 			$updatedFieldsJson = json_encode($updatedFields);
 
@@ -321,7 +315,11 @@ class DataverseService {
 			$fileJsonPath = $this->createJsonFile($jsonMatadata);
 
 			$dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
-			$apiUrl = $dataverseServer . '/api/datasets/:persistentId/versions/:draft?persistentId=' . $study->getPersistentId();
+			$apiUrl = 
+				$dataverseServer .
+				'/api/datasets/:persistentId/editMetadata?persistentId=' .
+				$study->getPersistentId() .
+				'&replace=true';
 
 			$response = $this->dataverseClient->updateMetadata($apiUrl, $fileJsonPath);
 

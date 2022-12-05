@@ -75,24 +75,25 @@ class DatasetsHandler extends APIHandler
         }
 
         $requestParams = $slimRequest->getParsedBody();
-        $requestParams['datasetDescription'] = [$requestParams['datasetDescription']];
 
         $service = $this->getDataverseService($this->getRequest());
-
         $datasetResponse = $service->getDatasetResponse($study);
+        
+        import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
+        $datasetDataCreator = new DataverseDatasetDataCreator();
 
-        if (!empty($datasetResponse)) {
-            $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks;
+        $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks->citation->fields;
+        $datasetSubject = $datasetDataCreator->getMetadata($metadataBlocks, 'subject');
 
-            import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
-            $datasetDataCreator = new DataverseDatasetDataCreator();
-            $datasetMetadata = $datasetDataCreator->updataMetadataBlocks($metadataBlocks, $requestParams);
+        if ($requestParams['datasetSubject'] == $datasetSubject[0]) $requestParams['datasetSubject'] = null;
 
-            $jsonMetadata = json_encode($datasetMetadata);
+        $datasetMetadataFields = $datasetDataCreator->createMetadataFields($requestParams);
+        $datasetMetadata = json_encode($datasetMetadataFields);
+        
+        $dataverseResponse = $service->updateDatasetData($datasetMetadata, $study);
 
-            $dataverseResponse = $service->updateDatasetData($jsonMetadata, $study);
-
-            return $response->withJson($dataverseResponse, 200);
+        if ($dataverseResponse) {
+            return $response->withJson(['message' => 'ok'], 200);
         }
         else {
             return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');

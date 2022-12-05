@@ -64,9 +64,9 @@ class DataverseMetadata
 		];
 	}
 
-	static function getMetadataAttributes(): array
+	static function getMetadataAttributes($metadata = null): array
 	{
-		return [
+		$attributes = [
 			'datasetTitle' => [
 				'typeName' => 'title',
 				'multiple' => false,
@@ -77,7 +77,7 @@ class DataverseMetadata
 				'multiple' => true,
 				'typeClass' => 'compound'
 			],
-			'datasetKeyword' => [
+			'datasetKeywords' => [
 				'typeName' => 'keyword',
 				'multiple' => true,
 				'typeClass' => 'compound'
@@ -88,5 +88,7 @@ class DataverseMetadata
 				'typeClass' => 'controlledVocabulary'
 			],
 		];
+
+		return $metadata ? $attributes[$metadata] : $attributes;
 	}
 }

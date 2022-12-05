@@ -4,19 +4,13 @@ import('plugins.generic.dataverse.classes.study.DataverseDatasetData');
 
 class DataverseDatasetDataCreator
 {
-    private $metadata = [
-        'datasetTitle' => 'title',
-        'datasetDescription' => 'dsDescription',
-        'datasetKeywords' => 'keyword',
-        'datasetSubject' => 'subject'
-    ];
-
     public function createDatasetData($metadataBlocks): DataverseDatasetData
     {
         $datasetData = new DataverseDatasetData();
+        $metadataFields = ['title', 'dsDescription', 'keyword', 'subject'];
 
         foreach ($metadataBlocks as $metadata) {
-            if (!in_array($metadata->typeName, $this->metadata)){
+            if (!in_array($metadata->typeName, $metadataFields)){
                 continue;
             }
             if (is_array($metadata->value)) {
@@ -40,80 +34,68 @@ class DataverseDatasetDataCreator
         return $datasetData;
     }
 
-    public function createMetadataObjects($typeName, $values): stdClass
+    public function getMetadata($metadataBlocks, $metadata)
     {
-        $field = new stdClass();
-        $field->typeName = $typeName;
-        $field->multiple = is_array($values);
-        $field->typeClass = is_array($values) ? 'compound' : 'primitive';
-
-        if ($typeName == 'subject') {
-            $field->typeClass = 'controlledVocabulary';
-            $field->multiple = true;
-        }
-
-        if (is_array($values)) {
-            $objects = [];
-            foreach ($values as $value) {
-                $objects[] = $this->createValueObject($typeName, $value);
+        foreach ($metadataBlocks as $field) {
+            if ($field->typeName == $metadata) {
+                return $field->value;
             }
-            $field->value = $objects;
         }
-        else {
-            $field->value = ($typeName == 'subject') ? [$values] : $values;
-        }        
 
-        return $field;
+        return null;
     }
 
-    public function createValueObject($typeName, $value): stdClass
+    public function createMetadataFields($metadata): stdClass
     {
-        $objName = $typeName . 'Value';
-        $obj = new stdClass();
-        $obj->$objName = new stdClass();
-        $obj->$objName->typeName = $objName;
-        $obj->$objName->multiple = false;
-        $obj->$objName->typeClass = 'primitive';
-        $obj->$objName->value = $value;
-
-        return $obj;
-    }
-
-    public function updataMetadataBlocks($metadataBlocks, $metadata): stdClass
-    {
-        $metadataFields = [];
-        foreach ($metadata as $key => $value) {
-            if (!empty($value)) {
-                $metadataFields[$key] = $this->createMetadataObjects($this->metadata[$key], $value);
-            }
-        }
-
-        foreach ($metadata as $key => $data) {
-            $hasMetadata = false;
-            foreach ($metadataBlocks->citation->fields as $index => $field) {
-                if ($field->typeName == $this->metadata[$key]) {
-                    $hasMetadata = true;
-                    $metadataKey = $index;
-                }
-            }
-            if ($hasMetadata && !empty($data)) {
-                $metadataBlocks->citation->fields[$metadataKey] = $metadataFields[$key];
-            }
-            elseif ($hasMetadata && empty($data)) {
-                $field =& $metadataBlocks->citation->fields[$metadataKey];
-                $multiple = $field->multiple;
-                $fieldValue = $this->createValueObject($field->typeName, $data);
-
-                $field->value = $multiple ? [$fieldValue] : $fieldValue;
-            }
-            elseif (!$hasMetadata && !empty($data)) {
-                $metadataBlocks->citation->fields[] = $metadataFields[$key];
-            }
-        }
-
         $datasetMetadata = new stdClass();
-        $datasetMetadata->metadataBlocks = $metadataBlocks;
+        $datasetMetadata->fields = [];
+
+        foreach ($metadata as $key => $values) {
+            if (!empty($values)) {
+                $datasetMetadata->fields[] = $this->createMetadataObject($key, $values);
+            }
+        }
 
         return $datasetMetadata;
+    }
+
+    public function createMetadataObject($typeName, $values): stdClass
+    {
+        $metadataAttr = DataverseMetadata::getMetadataAttributes($typeName);
+
+        $metadata = new stdClass();
+        $metadata->typeName = $metadataAttr['typeName'];
+        $metadata->multiple = $metadataAttr['multiple'];
+        $metadata->typeClass = $metadataAttr['typeClass'];
+
+        if ($metadataAttr['multiple'] && !is_array($values)) {
+            $values = [$values];
+        }
+
+        if ($metadataAttr['typeClass'] == 'compound') {
+            $metadata->value = [];
+            foreach ($values as $value) {
+                $metadata->value[] = $this->createCompoundObject($metadataAttr['typeName'], $value);
+            }
+        }
+        else {
+            $metadata->value = $values;
+        }
+
+        return $metadata;
+    }
+
+    public function createCompoundObject($typeName, $value): stdClass
+    {
+        $valueName = $typeName . 'Value';
+        
+        $obj = new stdClass();
+        $obj->$valueName = new stdClass();
+        $obj->$valueName->typeName = $valueName;
+        $obj->$valueName->multiple = false;
+        $obj->$valueName->typeClass = 'primitive';
+        $obj->$valueName->value = $value;
+
+        return $obj;
     }
 }
