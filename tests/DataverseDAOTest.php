@@ -8,6 +8,7 @@ class DataverseDAOTest extends DatabaseTestCase
     private $contextsId;
     private $dataverseUrl;
     private $apiToken;
+    private $termsOfUse;
     private $dataverseDAO;
 
     protected function setUp(): void
@@ -17,6 +18,11 @@ class DataverseDAOTest extends DatabaseTestCase
         $this->contextsId = $this->retrieveContextIds();
         $this->dataverseUrl = 'https://demo.dataverse.org/dataverse/dataverseDeExemplo';
         $this->apiToken = 'randomToken';
+        $this->termsOfUse = [
+            'en_US' => 'https://test.dataverse.org/terms-of-use/en_US',
+            'pt_BR' => 'https://test.dataverse.org/terms-of-use/pt_BR',
+            'es_ES' => ''
+        ];
         $this->dataverseDAO =  new DataverseDAO();
     }
 
@@ -42,7 +48,8 @@ class DataverseDAOTest extends DatabaseTestCase
         $contextId = $this->contextsId[0];
         $pluginSettingsDao->updateSetting($contextId, 'dataverseplugin', 'dataverse', $this->dataverseUrl);
         $pluginSettingsDao->updateSetting($contextId, 'dataverseplugin', 'apiToken', $this->apiToken);
-        $expectedCredentials = [$this->apiToken, $this->dataverseUrl];
+        $pluginSettingsDao->updateSetting($contextId, 'dataverseplugin', 'termsOfUse', $this->termsOfUse);
+        $expectedCredentials = [$this->apiToken, $this->dataverseUrl, $this->termsOfUse];
         $this->assertEquals($expectedCredentials, $this->dataverseDAO->getCredentialsFromDatabase($contextId));
     }
 
@@ -55,5 +62,27 @@ class DataverseDAOTest extends DatabaseTestCase
         $credentials = [$result['apiToken'], $result['dataverseUrl']];
         $expectedCredentials = [$this->apiToken, $this->dataverseUrl];
         $this->assertEquals($expectedCredentials, $credentials);
+    }
+
+    public function testReturnsCurrentLocaleTermsOfUse(): void
+    {
+        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
+        $contextId = $this->contextsId[0];
+        $pluginSettingsDao->updateSetting($contextId, 'dataverseplugin', 'termsOfUse', $this->termsOfUse);
+
+        $termsOfUse = $this->dataverseDAO->getTermsOfUse($contextId, 'pt_BR');
+
+        $this->assertEquals($this->termsOfUse['pt_BR'], $termsOfUse);
+    }
+
+    public function testReturnsDefaultLocaleTermsOfUse(): void
+    {
+        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
+        $contextId = $this->contextsId[0];
+        $pluginSettingsDao->updateSetting($contextId, 'dataverseplugin', 'termsOfUse', $this->termsOfUse);
+
+        $termsOfUse = $this->dataverseDAO->getTermsOfUse($contextId, 'es_ES');
+
+        $this->assertEquals($this->termsOfUse['en_US'], $termsOfUse);
     }
 }

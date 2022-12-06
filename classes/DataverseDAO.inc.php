@@ -19,4 +19,18 @@ class DataverseDAO extends DAO
         $pluginSettingsDao->updateSetting($contextId, 'dataverseplugin', 'apiToken', $apiToken);
         return true;
     }
+
+    public function getTermsOfUse(int $contextId, string $locale = null): string
+    {
+        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
+        $allTermsOfUse = $pluginSettingsDao->getSetting($contextId, 'dataverseplugin', 'termsOfUse');
+
+        $primaryLocale = AppLocale::getPrimaryLocale();
+        if (isset($locale)) {
+            if (!empty($allTermsOfUse[$locale])) {
+                return $allTermsOfUse[$locale];
+            }
+        }
+        return $allTermsOfUse[$primaryLocale];
+    }
 }
