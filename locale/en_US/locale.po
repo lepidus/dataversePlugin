@@ -41,6 +41,12 @@ msgstr "Can't connect to Dataverse."
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Please enter a API token."
 
+msgid "plugins.generic.dataverse.settings.termsOfUse"
+msgstr "Terms of Use"
+
+msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
+msgstr "Dataverse Terms of Use URL"
+
 msgid "plugins.generic.dataverse.researchData"
 msgstr "Research data"
 

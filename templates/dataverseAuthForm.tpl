@@ -27,6 +27,10 @@
 				<label class="label">{fieldLabel name="apiToken" required="true" key="plugins.generic.dataverse.settings.token"}</label>
 				{fbvElement type="text" password="true" id="apiToken" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}
 				<label class="sub_label">{translate key="plugins.generic.dataverse.settings.tokenDescription"}</label>
+
+				<label class="label">{fieldLabel name="termsOfUse" required="true" key="plugins.generic.dataverse.settings.termsOfUse"}</label>
+				{fbvElement type="url" id="termsOfUse" multilingual=true value=$termOfUse|escape size=$fbvStyles.size.MEDIUM}
+				<label class="sub_label">{translate key="plugins.generic.dataverse.settings.termsOfUseDescription"}</label>
 			{/fbvFormSection}
 			{fbvFormButtons}
 		</div>

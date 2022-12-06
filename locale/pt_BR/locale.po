@@ -41,6 +41,12 @@ msgstr "Selecione Dataverse"
 msgid "plugins.generic.dataverse.settings.token"
 msgstr "Token de API"
 
+msgid "plugins.generic.dataverse.settings.termsOfUse"
+msgstr "Termos de Uso"
+
+msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
+msgstr "URL dos Termos de Uso do Dataverse"
+
 msgid "plugins.generic.dataverse.settings.password"
 msgstr "Senha"
 
