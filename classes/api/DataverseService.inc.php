@@ -269,11 +269,6 @@ class DataverseService {
 		return $studyPublished;
 	}
 
-	function getTermsOfUse(): string
-	{
-		return $this->dataverseClient->getDataverseTermsOfUse();
-	}
-
 	private function createJsonFile(string $jsonMatadata): string
 	{
 		$fileDir = tempnam('/tmp', 'datasetUpdateMetadata');

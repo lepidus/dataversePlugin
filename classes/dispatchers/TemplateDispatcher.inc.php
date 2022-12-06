@@ -2,7 +2,6 @@
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.APACitation');
-import('plugins.generic.dataverse.handlers.TermsOfUseHandler');
 import('lib.pkp.classes.submission.SubmissionFile');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 
@@ -353,7 +352,6 @@ class TemplateDispatcher extends DataverseDispatcher
 	{
 		$component =& $params[0];
 		switch ($component) {
-			case 'plugins.generic.dataverse.handlers.TermsOfUseHandler':
 			case 'plugins.generic.dataverse.handlers.DraftDatasetFileUploadHandler':
 				return true;
 				break;
