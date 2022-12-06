@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.study.DataverseDatasetData');
+import('plugins.generic.dataverse.classes.DataverseMetadata');
 
 class DataverseDatasetDataCreator
 {

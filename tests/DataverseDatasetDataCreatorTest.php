@@ -50,7 +50,7 @@ class DataverseDatasetDataCreatorTest extends PKPTestCase
         $expectedObj->dsDescriptionValue->typeClass = 'primitive';
         $expectedObj->dsDescriptionValue->value = $metadata['dsDescription'];
 
-        $obj = $this->creator->createValueObject('dsDescription', $metadata['dsDescription']);
+        $obj = $this->creator->createCompoundObject('dsDescription', $metadata['dsDescription']);
 
         $this->assertEquals($expectedObj, $obj);
     }
@@ -68,13 +68,13 @@ class DataverseDatasetDataCreatorTest extends PKPTestCase
 
         $datasetMetadata = $data->metadataBlocks;
 
-        $metadataBlocks = $this->creator->updataMetadataBlocks($datasetMetadata, $metadata);
+        $metadataBlocks = $this->creator->createMetadataFields($metadata);
 
         $expectedMetadataBlocks =& $data->metadataBlocks;
         $expectedMetadataBlocks->citation->fields[0]->value = $metadata['datasetTitle'];
-        $expectedMetadataBlocks->citation->fields[1]->value[0]->dsDescriptionValue->value = $metadata['datasetDescription'];
-        $expectedMetadataBlocks->citation->fields[2]->value[0]->keywordValue->value = $metadata['datasetKeywords'];
+        $expectedMetadataBlocks->citation->fields[1]->value[0]->dsDescriptionValue->value = $metadata['datasetDescription'][0];
+        $expectedMetadataBlocks->citation->fields[2]->value[0]->keywordValue->value = $metadata['datasetKeywords'][0];
 
-        $this->assertEquals($data, $metadataBlocks);
+        $this->assertEquals($expectedMetadataBlocks->citation->fields, $metadataBlocks->fields);
     }
 }
