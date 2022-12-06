@@ -51,9 +51,7 @@ class DataverseDatasetDataCreator
         $datasetMetadata->fields = [];
 
         foreach ($metadata as $key => $values) {
-            if (!empty($values)) {
-                $datasetMetadata->fields[] = $this->createMetadataObject($key, $values);
-            }
+            $datasetMetadata->fields[] = $this->createMetadataObject($key, $values);
         }
 
         return $datasetMetadata;

@@ -85,7 +85,7 @@ class DatasetsHandler extends APIHandler
         $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks->citation->fields;
         $datasetSubject = $datasetDataCreator->getMetadata($metadataBlocks, 'subject');
 
-        if ($requestParams['datasetSubject'] == $datasetSubject[0]) $requestParams['datasetSubject'] = null;
+        if ($requestParams['datasetSubject'] == $datasetSubject[0]) unset($requestParams['datasetSubject']);
 
         $datasetMetadataFields = $datasetDataCreator->createMetadataFields($requestParams);
         $datasetMetadata = json_encode($datasetMetadataFields);
