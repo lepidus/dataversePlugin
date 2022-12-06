@@ -153,6 +153,7 @@ describe('Edit Dataset Metadata Draft', function() {
 		cy.get('#datasetMetadata-datasetKeywords-control').type('{enter}', {
 			delay: 0
 		});
+		cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
 		cy.get(
 			'div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]'
 		).click();
@@ -178,6 +179,10 @@ describe('Edit Dataset Metadata Draft', function() {
 		).contains('An example abstract');
 		cy.get('#datasetMetadata-datasetKeywords-selected').contains(
 			'Modern History'
+		);
+		cy.get('#datasetMetadata-datasetSubject-control').should(
+			'have.value',
+			'Computer and Information Science'
 		);
 	});
 
