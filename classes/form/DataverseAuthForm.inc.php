@@ -27,6 +27,7 @@ class DataverseAuthForm extends Form {
 		$credentials = $dataverseDAO->getCredentialsFromDatabase($this->contextId);
 		$this->setData('apiToken', $credentials[0]);
 		$this->setData('dataverseUrl', $credentials[1]);
+		$this->setData('termsOfUse', $credentials[2]);
 	}
 
 	function readInputData(): void
@@ -51,6 +52,7 @@ class DataverseAuthForm extends Form {
 	{
 		$this->plugin->updateSetting($this->contextId, 'dataverseUrl', $this->getData('dataverseUrl'), 'string');
 		$this->plugin->updateSetting($this->contextId, 'apiToken', $this->getData('apiToken'), 'string');
+		$this->plugin->updateSetting($this->contextId, 'termsOfUse', $this->getData('termsOfUse'));
 		parent::execute(...$functionArgs);
 	}
 
