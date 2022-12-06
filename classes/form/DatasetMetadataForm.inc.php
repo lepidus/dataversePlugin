@@ -48,7 +48,7 @@ class DatasetMetadataForm extends FormComponent {
             'tooltip' => __('manager.setup.metadata.keywords.description'),
             'apiUrl' => $vocabSuggestionUrlBase,
             'locales' => $this->locales,
-            'selected' => (array) $datasetData->getData('keyword'),
+            'selected' => $datasetData->getData('keyword') ? $datasetData->getData('keyword') : [],
         ]))
         ->addField(new FieldSelect('datasetSubject', [
             'label' => __('plugins.generic.dataverse.metadataForm.subject.label'),
