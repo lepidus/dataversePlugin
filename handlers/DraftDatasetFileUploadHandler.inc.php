@@ -21,9 +21,10 @@ class DraftDatasetFileUploadHandler extends Handler {
         $draftDatasetFileUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, $params);
         $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles');
 
+        $termsOfUse = DAORegistry::getDAO('DataverseDAO')->getTermsOfUse($context->getId(), $locale);
         $termsOfUseParams = array(
             'dataverseName' => $args['dataverseName'],
-            'termsOfUseURL' => $plugin->getSetting($context->getId(), 'termsOfUse')[$locale],
+            'termsOfUseURL' => $termsOfUse,
         );
 
 
