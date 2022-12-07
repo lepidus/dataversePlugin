@@ -1,3 +1,5 @@
+import '../support/commands';
+
 const adminUser = Cypress.env('adminUser');
 const adminPassword = Cypress.env('adminPassword');
 const serverPath = Cypress.env('serverPath') || 'publicknowledge';
