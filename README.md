@@ -41,6 +41,20 @@ To clone [SWORD v2 PHP API library](https://github.com/swordapp/swordappv2-php-l
 3. Under __Upload file__ select the file __dataverse.tar.gz__.
 4. Click __Save__ and the plugin will be installed on your website.
 
+## Instructions for use
+
+After installation, it is necessary to enable the plugin. This is done in `Website Settings` > `Plugins` > `Installed Plugins`.
+
+With the plugin enabled, you should expand its options by clicking the arrow next to its name and then accessing its `Settings`. 
+
+In the new window, the  _Dataverse_ (Dataverse URL), _API Token_ and _Terms of Use_ will be displayed. You have to indicate the full Dataverse URL, for example: https://demo.dataverse.org/dataverse/anotherdemo
+
+The Terms of Use can be defined for each languange configurated in your application.
+
+After filling in the fields, just confirm the action by clicking `Save`. The plugin will only work after filling in these data.
+
+For authors: A "Research Data" deposit dialog is shown in step 2 of the Submission proccess.
+
 ## Running Tests
 
 ### Unit Tests
@@ -89,16 +103,6 @@ For execute the tests with the Cypress UI, run:
 npx cypress open --config integrationFolder=plugins/generic/dataverse/cypress/tests
 ```
 Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en_US` for passing into the tests.
-
-## Instructions for use
-
-After installation, it is necessary to enable the plugin. This is done in `Website Settings` > `Plugins` > `Installed Plugins`.
-
-With the plugin enabled, you should expand its options by clicking the arrow next to its name and then accessing its `Settings`. In the new window, the  _Dataverse_ (Dataverse URL) and _API Token_ will be displayed. You have to indicate the full Dataverse URL, for example: https://demo.dataverse.org/dataverse/anotherdemo
-
-After filling in the fields, just confirm the action by clicking `Save`. The plugin will only work after filling in these data.
-
-For authors: A "Research Data" deposit dialog is shown in step 2 of the Submission proccess.
 
 # License
 
