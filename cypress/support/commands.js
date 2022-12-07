@@ -18,7 +18,7 @@ Cypress.Commands.add('configureDataversePlugin', () => {
 		cy.get('input[name="dataverseUrl"]').invoke('val', Cypress.env('dataverseURI'));
 		cy.get('input[name="apiToken"]').invoke('val', Cypress.env('dataverseAPIToken'));
 		cy.get('input[name^="termsOfUse"]').first().invoke('val', Cypress.env('dataverseTermsOfUse'));
-		cy.get('form[id="dataverseAuthForm"] button[name="submitFormButton"]').click();
+		cy.get('form[id="dataverseConfigurationForm"] button[name="submitFormButton"]').click();
 		cy.get("div:contains('Your changes have been saved.')");
 	});
 });

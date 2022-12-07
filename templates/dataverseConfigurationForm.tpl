@@ -1,5 +1,5 @@
 {**
- * templates/dataverseAuthForm.tpl
+ * templates/dataverseConfigurationForm.tpl
  *
  * Copyright (c) 2019-2021 Lepidus Tecnologia
  * Copyright (c) 2020-2021 SciELO
@@ -10,10 +10,10 @@
  *}
 <script type="text/javascript">
 	$(function() {ldelim}
-		$('#dataverseAuthForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
+		$('#dataverseConfigurationForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
 	{rdelim});
 </script>
-<form class="pkp_form" id="dataverseAuthForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" 
+<form class="pkp_form" id="dataverseConfigurationForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" 
 plugin=$pluginName verb="settings" save=true}">
 {csrf}
 	<div id="description">{translate key="plugins.generic.dataverse.description"}</div>

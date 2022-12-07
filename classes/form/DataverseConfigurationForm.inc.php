@@ -4,17 +4,17 @@ import('lib.pkp.classes.form.Form');
 import('plugins.generic.dataverse.classes.api.DataverseClient');
 import('plugins.generic.dataverse.classes.DataverseDAO');
 
-class DataverseAuthForm extends Form {
+class DataverseConfigurationForm extends Form {
 
 	private $plugin;
 	private $contextId;
 
-	function DataverseAuthForm(Plugin $plugin, int $contextId)
+	function DataverseConfigurationForm(Plugin $plugin, int $contextId)
 	{
 		$this->plugin = $plugin;
 		$this->contextId = $contextId;
 
-		parent::__construct($plugin->getTemplateResource('dataverseAuthForm.tpl'));
+		parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
 		$this->addCheck(new FormValidatorUrl($this, 'dataverseUrl', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlRequired'));
 		$this->addCheck(new FormValidator($this, 'apiToken', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.tokenRequired'));
 		$this->addCheck(new FormValidatorCustom($this, 'termsOfUse', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlNotValid', array($this, 'validateCredentials')));

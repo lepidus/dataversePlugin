@@ -28,7 +28,7 @@ describe('Starts the plugin', function() {
         cy.get('button[id="plugins-button"]').click();
 		cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > .first_column > .show_extras').click();
         cy.get('tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-control-row"] > td > :nth-child(1)').click();
-        cy.get('form[id="dataverseAuthForm"]');
+        cy.get('form[id="dataverseConfigurationForm"]');
         cy.logout();
     });
 
