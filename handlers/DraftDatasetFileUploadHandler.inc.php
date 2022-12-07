@@ -10,6 +10,7 @@ class DraftDatasetFileUploadHandler extends Handler {
         $context = $request->getContext();
         $currentUser = $request->getUser();
         $templateMgr = TemplateManager::getManager($request);
+        $locale = AppLocale::getLocale();
 
         $params = [
             'submissionId' => $args['submissionId'],
@@ -20,15 +21,10 @@ class DraftDatasetFileUploadHandler extends Handler {
         $draftDatasetFileUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, $params);
         $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles');
 
+        $termsOfUse = DAORegistry::getDAO('DataverseDAO')->getTermsOfUse($context->getId(), $locale);
         $termsOfUseParams = array(
             'dataverseName' => $args['dataverseName'],
-            'termsOfUseURL' => $dispatcher->url(
-                $request,
-                ROUTE_COMPONENT, 
-                null,
-                'plugins.generic.dataverse.handlers.TermsOfUseHandler',
-                'get'
-            ),
+            'termsOfUseURL' => $termsOfUse,
         );
 
 

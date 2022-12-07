@@ -55,41 +55,9 @@ const submissionDataNoFiles = {
 describe('Deposit Draft Dataverse on Submission', function() {
 	it('Dataverse Plugin Configuration', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a')
-			.contains(adminUser)
-			.click();
-		cy.get('a')
-			.contains('Dashboard')
-			.click();
-		cy.get('.app__nav a')
-			.contains('Website')
-			.click();
-		cy.get('button[id="plugins-button"]').click();
-		cy.get(
-			'#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin > :nth-child(3) [type="checkbox"]'
-		).check();
-		cy.wait(2000);
-		cy.get(
-			'#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin > :nth-child(3) [type="checkbox"]'
-		).should('be.checked');
-		cy.get(
-			'tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > .first_column > .show_extras'
-		).click();
-		cy.get(
-			'tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-control-row"] > td > :nth-child(1)'
-		).click();
-		cy.get('input[name="dataverseUrl"]').invoke(
-			'val',
-			Cypress.env('dataverseURI')
-		);
-		cy.get('input[name="apiToken"]').invoke(
-			'val',
-			Cypress.env('dataverseAPIToken')
-		);
-		cy.get(
-			'form[id="dataverseAuthForm"] button[name="submitFormButton"]'
-		).click();
-		cy.get('div:contains("Your changes have been saved.")');
+		cy.get('a:contains(' + adminUser + '):visible').click();
+		cy.get('a:contains("Dashboard"):visible').click();
+		cy.configureDataversePlugin();
 	});
 
 	it('Create Submission', function() {

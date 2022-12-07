@@ -31,41 +31,9 @@ let submissionData = {
 describe('Deposit Draft Dataset', function() {
 	it('Dataverse Plugin Configuration', function() {
 		cy.login(adminUser, adminPassword);
-		cy.get('a')
-			.contains(adminUser)
-			.click();
-		cy.get('a')
-			.contains('Dashboard')
-			.click();
-		cy.get('.app__nav a')
-			.contains('Website')
-			.click();
-		cy.get('button[id="plugins-button"]').click();
-		cy.get(
-			'#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin > :nth-child(3) [type="checkbox"]'
-		).check();
-		cy.wait(2000);
-		cy.get(
-			'#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin > :nth-child(3) [type="checkbox"]'
-		).should('be.checked');
-		cy.get(
-			'tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin"] > .first_column > .show_extras'
-		).click();
-		cy.get(
-			'tr[id="component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-control-row"] > td > :nth-child(1)'
-		).click();
-		cy.get('input[name="dataverseUrl"]').invoke(
-			'val',
-			Cypress.env('dataverseURI')
-		);
-		cy.get('input[name="apiToken"]').invoke(
-			'val',
-			Cypress.env('dataverseAPIToken')
-		);
-		cy.get(
-			'form[id="dataverseAuthForm"] button[name="submitFormButton"]'
-		).click();
-		cy.get('div:contains("Your changes have been saved.")');
+		cy.get('a:contains(' + adminUser + '):visible').click();
+		cy.get('a:contains("Dashboard"):visible').click();
+		cy.configureDataversePlugin();
 	});
 
 	it('Create Submission', function() {
@@ -153,7 +121,9 @@ describe('Edit Dataset Metadata Draft', function() {
 		cy.get('#datasetMetadata-datasetKeywords-control').type('{enter}', {
 			delay: 0
 		});
-		cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
+		cy.get('#datasetMetadata-datasetSubject-control').select(
+			'Computer and Information Science'
+		);
 		cy.get(
 			'div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]'
 		).click();

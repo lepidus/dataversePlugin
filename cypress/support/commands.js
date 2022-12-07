@@ -5,6 +5,24 @@ Cypress.on('uncaught:exception', (err, runnable) => {
 	return false;
 });
 
+Cypress.Commands.add('configureDataversePlugin', () => {
+	cy.get('.app__nav a').contains('Website').click();
+	cy.get('button[id="plugins-button"]').click();
+	cy.get('#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin').then($pluginRow => {
+		if (!$pluginRow.find('input[id^="select-cell-dataverseplugin-enable"]:checked').length) {
+			cy.get('input[id^="select-cell-dataverseplugin-enable"]').check();
+			cy.get('div').contains('The plugin "Dataverse Plugin" has been enabled');
+		}
+		cy.wrap($pluginRow).contains('Settings').click();
+		cy.get('a[id*="dataverseplugin-settings-button"]').click();
+		cy.get('input[name="dataverseUrl"]').invoke('val', Cypress.env('dataverseURI'));
+		cy.get('input[name="apiToken"]').invoke('val', Cypress.env('dataverseAPIToken'));
+		cy.get('input[name^="termsOfUse"]').first().invoke('val', Cypress.env('dataverseTermsOfUse'));
+		cy.get('form[id="dataverseAuthForm"] button[name="submitFormButton"]').click();
+		cy.get("div:contains('Your changes have been saved.')");
+	});
+});
+
 Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 	// Initialize some data defaults before starting
 	if (!('files' in data))
@@ -161,3 +179,5 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 	cy.waitJQuery();
 	cy.get('h2:contains("Submission complete")');
 });
+
+

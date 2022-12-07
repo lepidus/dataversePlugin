@@ -17,7 +17,7 @@ class DataverseAuthForm extends Form {
 		parent::__construct($plugin->getTemplateResource('dataverseAuthForm.tpl'));
 		$this->addCheck(new FormValidatorUrl($this, 'dataverseUrl', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlRequired'));
 		$this->addCheck(new FormValidator($this, 'apiToken', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.tokenRequired'));
-		$this->addCheck(new FormValidatorCustom($this, '', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlNotValid', array($this, 'validateCredentials')));
+		$this->addCheck(new FormValidatorCustom($this, 'termsOfUse', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlNotValid', array($this, 'validateCredentials')));
 		$this->addCheck(new FormValidatorPost($this));
 	}
 
@@ -27,11 +27,12 @@ class DataverseAuthForm extends Form {
 		$credentials = $dataverseDAO->getCredentialsFromDatabase($this->contextId);
 		$this->setData('apiToken', $credentials[0]);
 		$this->setData('dataverseUrl', $credentials[1]);
+		$this->setData('termsOfUse', $credentials[2]);
 	}
 
 	function readInputData(): void
 	{
-		$this->readUserVars(array('dataverseUrl', 'apiToken'));
+		$this->readUserVars(array('dataverseUrl', 'apiToken', 'termsOfUse'));
 		$this->setData('dataverseUrl', $this->normalizeURI($this->getData('dataverseUrl')));
 	}
 
@@ -51,6 +52,7 @@ class DataverseAuthForm extends Form {
 	{
 		$this->plugin->updateSetting($this->contextId, 'dataverseUrl', $this->getData('dataverseUrl'), 'string');
 		$this->plugin->updateSetting($this->contextId, 'apiToken', $this->getData('apiToken'), 'string');
+		$this->plugin->updateSetting($this->contextId, 'termsOfUse', $this->getData('termsOfUse'));
 		parent::execute(...$functionArgs);
 	}
 
