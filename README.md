@@ -43,6 +43,7 @@ To clone [SWORD v2 PHP API library](https://github.com/swordapp/swordappv2-php-l
 
 ## Instructions for use
 
+### Configuration
 After installation, it is necessary to enable the plugin. This is done in `Website Settings` > `Plugins` > `Installed Plugins`.
 
 With the plugin enabled, you should expand its options by clicking the arrow next to its name and then accessing its `Settings`. 
@@ -51,9 +52,14 @@ In the new window, the  _Dataverse_ (Dataverse URL), _API Token_ and _Terms of U
 
 The Terms of Use can be defined for each languange configurated in your application.
 
+Important: The _API Token_ belongs to a Dataverse account. This account will appear as the Depositor of each dataset submited to Dataverse.
+
 After filling in the fields, just confirm the action by clicking `Save`. The plugin will only work after filling in these data.
 
-For authors: A "Research Data" deposit dialog is shown in step 2 of the Submission proccess.
+### Use
+A "Research Data" deposit dialog is shown in step 2 of the Submission proccess.
+
+Authors, moderators, editors or managers can also edit the dataset, before publication, on the Research Data tab of the submission.
 
 ## Running Tests
 
