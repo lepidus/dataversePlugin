@@ -72,7 +72,7 @@ class DataverseMetadata
 				'multiple' => false,
 				'typeClass' => 'primitive'
 			],
-			'datasetAutor' => [
+			'datasetAuthor' => [
 				'typeName'=> 'author',
 				'multiple'=> true,
 				'typeClass'=> 'compound'
@@ -104,7 +104,7 @@ class DataverseMetadata
                 'typeName' => 'authorName',
                 'multiple' => false,
                 'typeClass' => 'primitive',
-                'value' => $author->getLastName() . ',' . $author->getGivenName()
+                'value' => $author->getFamilyName() . ',' . $author->getGivenName()
             ],
             'authorAffiliation' => [
                 'typeName' => 'authorAffiliation',
@@ -121,7 +121,7 @@ class DataverseMetadata
                 'typeClass' => 'controlledVocabulary',
                 'value' => 'ORCID'
             ];
-            $authorProps['authorIdentifier'] => [
+            $authorProps['authorIdentifier'] = [
                 'typeName' => 'authorIdentifier',
                 'multiple' => false,
                 'typeClass' => 'primitive',

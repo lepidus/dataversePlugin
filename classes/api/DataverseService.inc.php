@@ -68,7 +68,7 @@ class DataverseService {
 			$study = $this->depositStudy($package);
 		}
 		if (!empty($study)) {
-			$this->defineDatasetSubject($study);
+			$this->defineAdditionalMetadata($study);
 			$this->deleteDraftDatasetFiles();
 		}
 	}
@@ -138,7 +138,7 @@ class DataverseService {
 		return $study;
 	}
 
-	public function defineDatasetSubject($study): void
+	public function defineAdditionalMetadata($study): void
 	{
 		$dataverseNotificationMgr = new DataverseNotificationManager();
 		
@@ -147,9 +147,11 @@ class DataverseService {
 			$url =  $dataverseServer . '/api/datasets/:persistentId/editMetadata?persistentId=' . $study->getPersistentId() . '&replace=true';
 
 			$datasetSubject = $this->submission->getSubject();
-
+			$authors = $this->submission->getAuthors();
+			
 			$datasetDataCreator = new DataverseDatasetDataCreator();
 			$updatedFields = $datasetDataCreator->createMetadataFields(['datasetSubject' => $datasetSubject]);
+			$updatedFields->fields[] = $datasetDataCreator->createAuthorsField($authors);
 
 			$updatedFieldsJson = json_encode($updatedFields);
 
