@@ -6,13 +6,15 @@ class AuthorAdapter
     private $familyName;
     private $affiliation;
     private $email;
+    private $orcid;
 
-    public function __construct(string $givenName, string $familyName, string $affiliation, string $email)
+    public function __construct(string $givenName, string $familyName, string $affiliation, string $email, string $orcid = null)
     {
         $this->givenName = $givenName;
         $this->familyName = $familyName;
         $this->affiliation = $affiliation;
         $this->email = $email;
+        $this->orcid = $orcid;
     }
 
     public function getGivenName(): string
@@ -35,8 +37,13 @@ class AuthorAdapter
         return $this->affiliation;
     }
 
-    public function getAuthorEmail(): string
+    public function getEmail(): string
     {
         return $this->email;
+    }
+
+    public function getOrcid(): ?string
+    {
+        return $this->orcid;
     }
 }
