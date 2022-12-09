@@ -26,14 +26,11 @@ msgstr "Dataverse URL"
 msgid "plugins.generic.dataverse.settings.tokenDescription"
 msgstr "API token"
 
-msgid "plugins.generic.dataverse.settings.passwordDescription"
-msgstr "Password. Not required for API token."
-
 msgid "plugins.generic.dataverse.settings.token"
 msgstr "API Token"
 
-msgid "plugins.generic.dataverse.settings.password"
-msgstr "Password"
+msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
+msgstr "Dataverse URL is required."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
 msgstr "Can't connect to Dataverse."
