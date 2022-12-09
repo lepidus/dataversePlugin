@@ -72,6 +72,11 @@ class DataverseMetadata
 				'multiple' => false,
 				'typeClass' => 'primitive'
 			],
+			'datasetAutor' => [
+				'typeName'=> 'author',
+				'multiple'=> true,
+				'typeClass'=> 'compound'
+			],
 			'datasetDescription' => [
 				'typeName' => 'dsDescription',
 				'multiple' => true,
@@ -91,4 +96,39 @@ class DataverseMetadata
 
 		return $metadata ? $attributes[$metadata] : $attributes;
 	}
+
+	static function retrieveAuthorProps($author): array
+    {
+        $authorProps = [
+            'authorName' => [
+                'typeName' => 'authorName',
+                'multiple' => false,
+                'typeClass' => 'primitive',
+                'value' => $author->getLastName() . ',' . $author->getGivenName()
+            ],
+            'authorAffiliation' => [
+                'typeName' => 'authorAffiliation',
+                'multiple' => false,
+                'typeClass' => 'primitive',
+                'value' => $author->getAffiliation()
+            ]
+		];
+
+		if ($author->getOrcid()) {
+			$authorProps['authorIdentifierScheme'] = [
+                'typeName' => 'authorIdentifierScheme',
+                'multiple' => false,
+                'typeClass' => 'controlledVocabulary',
+                'value' => 'ORCID'
+            ];
+            $authorProps['authorIdentifier'] => [
+                'typeName' => 'authorIdentifier',
+                'multiple' => false,
+                'typeClass' => 'primitive',
+                'value' => $author->getOrcid()
+			];
+		}
+
+		return $authorProps;
+    }
 }
