@@ -12,10 +12,10 @@ msgstr ""
 "Language: \n"
 
 msgid "plugins.generic.dataverse.displayName"
-msgstr "Plugin Dataverse"
+msgstr "Módulo Dataverse"
 
 msgid "plugins.generic.dataverse.description"
-msgstr "Deposita conjuntos de dados e/ou outros documentos suplementares no Dataverse."
+msgstr "Deposita conjuntos de datos y/u otros documentos complementarios en Dataverse."
 
 msgid "plugins.generic.dataverse.settings.connect"
 msgstr "Conectar"
@@ -24,166 +24,163 @@ msgid "plugins.generic.dataverse.settings.dataverseUrl"
 msgstr "Dataverse URL"
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlDescription"
-msgstr "URL do Dataverse"
+msgstr "URL del Dataverse"
+
+msgid "plugins.generic.dataverse.settings.token"
+msgstr "Token de API"
 
 msgid "plugins.generic.dataverse.settings.tokenDescription"
 msgstr "Token de API"
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
-msgstr "Endereço do Dataverse é obrigatório."
+msgstr "Se requiere la URL del Dataverse."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
-msgstr "Impossível conectar ao Dataverse."
-
-msgid "plugins.generic.dataverse.settings.token"
-msgstr "Token de API"
+msgstr "No se puede conectar a Dataverse."
 
 msgid "plugins.generic.dataverse.settings.termsOfUse"
-msgstr "Termos de Uso"
+msgstr "Términos de uso"
 
 msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
-msgstr "URL dos Termos de Uso do Dataverse"
+msgstr "URL de términos de uso de Dataverse"
 
 msgid "plugins.generic.dataverse.settings.tokenRequired"
-msgstr "Informe uma chave de API para Dataverse."
+msgstr "Ingrese una clave API para Dataverse."
 
 msgid "plugins.generic.dataverse.researchData"
-msgstr "Dados de pesquisa"
+msgstr "Datos de la investigación"
 
 msgid "plugins.generic.dataverse.datasetButton"
-msgstr "Enviar dados de pesquisa"
+msgstr "Cargar Datos de la investigación"
 
 msgid "plugins.generic.dataverse.notification.statusCreated"
-msgstr "Dataset depositado com sucesso em {$dataverseUrl}."
+msgstr "Conjunto de datos depositado con éxito en {$dataverseUrl}."
 
 msgid "plugins.generic.dataverse.notification.statusPublished"
-msgstr "Dataset publicado em: {$dataverseUrl}."
+msgstr "Conjunto de datos publicado en: {$dataverseUrl}."
 
 msgid "plugins.generic.dataverse.notification.statusBadRequest"
-msgstr "A requisição não pode ser processada pelo servidor do Dataverse devido a erros na requisição"
+msgstr "El servidor de Dataverse no puede procesar la solicitud debido a errores en la solicitud"
 
 msgid "plugins.generic.dataverse.notification.statusUnauthorized" 
-msgstr "Acesso não autorizado. Você não tem permissão para acessar esse recurso"
+msgstr "Acceso no autorizado. No tienes permiso para acceder a este recurso."
 
 msgid "plugins.generic.dataverse.notification.statusForbidden"
-msgstr "Access negado. Verifique suas credenciais para obter acesso ao {$dataverseUrl}"
+msgstr "Acceso denegado. Verifica tus credenciales para acceder a {$dataverseUrl}"
 
 msgid "plugins.generic.dataverse.notification.statusNotFound" 
-msgstr "O servidor não conseguiu encontrar o recurso solicitado."
+msgstr "El servidor no pudo encontrar el recurso solicitado."
 
 msgid "plugins.generic.dataverse.notification.statusPreconditionFailed" 
-msgstr "As codições do cabeçalho da requisição não foram satisfeitas."
+msgstr "Las condiciones del encabezado de la solicitud no se cumplen."
 
 msgid "plugins.generic.dataverse.notification.statusPayloadTooLarge" 
-msgstr "A entidade de requisição é maior que os limites definidos pelo servidor"
+msgstr "La entidad de solicitud es mayor que los límites definidos por el servidor"
 
 msgid "plugins.generic.dataverse.notification.statusUnsupportedMediaType" 
-msgstr "O formato da mídia enviada na requisição não é suportado pelo servidor"
+msgstr "El formato multimedia enviado en la solicitud no es compatible con el servidor"
 
 msgid "plugins.generic.dataverse.notification.statusInternalServerError" 
-msgstr "O servidor encontrou um erro interno que o impediu de atender a esta requisição."
+msgstr "El servidor encontró un error interno que le impidió atender esta solicitud."
 
 msgid "plugins.generic.dataverse.notification.statusUnavailable"
-msgstr "Servidor não disponível. {$dataverseUrl} está temporariamente fora do ar. Por favor, tente novamente mais tarde"
+msgstr "Servidor no disponible. {$dataverseUrl} está temporalmente fuera de línea. Por favor, inténtelo de nuevo más tarde."
 
 msgid "plugins.generic.dataverse.notification.unknownError"
-msgstr "Erro desconhecido. Não foi possível conectar a {$dataverseUrl}"
+msgstr "Error desconocido. Incapaz de conectarse a {$dataverseUrl}"
 
 msgid "plugins.generic.dataverse.notification.metadataUpdated"
-msgstr "Metadados do dataset atualizados com sucesso."
-
-msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
-msgstr "Impossível conectar ao Dataverse."
+msgstr "Los metadatos del conjunto de datos se actualizaron correctamente."
 
 msgid "plugins.generic.dataverse.modal.addFile.title"
-msgstr "Enviar arquivo de dados de pesquisa"
+msgstr "Enviar archivo de datos de investigación"
 
 msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
-msgstr "Arquivo de dados de pesquisa"
+msgstr "Archivo de datos de investigación"
 
 msgid "plugins.generic.dataverse.termsOfUse.label"
-msgstr "Termos de uso do Dataverse"
+msgstr "Términos de uso del Dataverse"
 
 msgid "plugins.generic.dataverse.termsOfUse.description"
-msgstr "Depositar arquivo no Dataverse: <strong>{$dataverseName}</strong>, concordando com os <a href=\"{$termsOfUseURL}\" target=\"_new\">Termos de Uso</a>."
+msgstr "Depositar archivo en Dataverse: <strong>{$dataverseName}</strong>, estando de acuerdo con el <a href=\"{$termsOfUseURL}\" target=\"_new\">Términos de Uso</a>."
 
 msgid "plugins.generic.dataverse.termsOfUse.error"
-msgstr "Para depositar este arquivo você deve aceitar os termos de uso."
+msgstr "Para depositar este archivo debe aceptar los términos de uso."
 
 msgid "plugins.generic.dataverse.modal.deleteDatasetFile"
-msgstr "Excluir arquivo de dados de pesquisa"
+msgstr "Eliminar archivo de datos de investigación"
 
 msgid "plugins.generic.dataverse.modal.confirmDelete"
-msgstr "Deseja realmente excluir permanentemente o arquivo de dados de pesquisa <strong>{$title}</strong>?"
+msgstr "¿Realmente desea eliminar permanentemente el archivo de datos de investigación <strong>{$title}</strong>?"
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
-msgstr "Deseja realmente excluir permanentemente os dados de pesquisa relacionados a esse preprint?"
+msgstr "¿Realmente desea eliminar de forma permanente los datos de investigación relacionados con esta versión preliminar?"
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
-msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
+msgstr "No se encontró el borrador del archivo del conjunto de datos solicitado."
 
 msgid "plugins.generic.dataverse.researchData.metadata"
-msgstr "Metadados"
+msgstr "Metadatos"
 
 msgid "plugins.generic.dataverse.researchData.files"
-msgstr "Arquivos"
+msgstr "Archivos"
 
 msgid "plugins.generic.dataverse.researchData.delete"
-msgstr "Excluir dados de pesquisa"
+msgstr "Eliminar datos de investigación"
 
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Título"
 
 msgid "plugins.generic.dataverse.metadataForm.description"
-msgstr "Descrição"
+msgstr "Descripción"
 
 msgid "plugins.generic.dataverse.metadataForm.keyword"
-msgstr "Palavras-chave"
+msgstr "Palabras clave"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.label"
-msgstr "Assunto dos Dados de Pesquisa"
+msgstr "Sujeto de datos de investigación"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.description"
-msgstr "Selecione o assunto dos dados de pesquisa a serem depositados no Dataverse"
+msgstr "Seleccione el tema de los datos de investigación que se depositarán en el Dataverse"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.agriculturalSciences"
-msgstr "Ciências Agrárias"
+msgstr "Ciencias Agrícolas"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.artsAndHumanities"
-msgstr "Artes e Humanidades"
+msgstr "Artes y Humanidades"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.astronomyAndAstrophysics"
-msgstr "Astronomia e Astrofísica"
+msgstr "Astronomia y Astrofisica"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.businessAndManagement"
-msgstr "Negócios e Gestão"
+msgstr "Negocios y Administración"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.chemistry"
 msgstr "Química"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.computerAndInformationScience"
-msgstr "Computação e Ciência da Informação"
+msgstr "Informática y Ciencias de la Información"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.earthAndEnvironmentalSciences"
-msgstr "Ciências da Terra e do Meio Ambiente"
+msgstr "Ciencias de la Tierra y del Medio Ambiente"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Engineering"
-msgstr "Engenharia"
+msgstr "Ingeniería"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Law"
-msgstr "Lei"
+msgstr "Ley"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.mathematicalSciences"
-msgstr "Ciências Matemáticas"
+msgstr "Ciencias Matemáticas"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.medicineHealthAndLifeSciences"
-msgstr "Medicina, Saúde e Ciência da Vida"
+msgstr "Medicina, Salud y Ciencias de la Vida"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Physics"
-msgstr "Física"
+msgstr "Físico"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.socialSciences"
-msgstr "Ciências Sociais"
+msgstr "Ciencias Sociales"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
-msgstr "Outros"
+msgstr "Otros"
