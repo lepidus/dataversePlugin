@@ -97,4 +97,22 @@ class DataverseDatasetDataCreator
 
         return $obj;
     }
+
+    public function createAuthorsField($authors): stdClass
+    {
+        $metadataAttr = DataverseMetadata::getMetadataAttributes('datasetAuthor');
+
+        $metadata = new stdClass();
+        $metadata->typeName = $metadataAttr['typeName'];
+        $metadata->multiple = $metadataAttr['multiple'];
+        $metadata->typeClass = $metadataAttr['typeClass'];
+        $metadata->value = [];
+
+        foreach ($authors as $author) {
+            $authorProps = DataverseMetadata::retrieveAuthorProps($author);
+            $metadata->value[] = $authorProps;
+        }
+
+        return $metadata;
+    }
 }

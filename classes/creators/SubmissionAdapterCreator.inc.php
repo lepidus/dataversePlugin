@@ -34,10 +34,15 @@ class SubmissionAdapterCreator
             $familyName = $author->getLocalizedFamilyName($locale);
             $affiliation = $author->getLocalizedData('affiliation', $locale);
             $email = $author->getData('email');
-
+            $orcid = $author->getOrcid();
+            
+            preg_match('/.{4}-.{4}-.{4}-.{4}/', $orcid, $matches);
+            $orcidNumber = $matches[0];
+            
             $affiliation = !is_null($affiliation) ? $affiliation : "";
             $email = !is_null($email) ? $email : "";
-            $authorAdapters[] = new AuthorAdapter($givenName, $familyName, $affiliation, $email);
+
+            $authorAdapters[] = new AuthorAdapter($givenName, $familyName, $affiliation, $email, $orcidNumber);
         }
 
         return $authorAdapters;
