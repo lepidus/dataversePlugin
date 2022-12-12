@@ -48,10 +48,10 @@ msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Ingrese una clave API para Dataverse."
 
 msgid "plugins.generic.dataverse.researchData"
-msgstr "Datos de la investigación"
+msgstr "Datos de investigación"
 
 msgid "plugins.generic.dataverse.datasetButton"
-msgstr "Cargar Datos de la investigación"
+msgstr "Cargar Datos de investigación"
 
 msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Conjunto de datos depositado con éxito en {$dataverseUrl}."
@@ -138,49 +138,49 @@ msgid "plugins.generic.dataverse.metadataForm.keyword"
 msgstr "Palabras clave"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.label"
-msgstr "Sujeto de datos de investigación"
+msgstr "Materia de datos de investigación"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.description"
-msgstr "Seleccione el tema de los datos de investigación que se depositarán en el Dataverse"
+msgstr "Seleccione la materia de los datos de investigación que se depositarán en el Dataverse"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.agriculturalSciences"
-msgstr "Ciencias Agrícolas"
+msgstr "Ciencias agrarias"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.artsAndHumanities"
-msgstr "Artes y Humanidades"
+msgstr "Artes y humanidades"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.astronomyAndAstrophysics"
-msgstr "Astronomia y Astrofisica"
+msgstr "Astronomía y astrofísica"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.businessAndManagement"
-msgstr "Negocios y Administración"
+msgstr "Administración y empresas"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.chemistry"
 msgstr "Química"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.computerAndInformationScience"
-msgstr "Informática y Ciencias de la Información"
+msgstr "Ciencias de la información y computación"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.earthAndEnvironmentalSciences"
-msgstr "Ciencias de la Tierra y del Medio Ambiente"
+msgstr "Ciencias de la tierra y el medioambiente"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Engineering"
 msgstr "Ingeniería"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Law"
-msgstr "Ley"
+msgstr "Derecho"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.mathematicalSciences"
-msgstr "Ciencias Matemáticas"
+msgstr "Ciencias matemáticas"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.medicineHealthAndLifeSciences"
-msgstr "Medicina, Salud y Ciencias de la Vida"
+msgstr "Ciencias médicas, de la salud y de la vida"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Physics"
-msgstr "Físico"
+msgstr "Física"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.socialSciences"
-msgstr "Ciencias Sociales"
+msgstr "Ciencias sociales"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
-msgstr "Otros"
+msgstr "Otra"
