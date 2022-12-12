@@ -171,7 +171,7 @@ msgid "plugins.generic.dataverse.metadataForm.subject.Engineering"
 msgstr "Engenharia"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Law"
-msgstr "Lei"
+msgstr "Direito"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.mathematicalSciences"
 msgstr "Ciências Matemáticas"
