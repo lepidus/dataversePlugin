@@ -104,7 +104,7 @@ class DataverseMetadata
                 'typeName' => 'authorName',
                 'multiple' => false,
                 'typeClass' => 'primitive',
-                'value' => $author->getFamilyName() . ',' . $author->getGivenName()
+                'value' => $author->getFamilyName() . ', ' . $author->getGivenName()
             ],
             'authorAffiliation' => [
                 'typeName' => 'authorAffiliation',
