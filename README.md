@@ -16,27 +16,15 @@ Using PHP 7.3 or higher, but below (<) PHP 8.0.
 
 To download the plugin, go to the [Releases page](https://github.com/lepidus/dataversePlugin/releases) and download the tar.gz package of the latest release compatible with your website.
 
-## Installation dependencies 
-* [php-zip](https://www.php.net/manual/pt_BR/zip.installation.php)
+## Installation 
 
-## Development dependencies
-* [php-zip](https://www.php.net/manual/pt_BR/zip.installation.php)
+### Dependencies 
+* [php-zip](https://www.php.net/manual/en/zip.installation.php)
+* [php-curl](https://www.php.net/manual/en/book.curl.php)
 
-## Development Instructions:
+### Instructions
 
-1. Clone the Dataverse plugin repository
-2. Open a terminal inside the repository directory and run the following commands:
-     * git submodule init
-     * git submodule update
-
-To clone [SWORD v2 PHP API library](https://github.com/swordapp/swordappv2-php-library/) submodule.
-
-3. To use the plugin into the PKP Application, copy it's folder to the /plugins/generic directory and make sure the folder is called "dataverse".
-4. And from the root of the PKP Appplication directory, execute this command to update the database, creating the tables used by the plugin:
-    * php tools/upgrade.php upgrade
-## Installation
-
-1. Install the 'php-zip' dependency.
+1. Install the plugin dependencies.
 2. Enter the administration area of ​​your application and navigate to `Settings`>` Website`> `Plugins`> `Upload a new plugin`.
 3. Under __Upload file__ select the file __dataverse.tar.gz__.
 4. Click __Save__ and the plugin will be installed on your website.
@@ -57,9 +45,23 @@ Important: The _API Token_ belongs to a Dataverse account. This account will app
 After filling in the fields, just confirm the action by clicking `Save`. The plugin will only work after filling in these data.
 
 ### Use
+
 A "Research Data" deposit dialog is shown in step 2 of the Submission proccess.
 
 Authors, moderators, editors or managers can also edit the dataset, before publication, on the Research Data tab of the submission.
+
+## Development Instructions:
+
+1. Clone the Dataverse plugin repository
+2. Open a terminal inside the repository directory and run the following commands:
+     * git submodule init
+     * git submodule update
+
+To clone [SWORD v2 PHP API library](https://github.com/swordapp/swordappv2-php-library/) submodule.
+
+3. To use the plugin into the PKP Application, copy it's folder to the /plugins/generic directory and make sure the folder is called "dataverse".
+4. And from the root of the PKP Appplication directory, execute this command to update the database, creating the tables used by the plugin:
+    * php tools/upgrade.php upgrade
 
 ## Running Tests
 
@@ -72,7 +74,7 @@ find plugins/generic/dataverse -name tests -type d -exec php lib/pkp/lib/vendor/
 
 ### Integration Tests
 
-Creates a cypress.env.json file in root of the PKP Application directory, with the following environment variables:
+Creates a `cypress.env.json` file in root of the PKP Application directory, with the following environment variables:
 - baseUrl
 - serverName
 - serverPath
