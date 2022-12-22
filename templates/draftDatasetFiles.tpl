@@ -1,7 +1,5 @@
-<div id="draftDatasetFilesContainer">
-	{capture assign=addGalleyLabel}{translate key="submission.layout.galleys"}{/capture}
-	<label class="description">{translate key="plugins.generic.dataverse.researchDataDescription" addGalleyLabel=$addGalleyLabel}</label>
-	<list-panel :items="components.draftDatasetFilesList.items" style="margin-bottom: 1rem">
+<div id="draftDatasetFilesContainer" style="margin-bottom: 1rem">
+	<list-panel :items="components.draftDatasetFilesList.items">
         <pkp-header slot="header">
             <h2>{translate key="plugins.generic.dataverse.researchData"}</h2>
 			<spinner v-if="isLoading"></spinner>
@@ -46,7 +44,8 @@
 			</pkp-form>
 		</modal-content>
 	</modal>
-
+	{capture assign=addGalleyLabel}{translate key="submission.layout.galleys"}{/capture}
+	<label class="description">{translate key="plugins.generic.dataverse.researchDataDescription" addGalleyLabel=$addGalleyLabel}</label>
     <script type="text/javascript">
         pkp.registry.init('draftDatasetFilesContainer', 'DraftDatasetFilesPage', {$state|json_encode});
     </script>

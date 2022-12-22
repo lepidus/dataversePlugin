@@ -45,7 +45,7 @@ msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
 msgstr "Dataverse Terms of Use URL"
 
 msgid "plugins.generic.dataverse.researchDataDescription"
-msgstr "Use this field only for sending research data. To send your manuscript, use the field “{$addGalleyLabel}”"
+msgstr "Use this field only for submitting research data. To send the manuscript, use “{$addGalleyLabel}”"
 
 msgid "plugins.generic.dataverse.researchData"
 msgstr "Research data"
