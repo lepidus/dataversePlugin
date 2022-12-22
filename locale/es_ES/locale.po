@@ -47,6 +47,9 @@ msgstr "URL de términos de uso de Dataverse"
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Ingrese una clave API para Dataverse."
 
+msgid "plugins.generic.dataverse.researchDataDescription"
+msgstr "Use este campo solo para enviar datos de investigación. Para enviar el manuscrito, utilice “{$addGalleyLabel}”"
+
 msgid "plugins.generic.dataverse.researchData"
 msgstr "Datos de investigación"
 
