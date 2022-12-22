@@ -7,22 +7,22 @@ import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 
 class TemplateDispatcher extends DataverseDispatcher
 {
-	public function __construct(Plugin $plugin)
-	{
-		HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFilesContainer'));
-		HookRegistry::register('TemplateManager::display', array($this, 'loadDraftDatasetFilePageComponent'));
-		HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
-		HookRegistry::register('Template::Workflow::Publication', array($this, 'addDatasetDataToWorkflow'));
-		HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
-		HookRegistry::register('PreprintHandler::view', array($this, 'loadResources'));
-		HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
-		
-		parent::__construct($plugin);
-	}
-	
-	public function loadDraftDatasetFilePageComponent(string $hookName, array $params): bool
-	{
-		$templateMgr = &$params[0];
+    public function __construct(Plugin $plugin)
+    {
+        HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFilesContainer'));
+        HookRegistry::register('TemplateManager::display', array($this, 'loadDraftDatasetFilePageComponent'));
+        HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
+        HookRegistry::register('Template::Workflow::Publication', array($this, 'addDatasetDataToWorkflow'));
+        HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
+        HookRegistry::register('PreprintHandler::view', array($this, 'loadResources'));
+        HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
+
+        parent::__construct($plugin);
+    }
+
+    public function loadDraftDatasetFilePageComponent(string $hookName, array $params): bool
+    {
+        $templateMgr = &$params[0];
         $request = PKPApplication::get()->getRequest();
 
         $templateMgr->addJavaScript(
@@ -34,47 +34,55 @@ class TemplateDispatcher extends DataverseDispatcher
             ]
         );
 
-		return false;
-	}
+        $templateMgr->addStyleSheet(
+            'draftDatasetFileUpload',
+            $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/styles/draftDatasetFileUpload.css',
+            [
+                'contexts' => ['backend']
+            ]
+        );
 
-	public function addDraftDatasetFilesContainer(string $hookName, array $params): bool
-	{
-		$request = PKPApplication::get()->getRequest();
-		$templateMgr = TemplateManager::getManager($request);
-
-		$form = $params[0];
-		$form->readUserVars(array('submissionId'));
-		$submissionId = $form->getData('submissionId');
-
-		$service = $this->getDataverseService();
-		$dataverseName = $service->getDataverseName();
-
-		$templateMgr->assign('submissionId', $submissionId);
-		$templateMgr->assign('dataverseName', $dataverseName);
-
-		$templateMgr->registerFilter("output", array($this, 'draftDatasetFilesContainerFilter'));
-
-		return false;
+        return false;
     }
 
-	public function draftDatasetFilesContainerFilter(string $output, Smarty_Internal_Template $templateMgr): string
-	{
-		if (
-			preg_match('/<div[^>]+class="section formButtons form_buttons[^>]*"[^>]*>/', $output, $matches, PREG_OFFSET_CAPTURE)
-			&& $templateMgr->template_resource == 'submission/form/step2.tpl'
-		) {
-			$datasetFilesContainer = $this->getDraftDatasetFilesContainer();
-            $newOutput = $templateMgr->fetch('string:' . $datasetFilesContainer);
-			$newOutput .= $output;
-			$output = $newOutput;
-			$templateMgr->unregisterFilter('output', array($this, 'datasetFileFormFilter'));
-		}
+    public function addDraftDatasetFilesContainer(string $hookName, array $params): bool
+    {
+        $request = PKPApplication::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
 
-		return $output;
-	}
+        $form = $params[0];
+        $form->readUserVars(array('submissionId'));
+        $submissionId = $form->getData('submissionId');
+
+        $service = $this->getDataverseService();
+        $dataverseName = $service->getDataverseName();
+
+        $templateMgr->assign('submissionId', $submissionId);
+        $templateMgr->assign('dataverseName', $dataverseName);
+
+        $templateMgr->registerFilter("output", array($this, 'draftDatasetFilesContainerFilter'));
+
+        return false;
+    }
+
+    public function draftDatasetFilesContainerFilter(string $output, Smarty_Internal_Template $templateMgr): string
+    {
+        if (
+            preg_match('/<div[^>]+class="section formButtons form_buttons[^>]*"[^>]*>/', $output, $matches, PREG_OFFSET_CAPTURE)
+            && $templateMgr->template_resource == 'submission/form/step2.tpl'
+        ) {
+            $datasetFilesContainer = $this->getDraftDatasetFilesContainer();
+            $newOutput = $templateMgr->fetch('string:' . $datasetFilesContainer);
+            $newOutput .= $output;
+            $output = $newOutput;
+            $templateMgr->unregisterFilter('output', array($this, 'datasetFileFormFilter'));
+        }
+
+        return $output;
+    }
 
     private function getDraftDatasetFilesContainer(): string
-	{
+    {
         return '
             {capture assign=draftDatasetFileFormUrl}
                 {url 
@@ -90,272 +98,272 @@ class TemplateDispatcher extends DataverseDispatcher
         ';
     }
 
-	function addDataCitationSubmission(string $hookName, array $params): bool
-	{
-		$templateMgr =& $params[1];
-		$output =& $params[2];
+    public function addDataCitationSubmission(string $hookName, array $params): bool
+    {
+        $templateMgr =& $params[1];
+        $output =& $params[2];
 
-		$submission = $templateMgr->getTemplateVars('preprint');
-		$dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
-		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
+        $submission = $templateMgr->getTemplateVars('preprint');
+        $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
-		if (isset($study)) {
-			$output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
-		}
+        if (isset($study)) {
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public function loadResources(string $hookName, array $params): bool
-	{
-		$request = $params[0];
-		$submission = $params[1];
-		$templateManager = TemplateManager::getManager($request);
-		$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
+    public function loadResources(string $hookName, array $params): bool
+    {
+        $request = $params[0];
+        $submission = $params[1];
+        $templateManager = TemplateManager::getManager($request);
+        $pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
 
-		$study = $this->getSubmissionStudy($submission);
-		if (isset($study)) {
-			$this->loadJavaScript($pluginPath, $templateManager);
-			$this->addJavaScriptVariables($request, $templateManager, $study);
-		}
+        $study = $this->getSubmissionStudy($submission);
+        if (isset($study)) {
+            $this->loadJavaScript($pluginPath, $templateManager);
+            $this->addJavaScriptVariables($request, $templateManager, $study);
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public function loadJavaScript($pluginPath, $templateManager) {
-		$templateManager->addJavaScript(
-			'dataverseScripts',
-			$pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js',
-			[
-				'contexts' => ['backend', 'frontend']
-			]
-		);
-	}
+    public function loadJavaScript($pluginPath, $templateManager)
+    {
+        $templateManager->addJavaScript(
+            'dataverseScripts',
+            $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js',
+            [
+                'contexts' => ['backend', 'frontend']
+            ]
+        );
+    }
 
-	function loadResourceToWorkflow(string $hookName, array $params): bool
-	{
-		$templateMgr = $params[0];
-		$template = $params[1];
-		
+    public function loadResourceToWorkflow(string $hookName, array $params): bool
+    {
+        $templateMgr = $params[0];
+        $template = $params[1];
 
-		if ($template == 'workflow/workflow.tpl' || $template == 'authorDashboard/authorDashboard.tpl') {
-			$request = Application::get()->getRequest();
-			
-			$pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
-			$submission = $templateMgr->get_template_vars('submission');
 
-			$study = $this->getSubmissionStudy($submission);
-			if (!empty($study)) {
+        if ($template == 'workflow/workflow.tpl' || $template == 'authorDashboard/authorDashboard.tpl') {
+            $request = Application::get()->getRequest();
 
-				$templateMgr->addJavaScript(
-					'dataverseHelper', 
-					$pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dataverseHelper.js',
-					[
-						'inline' => false,
-						'contexts' => ['backend']
-					]
-				);
-				$templateMgr->addStyleSheet(
-					'datasetData',
-					$request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/styles/datasetDataTab.css',
-					[
-						'contexts' => ['backend']
-					]
-				);
+            $pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
+            $submission = $templateMgr->get_template_vars('submission');
 
-				$this->loadJavaScript($pluginPath, $templateMgr);
-				$this->addJavaScriptVariables($request, $templateMgr, $study);
+            $study = $this->getSubmissionStudy($submission);
+            if (!empty($study)) {
+                $templateMgr->addJavaScript(
+                    'dataverseHelper',
+                    $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dataverseHelper.js',
+                    [
+                        'inline' => false,
+                        'contexts' => ['backend']
+                    ]
+                );
+                $templateMgr->addStyleSheet(
+                    'datasetData',
+                    $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/styles/datasetDataTab.css',
+                    [
+                        'contexts' => ['backend']
+                    ]
+                );
 
-				$this->setupDatasetMetadataForm($request, $templateMgr, $study);
-				$this->setupDatasetFilesList($request, $templateMgr, $study);
-				$this->setupDatasetFileForm($request, $templateMgr, $study);
-			}
-		}
-		return false;
-	}
+                $this->loadJavaScript($pluginPath, $templateMgr);
+                $this->addJavaScriptVariables($request, $templateMgr, $study);
 
-	function addJavaScriptVariables($request, $templateManager, $study): void
-	{
-		$dispatcher = $request->getDispatcher();
-		$context = $request->getContext();
+                $this->setupDatasetMetadataForm($request, $templateMgr, $study);
+                $this->setupDatasetFilesList($request, $templateMgr, $study);
+                $this->setupDatasetFileForm($request, $templateMgr, $study);
+            }
+        }
+        return false;
+    }
 
-		$configuration = $this->getDataverseConfiguration();
-		$dataverseServer = $configuration->getDataverseServer();
+    public function addJavaScriptVariables($request, $templateManager, $study): void
+    {
+        $dispatcher = $request->getDispatcher();
+        $context = $request->getContext();
 
-		$dataverseNotificationMgr = new DataverseNotificationManager();
-		$dataverseUrl = $configuration->getDataverseUrl();
-		$params = ['dataverseUrl' => $dataverseUrl];
-		$errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
+        $configuration = $this->getDataverseConfiguration();
+        $dataverseServer = $configuration->getDataverseServer();
 
-		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+        $dataverseNotificationMgr = new DataverseNotificationManager();
+        $dataverseUrl = $configuration->getDataverseUrl();
+        $params = ['dataverseUrl' => $dataverseUrl];
+        $errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
 
-		$data = [
-			'datasetApiUrl' => $apiUrl,
-			"errorMessage" => $errorMessage,
-		];
+        $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
 
-		$templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
-			'inline' => true,
-			'contexts' => ['backend', 'frontend']
-		]);
-	}
+        $data = [
+            'datasetApiUrl' => $apiUrl,
+            "errorMessage" => $errorMessage,
+        ];
 
-	function addDatasetDataToWorkflow(string $hookName, array $params): bool
-	{
-		$templateMgr =& $params[1];
-		$output =& $params[2];
-		$context = Application::get()->getRequest()->getContext();
-		$submission = $templateMgr->get_template_vars('submission');
+        $templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
+            'inline' => true,
+            'contexts' => ['backend', 'frontend']
+        ]);
+    }
 
-		$study = $this->getSubmissionStudy($submission);
-		if (isset($study)) {
-			$output .= sprintf(
-				'<tab id="datasetTab" label="%s">%s</tab>',
-				__("plugins.generic.dataverse.researchData"),
-				$templateMgr->fetch($this->plugin->getTemplateResource('datasetData.tpl'))
-			);
-		}
+    public function addDatasetDataToWorkflow(string $hookName, array $params): bool
+    {
+        $templateMgr =& $params[1];
+        $output =& $params[2];
+        $context = Application::get()->getRequest()->getContext();
+        $submission = $templateMgr->get_template_vars('submission');
 
-		return false;
-	}
+        $study = $this->getSubmissionStudy($submission);
+        if (isset($study)) {
+            $output .= sprintf(
+                '<tab id="datasetTab" label="%s">%s</tab>',
+                __("plugins.generic.dataverse.researchData"),
+                $templateMgr->fetch($this->plugin->getTemplateResource('datasetData.tpl'))
+            );
+        }
 
-	private function getSubmissionStudy($submission): ?DataverseStudy
-	{
-		$dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
-		$study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
-		return $study;
-	}
+        return false;
+    }
 
-	private function setupDatasetMetadataForm($request, $templateMgr, $study): void
-	{
-		$context = $request->getContext();
-		$dispatcher = $request->getDispatcher();
+    private function getSubmissionStudy($submission): ?DataverseStudy
+    {
+        $dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
+        return $study;
+    }
 
-		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
-		$vocabSuggestionUrlBase =$request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'vocabs', null, null, ['vocab' => 'submissionKeyword']);
+    private function setupDatasetMetadataForm($request, $templateMgr, $study): void
+    {
+        $context = $request->getContext();
+        $dispatcher = $request->getDispatcher();
 
-		$datasetResponse = $this->getDataverseService()->getDatasetResponse($study);
-		
-		$supportedFormLocales = $context->getSupportedFormLocales();
-		$localeNames = AppLocale::getAllLocales();
-		$locales = array_map(function($localeKey) use ($localeNames) {
-			return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-		}, $supportedFormLocales);
+        $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+        $vocabSuggestionUrlBase =$request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'vocabs', null, null, ['vocab' => 'submissionKeyword']);
 
-		$this->plugin->import('classes.form.DatasetMetadataForm');
-		$datasetMetadataForm = new DatasetMetadataForm($apiUrl, $locales, $datasetResponse, $vocabSuggestionUrlBase);
+        $datasetResponse = $this->getDataverseService()->getDatasetResponse($study);
 
-		$this->addComponent($templateMgr, $datasetMetadataForm);
+        $supportedFormLocales = $context->getSupportedFormLocales();
+        $localeNames = AppLocale::getAllLocales();
+        $locales = array_map(function ($localeKey) use ($localeNames) {
+            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+        }, $supportedFormLocales);
 
-		$workflowPublicationFormIds = $templateMgr->getState('publicationFormIds');
-		$workflowPublicationFormIds[] = FORM_DATASET_METADATA;
+        $this->plugin->import('classes.form.DatasetMetadataForm');
+        $datasetMetadataForm = new DatasetMetadataForm($apiUrl, $locales, $datasetResponse, $vocabSuggestionUrlBase);
 
-		$templateMgr->setState([
-			'publicationFormIds' => $workflowPublicationFormIds
-		]);
-	}
+        $this->addComponent($templateMgr, $datasetMetadataForm);
 
-	private function setupDatasetFilesList($request, $templateMgr, $study): void
-	{
-		$context = $request->getContext();
-		$dispatcher = $request->getDispatcher();
+        $workflowPublicationFormIds = $templateMgr->getState('publicationFormIds');
+        $workflowPublicationFormIds[] = FORM_DATASET_METADATA;
 
-		$datasetFilesResponse = $this->getDataverseService()->getDatasetFiles($study);
-		$datasetFiles = array();
+        $templateMgr->setState([
+            'publicationFormIds' => $workflowPublicationFormIds
+        ]);
+    }
 
-		foreach ($datasetFilesResponse->data as $data) {
-			$datasetFiles[] = ["id" => $data->dataFile->id, "title" => $data->label];
-		}
+    private function setupDatasetFilesList($request, $templateMgr, $study): void
+    {
+        $context = $request->getContext();
+        $dispatcher = $request->getDispatcher();
 
-		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file', null, null, ['fileId' => '__id__']);
+        $datasetFilesResponse = $this->getDataverseService()->getDatasetFiles($study);
+        $datasetFiles = array();
 
-		import('plugins.generic.dataverse.classes.listPanel.DatasetFilesListPanel');
-		$datasetFilesListPanel = new DatasetFilesListPanel(
-			'datasetFiles',
-			__('plugins.generic.dataverse.researchData.files'),
-			[
-				'apiUrl' => $apiUrl,
-				'items' => $datasetFiles
-			]
-		);
+        foreach ($datasetFilesResponse->data as $data) {
+            $datasetFiles[] = ["id" => $data->dataFile->id, "title" => $data->label];
+        }
 
-		$this->addComponent($templateMgr, $datasetFilesListPanel);
+        $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file', null, null, ['fileId' => '__id__']);
 
-		$templateMgr->setState([
-			'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
-			'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
+        import('plugins.generic.dataverse.classes.listPanel.DatasetFilesListPanel');
+        $datasetFilesListPanel = new DatasetFilesListPanel(
+            'datasetFiles',
+            __('plugins.generic.dataverse.researchData.files'),
+            [
+                'apiUrl' => $apiUrl,
+                'items' => $datasetFiles
+            ]
+        );
+
+        $this->addComponent($templateMgr, $datasetFilesListPanel);
+
+        $templateMgr->setState([
+            'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
+            'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
             'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete'),
             'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
-		]);
-	}
+        ]);
+    }
 
-	function setupDatasetFileForm($request, $templateMgr, $study): void
-	{
-		$dispatcher = $request->getDispatcher();
+    public function setupDatasetFileForm($request, $templateMgr, $study): void
+    {
+        $dispatcher = $request->getDispatcher();
         $context = $request->getContext();
-		$service = $this->getDataverseService();
-		$dataverseName = $service->getDataverseName();
-		
-		$temporaryFileApiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'temporaryFiles');
-		$apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
+        $service = $this->getDataverseService();
+        $dataverseName = $service->getDataverseName();
 
-		$termsOfUseParams = array(
+        $temporaryFileApiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'temporaryFiles');
+        $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
+
+        $termsOfUseParams = array(
             'dataverseName' => $dataverseName,
             'termsOfUseURL' => $dispatcher->url(
                 $request,
-                ROUTE_COMPONENT, 
+                ROUTE_COMPONENT,
                 null,
                 'plugins.generic.dataverse.handlers.TermsOfUseHandler',
                 'get'
             ),
         );
 
-		$supportedFormLocales = $context->getSupportedFormLocales();
-		$localeNames = AppLocale::getAllLocales();
-		$locales = array_map(function($localeKey) use ($localeNames) {
-			return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-		}, $supportedFormLocales);
+        $supportedFormLocales = $context->getSupportedFormLocales();
+        $localeNames = AppLocale::getAllLocales();
+        $locales = array_map(function ($localeKey) use ($localeNames) {
+            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+        }, $supportedFormLocales);
 
-		import('plugins.generic.dataverse.classes.form.DraftDatasetFileForm');
-		$draftDatasetFileForm = new DraftDatasetFileForm($apiUrl, $locales, $temporaryFileApiUrl, $termsOfUseParams);
+        import('plugins.generic.dataverse.classes.form.DraftDatasetFileForm');
+        $draftDatasetFileForm = new DraftDatasetFileForm($apiUrl, $locales, $temporaryFileApiUrl, $termsOfUseParams);
 
-		$this->addComponent(
-			$templateMgr,
-			$draftDatasetFileForm,
-			[
-				'errors' => [
-					'termsOfUse' => [
-						__('plugins.generic.dataverse.termsOfUse.error')
-					]
-				]
-			]
-		);
-	}
+        $this->addComponent(
+            $templateMgr,
+            $draftDatasetFileForm,
+            [
+                'errors' => [
+                    'termsOfUse' => [
+                        __('plugins.generic.dataverse.termsOfUse.error')
+                    ]
+                ]
+            ]
+        );
+    }
 
-	private function addComponent($templateMgr, $component, $args = []): void
-	{
-		$workflowComponents = $templateMgr->getState('components');
-		$workflowComponents[$component->id] = $component->getConfig();
+    private function addComponent($templateMgr, $component, $args = []): void
+    {
+        $workflowComponents = $templateMgr->getState('components');
+        $workflowComponents[$component->id] = $component->getConfig();
 
-		if (!empty($args)) {
-			foreach ($args as $prop => $value) {
-				$workflowComponents[$component->id][$prop] = $value;
-			}
-		}
+        if (!empty($args)) {
+            foreach ($args as $prop => $value) {
+                $workflowComponents[$component->id][$prop] = $value;
+            }
+        }
 
-		$templateMgr->setState([
-			'components' => $workflowComponents
-		]);
-	}
+        $templateMgr->setState([
+            'components' => $workflowComponents
+        ]);
+    }
 
-	function setupDataverseHandlers($hookName, $params): bool
-	{
-		$component =& $params[0];
-		switch ($component) {
-			case 'plugins.generic.dataverse.handlers.DraftDatasetFileUploadHandler':
-				return true;
-				break;
-		}
-		return false;
-	}
+    public function setupDataverseHandlers($hookName, $params): bool
+    {
+        $component =& $params[0];
+        switch ($component) {
+            case 'plugins.generic.dataverse.handlers.DraftDatasetFileUploadHandler':
+                return true;
+                break;
+        }
+        return false;
+    }
 }

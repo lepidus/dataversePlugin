@@ -2,10 +2,11 @@
 
 import('classes.handler.Handler');
 
-class DraftDatasetFileUploadHandler extends Handler {
-
-	public function draftDatasetFiles($args, $request) {
-		$plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
+class DraftDatasetFileUploadHandler extends Handler
+{
+    public function draftDatasetFiles($args, $request)
+    {
+        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
         $dispatcher = $request->getDispatcher();
         $context = $request->getContext();
         $currentUser = $request->getUser();
@@ -26,22 +27,22 @@ class DraftDatasetFileUploadHandler extends Handler {
             'dataverseName' => $args['dataverseName'],
             'termsOfUseURL' => $termsOfUse,
         );
-
+        AppLocale::requireComponents(LOCALE_COMPONENT_PKP_SUBMISSION);
 
         $supportedFormLocales = $context->getSupportedFormLocales();
-		$localeNames = AppLocale::getAllLocales();
-		$locales = array_map(function($localeKey) use ($localeNames) {
-			return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-		}, $supportedFormLocales);
+        $localeNames = AppLocale::getAllLocales();
+        $locales = array_map(function ($localeKey) use ($localeNames) {
+            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+        }, $supportedFormLocales);
 
         $plugin->import('classes.form.DraftDatasetFileForm');
-		$draftDatasetFileForm = new DraftDatasetFileForm($draftDatasetFileUrl, $locales, $temporaryFileApiUrl, $termsOfUseParams);
+        $draftDatasetFileForm = new DraftDatasetFileForm($draftDatasetFileUrl, $locales, $temporaryFileApiUrl, $termsOfUseParams);
 
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
         $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($args['submissionId']);
-        
+
         $props = Services::get('schema')->getFullProps('draftDatasetFile');
-        
+
         $items = [];
         foreach ($draftDatasetFiles as $draftDatasetFile) {
             $draftDatasetFileProps = [];
@@ -50,11 +51,11 @@ class DraftDatasetFileUploadHandler extends Handler {
             }
             $items[] = $draftDatasetFileProps;
         }
-        
+
         ksort($items);
 
         $templateMgr->assign('state', [
-			'components' => [
+            'components' => [
                 'draftDatasetFilesList' => [
                     'items' => $items
                 ],
@@ -68,9 +69,8 @@ class DraftDatasetFileUploadHandler extends Handler {
                     __('plugins.generic.dataverse.termsOfUse.error')
                 ]
             ]
-		]);
-        
+        ]);
+
         return $templateMgr->fetchJson($plugin->getTemplateResource('draftDatasetFiles.tpl'));
     }
-
 }

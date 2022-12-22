@@ -1,4 +1,6 @@
 <div id="draftDatasetFilesContainer">
+	{capture assign=addGalleyLabel}{translate key="submission.layout.galleys"}{/capture}
+	<label class="description">{translate key="plugins.generic.dataverse.researchDataDescription" addGalleyLabel=$addGalleyLabel}</label>
 	<list-panel :items="components.draftDatasetFilesList.items" style="margin-bottom: 1rem">
         <pkp-header slot="header">
             <h2>{translate key="plugins.generic.dataverse.researchData"}</h2>
