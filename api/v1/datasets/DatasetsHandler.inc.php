@@ -30,6 +30,11 @@ class DatasetsHandler extends APIHandler
                     'roles' => $roles
                 ),
                 array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
+                    'handler' => array($this, 'downloadDatasetFile'),
+                    'roles' => $roles
+                ),
+                array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
                     'handler' => array($this, 'getCitation'),
                     'roles' => $roles
@@ -195,6 +200,16 @@ class DatasetsHandler extends APIHandler
         }
 
         return $response->withJson(['message' => 'ok'], 200);
+    }
+
+    public function downloadDatasetFile($slimRequest, $response, $args)
+    {
+        $service = $this->getDataverseService($this->getRequest());
+        $queryParams = $slimRequest->getQueryParams();
+        $fileId = (int) $queryParams['fileId'];
+        $response = $service->downloadDatasetFileById($fileId);
+
+        return $response;
     }
 
     private function getDataverseService($request): DataverseService
