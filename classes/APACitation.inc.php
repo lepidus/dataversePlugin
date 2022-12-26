@@ -36,10 +36,10 @@ class APACitation
             $authorsCitation .= $this->getAuthorCitation($authors[0]) . ' et al.';
         } else {
             foreach ($authors as $key => $author) {
-                if($key == 0) {
+                if ($key == 0) {
                     $authorsCitation .= $this->getAuthorCitation($author);
                 }
-                if($authorsNumbers > 1) {
+                if ($authorsNumbers > 1) {
                     if ($key != 0 && $key < ($authorsNumbers - 1)) {
                         $authorsCitation .= ', ' . $this->getAuthorCitation($author);
                     }
@@ -67,7 +67,7 @@ class APACitation
             $doiPlugin = $pubIdPlugins['doipubidplugin'];
 
             $pubId = $submission->getStoredPubId($doiPlugin->getPubIdType());
-            if(isset($pubId)) {
+            if (isset($pubId)) {
                 $pubIdAttributes['holdingsURI'] = $doiPlugin->getResolvingURL($contextId, $pubId);
                 $pubIdAttributes['agency'] = $doiPlugin->getDisplayName();
                 $pubIdAttributes['IDNo'] = $pubId;

@@ -4,10 +4,10 @@ import('plugins.generic.dataverse.classes.DataverseConfiguration');
 
 class DataverseDispatcher
 {
-    var $plugin;
+    public $plugin;
 
     public function __construct(Plugin $plugin)
-	{
+    {
         $this->plugin = $plugin;
     }
 
@@ -16,16 +16,16 @@ class DataverseDispatcher
         $context = $this->plugin->getRequest()->getContext();
         $contextId = $context->getId();
 
-		return new DataverseConfiguration(
+        return new DataverseConfiguration(
             $this->plugin->getSetting($contextId, 'dataverseUrl'),
             $this->plugin->getSetting($contextId, 'apiToken')
         );
-	}
+    }
 
     public function getDataverseService(): DataverseService
     {
         $serviceFactory = new DataverseServiceFactory();
-		$service = $serviceFactory->build($this->getDataverseConfiguration(), $this->plugin);
+        $service = $serviceFactory->build($this->getDataverseConfiguration(), $this->plugin);
         return $service;
     }
 }

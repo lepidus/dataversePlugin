@@ -34,7 +34,8 @@ class DatasetModelTest extends PKPTestCase
         array_push($this->creator, array("Irís Castanheiras"));
         array_push($this->contributor, array("iris@lepidus.com.br", "Contact"));
     }
-    private function setMetadataWithoutSubject(){
+    private function setMetadataWithoutSubject()
+    {
         $this->title = "The Rise of The Machine Empire";
         $this->description = "An example abstract";
         array_push($this->creator, array("Irís Castanheiras"));

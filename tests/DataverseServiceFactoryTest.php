@@ -5,7 +5,6 @@ import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
 import('plugins.generic.dataverse.classes.DataverseConfiguration');
 import('plugins.generic.dataverse.DataversePlugin');
 
-
 class DataverseServiceFactoryTest extends PKPTestCase
 {
     public function testServiceHasConfiguration(): void
@@ -14,7 +13,7 @@ class DataverseServiceFactoryTest extends PKPTestCase
         $apiToken = "APIToken";
 
         $factory = new DataverseServiceFactory();
-        $service = $factory->build(new DataverseConfiguration($dataverseUrl, $apiToken),new DataversePlugin());
+        $service = $factory->build(new DataverseConfiguration($dataverseUrl, $apiToken), new DataversePlugin());
         $configuration = $service->getClient()->getConfiguration();
 
         $expectedConfigData = [

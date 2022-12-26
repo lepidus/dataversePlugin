@@ -2,12 +2,13 @@
 
 import('lib.pkp.classes.handler.APIHandler');
 
-class DraftDatasetFileHandler extends APIHandler {
+class DraftDatasetFileHandler extends APIHandler
+{
+    public $schemaName = 'draftDatasetFile';
 
-	public $schemaName = 'draftDatasetFile';
-
-    public function __construct() {
-		$this->_handlerPath = 'draftDatasetFiles';
+    public function __construct()
+    {
+        $this->_handlerPath = 'draftDatasetFiles';
         $this->_endpoints = array(
             'GET' => array(
                 array(
@@ -18,32 +19,34 @@ class DraftDatasetFileHandler extends APIHandler {
             'POST' => array(
                 array(
                     'pattern' => $this->getEndpointPattern(),
-					'handler' => array($this, 'add'),
+                    'handler' => array($this, 'add'),
                 )
             ),
             'DELETE' => array(
                 array(
-					'pattern' => $this->getEndpointPattern() . '/{draftDatasetFileId}',
-					'handler' => array($this, 'delete'),
-				),
+                    'pattern' => $this->getEndpointPattern() . '/{draftDatasetFileId}',
+                    'handler' => array($this, 'delete'),
+                ),
             )
         );
         parent::__construct();
     }
 
-    public function getMany($slimRequest, $response, $args) {
+    public function getMany($slimRequest, $response, $args)
+    {
         $requestParams = $slimRequest->getQueryParams();
 
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
 
         $submissionId = null;
         foreach ($requestParams as $param => $value) {
-            if ($param == 'submissionId')
+            if ($param == 'submissionId') {
                 $submissionId = $value;
+            }
         }
 
         $result = is_null($submissionId) ? $draftDatasetFileDAO->getAll() : $draftDatasetFileDAO->getBySubmissionId($submissionId);
-        
+
         $items = [];
         foreach ($result as $draftDatasetFile) {
             $items[] = $this->getFullProperties($draftDatasetFile);
@@ -52,11 +55,12 @@ class DraftDatasetFileHandler extends APIHandler {
         ksort($items);
 
         return $response->withJson([
-			'items' => $items,
-		], 200);
+            'items' => $items,
+        ], 200);
     }
 
-    public function add($slimRequest, $response, $args) {
+    public function add($slimRequest, $response, $args)
+    {
         $queryParams = $slimRequest->getQueryParams();
         $requestParams = $slimRequest->getParsedBody();
 
@@ -64,8 +68,8 @@ class DraftDatasetFileHandler extends APIHandler {
 
         import('lib.pkp.classes.file.TemporaryFileManager');
         $temporaryFileManager = new TemporaryFileManager();
-		$file = $temporaryFileManager->getFile($fileId, $queryParams['userId']);
-        
+        $file = $temporaryFileManager->getFile($fileId, $queryParams['userId']);
+
         $params['submissionId'] = $queryParams['submissionId'];
         $params['userId'] = $file->getUserId();
         $params['fileId'] = $file->getId();
@@ -82,24 +86,26 @@ class DraftDatasetFileHandler extends APIHandler {
         return $response->withJson($draftDatasetFileProps, 200);
     }
 
-    public function delete($slimRequest, $response, $args) {
-		$request = $this->getRequest();
+    public function delete($slimRequest, $response, $args)
+    {
+        $request = $this->getRequest();
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
 
-		$draftDatasetFile = $draftDatasetFileDAO->getById((int) $args['draftDatasetFileId']);
+        $draftDatasetFile = $draftDatasetFileDAO->getById((int) $args['draftDatasetFileId']);
 
-		if (!$draftDatasetFile) {
-			return $response->withStatus(404)->withJsonError('api.draftDatasetFile.404.drafDatasetFileNotFound');
-		}
+        if (!$draftDatasetFile) {
+            return $response->withStatus(404)->withJsonError('api.draftDatasetFile.404.drafDatasetFileNotFound');
+        }
 
-		$draftDatasetFileProps = $this->getFullProperties($draftDatasetFile);
+        $draftDatasetFileProps = $this->getFullProperties($draftDatasetFile);
 
-		$draftDatasetFileDAO->deleteObject($draftDatasetFile);
+        $draftDatasetFileDAO->deleteObject($draftDatasetFile);
 
-		return $response->withJson($draftDatasetFileProps, 200);
-	}
+        return $response->withJson($draftDatasetFileProps, 200);
+    }
 
-    private function getFullProperties($object) {
+    private function getFullProperties($object)
+    {
         $props = Services::get('schema')->getFullProps($this->schemaName);
 
         $objectProps = [];

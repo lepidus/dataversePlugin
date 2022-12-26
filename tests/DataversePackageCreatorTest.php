@@ -70,7 +70,7 @@ class DataversePackageCreatorTest extends PKPTestCase
 
         $datasetFactory = new DatasetFactory();
         $this->datasetModel = $datasetFactory->build($this->submissionAdapter);
-        
+
         $this->packageCreator->loadMetadata($this->datasetModel);
         $this->packageCreator->createAtomEntry();
     }

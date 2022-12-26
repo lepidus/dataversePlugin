@@ -4,7 +4,6 @@ import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
 import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 
-
 class SubmissionAdapterTest extends PKPTestCase
 {
     private $submission;

@@ -1,4 +1,5 @@
 <?php
+
 import('lib.pkp.tests.DatabaseTestCase');
 import('plugins.generic.dataverse.classes.DataverseDAO');
 import('lib.pkp.classes.db.DAO');

@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 import('plugins.generic.dataverse.classes.DataverseNotificationManager');
 require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
@@ -17,14 +17,15 @@ define('DATAVERSE_PLUGIN_HTTP_STATUS_INTERNAL_SERVER_ERROR', 500);
 define('DATAVERSE_PLUGIN_HTTP_STATUS_UNAVAILABLE', 503);
 define('DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR', 0);
 
-class DataverseClient {
+class DataverseClient
+{
     private $configuration;
     private $swordClient;
 
     public function __construct(DataverseConfiguration $configuration)
     {
         $this->configuration = $configuration;
-        $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => FALSE));
+        $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => false));
     }
 
     public function getConfiguration(): DataverseConfiguration
@@ -39,9 +40,9 @@ class DataverseClient {
 
     public function checkConnectionWithDataverse(): bool
     {
-		$serviceDocument = $this->getServiceDocument();
+        $serviceDocument = $this->getServiceDocument();
         return isset($serviceDocument) && $serviceDocument->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK;
-	}
+    }
 
     public function depositAtomEntry(string $atomEntryPath): ?SWORDAPPEntry
     {
@@ -64,8 +65,8 @@ class DataverseClient {
         $statement = $this->swordClient->retrieveAtomStatement($url, $this->configuration->getApiToken(), '', '');
 
         if (!empty($statement) && !empty($statement->sac_xml)) {
-			return $statement;
-		} else {
+            return $statement;
+        } else {
             throw new RuntimeException($dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_UNKNOWN_ERROR));
             return null;
         }
@@ -79,13 +80,14 @@ class DataverseClient {
         $dataverseUrl = $this->configuration->getDataverseUrl();
         $params = ['dataverseUrl' => $dataverseUrl];
 
-        if($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK)
+        if ($depositReceipt->sac_status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
             return $depositReceipt;
-        else
+        } else {
             throw new RuntimeException(
                 $dataverseNotificationMgr->getNotificationMessage($depositReceipt->sac_status, $params),
                 $depositReceipt->sac_status
             );
+        }
         return null;
     }
 
@@ -168,9 +170,9 @@ class DataverseClient {
         $dataverseRequest = curl_init();
 
         array_push($headers, 'X-Dataverse-key:' . $this->configuration->getApiToken());
-        
-		curl_setopt($dataverseRequest, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($dataverseRequest, CURLOPT_URL, $url);
+
+        curl_setopt($dataverseRequest, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($dataverseRequest, CURLOPT_URL, $url);
         curl_setopt($dataverseRequest, CURLOPT_HTTPHEADER, $headers);
 
         return $dataverseRequest;
@@ -179,23 +181,22 @@ class DataverseClient {
     private function execRequest($request): ?string
     {
         $resp = curl_exec($request);
-        if (empty($resp)) $cError = curl_error($request);
+        if (empty($resp)) {
+            $cError = curl_error($request);
+        }
         $status = curl_getinfo($request, CURLINFO_HTTP_CODE);
         curl_close($request);
 
         if ($status == DATAVERSE_PLUGIN_HTTP_STATUS_OK) {
             return $resp;
-        }
-        else {
+        } else {
             if (!empty($curlError)) {
                 throw new RuntimeException($curlError, $status);
-            }
-            else {
+            } else {
                 $error = json_decode($resp);
                 $errorMessage = empty($error->message) ? $resp : $error->message;
                 throw new RuntimeException($errorMessage, $status);
             }
         }
     }
-    
 }

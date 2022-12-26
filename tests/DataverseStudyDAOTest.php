@@ -7,7 +7,6 @@ import('lib.pkp.classes.db.DAO');
 
 class DataverseStudyDAOTest extends DatabaseTestCase
 {
-    
     private $studyDao;
     private $study;
     private $studyId;
@@ -45,16 +44,16 @@ class DataverseStudyDAOTest extends DatabaseTestCase
 
     protected function getAffectedTables(): array
     {
-		return array('dataverse_studies');
-	}
+        return array('dataverse_studies');
+    }
 
-    public function testStudyHasInsertedInDB() : void
+    public function testStudyHasInsertedInDB(): void
     {
         $returnedStudy = $this->studyDao->getStudy($this->studyId);
         $this->assertEquals($this->study, $returnedStudy);
     }
 
-    public function testGetStudyBySubmissionId() : void
+    public function testGetStudyBySubmissionId(): void
     {
         $returnedStudy = $this->studyDao->getStudyBySubmissionId($this->submissionId);
         $this->assertEquals($this->study, $returnedStudy);

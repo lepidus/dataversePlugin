@@ -15,22 +15,23 @@ class DatasetFactory
 
         $sponsors = [];
         foreach ($files as $file) {
-            if(!empty($file->getData('sponsor')))
+            if (!empty($file->getData('sponsor'))) {
                 $sponsors[] = $file->getData('sponsor');
+            }
         }
-        
-        if(!empty($sponsors)) {
+
+        if (!empty($sponsors)) {
             foreach ($sponsors as $sponsor) {
                 $contributors[] = array('Funder' => $sponsor);
             }
         } else {
             $contributors[] = array('Funder' => 'N/A');
         }
-        
+
         foreach ($authors as $author) {
             $creator[] = $author->getFullName();
         }
-        
+
         return new DatasetModel($title, $creator, $subject, $description, $contributors, '', '', array(), '', '', array(), '', '', $isReferencedBy);
     }
 }

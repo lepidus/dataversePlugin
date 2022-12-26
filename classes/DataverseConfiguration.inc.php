@@ -21,13 +21,13 @@ class DataverseConfiguration
     {
         return $this->apiToken;
     }
-    
+
     public function getDataverseServer(): string
     {
         preg_match('/https:\/\/(.)*?(?=\/)/', $this->dataverseUrl, $matches);
         return $matches[0];
     }
-    
+
     public function getDataverseUrl(): string
     {
         return $this->dataverseUrl;
@@ -62,5 +62,4 @@ class DataverseConfiguration
     {
         return $this->getDataDepositBaseUrl(). 'edit'. $this->dataverseCollection;
     }
-
 }

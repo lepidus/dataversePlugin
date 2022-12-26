@@ -6,14 +6,13 @@ import('plugins.generic.dataverse.DataversePlugin');
 class DataverseDispatcherTestCase extends PKPTestCase
 {
     protected $plugin;
-
     private $dataverseUrl;
     private $apiToken;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->registerMockPlugin();
     }
 
@@ -36,10 +35,10 @@ class DataverseDispatcherTestCase extends PKPTestCase
     {
         $this->apiToken = $apiToken;
     }
-    
+
     protected function registerMockPlugin(): void
     {
-		$context = $this->getMockBuilder(Context::class)
+        $context = $this->getMockBuilder(Context::class)
             ->setMethods(array('getId', 'getAssocType'))
             ->getMock();
         $context->expects($this->any())
@@ -64,21 +63,19 @@ class DataverseDispatcherTestCase extends PKPTestCase
         $this->plugin->expects($this->any())
                      ->method('getSetting')
                      ->will($this->returnCallback(array($this, 'getPluginSetting')));
-	}
+    }
 
     public function getPluginSetting($contextId, $settingName): string
     {
-		switch ($settingName) {
-			case 'dataverseUrl':
-				return $this->dataverseUrl;
+        switch ($settingName) {
+            case 'dataverseUrl':
+                return $this->dataverseUrl;
 
-			case 'apiToken':
-				return $this->apiToken;
+            case 'apiToken':
+                return $this->apiToken;
 
-			default:
-				self::fail('Required plugin setting is not necessary for the purpose of this test.');
-		}
-	}
+            default:
+                self::fail('Required plugin setting is not necessary for the purpose of this test.');
+        }
+    }
 }
-
-?>

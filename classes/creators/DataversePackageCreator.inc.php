@@ -85,17 +85,17 @@ class DataversePackageCreator extends PackagerAtomTwoStep
         $this->files[$fileName] = $filePath;
     }
 
-    function getPackaging(): string
+    public function getPackaging(): string
     {
-		return PACKAGING;
-	}
+        return PACKAGING;
+    }
 
-    function getContentType(): string
+    public function getContentType(): string
     {
-		return CONTENT_TYPE;
-	}
+        return CONTENT_TYPE;
+    }
 
-    function hasFiles(): bool
+    public function hasFiles(): bool
     {
         return !empty($this->files);
     }

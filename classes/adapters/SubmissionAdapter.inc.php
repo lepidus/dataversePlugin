@@ -61,5 +61,4 @@ class SubmissionAdapter
     {
         return $this->subject;
     }
-
 }

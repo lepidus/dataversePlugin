@@ -11,7 +11,7 @@ class DataverseDatasetDataCreator
         $metadataFields = ['title', 'dsDescription', 'keyword', 'subject'];
 
         foreach ($metadataBlocks as $metadata) {
-            if (!in_array($metadata->typeName, $metadataFields)){
+            if (!in_array($metadata->typeName, $metadataFields)) {
                 continue;
             }
             if (is_array($metadata->value)) {
@@ -19,15 +19,13 @@ class DataverseDatasetDataCreator
                 foreach ($metadata->value as $value) {
                     if ($metadata->typeName == 'subject') {
                         $datasetData->setData($metadata->typeName, $value);
-                    }
-                    else {
+                    } else {
                         $attr = $metadata->typeName . 'Value';
                         $values[] = $value->$attr->value;
                         $datasetData->setData($metadata->typeName, $values);
                     }
                 }
-            }
-            else {
+            } else {
                 $datasetData->setData($metadata->typeName, $metadata->value);
             }
         }
@@ -76,8 +74,7 @@ class DataverseDatasetDataCreator
             foreach ($values as $value) {
                 $metadata->value[] = $this->createCompoundObject($metadataAttr['typeName'], $value);
             }
-        }
-        else {
+        } else {
             $metadata->value = $values;
         }
 
@@ -87,7 +84,7 @@ class DataverseDatasetDataCreator
     public function createCompoundObject($typeName, $value): stdClass
     {
         $valueName = $typeName . 'Value';
-        
+
         $obj = new stdClass();
         $obj->$valueName = new stdClass();
         $obj->$valueName->typeName = $valueName;

@@ -3,7 +3,7 @@
 import('lib.pkp.tests.PKPTestCase');
 import('lib.pkp.classes.db.DAO');
 import('classes.submission.Submission');
-import('classes.publication.Publication');    
+import('classes.publication.Publication');
 import('classes.article.Author');
 import('plugins.generic.dataverse.classes.study.DataverseStudy');
 import('plugins.generic.dataverse.classes.APACitation');
@@ -13,39 +13,39 @@ class APACitationTest extends PKPTestCase
     private $submission;
     private $publication;
     private $authors;
-    
+
     public function setUp(): void
     {
         parent::setUp();
-        
+
         $this->registerMockJournalDAO();
         $this->createTestSubmission();
         $this->createAuthors();
         $this->createTestPublication();
         $this->addCurrentPublicationToSubmission();
     }
-    
+
     protected function getMockedDAOs(): array
     {
-		return array('JournalDAO');
-	}
-    
+        return array('JournalDAO');
+    }
+
     private function registerMockJournalDAO(): void
     {
-		$journalDAO = $this->getMockBuilder(JournalDAO::class)
-			->setMethods(array('getById'))
-			->getMock();
+        $journalDAO = $this->getMockBuilder(JournalDAO::class)
+            ->setMethods(array('getById'))
+            ->getMock();
 
-		$journal = new Journal();
+        $journal = new Journal();
         $journal->setPrimaryLocale('pt_BR');
         $journal->setName('Preprints da Lepidus', 'pt_BR');
 
-		$journalDAO->expects($this->any())
-		           ->method('getById')
-		           ->will($this->returnValue($journal));
+        $journalDAO->expects($this->any())
+                   ->method('getById')
+                   ->will($this->returnValue($journal));
 
-		DAORegistry::registerDAO('JournalDAO', $journalDAO);
-	}
+        DAORegistry::registerDAO('JournalDAO', $journalDAO);
+    }
 
     private function createAuthors(): void
     {
@@ -64,7 +64,7 @@ class APACitationTest extends PKPTestCase
         $this->submission->setData('dateSubmitted', '2021-05-31 15:38:24');
         $this->submission->setData('locale', 'pt_BR');
     }
-    
+
     private function createTestPublication(): void
     {
         $this->publication = new Publication();
@@ -81,7 +81,7 @@ class APACitationTest extends PKPTestCase
         $this->submission->setData('currentPublicationId', 1234);
         $this->submission->setData('publications', array($this->publication));
     }
-    
+
     public function testHasDOIAsMarkup(): void
     {
         $expectedDOI = 'https://doi.org/10.12345/FK2/NTF9X8';
@@ -93,7 +93,7 @@ class APACitationTest extends PKPTestCase
 
         $apaCitation = new APACitation();
         $studyCitationMarkup = $apaCitation->getCitationAsMarkupByStudy($study);
-        
+
         $expectedCitationMarkup = 'Iris Castanheiras, 2021, "The Rise of The Machine Empire", <a href="'. $expectedDOI .'">'. $expectedDOI .'</a>, Demo Dataverse, V1, UNF:6:dEgtc5Z1MSF3u7c+kF4kXg== [fileUNF]';
         $this->assertEquals($expectedCitationMarkup, $studyCitationMarkup);
     }
@@ -101,7 +101,7 @@ class APACitationTest extends PKPTestCase
     public function testPreprintCitationIsAPA(): void
     {
         $expectedSubmissionCitation = 'Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
-        
+
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
@@ -118,7 +118,6 @@ class APACitationTest extends PKPTestCase
 
         $expectedSubmissionCitation = 'Álamo, Á. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
-
     }
 
     public function testGivenNameWithAccentAnyLetterExceptFirstLetterAndFamilyNameWithoutAccent(): void
@@ -133,7 +132,7 @@ class APACitationTest extends PKPTestCase
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 
-    public function testFamilyNameWithAccentOnTheFirstLetterAndGivenNameWithoutAccent() : void 
+    public function testFamilyNameWithAccentOnTheFirstLetterAndGivenNameWithoutAccent(): void
     {
         $this->authors[0]->setGivenName('Lucas', 'pt_BR');
         $this->authors[0]->setFamilyName('Átila', 'pt_BR');
@@ -152,7 +151,7 @@ class APACitationTest extends PKPTestCase
 
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
-        
+
         $expectedSubmissionCitation = 'Sérgio, C. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
@@ -168,4 +167,3 @@ class APACitationTest extends PKPTestCase
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 }
-

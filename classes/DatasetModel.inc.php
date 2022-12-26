@@ -48,7 +48,7 @@ class DatasetModel
 
     private function validateSubject($subject)
     {
-        if(empty($subject) || $subject[0] == "") { 
+        if (empty($subject) || $subject[0] == "") {
             return array("N/A");
         }
         return $subject;

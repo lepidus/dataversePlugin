@@ -4,22 +4,23 @@ use PKP\components\forms\FormComponent;
 use PKP\components\forms\FieldText;
 use PKP\components\forms\FieldRichTextarea;
 use PKP\components\forms\FieldControlledVocab;
-use \PKP\components\forms\FieldSelect;
+use PKP\components\forms\FieldSelect;
 
 import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
 import('plugins.generic.dataverse.classes.DataverseMetadata');
 
 define('FORM_DATASET_METADATA', 'datasetMetadata');
 
-class DatasetMetadataForm extends FormComponent {
-
+class DatasetMetadataForm extends FormComponent
+{
     public $id = FORM_DATASET_METADATA;
 
-	public $method = 'PUT';
+    public $method = 'PUT';
 
-	public function __construct($action, $locales, $datasetResponse, $vocabSuggestionUrlBase) {
-		$this->action = $action;
-		$this->locales = $locales;
+    public function __construct($action, $locales, $datasetResponse, $vocabSuggestionUrlBase)
+    {
+        $this->action = $action;
+        $this->locales = $locales;
 
         $datasetData = new DataverseDatasetData();
         if (!empty($datasetResponse)) {
@@ -57,5 +58,5 @@ class DatasetMetadataForm extends FormComponent {
             'options' => $dataverseSubjectVocab,
             'value' => $datasetData->getData('subject'),
         ]));
-	}
+    }
 }
