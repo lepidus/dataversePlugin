@@ -35,9 +35,9 @@ class SubmissionAdapterCreator
             $affiliation = $author->getLocalizedData('affiliation', $locale);
             $email = $author->getData('email');
             $orcid = $author->getOrcid();
+            $orcidNumber = null;
 
-            preg_match('/.{4}-.{4}-.{4}-.{4}/', $orcid, $matches);
-            $orcidNumber = $matches[0];
+            if (preg_match('/.{4}-.{4}-.{4}-.{4}/', $orcid, $matches)) $orcidNumber = $matches[0];
 
             $affiliation = !is_null($affiliation) ? $affiliation : "";
             $email = !is_null($email) ? $email : "";
