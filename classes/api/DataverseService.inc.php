@@ -405,4 +405,27 @@ class DataverseService
             return false;
         }
     }
+
+    public function downloadDatasetFileById(int $fileId): string
+    {
+        $dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
+        $httpClient = Application::get()->getHttpClient();
+        try {
+            $response = $httpClient->request(
+                'GET',
+                $dataverseServer . '/api/access/datafile/' . $fileId,
+                [
+                    'X-Dataverse-key' => $this->apiToken
+                ]
+            );
+        } catch (GuzzleHttp\Exception\RequestException $e) {
+            $returnMessage = $e->getMessage();
+            if ($e->hasResponse()) {
+                $returnMessage = $e->getResponse()->getBody(true) . ' (' .$e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase() . ')';
+            }
+            return $returnMessage;
+        }
+
+        return (string) $response->getBody();
+    }
 }
