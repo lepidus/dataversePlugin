@@ -1,4 +1,5 @@
 (function ($) {
+
   $.pkp.plugins.generic.dataverse = {
     pageRootComponent: null,
     errors: [],
@@ -112,7 +113,7 @@
               'X-Http-Method-Override': 'DELETE'
             },
             error: self.ajaxErrorCallback,
-            success: function(r) {
+            success: function (r) {
               self.components.datasetFiles.items = r.items;
 
               self.$modal.hide('delete');
@@ -128,7 +129,7 @@
     openDeleteDatasetModal() {
       const pageRootComponent =
         $.pkp.plugins.generic.dataverse.pageRootComponent;
-      
+
       pageRootComponent.openDialog({
         cancelLabel: pageRootComponent.__('common.no'),
         modalName: 'delete',
@@ -143,7 +144,7 @@
               'X-Http-Method-Override': 'DELETE'
             },
             error: pageRootComponent.ajaxErrorCallback,
-            success: function(r) {
+            success: function (r) {
               pageRootComponent.$modal.hide('delete');
               location.reload();
             }
@@ -151,6 +152,21 @@
         }
       });
     },
+    downloadDatasetFile(id) {
+        const pageRootComponent =
+          $.pkp.plugins.generic.dataverse.pageRootComponent;
+  
+        
+        $.ajax({
+            url: pageRootComponent.components.datasetFiles.apiUrl.replace('__id__', id),
+            type: 'GET',
+            headers: {
+                'X-Csrf-Token': pkp.currentUser.csrfToken,
+                'X-Http-Method-Override': 'GET'
+            },
+            error: pageRootComponent.ajaxErrorCallback
+        });
+      }
   };
 
   $(document).ready(function () {
@@ -177,18 +193,18 @@
       mutations.forEach(function (mutation) {
         if (mutation.attributeName === 'action') {
           pageRootComponent.components.datasetMetadata.action =
-          appDataverse.datasetApiUrl;
+            appDataverse.datasetApiUrl;
         }
         if (mutation.attributeName === 'disabled') {
           let disabled = mutation.target.disabled;
-          
+
           $('#datasetData > .pkpHeader > .pkpHeader__actions > button').prop('disabled', disabled);
           $('#datasetFiles .pkpHeader > .pkpHeader__actions button').prop('disabled', disabled);
           $('#datasetFiles .listPanel__item .listPanel__itemActions button').prop('disabled', disabled);
         }
       });
     });
-    
+
     observer.observe(datasetMetadataForm.get(0), {
       attributes: true, subtree: true
     });
