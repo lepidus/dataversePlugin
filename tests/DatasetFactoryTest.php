@@ -39,8 +39,7 @@ class DatasetFactoryTest extends PKPTestCase
 
     public function testMetadataValuesContainsSubmissionData(): void
     {
-        foreach ($this->authors as $author)
-        {
+        foreach ($this->authors as $author) {
             $creator[] = $author->getFullName();
         }
 

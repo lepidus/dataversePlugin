@@ -33,37 +33,37 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
     public function setUp(): void
     {
         $this->registerMockDAO();
-        
+
         $this->submissionAdapterCreator = new SubmissionAdapterCreator();
         $this->createTestSubmission();
         $this->createAuthors();
         $this->createTestPublication();
         $this->addCurrentPublicationToSubmission();
-        
+
         $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submission);
         parent::setUp();
     }
 
     protected function getMockedDAOs(): array
     {
-		return array('DraftDatasetFileDAO');
-	}
+        return array('DraftDatasetFileDAO');
+    }
 
     private function registerMockDAO(): void
     {
-		$draftDatasetFileDAO = $this->getMockBuilder(DraftDatasetFileDAO::class)
-			->setMethods(array('getBySubmissionId'))
-			->getMock();
+        $draftDatasetFileDAO = $this->getMockBuilder(DraftDatasetFileDAO::class)
+            ->setMethods(array('getBySubmissionId'))
+            ->getMock();
 
-		$draftDatasetFile = new DraftDatasetFile();
+        $draftDatasetFile = new DraftDatasetFile();
         $draftDatasetFile->setData('sponsor', 'CAPES');
 
-		$draftDatasetFileDAO->expects($this->any())
-		           ->method('getBySubmissionId')
-		           ->will($this->returnValue([$draftDatasetFile]));
+        $draftDatasetFileDAO->expects($this->any())
+                   ->method('getBySubmissionId')
+                   ->will($this->returnValue([$draftDatasetFile]));
 
-		DAORegistry::registerDAO('DraftDatasetFileDAO', $draftDatasetFileDAO);
-	}
+        DAORegistry::registerDAO('DraftDatasetFileDAO', $draftDatasetFileDAO);
+    }
 
     private function createAuthors(): void
     {
@@ -82,7 +82,7 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
                 $author->getLocalizedFamilyName($this->locale),
                 $author->getLocalizedData('affiliation', $this->locale),
                 $author->getData('email')
-        )];
+            )];
     }
 
     private function addCurrentPublicationToSubmission(): void
@@ -130,7 +130,7 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
     {
         $this->assertEquals($this->description, $this->submissionAdapter->getDescription());
     }
-    
+
     public function testRetrieveSubmissionKeywords(): void
     {
         $this->assertEquals($this->keywords[$this->locale], $this->submissionAdapter->getKeywords());

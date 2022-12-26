@@ -68,7 +68,7 @@ class DataverseNotificationManager
     {
         $user = Application::get()->getRequest()->getUser();
         $dataverseUrl = $this->getDataverseUrl();
-        
+
         $params = ['dataverseUrl' => $dataverseUrl ];
 
         $notificationManager = new NotificationManager();
@@ -79,7 +79,8 @@ class DataverseNotificationManager
         );
     }
 
-    public function createCustomNotification(string $type, string $message) {
+    public function createCustomNotification(string $type, string $message)
+    {
         $user = Application::get()->getRequest()->getUser();
         $notificationManager = new NotificationManager();
         $notificationManager->createTrivialNotification(
@@ -89,5 +90,3 @@ class DataverseNotificationManager
         );
     }
 }
-
-?>

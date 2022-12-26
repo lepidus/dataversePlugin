@@ -29,6 +29,6 @@ final class AuthorAdapterTest extends PKPTestCase
 
     public function testHasEmail(): void
     {
-        $this->assertEquals($this->email, $this->author->getAuthorEmail());
+        $this->assertEquals($this->email, $this->author->getEmail());
     }
 }

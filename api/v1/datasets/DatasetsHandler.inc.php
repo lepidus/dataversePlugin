@@ -4,8 +4,9 @@ import('lib.pkp.classes.handler.APIHandler');
 
 class DatasetsHandler extends APIHandler
 {
-    public function __construct() {
-		$this->_handlerPath = 'datasets';
+    public function __construct()
+    {
+        $this->_handlerPath = 'datasets';
         $roles = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
         $this->_endpoints = array(
             'PUT' => array(
@@ -50,18 +51,19 @@ class DatasetsHandler extends APIHandler
         parent::__construct();
     }
 
-    function authorize($request, &$args, $roleAssignments) {
+    public function authorize($request, &$args, $roleAssignments)
+    {
         import('lib.pkp.classes.security.authorization.PolicySet');
-		$rolePolicy = new PolicySet(COMBINING_PERMIT_OVERRIDES);
+        $rolePolicy = new PolicySet(COMBINING_PERMIT_OVERRIDES);
 
-		import('lib.pkp.classes.security.authorization.RoleBasedHandlerOperationPolicy');
-		foreach ($roleAssignments as $role => $operations) {
-			$rolePolicy->addPolicy(new RoleBasedHandlerOperationPolicy($request, $role, $operations));
-		}
-		$this->addPolicy($rolePolicy);
+        import('lib.pkp.classes.security.authorization.RoleBasedHandlerOperationPolicy');
+        foreach ($roleAssignments as $role => $operations) {
+            $rolePolicy->addPolicy(new RoleBasedHandlerOperationPolicy($request, $role, $operations));
+        }
+        $this->addPolicy($rolePolicy);
 
-		return parent::authorize($request, $args, $roleAssignments);
-	}
+        return parent::authorize($request, $args, $roleAssignments);
+    }
 
     public function edit($slimRequest, $response, $args)
     {
@@ -78,24 +80,25 @@ class DatasetsHandler extends APIHandler
 
         $service = $this->getDataverseService($this->getRequest());
         $datasetResponse = $service->getDatasetResponse($study);
-        
+
         import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
         $datasetDataCreator = new DataverseDatasetDataCreator();
 
         $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks->citation->fields;
         $datasetSubject = $datasetDataCreator->getMetadata($metadataBlocks, 'subject');
 
-        if ($requestParams['datasetSubject'] == $datasetSubject[0]) unset($requestParams['datasetSubject']);
+        if ($requestParams['datasetSubject'] == $datasetSubject[0]) {
+            unset($requestParams['datasetSubject']);
+        }
 
         $datasetMetadataFields = $datasetDataCreator->createMetadataFields($requestParams);
         $datasetMetadata = json_encode($datasetMetadataFields);
-        
+
         $dataverseResponse = $service->updateDatasetData($datasetMetadata, $study);
 
         if ($dataverseResponse) {
             return $response->withJson(['message' => 'ok'], 200);
-        }
-        else {
+        } else {
             return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
         }
     }
@@ -104,7 +107,7 @@ class DatasetsHandler extends APIHandler
     {
         $requestParams = $slimRequest->getParsedBody();
         $request = $this->getRequest();
-		$user = $request->getUser();
+        $user = $request->getUser();
 
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
@@ -113,7 +116,7 @@ class DatasetsHandler extends APIHandler
         import('lib.pkp.classes.file.TemporaryFileManager');
         $temporaryFileManager = new TemporaryFileManager();
         $file = $temporaryFileManager->getFile($fileId, $user->getId());
-        
+
         $service = $this->getDataverseService($request);
         $dataverseResponse = $service->addDatasetFile($study, $file);
 
@@ -122,7 +125,7 @@ class DatasetsHandler extends APIHandler
         ];
 
         $temporaryFileManager->deleteById($file->getId(), $user->getId());
-        
+
         if (!$dataverseResponse) {
             return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
         }
@@ -158,7 +161,7 @@ class DatasetsHandler extends APIHandler
         $data = ['citation' => $citation];
         return $response->withJson(['data' => $data], 200);
     }
-    
+
     public function deleteFile($slimRequest, $response, $args)
     {
         $queryParams = $slimRequest->getQueryParams();
@@ -173,10 +176,9 @@ class DatasetsHandler extends APIHandler
         if (!$fileDeleted) {
             return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
         }
-        
+
         $items = $this->getDatasetFiles($study);
         return $response->withJson(['items' => $items], 200);
-
     }
 
     public function deleteDataset($slimRequest, $response, $args)
@@ -191,20 +193,19 @@ class DatasetsHandler extends APIHandler
         if (!$datasetDeleted) {
             return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
         }
-        
-        return $response->withJson(['message' => 'ok'], 200);
 
+        return $response->withJson(['message' => 'ok'], 200);
     }
 
     private function getDataverseService($request): DataverseService
     {
         $contextId = $request->getContext()->getId();
         $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
-		$dataverseDispatcher = new DataverseDispatcher($plugin);
-		$configuration = $dataverseDispatcher->getDataverseConfiguration($contextId);
-		$serviceFactory = new DataverseServiceFactory();
+        $dataverseDispatcher = new DataverseDispatcher($plugin);
+        $configuration = $dataverseDispatcher->getDataverseConfiguration($contextId);
+        $serviceFactory = new DataverseServiceFactory();
 
-		return $serviceFactory->build($configuration);
+        return $serviceFactory->build($configuration);
     }
 
     private function getDatasetFiles($study): array
@@ -214,11 +215,10 @@ class DatasetsHandler extends APIHandler
 
         $datasetFiles = array();
 
-		foreach ($datasetFilesResponse->data as $data) {
-			$datasetFiles[] = ['id' => $data->dataFile->id, 'title' => $data->label];
-		}
+        foreach ($datasetFilesResponse->data as $data) {
+            $datasetFiles[] = ['id' => $data->dataFile->id, 'title' => $data->label];
+        }
 
         return $datasetFiles;
     }
-
 }

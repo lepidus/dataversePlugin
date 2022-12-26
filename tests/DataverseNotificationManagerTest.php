@@ -22,7 +22,7 @@ class DataverseNotificationManagerTest extends PKPTestCase
         $expectedMsg = '##plugins.generic.dataverse.notification.statusCreated##';
 
         $msg = $this->dataverseNotificationMgr->getNotificationMessage($status, $this->params);
-        
+
         $this->assertEquals($expectedMsg, $msg);
     }
 
@@ -106,5 +106,3 @@ class DataverseNotificationManagerTest extends PKPTestCase
         $this->assertEquals($expectedMsg, $msg);
     }
 }
-
-?>

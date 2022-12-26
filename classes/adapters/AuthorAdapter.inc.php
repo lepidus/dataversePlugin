@@ -29,7 +29,7 @@ class AuthorAdapter
 
     public function getFullName(): string
     {
-        return $this->givenName. ($this->familyName != ''?" $this->familyName" :'');
+        return $this->givenName. ($this->familyName != '' ? " $this->familyName" : '');
     }
 
     public function getAffiliation(): string

@@ -3,16 +3,16 @@
 import('lib.pkp.tests.PKPTestCase');
 import('classes.submission.Submission');
 import('lib.pkp.classes.submission.SubmissionFile');
-import('classes.publication.Publication');    
+import('classes.publication.Publication');
 import('classes.article.Author');
 import('classes.article.ArticleGalley');
 import('plugins.generic.dataverse.classes.api.DataverseService');
 import('plugins.generic.dataverse.classes.DataverseConfiguration');
 import('plugins.generic.dataverse.DataversePlugin');
 
-class DataverseServiceTest extends PKPTestCase {
-
-    function createDataverseClientMock(): DataverseClient
+class DataverseServiceTest extends PKPTestCase
+{
+    public function createDataverseClientMock(): DataverseClient
     {
         $dataverseUrl = "https://demo.dataverse.org/dataverse/dataverseDeExemplo/";
         $apiToken = "apiRandom";
@@ -21,7 +21,8 @@ class DataverseServiceTest extends PKPTestCase {
             ->setConstructorArgs([
                 new DataverseConfiguration(
                     $dataverseUrl,
-                    $apiToken),
+                    $apiToken
+                ),
                 new DataversePlugin()
             ])
             ->setMethods(array('retrieveDepositReceipt'))
@@ -35,7 +36,8 @@ class DataverseServiceTest extends PKPTestCase {
         $mockClient->expects($this->any())
             ->method('retrieveDepositReceipt')
             ->will(
-                $this->returnValue($swordAppEntry));
+                $this->returnValue($swordAppEntry)
+            );
 
         return $mockClient;
     }
@@ -84,7 +86,7 @@ class DataverseServiceTest extends PKPTestCase {
         return $submission;
     }
 
-    function testReturnDataverseNameLikeDataverseDeExemploLepidus(): void
+    public function testReturnDataverseNameLikeDataverseDeExemploLepidus(): void
     {
         $client = $this->createDataverseClientMock();
 
@@ -93,7 +95,4 @@ class DataverseServiceTest extends PKPTestCase {
 
         $this->assertEquals('Dataverse de Exemplo Lepidus', $dataverseName);
     }
-
 }
-
-?>

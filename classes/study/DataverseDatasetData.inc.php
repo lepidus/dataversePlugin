@@ -1,3 +1,5 @@
 <?php
 
-class DataverseDatasetData extends DataObject {}
+class DataverseDatasetData extends DataObject
+{
+}

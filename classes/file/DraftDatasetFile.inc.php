@@ -1,3 +1,5 @@
 <?php
 
-class DraftDatasetFile extends DataObject {}
+class DraftDatasetFile extends DataObject
+{
+}
