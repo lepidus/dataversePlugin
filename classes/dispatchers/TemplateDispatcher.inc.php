@@ -303,19 +303,15 @@ class TemplateDispatcher extends DataverseDispatcher
         $context = $request->getContext();
         $service = $this->getDataverseService();
         $dataverseName = $service->getDataverseName();
+        $locale = AppLocale::getLocale();
 
         $temporaryFileApiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'temporaryFiles');
         $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
 
+        $termsOfUse = DAORegistry::getDAO('DataverseDAO')->getTermsOfUse($context->getId(), $locale);
         $termsOfUseParams = array(
             'dataverseName' => $dataverseName,
-            'termsOfUseURL' => $dispatcher->url(
-                $request,
-                ROUTE_COMPONENT,
-                null,
-                'plugins.generic.dataverse.handlers.TermsOfUseHandler',
-                'get'
-            ),
+            'termsOfUseURL' => $termsOfUse,
         );
 
         $supportedFormLocales = $context->getSupportedFormLocales();
