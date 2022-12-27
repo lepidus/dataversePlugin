@@ -56,7 +56,9 @@
                         <div class="listPanel__itemSummary">
                             <div class="listPanel__itemIdentity">
                                 <div class="listPanel__itemTitle">
-                                    {{ item.item.title }}
+                                    <a :href="$.pkp.plugins.generic.dataverse.getFileDownloadUrl(item.item)">
+                                        {{ item.item.title }}
+                                    </a>
                                 </div>
                             </div>
                             <div class="listPanel__itemActions">

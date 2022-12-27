@@ -405,4 +405,50 @@ class DataverseService
             return false;
         }
     }
+
+    public function downloadDatasetFileById(int $fileId, string $filename): array
+    {
+        $filesDir = Config::getVar('files', 'files_dir');
+        $datasetFileDir = tempnam($filesDir, 'datasetFile');
+        unlink($datasetFileDir);
+        mkdir($datasetFileDir);
+
+        $filePath = $datasetFileDir . DIRECTORY_SEPARATOR . $filename;
+        $resource = \GuzzleHttp\Psr7\Utils::tryFopen($filePath, 'w');
+
+        $dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
+        $httpClient = Application::get()->getHttpClient();
+        try {
+            $response = $httpClient->request(
+                'GET',
+                $dataverseServer . '/api/access/datafile/' . $fileId,
+                [
+                    'headers' => [
+                        'X-Dataverse-key' => $this->dataverseClient->getConfiguration()->getApiToken()
+                    ],
+                    'sink' => $resource
+                ]
+            );
+        } catch (GuzzleHttp\Exception\RequestException $e) {
+            $returnMessage = $e->getMessage();
+            if ($e->hasResponse()) {
+                $returnMessage = $e->getResponse()->getBody(true) . ' (' .$e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase() . ')';
+            }
+            return [
+                'statusCode' => $e->getResponse()->getStatusCode(),
+                'message' => $returnMessage
+            ];
+        }
+
+        import('lib.pkp.classes.file.FileManager');
+        $fileManager = new FileManager();
+        $fileManager->downloadByPath($filePath);
+
+        $fileManager->rmtree($datasetFileDir);
+
+        return [
+            'statusCode' => $response->getStatusCode(),
+            'filePath' => $filePath
+        ];
+    }
 }

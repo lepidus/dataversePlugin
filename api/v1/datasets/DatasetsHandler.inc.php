@@ -30,6 +30,11 @@ class DatasetsHandler extends APIHandler
                     'roles' => $roles
                 ),
                 array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
+                    'handler' => array($this, 'downloadDatasetFile'),
+                    'roles' => $roles
+                ),
+                array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
                     'handler' => array($this, 'getCitation'),
                     'roles' => $roles
@@ -192,6 +197,22 @@ class DatasetsHandler extends APIHandler
 
         if (!$datasetDeleted) {
             return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
+        }
+
+        return $response->withJson(['message' => 'ok'], 200);
+    }
+
+    public function downloadDatasetFile($slimRequest, $response, $args)
+    {
+        $service = $this->getDataverseService($this->getRequest());
+        $queryParams = $slimRequest->getQueryParams();
+        $fileId = (int) $queryParams['fileId'];
+        $filename = $queryParams['filename'];
+
+        $dataverseResponse = $service->downloadDatasetFileById($fileId, $filename);
+
+        if ($dataverseResponse['statusCode'] != 200) {
+            return $response->withStatus($dataverseResponse['statusCode'])->withJsonError($dataverseResponse['message']);
         }
 
         return $response->withJson(['message' => 'ok'], 200);
