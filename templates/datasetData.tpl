@@ -56,16 +56,12 @@
                         <div class="listPanel__itemSummary">
                             <div class="listPanel__itemIdentity">
                                 <div class="listPanel__itemTitle">
-                                    {{ item.item.title }}
+                                    <a :href="$.pkp.plugins.generic.dataverse.getFileDownloadUrl(item.item)">
+                                        {{ item.item.title }}
+                                    </a>
                                 </div>
                             </div>
                             <div class="listPanel__itemActions">
-                                <pkp-button 
-                                    @click="$.pkp.plugins.generic.dataverse.downloadDatasetFile(item.item)" 
-                                    class="pkpButton"
-                                >
-                                    {translate key="common.download"}
-                                </pkp-button>
                                 <pkp-button 
                                     @click="$.pkp.plugins.generic.dataverse.openDeleteModal(item.item.id)" 
                                     class="pkpButton--isWarnable"

@@ -3,6 +3,7 @@
 	$.pkp.plugins.generic.dataverse = {
 		pageRootComponent: null,
 		errors: [],
+		downloadFileUrl: null,
 		formSuccess: function (data) {
 			const pageRootComponent =
 				$.pkp.plugins.generic.dataverse.pageRootComponent;
@@ -152,22 +153,13 @@
 				}
 			});
 		},
-		downloadDatasetFile(item) {
+		getFileDownloadUrl(item) {
 			const pageRootComponent =
 				$.pkp.plugins.generic.dataverse.pageRootComponent;
-			
-			const url = pageRootComponent.components.datasetFiles.apiUrl.replace('__id__', item.id);
 
-			$.ajax({
-				url: url + '&filename=' + item.title,
-				type: 'GET',
-				headers: {
-					'X-Csrf-Token': pkp.currentUser.csrfToken,
-					'X-Http-Method-Override': 'GET'
-				},
-				error: pageRootComponent.ajaxErrorCallback
-			});
-		}
+			const url = pageRootComponent.components.datasetFiles.apiUrl.replace('__id__', item.id) + '&filename=' + item.title;
+			return url;
+		},
 	};
 
 	$(document).ready(function () {

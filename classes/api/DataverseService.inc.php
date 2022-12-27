@@ -408,11 +408,12 @@ class DataverseService
 
     public function downloadDatasetFileById(int $fileId, string $filename): array
     {
-        $fileDir = tempnam('/tmp', 'datasetFile');
-        unlink($fileDir);
-        mkdir($fileDir);
-
-        $filePath = $fileDir . DIRECTORY_SEPARATOR . $filename;
+        $filesDir = Config::getVar('files', 'files_dir');
+        $datasetFileDir = tempnam($filesDir, 'datasetFile');
+        unlink($datasetFileDir);
+        mkdir($datasetFileDir);
+        
+        $filePath = $datasetFileDir . DIRECTORY_SEPARATOR . $filename;
         $resource = \GuzzleHttp\Psr7\Utils::tryFopen($filePath, 'w');
 
         $dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
@@ -438,6 +439,9 @@ class DataverseService
                 'message' => $returnMessage
             ];
         }
+
+        $filePath = str_replace($filesDir, '', $filePath);
+        Services::get('file')->download($filePath, $filename);
 
         return [
             'statusCode' => $response->getStatusCode(),
