@@ -61,6 +61,12 @@
                             </div>
                             <div class="listPanel__itemActions">
                                 <pkp-button 
+                                    @click="$.pkp.plugins.generic.dataverse.downloadDatasetFile(item.item)" 
+                                    class="pkpButton"
+                                >
+                                    {translate key="common.download"}
+                                </pkp-button>
+                                <pkp-button 
                                     @click="$.pkp.plugins.generic.dataverse.openDeleteModal(item.item.id)" 
                                     class="pkpButton--isWarnable"
                                 >

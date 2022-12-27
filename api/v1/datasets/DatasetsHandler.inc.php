@@ -207,9 +207,15 @@ class DatasetsHandler extends APIHandler
         $service = $this->getDataverseService($this->getRequest());
         $queryParams = $slimRequest->getQueryParams();
         $fileId = (int) $queryParams['fileId'];
-        $response = $service->downloadDatasetFileById($fileId);
+        $filename = $queryParams['filename'];
 
-        return $response;
+        $dataverseResponse = $service->downloadDatasetFileById($fileId, $filename);
+
+        if ($dataverseResponse['statusCode'] != 200) {
+            return $response->withStatus($dataverseResponse['statusCode'])->withJsonError($dataverseResponse['message']);
+        }
+
+        return $response->withJson(['message' => 'ok'], 200);
     }
 
     private function getDataverseService($request): DataverseService

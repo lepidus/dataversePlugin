@@ -406,8 +406,15 @@ class DataverseService
         }
     }
 
-    public function downloadDatasetFileById(int $fileId): string
+    public function downloadDatasetFileById(int $fileId, string $filename): array
     {
+        $fileDir = tempnam('/tmp', 'datasetFile');
+        unlink($fileDir);
+        mkdir($fileDir);
+
+        $filePath = $fileDir . DIRECTORY_SEPARATOR . $filename;
+        $resource = \GuzzleHttp\Psr7\Utils::tryFopen($filePath, 'w');
+
         $dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
         $httpClient = Application::get()->getHttpClient();
         try {
@@ -415,7 +422,10 @@ class DataverseService
                 'GET',
                 $dataverseServer . '/api/access/datafile/' . $fileId,
                 [
-                    'X-Dataverse-key' => $this->apiToken
+                    'headers' => [
+                        'X-Dataverse-key' => $this->dataverseClient->getConfiguration()->getApiToken()
+                    ],
+                    'sink' => $resource
                 ]
             );
         } catch (GuzzleHttp\Exception\RequestException $e) {
@@ -423,9 +433,15 @@ class DataverseService
             if ($e->hasResponse()) {
                 $returnMessage = $e->getResponse()->getBody(true) . ' (' .$e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase() . ')';
             }
-            return $returnMessage;
+            return [
+                'statusCode' => $e->getResponse()->getStatusCode(),
+                'message' => $returnMessage
+            ];
         }
 
-        return (string) $response->getBody();
+        return [
+            'statusCode' => $response->getStatusCode(),
+            'filePath' => $filePath
+        ];
     }
 }
