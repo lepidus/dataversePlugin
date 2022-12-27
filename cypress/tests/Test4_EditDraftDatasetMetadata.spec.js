@@ -170,7 +170,7 @@ describe('Edit Dataset Metadata Draft', function() {
 		cy.get(
 			'div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]'
 		).should('not.be.disabled');
-		cy.get('#datasetMetadata-datasetKeywords-control').clear();
+		cy.get('span:contains(Modern History) button').click();
 		cy.get(
 			'div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]'
 		).click();
