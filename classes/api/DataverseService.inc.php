@@ -412,7 +412,7 @@ class DataverseService
         $datasetFileDir = tempnam($filesDir, 'datasetFile');
         unlink($datasetFileDir);
         mkdir($datasetFileDir);
-        
+
         $filePath = $datasetFileDir . DIRECTORY_SEPARATOR . $filename;
         $resource = \GuzzleHttp\Psr7\Utils::tryFopen($filePath, 'w');
 
@@ -440,8 +440,11 @@ class DataverseService
             ];
         }
 
-        $filePath = str_replace($filesDir, '', $filePath);
-        Services::get('file')->download($filePath, $filename);
+        import('lib.pkp.classes.file.FileManager');
+        $fileManager = new FileManager();
+        $fileManager->downloadByPath($filePath);
+
+        $fileManager->rmtree($datasetFileDir);
 
         return [
             'statusCode' => $response->getStatusCode(),
