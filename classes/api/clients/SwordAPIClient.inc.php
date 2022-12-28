@@ -1,13 +1,16 @@
 <?php
 
 require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
-import('plugins.generic.dataverse.classes.api.interface.DataverseAPIClient');
+import('plugins.generic.dataverse.classes.api.interfaces.DataverseAPIClient');
+import('plugins.generic.dataverse.classes.NewDataverseConfiguration');
+import('plugins.generic.dataverse.classes.api.providers.SwordAPIDatasetProvider');
 
 class SwordAPIClient implements DataverseAPIClient
 {
     private const SAC_PASSWORD = '';
     private const SAC_OBO = '';
     private const SAC_INPROGRESS = false;
+    private const DATAVERSE_API_VERSION = 'v1.1';
 
     private $swordClient;
     private $configuration;
@@ -15,12 +18,17 @@ class SwordAPIClient implements DataverseAPIClient
     public function __construct(int $contextId)
     {
         $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => false));
-        $this->configuration = new DataverseConfiguration($contextId);
+        $this->configuration = new NewDataverseConfiguration($contextId);
+    }
+
+    public function getDatasetProvider(Submission $submission): DatasetProvider
+    {
+        return new SwordAPIDatasetProvider($submission);
     }
 
     public function getDataDepositBaseUrl(): string
     {
-        return $this->configuration->getDataverseServer(). '/dvn/api/data-deposit/'. DATAVERSE_API_VERSION. '/swordv2';
+        return $this->configuration->getDataverseServer() . '/dvn/api/data-deposit/' . self::DATAVERSE_API_VERSION . '/swordv2';
     }
 
     public function getDataverseServiceDocumentUrl(): string
@@ -38,19 +46,19 @@ class SwordAPIClient implements DataverseAPIClient
         return $this->getDataDepositBaseUrl() . '/edit' . $this->configuration->getDataverseCollection();
     }
 
-    private function getEditUri(DataverseStudy $study): string
+    private function getEditUri(string $persistentId): string
     {
-        return $this->getDataDepositBaseUrl() . '/edit/study/' . $study->getPersistentId();
+        return $this->getDataDepositBaseUrl() . '/edit/study/' . $persistentId;
     }
 
-    private function getEditMediaUri(DataverseStudy $study): string
+    private function getEditMediaUri(string $persistentId): string
     {
-        return $this->getDataDepositBaseUrl() . '/edit-media/study/' . $study->getPersistentId();
+        return $this->getDataDepositBaseUrl() . '/edit-media/study/' . $persistentId;
     }
 
-    private function getStatementUri(DataverseStudy $study): string
+    private function getStatementUri(string $persistentId): string
     {
-        return $this->getDataDepositBaseUrl() . '/statement/study/' . $study->getPersistentId();
+        return $this->getDataDepositBaseUrl() . '/statement/study/' . $persistentId;
     }
 
     private function getDatasetFileUri(int $fileId): string
@@ -93,7 +101,7 @@ class SwordAPIClient implements DataverseAPIClient
             $this->configuration->getApiToken(),
             self::SAC_PASSWORD,
             self::SAC_OBO,
-            $datasetProvider->getDatasetFilePath()
+            $datasetProvider->getDatasetPath()
         );
 
         $persistentId = null;
@@ -109,16 +117,17 @@ class SwordAPIClient implements DataverseAPIClient
         ];
     }
 
-    public function addFilesToDataset(DataverseStudy $study, DatasetProvider $datasetProvider)
+    public function depositDatasetFiles(string $persistentId, DatasetProvider $datasetProvider): array
     {
+        $package = $datasetProvider->getPackage();
         $response = $this->swordClient->deposit(
-            $this->getEditMediaUri($study),
+            $this->getEditMediaUri($persistentId),
             $this->configuration->getApiToken(),
             self::SAC_PASSWORD,
             self::SAC_OBO,
-            $datasetProvider->getPackageFilePath(),
-            $datasetProvider->getPackaging(),
-            $datasetProvider->getContentType(),
+            $package->getPackageFilePath(),
+            $package->getPackaging(),
+            $package->getContentType(),
             self::SAC_INPROGRESS
         );
 
@@ -127,7 +136,7 @@ class SwordAPIClient implements DataverseAPIClient
         ];
     }
 
-    public function getDatasetData(DataverseStudy $study): array
+    public function getDatasetData(string $persistentId): array
     {
         $response = $this->swordClient->retrieveAtomStatement(
             $this->getStatementUri($study),
@@ -155,7 +164,7 @@ class SwordAPIClient implements DataverseAPIClient
         ];
     }
 
-    public function publishDataset(DataverseStudy $study): array
+    public function publishDataset(string $persistentId): array
     {
         $response = $this->swordClient->completeIncompleteDeposit(
             $this->getEditUri($study),
@@ -181,5 +190,13 @@ class SwordAPIClient implements DataverseAPIClient
         return [
             'status' => $response->sac_status
         ];
+    }
+
+    private function retrievePersistentId(string $persistentUri)
+    {
+        preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches);
+        $persistentId =  "doi:" . $matches[0];
+
+        return $persistentId;
     }
 }

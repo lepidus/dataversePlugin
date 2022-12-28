@@ -26,6 +26,12 @@ class DataverseServiceDispatcher extends DataverseDispatcher
             'apiSummary' => true,
             'validation' => ['nullable'],
         ];
+        $schema->properties->datasetPersistentId = (object) [
+            'type' => 'string',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
+
         return false;
     }
 
@@ -34,9 +40,11 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         $form =& $params[0];
         $submission = $form->submission;
 
-        $service = $this->getDataverseService();
-        $service->setSubmission($submission);
-        $service->depositPackage();
+        import('plugins.generic.dataverse.classes.api.clients.SwordAPIClient');
+        import('plugins.generic.dataverse.classes.api.services.NewDataverseService');
+        $client = new SwordAPIClient($submission->getContextId());
+        $service = new NewDataverseService($client);
+        $service->createDatasetInDataverse($submission);
     }
 
     public function publishDeposit(string $hookName, array $params): void
