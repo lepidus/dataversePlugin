@@ -40,11 +40,9 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         $form =& $params[0];
         $submission = $form->submission;
 
-        import('plugins.generic.dataverse.classes.api.clients.SwordAPIClient');
-        import('plugins.generic.dataverse.classes.api.services.NewDataverseService');
-        $client = new SwordAPIClient($submission->getContextId());
-        $service = new NewDataverseService($client);
-        $service->createDatasetInDataverse($submission);
+        $service = $this->getDataverseService();
+        $service->setSubmission($submission);
+        $service->depositPackage();
     }
 
     public function publishDeposit(string $hookName, array $params): void
