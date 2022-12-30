@@ -54,7 +54,13 @@ class APACitation
 
     private function getAuthorCitation(Author $author): string
     {
-        return $author->getLocalizedFamilyName($this->locale) . ', ' . mb_substr($author->getLocalizedGivenName($this->locale), 0, 1) . ".";
+        $familyName = $author->getLocalizedFamilyName($this->locale);
+        $givenName = $author->getLocalizedGivenName($this->locale);
+
+        if (is_array($familyName)) $familyName = $familyName[$this->locale];
+        if (is_array($givenName)) $givenName = $givenName[$this->locale];
+
+        return $familyName . ', ' . mb_substr($givenName, 0, 1) . ".";
     }
 
     private function retrievePubIdAttributes(Submission $submission): array

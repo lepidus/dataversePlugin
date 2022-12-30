@@ -5,7 +5,7 @@ import('plugins.generic.dataverse.classes.api.DataverseClient');
 
 class DataverseNotificationManager
 {
-    private function getNotificationType(int $status): string
+    private function getNotificationType(string $status): string
     {
         $notificationStatusMapping = [
             DATAVERSE_PLUGIN_HTTP_STATUS_OK => NOTIFICATION_TYPE_SUCCESS,
@@ -29,7 +29,7 @@ class DataverseNotificationManager
         return $notificationStatusMapping[$status];
     }
 
-    public function getNotificationMessage(int $status, array $params = array()): string
+    public function getNotificationMessage(string $status, array $params = array()): string
     {
         $notificationMessages = [
             DATAVERSE_PLUGIN_HTTP_STATUS_OK => __('plugins.generic.dataverse.notification.statusPublished', $params),
@@ -64,7 +64,7 @@ class DataverseNotificationManager
         return $dataverseUrl;
     }
 
-    public function createNotification(int $dataverseResponseStatus): void
+    public function createNotification(string $dataverseResponseStatus): void
     {
         $user = Application::get()->getRequest()->getUser();
         $dataverseUrl = $this->getDataverseUrl();
