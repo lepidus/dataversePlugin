@@ -157,8 +157,11 @@
 			const pageRootComponent =
 				$.pkp.plugins.generic.dataverse.pageRootComponent;
 
-			const url = pageRootComponent.components.datasetFiles.apiUrl.replace('__id__', item.id) + '&filename=' + item.title;
-			return url;
+			if (pageRootComponent) {
+				return pageRootComponent.components.datasetFiles.apiUrl.replace('__id__', item.id) + '&filename=' + item.title;
+			}
+
+			return;
 		},
 	};
 
