@@ -37,9 +37,9 @@ class DraftDatasetFileDAOTest extends DatabaseTestCase
     private function getDraftDatasetFileData(): array
     {
         return [
-            'submissionId' => 6,
-            'userId' => 7,
-            'fileId' => 8,
+            'submissionId' => 100,
+            'userId' => 200,
+            'fileId' => 300,
             'fileName' => 'example.pdf'
         ];
     }

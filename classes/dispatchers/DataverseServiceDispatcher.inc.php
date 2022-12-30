@@ -26,6 +26,12 @@ class DataverseServiceDispatcher extends DataverseDispatcher
             'apiSummary' => true,
             'validation' => ['nullable'],
         ];
+        $schema->properties->datasetPersistentId = (object) [
+            'type' => 'string',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
+
         return false;
     }
 
