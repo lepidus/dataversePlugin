@@ -101,7 +101,8 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntry();
 
-        $atom = DOMDocument::load($this->packageCreator->getAtomEntryPath());
+        $atom = new DOMDocument();
+        $atom->load($this->packageCreator->getAtomEntryPath());
         $entry = $atom->getElementsByTagName('entry')->item(0);
 
         $xmlns = $entry->getAttribute('xmlns');
@@ -115,7 +116,8 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntry();
 
-        $atom = DOMDocument::load($this->packageCreator->getAtomEntryPath());
+        $atom = new DOMDocument();
+        $atom->load($this->packageCreator->getAtomEntryPath());
         $atomEntryMetadata = array(
             'atomEntryTitle' => $atom->getElementsByTagName('title')->item(0)->nodeValue,
             'atomEntryDescription' => $atom->getElementsByTagName('description')->item(0)->nodeValue,
@@ -138,7 +140,8 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntryFromSubmission();
 
-        $atom = DOMDocument::load($this->packageCreator->getAtomEntryPath());
+        $atom = new DOMDocument();
+        $atom->load($this->packageCreator->getAtomEntryPath());
 
         $atomEntryMetadata = array(
             'atomEntryTitle' => $atom->getElementsByTagName('title')->item(0)->nodeValue,
