@@ -9,7 +9,7 @@ class DataverseConfigurationForm extends Form
     private $plugin;
     private $contextId;
 
-    public function DataverseConfigurationForm(Plugin $plugin, int $contextId)
+    public function __construct(Plugin $plugin, int $contextId)
     {
         $this->plugin = $plugin;
         $this->contextId = $contextId;

@@ -13,7 +13,7 @@ class DataversePackageCreator extends PackagerAtomTwoStep
     private $outPath;
     private $files = array();
 
-    public function DataversePackageCreator()
+    public function __construct()
     {
         $this->outPath = tempnam(TEMPORARY_FILES_DIR, 'dataverse');
         unlink($this->outPath);
