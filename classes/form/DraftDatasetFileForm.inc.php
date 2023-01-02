@@ -6,12 +6,14 @@ use PKP\components\forms\FieldOptions;
 
 class DraftDatasetFileForm extends FormComponent
 {
-    public function __construct($action, $locales, $temporaryFileApiUrl, $termsOfUseParams)
+    public function __construct($action, $context, $locales, $temporaryFileApiUrl)
     {
         $this->action = $action;
         $this->locales = $locales;
         $this->id = 'datasetFileForm';
         $this->method = 'POST';
+
+        $termsOfUseParams = $this->getTermsOfUseData($context->getId());
 
         $this->addField(new FieldUpload('datasetFile', [
             'isRequired' => true,
@@ -28,5 +30,26 @@ class DraftDatasetFileForm extends FormComponent
             ],
             'value' => false
         ]));
+    }
+
+    private function getTermsOfUseData($contextId) {
+        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
+        $locale = AppLocale::getLocale();
+
+        $configuration = new DataverseConfiguration(
+            $plugin->getSetting($contextId, 'dataverseUrl'),
+            $plugin->getSetting($contextId, 'apiToken')
+        );
+
+        $serviceFactory = new DataverseServiceFactory();
+        $service = $serviceFactory->build($configuration, $plugin);
+
+        $termsOfUse = DAORegistry::getDAO('DataverseDAO')->getTermsOfUse($contextId, $locale);
+        $dataverseName = $service->getDataverseName();
+
+        return [
+            'termsOfUseURL' => $termsOfUse,
+            'dataverseName' => $dataverseName
+        ];
     }
 }

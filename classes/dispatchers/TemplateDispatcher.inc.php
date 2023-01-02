@@ -9,8 +9,6 @@ class TemplateDispatcher extends DataverseDispatcher
 {
     public function __construct(Plugin $plugin)
     {
-        HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFilesContainer'));
-        HookRegistry::register('TemplateManager::display', array($this, 'loadDraftDatasetFilePageComponent'));
         HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addDatasetDataToWorkflow'));
         HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
@@ -18,84 +16,6 @@ class TemplateDispatcher extends DataverseDispatcher
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
 
         parent::__construct($plugin);
-    }
-
-    public function loadDraftDatasetFilePageComponent(string $hookName, array $params): bool
-    {
-        $templateMgr = &$params[0];
-        $request = PKPApplication::get()->getRequest();
-
-        $templateMgr->addJavaScript(
-            'draftDatasetFilePage',
-            $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath() . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'DraftDatasetFilesPage.js',
-            [
-                'contexts' => ['backend'],
-                'priority' => STYLE_SEQUENCE_LAST,
-            ]
-        );
-
-        $templateMgr->addStyleSheet(
-            'draftDatasetFileUpload',
-            $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/styles/draftDatasetFileUpload.css',
-            [
-                'contexts' => ['backend']
-            ]
-        );
-
-        return false;
-    }
-
-    public function addDraftDatasetFilesContainer(string $hookName, array $params): bool
-    {
-        $request = PKPApplication::get()->getRequest();
-        $templateMgr = TemplateManager::getManager($request);
-
-        $form = $params[0];
-        $form->readUserVars(array('submissionId'));
-        $submissionId = $form->getData('submissionId');
-
-        $service = $this->getDataverseService();
-        $dataverseName = $service->getDataverseName();
-
-        $templateMgr->assign('submissionId', $submissionId);
-        $templateMgr->assign('dataverseName', $dataverseName);
-
-        $templateMgr->registerFilter("output", array($this, 'draftDatasetFilesContainerFilter'));
-
-        return false;
-    }
-
-    public function draftDatasetFilesContainerFilter(string $output, Smarty_Internal_Template $templateMgr): string
-    {
-        if (
-            preg_match('/<div[^>]+class="section formButtons form_buttons[^>]*"[^>]*>/', $output, $matches, PREG_OFFSET_CAPTURE)
-            && $templateMgr->template_resource == 'submission/form/step2.tpl'
-        ) {
-            $datasetFilesContainer = $this->getDraftDatasetFilesContainer();
-            $newOutput = $templateMgr->fetch('string:' . $datasetFilesContainer);
-            $newOutput .= $output;
-            $output = $newOutput;
-            $templateMgr->unregisterFilter('output', array($this, 'datasetFileFormFilter'));
-        }
-
-        return $output;
-    }
-
-    private function getDraftDatasetFilesContainer(): string
-    {
-        return '
-            {capture assign=draftDatasetFileFormUrl}
-                {url 
-                    router=$smarty.const.ROUTE_COMPONENT 
-                    component="plugins.generic.dataverse.handlers.DraftDatasetFileUploadHandler" 
-                    op="draftDatasetFiles"
-                    submissionId=$submissionId
-					dataverseName=$dataverseName
-                    escape=false
-                }
-            {/capture}
-            {load_url_in_div id=""|uniqid|escape url=$draftDatasetFileFormUrl}
-        ';
     }
 
     public function addDataCitationSubmission(string $hookName, array $params): bool
@@ -119,7 +39,7 @@ class TemplateDispatcher extends DataverseDispatcher
         $request = $params[0];
         $submission = $params[1];
         $templateManager = TemplateManager::getManager($request);
-        $pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
+        $pluginPath = $this->plugin->getPluginFullPath();
 
         $study = $this->getSubmissionStudy($submission);
         if (isset($study)) {
@@ -301,18 +221,10 @@ class TemplateDispatcher extends DataverseDispatcher
     {
         $dispatcher = $request->getDispatcher();
         $context = $request->getContext();
-        $service = $this->getDataverseService();
-        $dataverseName = $service->getDataverseName();
         $locale = AppLocale::getLocale();
 
         $temporaryFileApiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'temporaryFiles');
         $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
-
-        $termsOfUse = DAORegistry::getDAO('DataverseDAO')->getTermsOfUse($context->getId(), $locale);
-        $termsOfUseParams = array(
-            'dataverseName' => $dataverseName,
-            'termsOfUseURL' => $termsOfUse,
-        );
 
         $supportedFormLocales = $context->getSupportedFormLocales();
         $localeNames = AppLocale::getAllLocales();
@@ -321,7 +233,7 @@ class TemplateDispatcher extends DataverseDispatcher
         }, $supportedFormLocales);
 
         import('plugins.generic.dataverse.classes.form.DraftDatasetFileForm');
-        $draftDatasetFileForm = new DraftDatasetFileForm($apiUrl, $locales, $temporaryFileApiUrl, $termsOfUseParams);
+        $draftDatasetFileForm = new DraftDatasetFileForm($apiUrl, $context, $locales, $temporaryFileApiUrl);
 
         $this->addComponent(
             $templateMgr,
