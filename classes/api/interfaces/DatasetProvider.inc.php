@@ -2,11 +2,9 @@
 
 interface DatasetProvider
 {
-    public function getSubmissionFiles(): array;
+    public function prepareMetadata(array $metadata = []): void;
 
     public function createDataset(): void;
-
-    public function prepareDatasetFiles(array $files): void;
 
     public function getDatasetPath(): string;
 }

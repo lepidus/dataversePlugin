@@ -11,7 +11,7 @@ class NativeAPIEndpoints
 
     private function getAPIBaseUrl(): string
     {
-        return $this->dataverseServer . '/api/datasets/:persistentId';
+        return $this->dataverseServerUrl . '/api/datasets/:persistentId';
     }
 
     public function getEditMetadataUrl(string $persistentId): string

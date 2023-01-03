@@ -8,6 +8,7 @@ class NewDataverseService
         $files = $datasetProvider->getSubmissionFiles();
 
         if (!empty($files)) {
+            $datasetProvider->prepareMetadata();
             $datasetProvider->createDataset();
             $datasetProvider->prepareDatasetFiles($files);
 
@@ -32,5 +33,15 @@ class NewDataverseService
         $study->setPersistentId($responseData['persistentId']);
 
         $studyDAO->insertStudy($study);
+    }
+
+    public function editDatasetMetadata(EditAPIClient $client, Submission $submission, array $metadata): void
+    {
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
+
+        $datasetProvider = $client->newDatasetProvider($submission);
+        $datasetProvider->prepareMetadata($metadata);
+        $datasetProvider->createDataset();
+        $response = $client->editDataset($datasetProvider, $study->getPersistentId());
     }
 }

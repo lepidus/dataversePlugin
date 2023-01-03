@@ -15,11 +15,17 @@ class SwordAPIDatasetProvider implements DatasetProvider
         $this->package = new DataversePackageCreator();
     }
 
+    public function prepareMetadata(array $metadata = []): void
+    {
+        if (empty($metadata)) {
+            $datasetFactory = new DatasetFactory();
+            $datasetModel = $datasetFactory->build($this->submission);
+            $this->package->loadMetadata($datasetModel);
+        }
+    }
+
     public function createDataset(): void
     {
-        $datasetFactory = new DatasetFactory();
-        $datasetModel = $datasetFactory->build($this->submission);
-        $this->package->loadMetadata($datasetModel);
         $this->package->createAtomEntry();
     }
 

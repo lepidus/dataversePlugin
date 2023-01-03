@@ -1,7 +1,10 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
+import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
+import('plugins.generic.dataverse.classes.api.service.NewDataverseService');
+import('plugins.generic.dataverse.classes.api.clients.NativeAPIClient');
+import('plugins.generic.dataverse.classes.api.clients.SwordAPIClient');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 
 class DataverseServiceDispatcher extends DataverseDispatcher
@@ -36,11 +39,13 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         $submission = $form->submission;
         $contextId = $submission->getContextId();
 
-        import('plugins.generic.dataverse.classes.api.clients.SwordAPIClient');
-        import('plugins.generic.dataverse.classes.api.service.NewDataverseService');
-        $client = new SwordAPIClient($contextId);
         $service = new NewDataverseService();
+
+        $client = new SwordAPIClient($contextId);
         $service->createDatasetInDataverse($client, $submission);
+
+        $client = new NativeAPIClient($contextId);
+        $service->editDatasetMetadata($client, $submission, ['subject', 'authors']);
     }
 
     public function publishDeposit(string $hookName, array $params): void

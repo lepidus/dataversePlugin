@@ -1,6 +1,6 @@
 <?php
 
-class SubmissionAdapter
+class SubmissionAdapter extends DataObject
 {
     private $id;
     private $title;
@@ -12,53 +12,53 @@ class SubmissionAdapter
 
     public function __construct(int $id, string $title, array $authors, array $files, string $description, ?array $keywords, array $reference = array(), ?string $subject = null)
     {
-        $this->id = $id;
-        $this->title = $title;
-        $this->authors = $authors;
-        $this->files = $files;
-        $this->description = $description;
-        $this->keywords = $keywords;
-        $this->reference = $reference;
-        $this->subject = $subject;
+        $this->setData('id', $id);
+        $this->setData('title', $title);
+        $this->setData('authors', $authors);
+        $this->setData('files', $files);
+        $this->setData('description', $description);
+        $this->setData('keywords', $keywords);
+        $this->setData('reference', $reference);
+        $this->setData('subject', $subject);
     }
 
     public function getId(): int
     {
-        return $this->id;
+        return $this->getData('id');
     }
 
     public function getTitle(): string
     {
-        return $this->title;
+        return $this->getData('title');
     }
 
     public function getAuthors(): array
     {
-        return $this->authors;
+        return $this->getData('authors');
     }
 
     public function getFiles(): array
     {
-        return $this->files;
+        return $this->getData('files');
     }
 
     public function getDescription(): string
     {
-        return $this->description;
+        return $this->getData('description');
     }
 
     public function getKeywords(): ?array
     {
-        return $this->keywords;
+        return $this->getData('keywords');
     }
 
     public function getReference(): array
     {
-        return $this->reference;
+        return $this->getData('reference');
     }
 
     public function getSubject(): string
     {
-        return $this->subject;
+        return $this->getData('subject');
     }
 }

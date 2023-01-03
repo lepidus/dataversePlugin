@@ -50,7 +50,11 @@ class DataverseDatasetDataCreator
         $datasetMetadata->fields = [];
 
         foreach ($metadata as $key => $values) {
-            $datasetMetadata->fields[] = $this->createMetadataObject($key, $values);
+            if ($key == 'datasetAuthors') {
+                $datasetMetadata->fields[] = $this->createAuthorsField($values);
+            } else {
+                $datasetMetadata->fields[] = $this->createMetadataObject($key, $values);
+            }
         }
 
         return $datasetMetadata;
