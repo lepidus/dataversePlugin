@@ -12,7 +12,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDatasetsHandler'));
         HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
         HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
-        HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
+        HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'depositDataset'));
         HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
 
         parent::__construct($plugin);
@@ -21,12 +21,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
     public function modifySubmissionSchema(string $hookName, array $params): bool
     {
         $schema =& $params[0];
-        $schema->properties->{'datasetSubject'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->datasetPersistentId = (object) [
+        $schema->properties->datasetSubject = (object) [
             'type' => 'string',
             'apiSummary' => true,
             'validation' => ['nullable'],
@@ -35,14 +30,17 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         return false;
     }
 
-    public function dataverseDepositOnSubmission(string $hookName, array $params): void
+    public function depositDataset(string $hookName, array $params): void
     {
         $form =& $params[0];
         $submission = $form->submission;
+        $contextId = $submission->getContextId();
 
-        $service = $this->getDataverseService();
-        $service->setSubmission($submission);
-        $service->depositPackage();
+        import('plugins.generic.dataverse.classes.api.clients.SwordAPIClient');
+        import('plugins.generic.dataverse.classes.api.service.NewDataverseService');
+        $client = new SwordAPIClient($contextId);
+        $service = new NewDataverseService();
+        $service->createDatasetInDataverse($client, $submission);
     }
 
     public function publishDeposit(string $hookName, array $params): void

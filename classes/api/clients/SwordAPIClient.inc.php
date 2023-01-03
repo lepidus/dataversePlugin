@@ -1,12 +1,16 @@
 <?php
 
 require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
-import('plugins.generic.dataverse.classes.api.interfaces.DataverseAPIClient');
+import('plugins.generic.dataverse.classes.api.interfaces.DataAPIClient');
+import('plugins.generic.dataverse.classes.api.interfaces.DepositAPIClient');
+import('plugins.generic.dataverse.classes.api.interfaces.PublishAPIClient');
+import('plugins.generic.dataverse.classes.api.interfaces.DeleteAPIClient');
 import('plugins.generic.dataverse.classes.NewDataverseConfiguration');
 import('plugins.generic.dataverse.classes.api.endpoints.SwordAPIEndpoints');
 import('plugins.generic.dataverse.classes.api.providers.SwordAPIDatasetProvider');
+import('plugins.generic.dataverse.classes.api.response.DataverseResponse');
 
-class SwordAPIClient implements DataverseAPIClient
+class SwordAPIClient implements DataAPIClient, DepositAPIClient, PublishAPIClient, DeleteAPIClient
 {
     private const SAC_PASSWORD = '';
     private const SAC_OBO = '';
@@ -26,12 +30,12 @@ class SwordAPIClient implements DataverseAPIClient
         );
     }
 
-    public function getDatasetProvider(Submission $submission): DatasetProvider
+    public function newDatasetProvider(Submission $submission): DatasetProvider
     {
         return new SwordAPIDatasetProvider($submission);
     }
 
-    public function getDataverseData(): array
+    public function getDataverseData(): DataverseResponse
     {
         $response = $this->swordClient->retrieveDepositReceipt(
             $this->endpoints->getDataverseDepositUrl(),
@@ -40,12 +44,10 @@ class SwordAPIClient implements DataverseAPIClient
             self::SAC_OBO
         );
 
-        return [
-            'status' => $response->sac_status
-        ];
+        return new DataverseResponse($response->sac_status);
     }
 
-    public function getDataverseServerColletions(): array
+    public function getDataverseServerColletions(): DataverseResponse
     {
         $response = $this->swordClient->servicedocument(
             $this->endpoints->getDataverseServiceDocumentUrl(),
@@ -54,12 +56,10 @@ class SwordAPIClient implements DataverseAPIClient
             self::SAC_OBO
         );
 
-        return [
-            'status' => $response->sac_status
-        ];
+        return new DataverseResponse($response->sac_status);
     }
 
-    public function depositDataset(DatasetProvider $datasetProvider): array
+    public function depositDataset(DatasetProvider $datasetProvider): DataverseResponse
     {
         $response = $this->swordClient->depositAtomEntry(
             $this->endpoints->getDataverseDepositUrl(),
@@ -69,20 +69,28 @@ class SwordAPIClient implements DataverseAPIClient
             $datasetProvider->getDatasetPath()
         );
 
+        $persistentUri = null;
         $persistentId = null;
         foreach ($response->sac_links as $link) {
             if ($link->sac_linkrel == 'alternate') {
-                $persistentId = $this->retrievePersistentId($link->sac_linkhref);
+                $persistentUri = $link->sac_linkhref;
+                $persistentId = $this->retrievePersistentId($persistentUri);
             }
         }
 
-        return [
-            'status' => $response->sac_status,
-            'persistentId' => $persistentId
-        ];
+        return new DataverseResponse(
+            $response->sac_status,
+            [
+                'editUri' => $this->endpoints->getEditUri($persistentId),
+                'editMediaUri' => $this->endpoints->getEditMediaUri($persistentId),
+                'statementUri' => $this->endpoints->getStatementUri($persistentId),
+                'persistentUri' => $persistentUri,
+                'persistentId' => $persistentId,
+            ]
+        );
     }
 
-    public function depositDatasetFiles(string $persistentId, DatasetProvider $datasetProvider): array
+    public function depositDatasetFiles(string $persistentId, DatasetProvider $datasetProvider): DataverseResponse
     {
         $package = $datasetProvider->getPackage();
         $response = $this->swordClient->deposit(
@@ -96,12 +104,10 @@ class SwordAPIClient implements DataverseAPIClient
             self::SAC_INPROGRESS
         );
 
-        return [
-            'status' => $response->sac_status
-        ];
+        return new DataverseResponse($response->sac_status);
     }
 
-    public function getDatasetData(string $persistentId): array
+    public function getDatasetData(string $persistentId): DataverseResponse
     {
         $response = $this->swordClient->retrieveAtomStatement(
             $this->endpoints->getStatementUri($study),
@@ -110,12 +116,10 @@ class SwordAPIClient implements DataverseAPIClient
             self::SAC_OBO
         );
 
-        return [
-            'status' => $statement->sac_status
-        ];
+        return new DataverseResponse($response->sac_status);
     }
 
-    public function publishDataverse(): array
+    public function publishDataverse(): DataverseResponse
     {
         $response = $this->swordClient->completeIncompleteDeposit(
             $this->endpoints->getDataverseReleaseUrl(),
@@ -124,12 +128,10 @@ class SwordAPIClient implements DataverseAPIClient
             self::SAC_OBO
         );
 
-        return [
-            'status' => $response->sac_status
-        ];
+        return new DataverseResponse($response->sac_status);
     }
 
-    public function publishDataset(string $persistentId): array
+    public function publishDataset(string $persistentId): DataverseResponse
     {
         $response = $this->swordClient->completeIncompleteDeposit(
             $this->endpoints->getEditUri($study),
@@ -138,12 +140,10 @@ class SwordAPIClient implements DataverseAPIClient
             self::SAC_OBO
         );
 
-        return [
-            'status' => $response->sac_status
-        ];
+        return new DataverseResponse($response->sac_status);
     }
 
-    public function deleteDatasetFile(int $fileId): array
+    public function deleteDatasetFile(int $fileId): DataverseResponse
     {
         $response = $this->swordClient->deleteResourceContent(
             $this->endpoints->getDatasetFileUri($fileId),
@@ -152,12 +152,10 @@ class SwordAPIClient implements DataverseAPIClient
             self::SAC_OBO
         );
 
-        return [
-            'status' => $response->sac_status
-        ];
+        return new DataverseResponse($response->sac_status);
     }
 
-    private function retrievePersistentId(string $persistentUri)
+    private function retrievePersistentId(string $persistentUri): string
     {
         preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches);
         $persistentId =  "doi:" . $matches[0];

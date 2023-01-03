@@ -12,7 +12,6 @@ class SwordAPIEndpoints
         $this->dataverseServerUrl = $dataverseServerUrl;
         $this->dataverseCollection = $dataverseCollection;
     }
-    
 
     private function getAPIBaseUrl(): string
     {
