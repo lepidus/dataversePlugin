@@ -3,10 +3,10 @@
 import('plugins.generic.dataverse.classes.api.providers.NativeAPIDatasetProvider');
 import('plugins.generic.dataverse.classes.api.endpoints.NativeAPIEndpoints');
 import('plugins.generic.dataverse.classes.api.response.DataverseResponse');
-import('plugins.generic.dataverse.classes.api.interfaces.EditAPIClient');
+import('plugins.generic.dataverse.classes.api.clients.interfaces.UpdateAPIClient');
 import('plugins.generic.dataverse.classes.NewDataverseConfiguration');
 
-class NativeAPIClient implements EditAPIClient
+class NativeAPIClient implements UpdateAPIClient
 {
     private $configuration;
     private $httpClient;
@@ -24,10 +24,10 @@ class NativeAPIClient implements EditAPIClient
         return new NativeAPIDatasetProvider($submission);
     }
 
-    public function editDataset(DatasetProvider $datasetProvider, string $persistentId): DataverseResponse
+    public function updateDataset(DatasetProvider $datasetProvider, string $persistentId): DataverseResponse
     {
         $type = 'PUT';
-        $url = $this->endpoints->getEditMetadataUrl($persistentId);
+        $url = $this->endpoints->getUpdateMetadataUrl($persistentId);
         $headers = $this->getDataverseHeaders(['Content-Type' => 'application/json']);
         $options = $this->getOptions($headers, $datasetProvider);
 

@@ -35,13 +35,13 @@ class NewDataverseService
         $studyDAO->insertStudy($study);
     }
 
-    public function editDatasetMetadata(EditAPIClient $client, Submission $submission, array $metadata): void
+    public function editDatasetMetadata(UpdateAPIClient $client, Submission $submission, array $metadata): void
     {
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
 
         $datasetProvider = $client->newDatasetProvider($submission);
         $datasetProvider->prepareMetadata($metadata);
         $datasetProvider->createDataset();
-        $response = $client->editDataset($datasetProvider, $study->getPersistentId());
+        $response = $client->updateDataset($datasetProvider, $study->getPersistentId());
     }
 }

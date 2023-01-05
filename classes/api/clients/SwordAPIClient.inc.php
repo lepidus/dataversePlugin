@@ -1,16 +1,13 @@
 <?php
 
 require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
-import('plugins.generic.dataverse.classes.api.interfaces.DataAPIClient');
-import('plugins.generic.dataverse.classes.api.interfaces.DepositAPIClient');
-import('plugins.generic.dataverse.classes.api.interfaces.PublishAPIClient');
-import('plugins.generic.dataverse.classes.api.interfaces.DeleteAPIClient');
-import('plugins.generic.dataverse.classes.NewDataverseConfiguration');
-import('plugins.generic.dataverse.classes.api.endpoints.SwordAPIEndpoints');
 import('plugins.generic.dataverse.classes.api.providers.SwordAPIDatasetProvider');
+import('plugins.generic.dataverse.classes.api.clients.interfaces.DepositAPIClient');
+import('plugins.generic.dataverse.classes.api.endpoints.SwordAPIEndpoints');
 import('plugins.generic.dataverse.classes.api.response.DataverseResponse');
+import('plugins.generic.dataverse.classes.NewDataverseConfiguration');
 
-class SwordAPIClient implements DataAPIClient, DepositAPIClient, PublishAPIClient, DeleteAPIClient
+class SwordAPIClient implements DepositAPIClient
 {
     private const SAC_PASSWORD = '';
     private const SAC_OBO = '';
@@ -33,30 +30,6 @@ class SwordAPIClient implements DataAPIClient, DepositAPIClient, PublishAPIClien
     public function newDatasetProvider(Submission $submission): DatasetProvider
     {
         return new SwordAPIDatasetProvider($submission);
-    }
-
-    public function getDataverseData(): DataverseResponse
-    {
-        $response = $this->swordClient->retrieveDepositReceipt(
-            $this->endpoints->getDataverseDepositUrl(),
-            $this->configuration->getApiToken(),
-            self::SAC_PASSWORD,
-            self::SAC_OBO
-        );
-
-        return new DataverseResponse($response->sac_status);
-    }
-
-    public function getDataverseServerColletions(): DataverseResponse
-    {
-        $response = $this->swordClient->servicedocument(
-            $this->endpoints->getDataverseServiceDocumentUrl(),
-            $this->configuration->getApiToken(),
-            self::SAC_PASSWORD,
-            self::SAC_OBO
-        );
-
-        return new DataverseResponse($response->sac_status);
     }
 
     public function depositDataset(DatasetProvider $datasetProvider): DataverseResponse
@@ -102,54 +75,6 @@ class SwordAPIClient implements DataAPIClient, DepositAPIClient, PublishAPIClien
             $package->getPackaging(),
             $package->getContentType(),
             self::SAC_INPROGRESS
-        );
-
-        return new DataverseResponse($response->sac_status);
-    }
-
-    public function getDatasetData(string $persistentId): DataverseResponse
-    {
-        $response = $this->swordClient->retrieveAtomStatement(
-            $this->endpoints->getStatementUri($study),
-            $this->configuration->getApiToken(),
-            self::SAC_PASSWORD,
-            self::SAC_OBO
-        );
-
-        return new DataverseResponse($response->sac_status);
-    }
-
-    public function publishDataverse(): DataverseResponse
-    {
-        $response = $this->swordClient->completeIncompleteDeposit(
-            $this->endpoints->getDataverseReleaseUrl(),
-            $this->configuration->getApiToken(),
-            self::SAC_PASSWORD,
-            self::SAC_OBO
-        );
-
-        return new DataverseResponse($response->sac_status);
-    }
-
-    public function publishDataset(string $persistentId): DataverseResponse
-    {
-        $response = $this->swordClient->completeIncompleteDeposit(
-            $this->endpoints->getEditUri($study),
-            $this->configuration->getApiToken(),
-            self::SAC_PASSWORD,
-            self::SAC_OBO
-        );
-
-        return new DataverseResponse($response->sac_status);
-    }
-
-    public function deleteDatasetFile(int $fileId): DataverseResponse
-    {
-        $response = $this->swordClient->deleteResourceContent(
-            $this->endpoints->getDatasetFileUri($fileId),
-            $this->configuration->getApiToken(),
-            self::SAC_PASSWORD,
-            self::SAC_OBO
         );
 
         return new DataverseResponse($response->sac_status);

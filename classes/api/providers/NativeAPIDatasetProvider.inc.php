@@ -2,7 +2,7 @@
 
 import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-import('plugins.generic.dataverse.classes.api.interfaces.DatasetProvider');
+import('plugins.generic.dataverse.classes.api.providers.interfaces.DatasetProvider');
 
 class NativeAPIDatasetProvider implements DatasetProvider
 {
@@ -14,21 +14,6 @@ class NativeAPIDatasetProvider implements DatasetProvider
     {
         $submissionAdapterCreator = new SubmissionAdapterCreator();
         $this->submission = $submissionAdapterCreator->createSubmissionAdapter($submission);
-    }
-
-    public function getSubmissionFiles(): array
-    {
-        import('lib.pkp.classes.file.TemporaryFileManager');
-        $temporaryFileManager = new TemporaryFileManager();
-
-        $files = [];
-        foreach ($this->submission->getFiles() as $file) {
-            $files[] = $temporaryFileManager->getFile(
-                $file->getData('fileId'),
-                $file->getData('userId')
-            );
-        }
-        return $files;
     }
 
     public function prepareMetadata(array $metadada = []): void

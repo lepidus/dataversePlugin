@@ -1,6 +1,6 @@
 <?php
 
-import('plugins.generic.dataverse.classes.api.interfaces.DatasetProvider');
+import('plugins.generic.dataverse.classes.api.providers.interfaces.DatasetProvider');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 
 class SwordAPIDatasetProvider implements DatasetProvider
