@@ -122,6 +122,9 @@ msgstr "¿Realmente desea eliminar de forma permanente los datos de investigaci�
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "No se encontró el borrador del archivo del conjunto de datos solicitado."
 
+msgid "plugins.generic.dataverse.researchData.noResearchData"
+msgstr "No se transfieren datos de investigación."
+
 msgid "plugins.generic.dataverse.researchData.metadata"
 msgstr "Metadatos"
 

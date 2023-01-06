@@ -122,6 +122,9 @@ msgstr "Are you sure you want to permanently delete the research data related to
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "The draft dataset file you requested was not found."
 
+msgid "plugins.generic.dataverse.researchData.noResearchData"
+msgstr "No research data transferred."
+
 msgid "plugins.generic.dataverse.researchData.metadata"
 msgstr "Metadata"
 
