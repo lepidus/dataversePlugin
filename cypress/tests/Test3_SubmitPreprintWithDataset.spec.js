@@ -170,7 +170,7 @@ describe('Create Submission without research data files', function() {
 		cy.DataverseCreateSubmission(submissionDataNoFiles);
 	});
 
-	it('Verify "Research Data" tab is not visible', function() {
+	it('Verify "Research Data" tab contains "no data" warning', function() {
 		cy.login(adminUser, adminPassword);
 		cy.get('a')
 			.contains(adminUser)
@@ -181,7 +181,8 @@ describe('Create Submission without research data files', function() {
 		cy.get('#myQueue a:contains("View"):first').click();
 		cy.wait(1000);
 		cy.get('li > .pkpButton').click();
-		cy.get('#datasetTab-button').should('not.visible');
+		cy.get('#datasetTab-button').click();
+		cy.get('#datasetData .value > p').contains('No research data transferred.');
 	});
 });
 
