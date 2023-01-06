@@ -1,18 +1,19 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
+import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 
 class DataverseServiceDispatcher extends DataverseDispatcher
 {
     public function __construct(Plugin $plugin)
     {
-        HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDraftDatasetFileHandler'));
-        HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDatasetsHandler'));
-        HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
-        HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
         HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
+        HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
+        HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDraftDatasetFileHandler'));
+        HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
+        HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
+        HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDatasetsHandler'));
         HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
 
         parent::__construct($plugin);
@@ -22,11 +23,6 @@ class DataverseServiceDispatcher extends DataverseDispatcher
     {
         $schema =& $params[0];
         $schema->properties->{'datasetSubject'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->datasetPersistentId = (object) [
             'type' => 'string',
             'apiSummary' => true,
             'validation' => ['nullable'],
@@ -92,6 +88,17 @@ class DataverseServiceDispatcher extends DataverseDispatcher
             }
         }
 
+        return false;
+    }
+
+    public function setupDataverseHandlers($hookName, $params): bool
+    {
+        $component =& $params[0];
+        switch ($component) {
+            case 'plugins.generic.dataverse.handlers.DraftDatasetFileUploadHandler':
+                return true;
+                break;
+        }
         return false;
     }
 }

@@ -125,6 +125,9 @@ msgstr "Deseja realmente excluir permanentemente os dados de pesquisa relacionad
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
 
+msgid "plugins.generic.dataverse.researchData.noResearchData"
+msgstr "Não foram transferidos dados de pesquisa."
+
 msgid "plugins.generic.dataverse.researchData.metadata"
 msgstr "Metadados"
 

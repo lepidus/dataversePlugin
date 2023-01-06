@@ -13,7 +13,6 @@ class TemplateDispatcher extends DataverseDispatcher
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addDatasetDataToWorkflow'));
         HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
         HookRegistry::register('PreprintHandler::view', array($this, 'loadResources'));
-        HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
 
         parent::__construct($plugin);
     }
@@ -74,19 +73,21 @@ class TemplateDispatcher extends DataverseDispatcher
             $submission = $templateMgr->get_template_vars('submission');
 
             $study = $this->getSubmissionStudy($submission);
+
+            $templateMgr->addStyleSheet(
+                'datasetData',
+                $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/styles/datasetDataTab.css',
+                [
+                    'contexts' => ['backend']
+                ]
+            );
+            
             if (!empty($study)) {
                 $templateMgr->addJavaScript(
                     'dataverseHelper',
                     $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dataverseHelper.js',
                     [
                         'inline' => false,
-                        'contexts' => ['backend']
-                    ]
-                );
-                $templateMgr->addStyleSheet(
-                    'datasetData',
-                    $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/styles/datasetDataTab.css',
-                    [
                         'contexts' => ['backend']
                     ]
                 );
@@ -136,13 +137,16 @@ class TemplateDispatcher extends DataverseDispatcher
         $submission = $templateMgr->get_template_vars('submission');
 
         $study = $this->getSubmissionStudy($submission);
-        if (isset($study)) {
-            $output .= sprintf(
-                '<tab id="datasetTab" label="%s">%s</tab>',
-                __("plugins.generic.dataverse.researchData"),
-                $templateMgr->fetch($this->plugin->getTemplateResource('datasetData.tpl'))
-            );
-        }
+
+        $content = isset($study) ?
+            $templateMgr->fetch($this->plugin->getTemplateResource('datasetData.tpl')) :
+            $templateMgr->fetch($this->plugin->getTemplateResource('noResearchData.tpl'));
+
+        $output .= sprintf(
+            '<tab id="datasetTab" label="%s">%s</tab>',
+            __("plugins.generic.dataverse.researchData"),
+            $content
+        );
 
         return false;
     }
@@ -262,16 +266,5 @@ class TemplateDispatcher extends DataverseDispatcher
         $templateMgr->setState([
             'components' => $workflowComponents
         ]);
-    }
-
-    public function setupDataverseHandlers($hookName, $params): bool
-    {
-        $component =& $params[0];
-        switch ($component) {
-            case 'plugins.generic.dataverse.handlers.DraftDatasetFileUploadHandler':
-                return true;
-                break;
-        }
-        return false;
     }
 }
