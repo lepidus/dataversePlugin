@@ -28,15 +28,15 @@ let submissionData = {
 	]
 };
 
-describe('Deposit Draft Dataset', function() {
-	it('Dataverse Plugin Configuration', function() {
+describe('Deposit Draft Dataset', function () {
+	it('Dataverse Plugin Configuration', function () {
 		cy.login(adminUser, adminPassword);
 		cy.get('a:contains(' + adminUser + '):visible').click();
 		cy.get('a:contains("Dashboard"):visible').click();
 		cy.configureDataversePlugin();
 	});
 
-	it('Create Submission', function() {
+	it('Create Submission', function () {
 		cy.login(adminUser, adminPassword);
 		cy.get('a')
 			.contains(adminUser)
@@ -63,8 +63,8 @@ describe('Deposit Draft Dataset', function() {
 	});
 });
 
-describe('Edit Dataset Metadata Draft', function() {
-	it('Check dataset metadata form exists', function() {
+describe('Edit Dataset Metadata Draft', function () {
+	it('Check dataset metadata form exists', function () {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
@@ -76,7 +76,7 @@ describe('Edit Dataset Metadata Draft', function() {
 		);
 	});
 
-	it('Check dataset metadata edit is enabled when preprint is unpublished', function() {
+	it('Check dataset metadata edit is enabled when preprint is unpublished', function () {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
@@ -92,7 +92,7 @@ describe('Edit Dataset Metadata Draft', function() {
 		).should('not.be.disabled');
 	});
 
-	it('Change dataset metadata if preprint is unpublished', function() {
+	it('Change dataset metadata if preprint is unpublished', function () {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
@@ -109,11 +109,11 @@ describe('Edit Dataset Metadata Draft', function() {
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').clear();
 		cy.get(
 			'input[id^="datasetMetadata-datasetTitle-control"'
-		).type('The Rise of the Empire Machine', {delay: 0});
+		).type('The Rise of the Empire Machine', { delay: 0 });
 		cy.get('div[id^="datasetMetadata-datasetDescription-control"').clear();
 		cy.get(
 			'div[id^="datasetMetadata-datasetDescription-control"'
-		).type('An example abstract', {delay: 0});
+		).type('An example abstract', { delay: 0 });
 		cy.get('#datasetMetadata-datasetKeywords-control').type('Modern History', {
 			delay: 0
 		});
@@ -130,7 +130,7 @@ describe('Edit Dataset Metadata Draft', function() {
 		cy.wait(5000);
 	});
 
-	it('Check dataset metadata has been changed', function() {
+	it('Check dataset metadata has been changed', function () {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
@@ -156,7 +156,7 @@ describe('Edit Dataset Metadata Draft', function() {
 		);
 	});
 
-	it('Removes keyword metadata from dataset', function() {
+	it('Removes keyword metadata from dataset', function () {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
@@ -177,7 +177,7 @@ describe('Edit Dataset Metadata Draft', function() {
 		cy.wait(3000);
 	});
 
-	it('Check keyword metadata has empty', function() {
+	it('Check keyword metadata has empty', function () {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
@@ -193,7 +193,7 @@ describe('Edit Dataset Metadata Draft', function() {
 		);
 	});
 
-	it('Adds keyword metadata to dataset', function() {
+	it('Adds keyword metadata to dataset', function () {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
@@ -220,7 +220,7 @@ describe('Edit Dataset Metadata Draft', function() {
 		cy.wait(3000);
 	});
 
-	it('Check keyword metadata has value', function() {
+	it('Check keyword metadata has value', function () {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
@@ -234,8 +234,8 @@ describe('Edit Dataset Metadata Draft', function() {
 	});
 });
 
-describe('Edit Draft Dataset Files', function() {
-	it('Check dataset files list exists', function() {
+describe('Edit Draft Dataset Files', function () {
+	it('Check dataset files list exists', function () {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
@@ -247,7 +247,7 @@ describe('Edit Draft Dataset Files', function() {
 		cy.get('#datasetFiles .listPanel__items').contains('Data Table.pdf');
 	});
 
-	it('Adds file to dataset', function() {
+	it('Adds file to dataset', function () {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
@@ -273,7 +273,7 @@ describe('Edit Draft Dataset Files', function() {
 		);
 	});
 
-	it('Delete Dataset file', function() {
+	it('Delete Dataset file', function () {
 		cy.login(adminUser, adminPassword);
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
@@ -296,8 +296,8 @@ describe('Edit Draft Dataset Files', function() {
 	});
 });
 
-describe('Delete draft dataset', function() {
-	it('Check draft dataset button delete', function() {
+describe('Delete draft dataset', function () {
+	it('Check draft dataset button delete', function () {
 		cy.login(adminUser, adminPassword);
 		cy.get('a')
 			.contains(adminUser)
@@ -315,7 +315,7 @@ describe('Delete draft dataset', function() {
 			.should('be.visible');
 	});
 
-	it('Delete draft dataset', function() {
+	it('Delete draft dataset', function () {
 		cy.login(adminUser, adminPassword);
 		cy.get('a')
 			.contains(adminUser)
@@ -334,6 +334,7 @@ describe('Delete draft dataset', function() {
 		cy.get('[data-modal="delete"] button')
 			.contains('Yes')
 			.click();
-		cy.get('button[aria-controls="datasetTab"]').should('not.exist');
+		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('#datasetData .value > p').contains('No research data transferred.');
 	});
 });
