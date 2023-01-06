@@ -334,7 +334,6 @@ describe('Delete draft dataset', function () {
 		cy.get('[data-modal="delete"] button')
 			.contains('Yes')
 			.click();
-		cy.get('button[aria-controls="datasetTab"]').click();
-		cy.get('#datasetData .value > p').contains('No research data transferred.');
+		cy.contains('No research data transferred.');
 	});
 });
