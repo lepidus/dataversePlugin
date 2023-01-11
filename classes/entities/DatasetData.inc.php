@@ -42,14 +42,14 @@ class DatasetData extends DataObject
         $this->setData('authors', $authors);
     }
 
-    public function getContact(): array
+    public function getContacts(): array
     {
-        return $this->getData('contact');
+        return $this->getData('contacts');
     }
 
-    public function setContact(array $contact): void
+    public function setContacts(array $contacts): void
     {
-        $this->setData('contact', $contact);
+        $this->setData('contacts', $contacts);
     }
 
     public function getKeywords(): array

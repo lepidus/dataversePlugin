@@ -21,7 +21,10 @@ class SubmissionAdapterCreator
         $authors = $this->retrieveAuthors($publication, $locale);
         $files = $this->retrieveFiles($id);
 
-        return new SubmissionAdapter($id, $title, $abstract, $subject, $keywords, $citation, $authors, $files);
+        $adapter = new SubmissionAdapter();
+        $adapter->setRequiredData($id, $title, $abstract, $subject, $keywords, $citation, $authors, $files);
+
+        return $adapter;
     }
 
     private function retrieveAuthors(Publication $publication, string $locale): array
