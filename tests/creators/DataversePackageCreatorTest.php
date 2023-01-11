@@ -1,38 +1,35 @@
 <?php
 
-import('lib.pkp.tests.PKPTestCase');
+import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
 import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
-import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
-import('plugins.generic.dataverse.classes.DatasetModel');
-import('plugins.generic.dataverse.classes.creators.DatasetFactory');
+import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
+import('plugins.generic.dataverse.classes.file.DraftDatasetFile');
+import('plugins.generic.dataverse.classes.entities.Dataset');
+import('lib.pkp.tests.PKPTestCase');
 
 define('ATOM_ENTRY_XML_NAMESPACE', 'http://www.w3.org/2005/Atom');
 define('ATOM_ENTRY_XML_DCTERMS', 'http://purl.org/dc/terms/');
 
 class DataversePackageCreatorTest extends PKPTestCase
 {
-    private $packageCreator;
-    private $submissionAdapter;
-
-    private $contextId = 1;
-    private $submissionId;
-    private $publicationId;
-
-    private $keywords = ["en_US" => array("computer science")];
+    private $id = 9090;
+    private $title = 'The Rise of The Machine Empire';
+    private $description = 'An example abstract';
+    private $subject = 'N/A';
+    private $keywords = array();
+    private $citation = 'test citation';
+    private $author = array(
+        'authorName' => 'Castanheiras, Íris',
+        'affiliation' => 'Dataverse',
+        'identifier' => null
+    );
+    private $contact = array(
+        'name' => 'Castanheiras, Íris',
+        'email' => 'iriscastaneiras@testemail.com'
+    );
     private $authors = array();
     private $files = array();
-    private $locale = 'en_US';
-    private $dateSubmitted = '2021-05-31 15:38:24';
-    private $dateLastActivity = '2021-06-03 16:00:00';
-    private $statusCode = "STATUS_PUBLISHED";
-
-    private $id          = 1;
-    private $title       = 'The Rise of The Machine Empire';
-    private $description = 'An example abstract';
-    private $creator     = array("Irís Castanheiras");
-    private $subject     = array();
-    private $contributor = array(array('Funder' => 'CAPES'));
 
     public function setUp(): void
     {
@@ -55,23 +52,45 @@ class DataversePackageCreatorTest extends PKPTestCase
 
     private function createDefaultTestAtomEntry(): void
     {
-        $datasetModel = new DatasetModel($this->title, $this->creator, $this->subject, $this->description, $this->contributor);
-        $this->packageCreator->loadMetadata($datasetModel);
+        $dataset = new Dataset();
+        $dataset->setTitle($this->title);
+        $dataset->setDescription($this->description);
+        $dataset->setSubject($this->subject);
+        $dataset->setAuthors(array($this->author));
+        $dataset->setContacts(array($this->contact));
+
+        $this->packageCreator->loadMetadata($dataset);
         $this->packageCreator->createAtomEntry();
     }
 
     private function createDefaultTestAtomEntryFromSubmission(): void
     {
-        $this->authors[] = new AuthorAdapter("Irís", "Castanheiras", 'Universidade de São Paulo', 'iris@lepidus.com.br');
-        $draftDatasetFile = new DraftDatasetFile();
-        $draftDatasetFile->setData('sponsor', 'CAPES');
-        array_push($this->files, $draftDatasetFile);
-        $this->submissionAdapter = new SubmissionAdapter($this->id, $this->title, $this->authors, $this->files, $this->description, $this->subject);
+        $author = new AuthorAdapter(
+            "Íris",
+            "Castanheiras",
+            $this->author['affiliation'],
+            $this->contact['email']
+        );
+        $file = new DraftDatasetFile();
+        $file->setData('sponsor', 'CAPES');
+        array_push($this->authors, $author);
+        array_push($this->files, $file);
 
-        $datasetFactory = new DatasetFactory();
-        $this->datasetModel = $datasetFactory->build($this->submissionAdapter);
+        $submission = new SubmissionAdapter();
+        $submission->setRequiredData(
+            $this->id,
+            $this->title,
+            $this->description,
+            $this->subject,
+            $this->keywords,
+            $this->citation,
+            $this->authors,
+            $this->files
+        );
 
-        $this->packageCreator->loadMetadata($this->datasetModel);
+        $factory = new SubmissionDatasetFactory($submission);
+        $dataset = $factory->getDataset();
+        $this->packageCreator->loadMetadata($dataset);
         $this->packageCreator->createAtomEntry();
     }
 
@@ -87,14 +106,14 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntry();
 
-        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
+        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__, 2) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
     }
 
     public function testValidateAtomEntryFromSubmissionXmlFileStructure(): void
     {
         $this->createDefaultTestAtomEntryFromSubmission();
 
-        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
+        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__, 2) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
     }
 
     public function testValidateAtomEntryNamespaceAttributes(): void
@@ -129,8 +148,8 @@ class DataversePackageCreatorTest extends PKPTestCase
             'atomEntryTitle' => $this->title,
             'atomEntryDescription' => $this->description,
             'atomEntrySubject' => 'N/A',
-            'atomEntryCreator' => $this->creator[0],
-            'atomEntryContributor' => $this->contributor[0]['Funder']
+            'atomEntryCreator' => $this->author['authorName'],
+            'atomEntryContributor' => $this->contact['email']
         );
 
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);
@@ -154,8 +173,8 @@ class DataversePackageCreatorTest extends PKPTestCase
             'atomEntryTitle' => $this->title,
             'atomEntryDescription' => $this->description,
             'atomEntrySubject' => 'N/A',
-            'atomEntryCreator' => $this->creator[0],
-            'atomEntryContributor' => $this->contributor[0]['Funder']
+            'atomEntryCreator' => $this->author['authorName'],
+            'atomEntryContributor' => $this->contact['email']
         );
 
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);
@@ -165,7 +184,7 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntry();
 
-        $this->packageCreator->addFileToPackage(dirname(__FILE__) . '/assets/testSample.csv', "sampleFileForTests.csv");
+        $this->packageCreator->addFileToPackage(dirname(__FILE__, 2) . '/assets/testSample.csv', "sampleFileForTests.csv");
         $this->packageCreator->createPackage();
 
         $this->assertTrue(file_exists($this->packageCreator->getPackageFilePath()));
@@ -175,7 +194,7 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntryFromSubmission();
 
-        $this->packageCreator->addFileToPackage(dirname(__FILE__) . '/assets/testSample.csv', "sampleFileForTests.csv");
+        $this->packageCreator->addFileToPackage(dirname(__FILE__, 2) . '/assets/testSample.csv', "sampleFileForTests.csv");
         $this->packageCreator->createPackage();
 
         $this->assertTrue(file_exists($this->packageCreator->getPackageFilePath()));

@@ -1,6 +1,6 @@
 <?php
 
-class DatasetData extends DataObject
+class Dataset extends DataObject
 {
     public function getTitle(): string
     {

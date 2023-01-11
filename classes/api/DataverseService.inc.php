@@ -4,7 +4,7 @@ import('plugins.generic.dataverse.classes.api.DataverseClient');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
 import('plugins.generic.dataverse.classes.study.DataverseStudy');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-import('plugins.generic.dataverse.classes.creators.DatasetFactory');
+import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
 import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
 
 class DataverseService
@@ -45,9 +45,9 @@ class DataverseService
     public function createPackage(): DataversePackageCreator
     {
         $package = new DataversePackageCreator();
-        $datasetFactory = new DatasetFactory();
-        $datasetModel = $datasetFactory->build($this->submission);
-        $package->loadMetadata($datasetModel);
+        $factory = new SubmissionDatasetFactory($this->submission);
+        $dataset = $factory->getDataset();
+        $package->loadMetadata($dataset);
         $package->createAtomEntry();
 
         import('lib.pkp.classes.file.TemporaryFileManager');

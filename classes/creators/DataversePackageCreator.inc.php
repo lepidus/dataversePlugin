@@ -37,32 +37,51 @@ class DataversePackageCreator extends PackagerAtomTwoStep
         return $this->outPath;
     }
 
-    public function loadMetadata(DatasetModel $dataset): void
+    public function loadMetadata(Dataset $dataset): void
     {
-        $datasetMetadata = $dataset->getMetadataValues();
-        foreach ($datasetMetadata as $key => $value) {
-            if (is_array($value)) {
-                switch ($key) {
-                    case 'isReferencedBy':
-                        $this->addMetadata($key, $value[0], $value[1]);
-                        break;
-                    case 'contributor':
-                        foreach ($value as $metadata) {
-                            foreach ($metadata as $innerKey => $innerValue) {
-                                $this->addMetadata($key, $innerValue, array("type" => $innerKey));
-                            }
-                        }
-                        break;
-                    default:
-                        foreach ($value as $innerKey => $metadata) {
-                            $this->addMetadata($key, $metadata);
-                        }
-                        break;
-                }
-            } else {
-                $this->addMetadata($key, $value);
-            }
+        $datasetData = $dataset->getAllData();
+        $metadata = $this->prepareMetadata($datasetData);
+        foreach ($metadata as $data) {
+            $this->addMetadata(
+                $data['namespace'],
+                $data['value'],
+                $data['attributes']
+            );
         }
+    }
+
+    private function prepareMetadata(array $datasetData): array
+    {
+        $metadata = array();
+        $metadata[] = $this->createMetadata('title', $datasetData['title']);
+        $metadata[] = $this->createMetadata('description', $datasetData['description']);
+        $metadata[] = $this->createMetadata('subject', 'N/A');
+
+        foreach ($datasetData['authors'] as $author) {
+            $metadata[] = $this->createMetadata(
+                'creator',
+                $author['authorName'],
+                array('affiliation' => $author['affiliation'])
+            );
+        }
+        foreach ($datasetData['contacts'] as $contact) {
+            $metadata[] = $this->createMetadata(
+                'contributor',
+                $contact['email'],
+                array('type' => 'Contact')
+            );
+        }
+
+        return $metadata;
+    }
+
+    private function createMetadata(string $namespace, string $value, array $attributes = array()): array
+    {
+        return array(
+            'namespace' => $namespace,
+            'value' => $value,
+            'attributes' => $attributes
+        );
     }
 
     public function createPackage(): void

@@ -42,8 +42,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         );
 
         $datasetAuthor = array(
-            'givenName' => $author->getGivenName(),
-            'familyName' => $author->getFamilyName(),
+            'authorName' => $author->getFullName(),
             'affiliation' => $author->getAffiliation(),
             'identifier' => $author->getOrcid()
         );
@@ -60,7 +59,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
     public function testCreateDatasetWithSubmissionData(): void
     {
-        $dataset = $this->factory->getDatasetData();
+        $dataset = $this->factory->getDataset();
 
         $this->assertEquals($dataset->getTitle(), $this->submission->getTitle());
         $this->assertEquals($dataset->getDescription(), $this->submission->getAbstract());

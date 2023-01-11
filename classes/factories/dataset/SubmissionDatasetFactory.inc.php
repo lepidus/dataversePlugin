@@ -1,9 +1,9 @@
 <?php
 
-import('plugins.generic.dataverse.classes.factories.dataset.DatasetDataFactory');
-import('plugins.generic.dataverse.classes.entities.DatasetData');
+import('plugins.generic.dataverse.classes.factories.dataset.DatasetFactory');
+import('plugins.generic.dataverse.classes.entities.Dataset');
 
-class SubmissionDatasetFactory extends DatasetDataFactory
+class SubmissionDatasetFactory extends DatasetFactory
 {
     private $submission;
 
@@ -12,12 +12,12 @@ class SubmissionDatasetFactory extends DatasetDataFactory
         $this->submission = $submission;
     }
 
-    protected function createDatasetData(): void
+    protected function createDataset(): void
     {
         $submissionData = $this->submission->getAllData();
         $props = $this->sanitizeProps($submissionData);
 
-        $dataset = new DatasetData();
+        $dataset = new Dataset();
         $dataset->setAllData($props);
 
         $this->dataset = $dataset;
@@ -29,8 +29,7 @@ class SubmissionDatasetFactory extends DatasetDataFactory
         $contacts = array();
         foreach ($submissionData['authors'] as $author) {
             $authors[] = array(
-                'givenName' => $author->getGivenName(),
-                'familyName' => $author->getFamilyName(),
+                'authorName' => $author->getFullName(),
                 'affiliation' => $author->getAffiliation(),
                 'identifier' => $author->getOrcid() ?? null
             );

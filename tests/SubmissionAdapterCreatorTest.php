@@ -99,6 +99,7 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
         $this->submission->setData('dateSubmitted', $this->dateSubmitted);
         $this->submission->setData('status', $this->statusCode);
         $this->submission->setData('locale', $this->locale);
+        $this->submission->setData('datasetSubject', 'Other');
         $this->submission->setData('dateLastActivity', $this->dateLastActivity);
     }
 
@@ -128,7 +129,7 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
 
     public function testRetrieveSubmissionDescription(): void
     {
-        $this->assertEquals($this->description, $this->submissionAdapter->getDescription());
+        $this->assertEquals($this->description, $this->submissionAdapter->getAbstract());
     }
 
     public function testRetrieveSubmissionKeywords(): void
