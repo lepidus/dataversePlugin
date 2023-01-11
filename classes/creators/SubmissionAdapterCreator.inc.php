@@ -11,17 +11,17 @@ class SubmissionAdapterCreator
         $locale = $submission->getLocale();
         $publication = $submission->getCurrentPublication();
         $apaCitation = new APACitation();
+
         $id = $submission->getId();
         $title = $publication->getLocalizedData('title', $locale);
-        $authors = $this->retrieveAuthors($publication, $locale);
-        $files = $this->retrieveFiles($id);
-        $description = $publication->getLocalizedData('abstract', $locale);
+        $abstract = $publication->getLocalizedData('abstract', $locale);
+        $subject = $submission->getData('datasetSubject');
         $keywords = $publication->getData('keywords')[$locale];
         $citation = $apaCitation->getFormattedCitationBySubmission($submission);
-        $reference = array($citation, array());
-        $subject = $submission->getData('datasetSubject');
+        $authors = $this->retrieveAuthors($publication, $locale);
+        $files = $this->retrieveFiles($id);
 
-        return new SubmissionAdapter($id, $title, $authors, $files, $description, $keywords, $reference, $subject);
+        return new SubmissionAdapter($id, $title, $abstract, $subject, $keywords, $citation, $authors, $files);
     }
 
     private function retrieveAuthors(Publication $publication, string $locale): array
@@ -37,7 +37,9 @@ class SubmissionAdapterCreator
             $orcid = $author->getOrcid();
             $orcidNumber = null;
 
-            if (preg_match('/.{4}-.{4}-.{4}-.{4}/', $orcid, $matches)) $orcidNumber = $matches[0];
+            if (preg_match('/.{4}-.{4}-.{4}-.{4}/', $orcid, $matches)) {
+                $orcidNumber = $matches[0];
+            }
 
             $affiliation = !is_null($affiliation) ? $affiliation : "";
             $email = !is_null($email) ? $email : "";

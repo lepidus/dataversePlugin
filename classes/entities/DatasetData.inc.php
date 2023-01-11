@@ -39,7 +39,7 @@ class DatasetData extends DataObject
 
     public function setAuthors(array $authors): void
     {
-        $this->setData('uthors', $authors);
+        $this->setData('authors', $authors);
     }
 
     public function getContact(): array
