@@ -8,7 +8,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 {
     public function __construct(Plugin $plugin)
     {
-        HookRegistry::register('submissionsubmitstep4form::validate', array($this, 'dataverseDepositOnSubmission'));
+        HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'dataverseDepositOnSubmission'));
         HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDraftDatasetFileHandler'));
         HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
