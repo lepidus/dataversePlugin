@@ -9,6 +9,7 @@ class SubmissionAdapter extends DataObject
         string $subject,
         ?array $keywords,
         string $citation,
+        ?array $contact,
         array $authors,
         array $files
     ): void {
@@ -18,6 +19,7 @@ class SubmissionAdapter extends DataObject
         $this->setSubject($subject);
         $this->setKeywords($keywords);
         $this->setCitation($citation);
+        $this->setContact($contact);
         $this->setAuthors($authors);
         $this->setFiles($files);
     }
@@ -70,6 +72,16 @@ class SubmissionAdapter extends DataObject
     public function setCitation(string $citation): void
     {
         $this->setData('citation', $citation);
+    }
+
+    public function getContact(): array
+    {
+        return $this->getData('contact');
+    }
+
+    public function setContact(?array $contact): void
+    {
+        $this->setData('contact', $contact);
     }
 
     public function getAuthors(): array

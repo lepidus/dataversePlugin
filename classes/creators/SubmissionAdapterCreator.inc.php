@@ -20,9 +20,10 @@ class SubmissionAdapterCreator
         $citation = $apaCitation->getFormattedCitationBySubmission($submission);
         $authors = $this->retrieveAuthors($publication, $locale);
         $files = $this->retrieveFiles($id);
+        $contact = $this->retrieveContact($publication);
 
         $adapter = new SubmissionAdapter();
-        $adapter->setRequiredData($id, $title, $abstract, $subject, $keywords, $citation, $authors, $files);
+        $adapter->setRequiredData($id, $title, $abstract, $subject, $keywords, $citation, $contact, $authors, $files);
 
         return $adapter;
     }
@@ -51,6 +52,25 @@ class SubmissionAdapterCreator
         }
 
         return $authorAdapters;
+    }
+
+    private function retrieveContact(Publication $publication): ?array
+    {
+        $primaryAuthor = $publication->getPrimaryAuthor();
+        if (!empty($primaryAuthor)) {
+            $locale = $primaryAuthor->getSubmissionLocale();
+            $givenName = $primaryAuthor->getLocalizedGivenName($locale);
+            $familyName = $primaryAuthor->getLocalizedFamilyName($locale);
+            $email = $primaryAuthor->getEmail();
+            $affiliation = $primaryAuthor->getLocalizedData('affiliation', $locale);
+            return array(
+                'name' => $familyName . ', ' . $givenName,
+                'email' => $email,
+                'affiliation' => $affiliation
+            );
+        } else {
+            return null;
+        }
     }
 
     private function retrieveFiles(int $submissionId): array

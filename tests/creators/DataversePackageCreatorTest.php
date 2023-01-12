@@ -85,6 +85,7 @@ class DataversePackageCreatorTest extends PKPTestCase
             $this->subject,
             $this->keywords,
             $this->citation,
+            $this->contact,
             $this->authors,
             $this->files
         );

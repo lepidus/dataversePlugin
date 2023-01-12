@@ -81,7 +81,7 @@ class TemplateDispatcher extends DataverseDispatcher
                     'contexts' => ['backend']
                 ]
             );
-            
+
             if (!empty($study)) {
                 $templateMgr->addJavaScript(
                     'dataverseHelper',
@@ -135,6 +135,8 @@ class TemplateDispatcher extends DataverseDispatcher
         $output =& $params[2];
         $context = Application::get()->getRequest()->getContext();
         $submission = $templateMgr->get_template_vars('submission');
+
+        error_log(print_r($submission, true));
 
         $study = $this->getSubmissionStudy($submission);
 

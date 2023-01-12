@@ -37,6 +37,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
             'Other',
             array('test'),
             'test citation',
+            null,
             array($author),
             array($file)
         );
