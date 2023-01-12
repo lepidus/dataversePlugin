@@ -6,7 +6,7 @@ class SubmissionAdapter extends DataObject
         int $id,
         string $title,
         string $abstract,
-        string $subject,
+        ?string $subject,
         ?array $keywords,
         string $citation,
         ?array $contact,
@@ -49,7 +49,7 @@ class SubmissionAdapter extends DataObject
         return $this->getData('subject');
     }
 
-    public function setSubject(string $subject): void
+    public function setSubject(?string $subject): void
     {
         $this->setData('subject', $subject);
     }
