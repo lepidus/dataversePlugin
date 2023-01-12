@@ -97,24 +97,24 @@ class DataverseMetadata
         return $metadata ? $attributes[$metadata] : $attributes;
     }
 
-    public static function retrieveAuthorProps($author): array
+    public static function retrieveAuthorProps(array $author): array
     {
         $authorProps = [
             'authorName' => [
                 'typeName' => 'authorName',
                 'multiple' => false,
                 'typeClass' => 'primitive',
-                'value' => $author->getFamilyName() . ', ' . $author->getGivenName()
+                'value' => $author['authorName']
             ],
             'authorAffiliation' => [
                 'typeName' => 'authorAffiliation',
                 'multiple' => false,
                 'typeClass' => 'primitive',
-                'value' => $author->getAffiliation()
+                'value' => $author['affiliation']
             ]
         ];
 
-        if ($author->getOrcid()) {
+        if ($author['identifier']) {
             $authorProps['authorIdentifierScheme'] = [
                 'typeName' => 'authorIdentifierScheme',
                 'multiple' => false,
@@ -125,7 +125,7 @@ class DataverseMetadata
                 'typeName' => 'authorIdentifier',
                 'multiple' => false,
                 'typeClass' => 'primitive',
-                'value' => $author->getOrcid()
+                'value' => $author['identifier']
             ];
         }
 

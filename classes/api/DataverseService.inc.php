@@ -146,12 +146,16 @@ class DataverseService
             $dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
             $url =  $dataverseServer . '/api/datasets/:persistentId/editMetadata?persistentId=' . $study->getPersistentId() . '&replace=true';
 
-            $datasetSubject = $this->submission->getSubject();
-            $authors = $this->submission->getAuthors();
+            $factory = new SubmissionDatasetFactory($this->submission);
+            $dataset = $factory->getDataset();
+
+            $metadata = [
+                'datasetSubject' => $dataset->getSubject(),
+                'datasetAuthor' => $dataset->getAuthors()
+            ];
 
             $datasetDataCreator = new DataverseDatasetDataCreator();
-            $updatedFields = $datasetDataCreator->createMetadataFields(['datasetSubject' => $datasetSubject]);
-            $updatedFields->fields[] = $datasetDataCreator->createAuthorsField($authors);
+            $updatedFields = $datasetDataCreator->createMetadataFields($metadata);
 
             $updatedFieldsJson = json_encode($updatedFields);
 

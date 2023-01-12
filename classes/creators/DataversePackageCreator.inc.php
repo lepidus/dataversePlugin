@@ -79,7 +79,6 @@ class DataversePackageCreator extends PackagerAtomTwoStep
     {
         $metadata[] = $this->createMetadata('title', $datasetData['title']);
         $metadata[] = $this->createMetadata('description', $datasetData['description']);
-        $metadata[] = $this->createMetadata('subject', 'N/A');
         $metadata[] = $this->createMetadata('isReferencedBy', $datasetData['citation']);
 
         foreach ($datasetData['authors'] as $author) {

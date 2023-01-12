@@ -72,7 +72,11 @@ class DataverseDatasetDataCreator
         if ($metadataAttr['typeClass'] == 'compound') {
             $metadata->value = [];
             foreach ($values as $value) {
-                $metadata->value[] = $this->createCompoundObject($metadataAttr['typeName'], $value);
+                if ($metadataAttr['typeName'] == 'author') {
+                    $metadata->value[] = $this->createAuthorObject($value);
+                } else {
+                    $metadata->value[] = $this->createCompoundObject($metadataAttr['typeName'], $value);
+                }
             }
         } else {
             $metadata->value = $values;
@@ -95,21 +99,9 @@ class DataverseDatasetDataCreator
         return $obj;
     }
 
-    public function createAuthorsField($authors): stdClass
+    public function createAuthorObject(array $author): array
     {
-        $metadataAttr = DataverseMetadata::getMetadataAttributes('datasetAuthor');
-
-        $metadata = new stdClass();
-        $metadata->typeName = $metadataAttr['typeName'];
-        $metadata->multiple = $metadataAttr['multiple'];
-        $metadata->typeClass = $metadataAttr['typeClass'];
-        $metadata->value = [];
-
-        foreach ($authors as $author) {
-            $authorProps = DataverseMetadata::retrieveAuthorProps($author);
-            $metadata->value[] = $authorProps;
-        }
-
-        return $metadata;
+        $authorProps = DataverseMetadata::retrieveAuthorProps($author);
+        return $authorProps;
     }
 }
