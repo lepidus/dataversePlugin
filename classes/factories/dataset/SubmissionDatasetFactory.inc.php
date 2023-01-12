@@ -36,15 +36,21 @@ class SubmissionDatasetFactory extends DatasetFactory
             return array(
                 'authorName' => $author->getFullName(),
                 'affiliation' => $author->getAffiliation(),
-                'identifier' => $author->getOrcid() ?? null
+                'identifier' => $author->getOrcid()
             );
         }, $submissionData['authors']);
-        $props['contacts'] = array_map(function (AuthorAdapter $author) {
-            return array(
-                'name' => $author->getFullName(),
-                'email' => $author->getEmail()
-            );
-        }, $submissionData['authors']);
+
+        if (!empty($submissionData['contact'])) {
+            $props['contacts'] = array($submissionData['contact']);
+        } else {
+            $props['contacts'] = array_map(function (AuthorAdapter $author) {
+                return array(
+                    'name' => $author->getFullName(),
+                    'email' => $author->getEmail(),
+                    'affiliation' => $author->getAffiliation()
+                );
+            }, $submissionData['authors']);
+        }
 
         return $props;
     }
