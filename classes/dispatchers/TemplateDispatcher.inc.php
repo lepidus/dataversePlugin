@@ -136,8 +136,6 @@ class TemplateDispatcher extends DataverseDispatcher
         $context = Application::get()->getRequest()->getContext();
         $submission = $templateMgr->get_template_vars('submission');
 
-        error_log(print_r($submission, true));
-
         $study = $this->getSubmissionStudy($submission);
 
         $content = isset($study) ?

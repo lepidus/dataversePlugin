@@ -74,6 +74,8 @@ class DataverseDatasetDataCreator
             foreach ($values as $value) {
                 if ($metadataAttr['typeName'] == 'author') {
                     $metadata->value[] = $this->createAuthorObject($value);
+                } elseif ($metadataAttr['typeName'] == 'datasetContact') {
+                    $metadata->value[] = $this->createContactObject($value);
                 } else {
                     $metadata->value[] = $this->createCompoundObject($metadataAttr['typeName'], $value);
                 }
@@ -103,5 +105,11 @@ class DataverseDatasetDataCreator
     {
         $authorProps = DataverseMetadata::retrieveAuthorProps($author);
         return $authorProps;
+    }
+
+    public function createContactObject(array $contact): array
+    {
+        $contactProps = DataverseMetadata::retrieveContactProps($contact);
+        return $contactProps;
     }
 }

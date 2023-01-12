@@ -17,7 +17,7 @@ class DataversePackageCreatorTest extends PKPTestCase
     private $title = 'The Rise of The Machine Empire';
     private $description = 'An example abstract';
     private $subject = 'N/A';
-    private $keywords = array();
+    private $keywords = array('Modern History');
     private $citation = 'test citation';
     private $author = array(
         'authorName' => 'Castanheiras, Íris',
@@ -56,6 +56,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         $dataset->setTitle($this->title);
         $dataset->setDescription($this->description);
         $dataset->setSubject($this->subject);
+        $dataset->setKeywords($this->keywords);
         $dataset->setAuthors(array($this->author));
         $dataset->setContacts(array($this->contact));
         $dataset->setCitation($this->citation);
@@ -148,7 +149,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         $expectedMetadata = array(
             'atomEntryTitle' => $this->title,
             'atomEntryDescription' => $this->description,
-            'atomEntrySubject' => 'N/A',
+            'atomEntrySubject' => $this->keywords[0],
             'atomEntryCreator' => $this->author['authorName']
         );
 
@@ -171,7 +172,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         $expectedMetadata = array(
             'atomEntryTitle' => $this->title,
             'atomEntryDescription' => $this->description,
-            'atomEntrySubject' => 'N/A',
+            'atomEntrySubject' => $this->keywords[0],
             'atomEntryCreator' => $this->author['authorName']
         );
 

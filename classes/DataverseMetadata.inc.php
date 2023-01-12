@@ -92,6 +92,11 @@ class DataverseMetadata
                 'multiple' => true,
                 'typeClass' => 'controlledVocabulary'
             ],
+            'datasetContact' => [
+                'typeName' => 'datasetContact',
+                'multiple' => true,
+                'typeClass' => 'compound'
+            ]
         ];
 
         return $metadata ? $attributes[$metadata] : $attributes;
@@ -130,5 +135,31 @@ class DataverseMetadata
         }
 
         return $authorProps;
+    }
+
+    public static function retrieveContactProps(array $contact): array
+    {
+        $contactProps = [
+            'datasetContactName' => [
+                'typeName' => 'datasetContactName',
+                'multiple' => false,
+                'typeClass' => 'primitive',
+                'value' => $contact['name']
+            ],
+            'datasetContactEmail' => [
+                'typeClass' => 'primitive',
+                'multiple' => false,
+                'typeName' => 'datasetContactEmail',
+                'value' => $contact['email']
+            ],
+            'datasetContactAffiliation' => [
+                'typeName' => 'datasetContactAffiliation',
+                'multiple' => false,
+                'typeClass' => 'primitive',
+                'value' => $contact['affiliation']
+            ],
+        ];
+
+        return $contactProps;
     }
 }

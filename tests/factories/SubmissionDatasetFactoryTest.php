@@ -50,7 +50,8 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
         $datasetContact = array(
             'name' => $author->getFullName(),
-            'email' => $author->getEmail()
+            'email' => $author->getEmail(),
+            'affiliation' => 'Dataverse'
         );
 
         $this->datasetAuthor = $datasetAuthor;
