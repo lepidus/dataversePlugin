@@ -3,6 +3,6 @@
 	<dcterms:title>The Rise of The Machine Empire</dcterms:title>
 	<dcterms:description>An example abstract</dcterms:description>
 	<dcterms:subject>N/A</dcterms:subject>
+	<dcterms:isReferencedBy>test citation</dcterms:isReferencedBy>
 	<dcterms:creator affiliation="Dataverse">Castanheiras, Íris</dcterms:creator>
-	<dcterms:contributor type="Contact">iriscastaneiras@testemail.com</dcterms:contributor>
 </entry>

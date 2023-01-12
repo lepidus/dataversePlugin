@@ -37,63 +37,6 @@ class DataversePackageCreator extends PackagerAtomTwoStep
         return $this->outPath;
     }
 
-    public function loadMetadata(Dataset $dataset): void
-    {
-        $datasetData = $dataset->getAllData();
-        $metadata = $this->prepareMetadata($datasetData);
-        foreach ($metadata as $data) {
-            $this->addMetadata(
-                $data['namespace'],
-                $data['value'],
-                $data['attributes']
-            );
-        }
-    }
-
-    private function prepareMetadata(array $datasetData): array
-    {
-        $metadata = array();
-        $metadata[] = $this->createMetadata('title', $datasetData['title']);
-        $metadata[] = $this->createMetadata('description', $datasetData['description']);
-        $metadata[] = $this->createMetadata('subject', 'N/A');
-
-        foreach ($datasetData['authors'] as $author) {
-            $metadata[] = $this->createMetadata(
-                'creator',
-                $author['authorName'],
-                array('affiliation' => $author['affiliation'])
-            );
-        }
-        foreach ($datasetData['contacts'] as $contact) {
-            $metadata[] = $this->createMetadata(
-                'contributor',
-                $contact['email'],
-                array('type' => 'Contact')
-            );
-        }
-
-        return $metadata;
-    }
-
-    private function createMetadata(string $namespace, string $value, array $attributes = array()): array
-    {
-        return array(
-            'namespace' => $namespace,
-            'value' => $value,
-            'attributes' => $attributes
-        );
-    }
-
-    public function createPackage(): void
-    {
-        $package = new ZipArchive();
-        $package->open($this->getPackageFilePath(), ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
-        foreach ($this->files as $fileName => $filePath) {
-            $package->addFile($filePath, $fileName);
-        }
-        $package->close();
-    }
-
     public function getPackageFilePath(): string
     {
         return $this->outPath. DIRECTORY_SEPARATOR. FILE_DIR. DIRECTORY_SEPARATOR. PACKAGE_FILE_NAME;
@@ -117,5 +60,60 @@ class DataversePackageCreator extends PackagerAtomTwoStep
     public function hasFiles(): bool
     {
         return !empty($this->files);
+    }
+
+    public function loadMetadata(Dataset $dataset): void
+    {
+        $datasetData = $dataset->getAllData();
+        $metadata = $this->prepareMetadata($datasetData);
+        foreach ($metadata as $data) {
+            $this->addMetadata(
+                $data['namespace'],
+                $data['value'],
+                $data['attributes']
+            );
+        }
+    }
+
+    private function prepareMetadata(array $datasetData): array
+    {
+        $metadata[] = $this->createMetadata('title', $datasetData['title']);
+        $metadata[] = $this->createMetadata('description', $datasetData['description']);
+        $metadata[] = $this->createMetadata('subject', 'N/A');
+        $metadata[] = $this->createMetadata('isReferencedBy', $datasetData['citation']);
+
+        foreach ($datasetData['authors'] as $author) {
+            $metadata[] = $this->createMetadata(
+                'creator',
+                $author['authorName'],
+                array('affiliation' => $author['affiliation'])
+            );
+        }
+        if (!empty($datasetData['keywords'])) {
+            foreach ($datasetData['keywords'] as $keyword) {
+                $metadata[] = $this->createMetadata('subject', $keyword);
+            }
+        }
+
+        return $metadata;
+    }
+
+    private function createMetadata(string $namespace, string $value, array $attributes = array()): array
+    {
+        return array(
+            'namespace' => $namespace,
+            'value' => $value,
+            'attributes' => $attributes
+        );
+    }
+
+    public function createPackage(): void
+    {
+        $package = new ZipArchive();
+        $package->open($this->getPackageFilePath(), ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
+        foreach ($this->files as $fileName => $filePath) {
+            $package->addFile($filePath, $fileName);
+        }
+        $package->close();
     }
 }

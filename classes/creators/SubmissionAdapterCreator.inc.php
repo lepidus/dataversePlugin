@@ -16,7 +16,7 @@ class SubmissionAdapterCreator
         $title = $publication->getLocalizedData('title', $locale);
         $abstract = $publication->getLocalizedData('abstract', $locale);
         $subject = $submission->getData('datasetSubject');
-        $keywords = $publication->getData('keywords')[$locale];
+        $keywords = $publication->getData('keywords')[$locale] ?? null;
         $citation = $apaCitation->getFormattedCitationBySubmission($submission);
         $authors = $this->retrieveAuthors($publication, $locale);
         $files = $this->retrieveFiles($id);

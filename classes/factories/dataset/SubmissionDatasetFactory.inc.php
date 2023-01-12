@@ -25,28 +25,26 @@ class SubmissionDatasetFactory extends DatasetFactory
 
     private function sanitizeProps(array $submissionData): array
     {
-        $authors = array();
-        $contacts = array();
-        foreach ($submissionData['authors'] as $author) {
-            $authors[] = array(
-                'authorName' => $author->getFullName(),
-                'affiliation' => $author->getAffiliation(),
-                'identifier' => $author->getOrcid() ?? null
-            );
-            $contacts[] = array(
-                'name' => $author->getFullName(),
-                'email' => $author->getEmail()
-            );
-        }
-
         $props = array();
         $props['title'] = $submissionData['title'];
         $props['description'] = $submissionData['abstract'];
         $props['subject'] = $submissionData['subject'];
-        $props['keywords'] = $submissionData['keywords'];
+        $props['keywords'] = $submissionData['keywords'] ?? null;
         $props['citation'] = $submissionData['citation'];
-        $props['authors'] = $authors;
-        $props['contacts'] = $contacts;
+
+        $props['authors'] = array_map(function (AuthorAdapter $author) {
+            return array(
+                'authorName' => $author->getFullName(),
+                'affiliation' => $author->getAffiliation(),
+                'identifier' => $author->getOrcid() ?? null
+            );
+        }, $submissionData['authors']);
+        $props['contacts'] = array_map(function (AuthorAdapter $author) {
+            return array(
+                'name' => $author->getFullName(),
+                'email' => $author->getEmail()
+            );
+        }, $submissionData['authors']);
 
         return $props;
     }

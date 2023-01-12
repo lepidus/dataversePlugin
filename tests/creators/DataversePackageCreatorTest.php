@@ -58,6 +58,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         $dataset->setSubject($this->subject);
         $dataset->setAuthors(array($this->author));
         $dataset->setContacts(array($this->contact));
+        $dataset->setCitation($this->citation);
 
         $this->packageCreator->loadMetadata($dataset);
         $this->packageCreator->createAtomEntry();
@@ -141,15 +142,13 @@ class DataversePackageCreatorTest extends PKPTestCase
             'atomEntryTitle' => $atom->getElementsByTagName('title')->item(0)->nodeValue,
             'atomEntryDescription' => $atom->getElementsByTagName('description')->item(0)->nodeValue,
             'atomEntrySubject' => $atom->getElementsByTagName('subject')->item(0)->nodeValue,
-            'atomEntryCreator' => $atom->getElementsByTagName('creator')->item(0)->nodeValue,
-            'atomEntryContributor' => $atom->getElementsByTagName('contributor')->item(0)->nodeValue
+            'atomEntryCreator' => $atom->getElementsByTagName('creator')->item(0)->nodeValue
         );
         $expectedMetadata = array(
             'atomEntryTitle' => $this->title,
             'atomEntryDescription' => $this->description,
             'atomEntrySubject' => 'N/A',
-            'atomEntryCreator' => $this->author['authorName'],
-            'atomEntryContributor' => $this->contact['email']
+            'atomEntryCreator' => $this->author['authorName']
         );
 
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);
@@ -166,15 +165,13 @@ class DataversePackageCreatorTest extends PKPTestCase
             'atomEntryTitle' => $atom->getElementsByTagName('title')->item(0)->nodeValue,
             'atomEntryDescription' => $atom->getElementsByTagName('description')->item(0)->nodeValue,
             'atomEntrySubject' => $atom->getElementsByTagName('subject')->item(0)->nodeValue,
-            'atomEntryCreator' => $atom->getElementsByTagName('creator')->item(0)->nodeValue,
-            'atomEntryContributor' => $atom->getElementsByTagName('contributor')->item(0)->nodeValue
+            'atomEntryCreator' => $atom->getElementsByTagName('creator')->item(0)->nodeValue
         );
         $expectedMetadata = array(
             'atomEntryTitle' => $this->title,
             'atomEntryDescription' => $this->description,
             'atomEntrySubject' => 'N/A',
-            'atomEntryCreator' => $this->author['authorName'],
-            'atomEntryContributor' => $this->contact['email']
+            'atomEntryCreator' => $this->author['authorName']
         );
 
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);
