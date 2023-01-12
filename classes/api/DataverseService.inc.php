@@ -4,7 +4,7 @@ import('plugins.generic.dataverse.classes.api.DataverseClient');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
 import('plugins.generic.dataverse.classes.study.DataverseStudy');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-import('plugins.generic.dataverse.classes.creators.DatasetFactory');
+import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
 import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
 
 class DataverseService
@@ -45,9 +45,9 @@ class DataverseService
     public function createPackage(): DataversePackageCreator
     {
         $package = new DataversePackageCreator();
-        $datasetFactory = new DatasetFactory();
-        $datasetModel = $datasetFactory->build($this->submission);
-        $package->loadMetadata($datasetModel);
+        $factory = new SubmissionDatasetFactory($this->submission);
+        $dataset = $factory->getDataset();
+        $package->loadMetadata($dataset);
         $package->createAtomEntry();
 
         import('lib.pkp.classes.file.TemporaryFileManager');
@@ -146,12 +146,17 @@ class DataverseService
             $dataverseServer = $this->dataverseClient->getConfiguration()->getDataverseServer();
             $url =  $dataverseServer . '/api/datasets/:persistentId/editMetadata?persistentId=' . $study->getPersistentId() . '&replace=true';
 
-            $datasetSubject = $this->submission->getSubject();
-            $authors = $this->submission->getAuthors();
+            $factory = new SubmissionDatasetFactory($this->submission);
+            $dataset = $factory->getDataset();
+
+            $metadata = [
+                'datasetSubject' => $dataset->getSubject(),
+                'datasetAuthor' => $dataset->getAuthors(),
+                'datasetContact' => $dataset->getContacts()
+            ];
 
             $datasetDataCreator = new DataverseDatasetDataCreator();
-            $updatedFields = $datasetDataCreator->createMetadataFields(['datasetSubject' => $datasetSubject]);
-            $updatedFields->fields[] = $datasetDataCreator->createAuthorsField($authors);
+            $updatedFields = $datasetDataCreator->createMetadataFields($metadata);
 
             $updatedFieldsJson = json_encode($updatedFields);
 

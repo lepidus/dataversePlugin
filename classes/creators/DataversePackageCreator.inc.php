@@ -37,44 +37,6 @@ class DataversePackageCreator extends PackagerAtomTwoStep
         return $this->outPath;
     }
 
-    public function loadMetadata(DatasetModel $dataset): void
-    {
-        $datasetMetadata = $dataset->getMetadataValues();
-        foreach ($datasetMetadata as $key => $value) {
-            if (is_array($value)) {
-                switch ($key) {
-                    case 'isReferencedBy':
-                        $this->addMetadata($key, $value[0], $value[1]);
-                        break;
-                    case 'contributor':
-                        foreach ($value as $metadata) {
-                            foreach ($metadata as $innerKey => $innerValue) {
-                                $this->addMetadata($key, $innerValue, array("type" => $innerKey));
-                            }
-                        }
-                        break;
-                    default:
-                        foreach ($value as $innerKey => $metadata) {
-                            $this->addMetadata($key, $metadata);
-                        }
-                        break;
-                }
-            } else {
-                $this->addMetadata($key, $value);
-            }
-        }
-    }
-
-    public function createPackage(): void
-    {
-        $package = new ZipArchive();
-        $package->open($this->getPackageFilePath(), ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
-        foreach ($this->files as $fileName => $filePath) {
-            $package->addFile($filePath, $fileName);
-        }
-        $package->close();
-    }
-
     public function getPackageFilePath(): string
     {
         return $this->outPath. DIRECTORY_SEPARATOR. FILE_DIR. DIRECTORY_SEPARATOR. PACKAGE_FILE_NAME;
@@ -98,5 +60,59 @@ class DataversePackageCreator extends PackagerAtomTwoStep
     public function hasFiles(): bool
     {
         return !empty($this->files);
+    }
+
+    public function loadMetadata(Dataset $dataset): void
+    {
+        $datasetData = $dataset->getAllData();
+        $metadata = $this->prepareMetadata($datasetData);
+        foreach ($metadata as $data) {
+            $this->addMetadata(
+                $data['namespace'],
+                $data['value'],
+                $data['attributes']
+            );
+        }
+    }
+
+    private function prepareMetadata(array $datasetData): array
+    {
+        $metadata[] = $this->createMetadata('title', $datasetData['title']);
+        $metadata[] = $this->createMetadata('description', $datasetData['description']);
+        $metadata[] = $this->createMetadata('isReferencedBy', $datasetData['citation']);
+
+        foreach ($datasetData['authors'] as $author) {
+            $metadata[] = $this->createMetadata(
+                'creator',
+                $author['authorName'],
+                array('affiliation' => $author['affiliation'])
+            );
+        }
+        if (!empty($datasetData['keywords'])) {
+            foreach ($datasetData['keywords'] as $keyword) {
+                $metadata[] = $this->createMetadata('subject', $keyword);
+            }
+        }
+
+        return $metadata;
+    }
+
+    private function createMetadata(string $namespace, string $value, array $attributes = array()): array
+    {
+        return array(
+            'namespace' => $namespace,
+            'value' => $value,
+            'attributes' => $attributes
+        );
+    }
+
+    public function createPackage(): void
+    {
+        $package = new ZipArchive();
+        $package->open($this->getPackageFilePath(), ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
+        foreach ($this->files as $fileName => $filePath) {
+            $package->addFile($filePath, $fileName);
+        }
+        $package->close();
     }
 }

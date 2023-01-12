@@ -11,17 +11,21 @@ class SubmissionAdapterCreator
         $locale = $submission->getLocale();
         $publication = $submission->getCurrentPublication();
         $apaCitation = new APACitation();
+
         $id = $submission->getId();
         $title = $publication->getLocalizedData('title', $locale);
+        $abstract = $publication->getLocalizedData('abstract', $locale);
+        $subject = $submission->getData('datasetSubject');
+        $keywords = $publication->getData('keywords')[$locale] ?? null;
+        $citation = $apaCitation->getFormattedCitationBySubmission($submission);
         $authors = $this->retrieveAuthors($publication, $locale);
         $files = $this->retrieveFiles($id);
-        $description = $publication->getLocalizedData('abstract', $locale);
-        $keywords = $publication->getData('keywords')[$locale];
-        $citation = $apaCitation->getFormattedCitationBySubmission($submission);
-        $reference = array($citation, array());
-        $subject = $submission->getData('datasetSubject');
+        $contact = $this->retrieveContact($publication);
 
-        return new SubmissionAdapter($id, $title, $authors, $files, $description, $keywords, $reference, $subject);
+        $adapter = new SubmissionAdapter();
+        $adapter->setRequiredData($id, $title, $abstract, $subject, $keywords, $citation, $contact, $authors, $files);
+
+        return $adapter;
     }
 
     private function retrieveAuthors(Publication $publication, string $locale): array
@@ -37,7 +41,9 @@ class SubmissionAdapterCreator
             $orcid = $author->getOrcid();
             $orcidNumber = null;
 
-            if (preg_match('/.{4}-.{4}-.{4}-.{4}/', $orcid, $matches)) $orcidNumber = $matches[0];
+            if (preg_match('/.{4}-.{4}-.{4}-.{4}/', $orcid, $matches)) {
+                $orcidNumber = $matches[0];
+            }
 
             $affiliation = !is_null($affiliation) ? $affiliation : "";
             $email = !is_null($email) ? $email : "";
@@ -46,6 +52,25 @@ class SubmissionAdapterCreator
         }
 
         return $authorAdapters;
+    }
+
+    private function retrieveContact(Publication $publication): ?array
+    {
+        $primaryAuthor = $publication->getPrimaryAuthor();
+        if (!empty($primaryAuthor)) {
+            $locale = $primaryAuthor->getSubmissionLocale();
+            $givenName = $primaryAuthor->getLocalizedGivenName($locale);
+            $familyName = $primaryAuthor->getLocalizedFamilyName($locale);
+            $email = $primaryAuthor->getEmail();
+            $affiliation = $primaryAuthor->getLocalizedData('affiliation', $locale);
+            return array(
+                'name' => $familyName . ', ' . $givenName,
+                'email' => $email,
+                'affiliation' => $affiliation
+            );
+        } else {
+            return null;
+        }
     }
 
     private function retrieveFiles(int $submissionId): array

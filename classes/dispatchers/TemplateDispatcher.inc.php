@@ -81,7 +81,7 @@ class TemplateDispatcher extends DataverseDispatcher
                     'contexts' => ['backend']
                 ]
             );
-            
+
             if (!empty($study)) {
                 $templateMgr->addJavaScript(
                     'dataverseHelper',
