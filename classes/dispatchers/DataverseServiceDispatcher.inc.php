@@ -14,7 +14,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDatasetsHandler'));
-        HookRegistry::register('Publication::publish', array($this, 'publishDeposit'));
+        HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
 
         parent::__construct($plugin);
     }
