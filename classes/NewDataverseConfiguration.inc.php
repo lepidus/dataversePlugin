@@ -2,37 +2,25 @@
 
 class NewDataverseConfiguration
 {
-    private $apiToken;
-    private $dataverseUrl;
-    private $termsOfUse;
+    private $credentials;
+
     private $dataverseCollection;
 
     public function __construct(int $contextId)
     {
-        $dataverseDAO = DAORegistry::getDAO('DataverseDAO');
-        $credentials = $dataverseDAO->getCredentialsFromDatabase($contextId);
-        list($this->apiToken, $this->dataverseUrl, $this->termsOfUse) = $credentials;
+        $credentialsDAO = DAORegistry::getDAO('DataverseCredentialsDAO');
+        $credentials = $credentialsDAO->get($contextId);
         $this->dataverseCollection = $this->retrieveDataverseCollection();
     }
 
-    public function getAPIToken(): string
+    public function getCredentials(): DataverseCredentials
     {
-        return $this->apiToken;
+        return $this->credentials;
     }
 
-    public function getDataverseUrl(): string
-    {
-        return $this->dataverseUrl;
-    }
-    
-    public function getTermsOfUse(): array
-    {
-        return $this->termsOfUse;
-    }
-    
     public function getDataverseServer(): string
     {
-        preg_match('/https:\/\/(.)*?(?=\/)/', $this->dataverseUrl, $matches);
+        preg_match('/https:\/\/(.)*?(?=\/)/', $this->credentials->getDataverseUrl(), $matches);
         return $matches[0];
     }
 
@@ -40,10 +28,9 @@ class NewDataverseConfiguration
     {
         return $this->dataverseCollection;
     }
-    
+
     private function retrieveDataverseCollection(): string
     {
-        return explode($this->getDataverseServer(), $this->dataverseUrl)[1];
+        return explode($this->getDataverseServer(), $this->credentials->getDataverseUrl())[1];
     }
-
 }

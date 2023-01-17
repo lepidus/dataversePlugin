@@ -32,7 +32,8 @@ class DraftDatasetFileForm extends FormComponent
         ]));
     }
 
-    private function getTermsOfUseData($contextId) {
+    private function getTermsOfUseData($contextId)
+    {
         $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
         $locale = AppLocale::getLocale();
 
@@ -44,7 +45,8 @@ class DraftDatasetFileForm extends FormComponent
         $serviceFactory = new DataverseServiceFactory();
         $service = $serviceFactory->build($configuration, $plugin);
 
-        $termsOfUse = DAORegistry::getDAO('DataverseDAO')->getTermsOfUse($contextId, $locale);
+        $credentials = DAORegistry::getDAO('DataverseCredentialsDAO')->get($contextId);
+        $termsOfUse = $credentials->getLocalizedData('termsOfUse', $locale);
         $dataverseName = $service->getDataverseName();
 
         return [
