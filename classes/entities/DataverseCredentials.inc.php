@@ -12,12 +12,12 @@ class DataverseCredentials extends DataObject
         return $this->getData('dataverseUrl');
     }
 
-    public function setApiToken(string $apiToken): void
+    public function setAPIToken(string $apiToken): void
     {
         $this->setData('apiToken', $apiToken);
     }
 
-    public function getApiToken(): string
+    public function getAPIToken(): string
     {
         return $this->getData('apiToken');
     }
