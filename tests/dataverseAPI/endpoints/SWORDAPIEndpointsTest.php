@@ -1,39 +1,24 @@
 <?php
 
-import('lib.pkp.tests.PKPTestCase');
+import('plugins.generic.dataverse.tests.dataverseAPI.endpoints.DataverseEndpointsTestCase');
 import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.SWORDAPIEndpoints');
 
-class SWORDAPIEndpointsTest extends PKPTestCase
+class SWORDAPIEndpointsTest extends DataverseEndpointsTestCase
 {
-    private $contextId = 9090;
-
-    private $endpoints;
-
-    protected function setUp(): void
+    protected function getDataverseCredentialsData(): array
     {
-        parent::setUp();
-
-        $this->registerMockDataverseCredentialsDAO();
-        $installation = new DataverseInstallation($this->contextId);
-        $this->endpoints = new SWORDAPIEndpoints($installation);
+        return [
+            'dataverseUrl' => 'https://demo.dataverse.org/dataverse/example',
+            'apiToken' => 'randomToken',
+            'termsOfUse' => [
+                'en_US' => 'https://demo.dataverse.org/terms-of-use'
+            ]
+        ];
     }
 
-    private function registerMockDataverseCredentialsDAO(): void
+    protected function createDataverseEndpoints(DataverseInstallation $installation): DataverseEndpoints
     {
-        $dataverseCredentialsDAO = $this->getMockBuilder(DataverseCredentialsDAO::class)
-            ->setMethods(array('get'))
-            ->getMock();
-
-        $credentials = new DataverseCredentials();
-        $credentials->setDataverseUrl('https://demo.dataverse.org/dataverse/example');
-        $credentials->setAPIToken('randomToken');
-        $credentials->setTermsOfUse(array('en_US' => 'https://demo.dataverse.org/terms-of-use'));
-
-        $dataverseCredentialsDAO->expects($this->any())
-            ->method('get')
-            ->will($this->returnValue($credentials));
-
-        DAORegistry::registerDAO('DataverseCredentialsDAO', $dataverseCredentialsDAO);
+        return new SWORDAPIEndpoints($installation);
     }
 
     public function testReturnsCorrectDataverseServiceDocumentUrl(): void

@@ -1,17 +1,12 @@
 <?php
 
-class SWORDAPIEndpoints
+import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.DataverseEndpoints');
+
+class SWORDAPIEndpoints extends DataverseEndpoints
 {
     private const DATAVERSE_API_VERSION = 'v1.1';
 
-    private $installation;
-
-    public function __construct(DataverseInstallation $installation)
-    {
-        $this->installation = $installation;
-    }
-
-    private function getAPIBaseUrl(): string
+    protected function getAPIBaseUrl(): string
     {
         return $this->installation->getDataverseServerUrl() . '/dvn/api/data-deposit/' . self::DATAVERSE_API_VERSION . '/swordv2';
     }

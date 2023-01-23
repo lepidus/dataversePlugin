@@ -25,7 +25,7 @@ class SWORDAPIClient implements IDataAPIClient
     {
         $response = $this->swordClient->retrieveDepositReceipt(
             $this->endpoints->getDataverseCollectionUrl(),
-            $this->installation->getCredentials->getAPIToken(),
+            $this->installation->getCredentials()->getAPIToken(),
             self::SAC_PASSWORD,
             self::SAC_OBO
         );
@@ -40,7 +40,7 @@ class SWORDAPIClient implements IDataAPIClient
     {
         $response = $this->swordClient->retrieveAtomStatement(
             $this->endpoints->getDatasetStatementUrl($persistentId),
-            $this->installation->getCredentials->getAPIToken(),
+            $this->installation->getCredentials()->getAPIToken(),
             self::SAC_PASSWORD,
             self::SAC_OBO
         );
