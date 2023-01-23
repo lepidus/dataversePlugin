@@ -39,7 +39,7 @@ class SWORDAPIClient implements IDataAPIClient
     public function getDatasetData(string $persistentId): array
     {
         $response = $this->swordClient->retrieveAtomStatement(
-            $this->endpoints->getEditUri($persistentId),
+            $this->endpoints->getDatasetStatementUrl($persistentId),
             $this->installation->getCredentials->getAPIToken(),
             self::SAC_PASSWORD,
             self::SAC_OBO
