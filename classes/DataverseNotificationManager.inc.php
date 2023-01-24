@@ -58,10 +58,9 @@ class DataverseNotificationManager
         $request = PKPApplication::get()->getRequest();
         $contextId = $request->getContext()->getId();
 
-        $dataverseDAO = DAORegistry::getDAO('DataverseDAO');
-        $credentials = $dataverseDAO->getCredentialsFromDatabase($contextId);
-        $dataverseUrl = $credentials[1];
-        return $dataverseUrl;
+        $credentialsDAO = DAORegistry::getDAO('DataverseCredentialsDAO');
+        $credentials = $credentialsDAO->get($contextId);
+        return $credentials->getDataverseUrl();
     }
 
     public function createNotification(string $dataverseResponseStatus): void

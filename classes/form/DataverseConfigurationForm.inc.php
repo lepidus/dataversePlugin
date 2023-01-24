@@ -2,7 +2,7 @@
 
 import('lib.pkp.classes.form.Form');
 import('plugins.generic.dataverse.classes.api.DataverseClient');
-import('plugins.generic.dataverse.classes.DataverseDAO');
+import('plugins.generic.dataverse.classes.daos.DataverseCredentialsDAO');
 
 class DataverseConfigurationForm extends Form
 {
@@ -23,11 +23,12 @@ class DataverseConfigurationForm extends Form
 
     public function initData(): void
     {
-        $dataverseDAO = new DataverseDAO();
-        $credentials = $dataverseDAO->getCredentialsFromDatabase($this->contextId);
-        $this->setData('apiToken', $credentials[0]);
-        $this->setData('dataverseUrl', $credentials[1]);
-        $this->setData('termsOfUse', $credentials[2]);
+        $credentialsDAO = DAORegistry::getDAO('DataverseCredentialsDAO');
+        $credentials = $credentialsDAO->get($this->contextId);
+        $data = $credentials->getAllData();
+        foreach ($data as $name => $value) {
+            $this->setData($name, $value);
+        }
     }
 
     public function readInputData(): void
@@ -60,11 +61,6 @@ class DataverseConfigurationForm extends Form
     {
         $client = new DataverseClient(new DataverseConfiguration($this->getData("dataverseUrl"), $this->getData("apiToken")));
         $connectionSuccessful = $client->checkConnectionWithDataverse();
-
-        if ($connectionSuccessful) {
-            $dataverseDAO = new DataverseDAO();
-            $dataverseDAO->insertCredentialsOnDatabase($this->contextId, $this->getData("dataverseUrl"), $this->getData("apiToken"));
-        }
 
         return $connectionSuccessful;
     }

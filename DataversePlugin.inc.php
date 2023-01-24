@@ -35,7 +35,7 @@ class DataversePlugin extends GenericPlugin
         import('plugins.generic.dataverse.classes.dispatchers.DataverseServiceDispatcher');
         import('plugins.generic.dataverse.classes.dispatchers.DatasetSubjectDispatcher');
         import('plugins.generic.dataverse.classes.dispatchers.TemplateDispatcher');
-        
+
         $DraftDatasetFilesDispatcher = new DraftDatasetFilesDispatcher($this);
         $datasetSubjectDispatcher = new DatasetSubjectDispatcher($this);
         $serviceDispatcher = new DataverseServiceDispatcher($this);
@@ -46,13 +46,13 @@ class DataversePlugin extends GenericPlugin
     {
         import('plugins.generic.dataverse.classes.file.DraftDatasetFileDAO');
         import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
-        import('plugins.generic.dataverse.classes.DataverseDAO');
-        
+        import('plugins.generic.dataverse.classes.daos.DataverseCredentialsDAO');
+
         $draftDatasetFileDAO = new DraftDatasetFileDAO();
         $dataverseStudyDAO = new DataverseStudyDAO();
-        $dataverseDAO = new DataverseDAO();
-        
-        DAORegistry::registerDAO('DataverseDAO', $dataverseDAO);
+        $dataverseCredentialsDAO = new DataverseCredentialsDAO();
+
+        DAORegistry::registerDAO('DataverseCredentialsDAO', $dataverseCredentialsDAO);
         DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
         DAORegistry::registerDAO('DraftDatasetFileDAO', $draftDatasetFileDAO);
     }
