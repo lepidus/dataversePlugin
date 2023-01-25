@@ -30,7 +30,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['description'] = $submissionData['abstract'];
         $props['subject'] = $submissionData['subject'];
         $props['keywords'] = $submissionData['keywords'];
-        $props['citation'] = $submissionData['citation'];
+        $props['pubCitation'] = $submissionData['citation'];
         $props['contact'] = $submissionData['contact'];
 
         $props['authors'] = array_map(function (AuthorAdapter $author) {

@@ -62,6 +62,16 @@ class Dataset extends DataObject
         $this->setData('keywords', $keywords);
     }
 
+    public function getPubCitation(): string
+    {
+        return $this->getData('pubCitation');
+    }
+
+    public function setPubCitation(string $pubCitation): void
+    {
+        $this->setData('pubCitation', $pubCitation);
+    }
+
     public function getCitation(): string
     {
         return $this->getData('citation');

@@ -66,7 +66,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         $dataset->setKeywords($this->keywords);
         $dataset->setAuthors(array($this->author));
         $dataset->setContact($this->contact);
-        $dataset->setCitation($this->citation);
+        $dataset->setPubCitation($this->citation);
 
         $this->packageCreator->loadMetadata($dataset);
         $this->packageCreator->createAtomEntry();
