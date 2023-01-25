@@ -2,7 +2,7 @@
 
 interface IDataAPIClient
 {
-    public function getDataverseData(): array;
+    public function getDataverseData(): DataverseResponse;
 
-    public function getDatasetData(string $persistentId): array;
+    public function getDatasetData(string $persistentId): DataverseResponse;
 }
