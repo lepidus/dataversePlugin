@@ -84,8 +84,8 @@ class DataversePackageCreator extends PackagerAtomTwoStep
         foreach ($datasetData['authors'] as $author) {
             $metadata[] = $this->createMetadata(
                 'creator',
-                $author['authorName'],
-                array('affiliation' => $author['affiliation'])
+                $author->getName(),
+                array('affiliation' => $author->getAffiliation())
             );
         }
         if (!empty($datasetData['keywords'])) {

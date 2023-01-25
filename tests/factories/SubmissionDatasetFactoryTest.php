@@ -23,6 +23,18 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
     {
         $author = new AuthorAdapter('test', 'user', 'Dataverse', 'user@test.com');
 
+        $datasetAuthor = new DatasetAuthor(
+            $author->getFullName(),
+            $author->getAffiliation(),
+            $author->getOrcid()
+        );
+
+        $datasetContact = new DatasetContact(
+            $author->getFullName(),
+            $author->getEmail(),
+            'Dataverse'
+        );
+
         $file = new DraftDatasetFile();
         $file->setData('submissionId', 909);
         $file->setData('userId', 910);
@@ -37,21 +49,9 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
             'Other',
             array('test'),
             'test citation',
-            null,
+            $datasetContact,
             array($author),
             array($file)
-        );
-
-        $datasetAuthor = array(
-            'authorName' => $author->getFullName(),
-            'affiliation' => $author->getAffiliation(),
-            'identifier' => $author->getOrcid()
-        );
-
-        $datasetContact = array(
-            'name' => $author->getFullName(),
-            'email' => $author->getEmail(),
-            'affiliation' => 'Dataverse'
         );
 
         $this->datasetAuthor = $datasetAuthor;
@@ -67,7 +67,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $this->assertEquals($dataset->getDescription(), $this->submission->getAbstract());
         $this->assertEquals($dataset->getSubject(), $this->submission->getSubject());
         $this->assertEquals($dataset->getAuthors(), array($this->datasetAuthor));
-        $this->assertEquals($dataset->getContacts(), array($this->datasetContact));
+        $this->assertEquals($dataset->getContact(), $this->datasetContact);
         $this->assertEquals($dataset->getKeywords(), $this->submission->getKeywords());
         $this->assertEquals($dataset->getCitation(), $this->submission->getCitation());
     }
