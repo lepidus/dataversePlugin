@@ -12,19 +12,10 @@ class SubmissionDatasetFactory extends DatasetFactory
         $this->submission = $submission;
     }
 
-    protected function createDataset(): void
+    protected function sanitizeProps(): array
     {
         $submissionData = $this->submission->getAllData();
-        $props = $this->sanitizeProps($submissionData);
 
-        $dataset = new Dataset();
-        $dataset->setAllData($props);
-
-        $this->dataset = $dataset;
-    }
-
-    private function sanitizeProps(array $submissionData): array
-    {
         $props = array();
         $props['title'] = $submissionData['title'];
         $props['description'] = $submissionData['abstract'];
