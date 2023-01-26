@@ -30,9 +30,10 @@ class SWORDAPIClient implements IDataAPIClient
             self::SAC_OBO
         );
 
-        return array(
-            'status' => $response->sac_status,
-            'content' => $response->sac_xml
+        return new DataverseResponse(
+            $response->sac_status,
+            $response->sac_phase,
+            $response->sac_xml
         );
     }
 
@@ -45,9 +46,10 @@ class SWORDAPIClient implements IDataAPIClient
             self::SAC_OBO
         );
 
-        return array(
-            'status' => $response->sac_status,
-            'content' => $response->sac_xml
+        return new DataverseResponse(
+            $response->sac_status,
+            $response->sac_phase,
+            $response->sac_xml
         );
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-class NativeAPIClient extends IDataAPIClient
+class NativeAPIClient implements IDataAPIClient
 {
     private $installation;
 
@@ -53,15 +53,17 @@ class NativeAPIClient extends IDataAPIClient
     {
         try {
             $response = $this->httpClient->request($type, $url, $options);
-            return [
-              'status' => $response->getStatusCode(),
-              'content' => $response->getBody()
-            ];
+            return new DataverseResponse(
+                $response->getStatusCode(),
+                $response->getReasonPhase(),
+                $response->getBody()
+            );
         } catch (GuzzleHttp\Exception\RequestException $e) {
-            return [
-                'status' => $e->getResponse()->getStatusCode(),
-                'message' => $e->getMessage()
-            ];
+            return new DataverseResponse(
+                $e->getResponse()->getStatusCode(),
+                $e->getMessage(),
+                $e->getResponse()->getBody()
+            );
         }
     }
 }
