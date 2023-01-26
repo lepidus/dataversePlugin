@@ -10,6 +10,8 @@ class DataverseAPIService
             $factory = new ResponseDatasetFactory($response->getBody());
             $dataset = $factory->getDataset();
             return $dataset;
+        } else {
+            throw new Exception($response->getMessage(), $response->getStatusCode());
         }
 
         return null;

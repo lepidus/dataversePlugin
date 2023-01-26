@@ -6,6 +6,10 @@ import('plugins.generic.dataverse.classes.entities.DataverseResponse');
 
 class DataverseAPIServiceTest extends PKPTestCase
 {
+    private const SUCCESS = 200;
+
+    private const FAIL = 400;
+
     private $dataset;
 
     private $author;
@@ -38,32 +42,9 @@ class DataverseAPIServiceTest extends PKPTestCase
         $this->contact = $contact;
     }
 
-    private function getDataClientMock(): IDataAPIClient
+    private function getDataClientMock(int $responseState): IDataAPIClient
     {
-        $statusCode = 200;
-        $message = 'OK';
-        $body = [
-            'title' => $this->dataset->getTitle(),
-            'description' => $this->dataset->getDescription(),
-            'authors' => [
-                [
-                    'name' => $this->author->getName(),
-                    'affiliation' => $this->author->getAffiliation(),
-                    'identifier' => $this->author->getIdentifier(),
-                ]
-            ],
-            'subject' => $this->dataset->getSubject(),
-            'keywords' => $this->dataset->getKeywords(),
-            'contact' => [
-                'name' => $this->contact->getName(),
-                'email' => $this->contact->getEmail(),
-                'affiliation' => $this->contact->getAffiliation()
-            ],
-            'pubCitation' => $this->dataset->getPubCitation(),
-            'citation' => $this->dataset->getCitation()
-        ];
-
-        $response = new DataverseResponse($statusCode, $message, $body);
+        $response = $this->getClientResponse($responseState);
 
         $clientMock = $this->getMockBuilder(IDataAPIClient::class)
             ->setMethods(array('getDatasetData'))
@@ -76,16 +57,64 @@ class DataverseAPIServiceTest extends PKPTestCase
         return $clientMock;
     }
 
+    private function getClientResponse(int $responseState): DataverseResponse
+    {
+        $statusCode = $responseState;
+
+        if ($responseState == self::SUCCESS) {
+            $message = 'OK';
+            $body = [
+                'title' => $this->dataset->getTitle(),
+                'description' => $this->dataset->getDescription(),
+                'authors' => [
+                    [
+                        'name' => $this->author->getName(),
+                        'affiliation' => $this->author->getAffiliation(),
+                        'identifier' => $this->author->getIdentifier(),
+                    ]
+                ],
+                'subject' => $this->dataset->getSubject(),
+                'keywords' => $this->dataset->getKeywords(),
+                'contact' => [
+                    'name' => $this->contact->getName(),
+                    'email' => $this->contact->getEmail(),
+                    'affiliation' => $this->contact->getAffiliation()
+                ],
+                'pubCitation' => $this->dataset->getPubCitation(),
+                'citation' => $this->dataset->getCitation()
+            ];
+        } else {
+            $message = 'Error Processing Request';
+            $body = [];
+        }
+
+        return new DataverseResponse($statusCode, $message, $body);
+    }
+
     public function testServiceSuccessfullyReturnsDatasetData(): void
     {
         $persistentId = 'doi:10.1234/AB5/CD6EF7';
 
-        $client = $this->getDataClientMock();
+        $client = $this->getDataClientMock(self::SUCCESS);
 
         $service = new DataverseAPIService();
 
         $dataset = $service->getDataset($persistentId, $client);
 
         $this->assertEquals($this->dataset, $dataset);
+    }
+
+    public function testServiceThrownExceptionWhenRequestFail(): void
+    {
+        $this->expectExceptionCode(self::FAIL);
+        $this->expectExceptionMessage('Error Processing Request');
+
+        $persistentId = 'doi:10.1234/AB5/CD6EF7';
+
+        $client = $this->getDataClientMock(self::FAIL);
+
+        $service = new DataverseAPIService();
+
+        $dataset = $service->getDataset($persistentId, $client);
     }
 }
