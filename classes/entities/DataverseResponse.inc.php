@@ -6,13 +6,13 @@ class DataverseResponse
 
     private $message;
 
-    private $body;
+    private $data;
 
-    public function __construct(int $statusCode, string $message, array $body)
+    public function __construct(int $statusCode, string $message, ?string $data = null)
     {
         $this->statusCode = $statusCode;
         $this->message = $message;
-        $this->body = $body;
+        $this->data = $data;
     }
 
     public function getStatusCode(): int
@@ -35,13 +35,13 @@ class DataverseResponse
         $this->message = $message;
     }
 
-    public function getBody(): array
+    public function getData(): ?string
     {
-        return $this->body;
+        return $this->data;
     }
 
-    public function setBody(array $body): void
+    public function setData(string $data): void
     {
-        $this->body = $body;
+        $this->data = $data;
     }
 }

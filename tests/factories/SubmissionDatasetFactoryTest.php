@@ -3,6 +3,7 @@
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
+import('plugins.generic.dataverse.classes.entities.DatasetContact');
 import('plugins.generic.dataverse.classes.file.DraftDatasetFile');
 import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
 

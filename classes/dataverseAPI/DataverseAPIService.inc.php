@@ -7,7 +7,7 @@ class DataverseAPIService
         $response = $client->getDatasetData($persistentId);
 
         if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
-            $factory = new ResponseDatasetFactory($response->getBody());
+            $factory = $client->getDatasetFactory($response);
             $dataset = $factory->getDataset();
             return $dataset;
         } else {
