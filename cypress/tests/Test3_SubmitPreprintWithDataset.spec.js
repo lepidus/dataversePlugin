@@ -141,6 +141,18 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 		cy.get('.data_citation .value a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
 		cy.get('.data_citation .value').contains(', ' + dataverseServerName + ', V1');
 	});
+
+	it('Check Dataset Citation is visible for unauthenticated users', function() {
+		cy.logout();
+		cy.visit('index.php/' + serverPath);
+		cy.get('.articles div:first a').click();
+		cy.get('.label').contains('Research data');
+		cy.get('.data_citation .value').contains(
+			'Castanheiras, Íris, ' + currentYear + ', "The Rise of The Machine Empire"'
+		);
+		cy.get('.data_citation .value a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
+		cy.get('.data_citation .value').contains(', ' + dataverseServerName + ', V1');
+	});
 });
 
 describe('Create Submission without research data files', function() {
