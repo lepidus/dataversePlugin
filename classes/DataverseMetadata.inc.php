@@ -102,24 +102,24 @@ class DataverseMetadata
         return $metadata ? $attributes[$metadata] : $attributes;
     }
 
-    public static function retrieveAuthorProps(array $author): array
+    public static function retrieveAuthorProps(DatasetAuthor $author): array
     {
         $authorProps = [
             'authorName' => [
                 'typeName' => 'authorName',
                 'multiple' => false,
                 'typeClass' => 'primitive',
-                'value' => $author['authorName']
+                'value' => $author->getName()
             ],
             'authorAffiliation' => [
                 'typeName' => 'authorAffiliation',
                 'multiple' => false,
                 'typeClass' => 'primitive',
-                'value' => $author['affiliation']
+                'value' => $author->getAffiliation()
             ]
         ];
 
-        if ($author['identifier']) {
+        if ($author->getIdentifier()) {
             $authorProps['authorIdentifierScheme'] = [
                 'typeName' => 'authorIdentifierScheme',
                 'multiple' => false,
@@ -130,33 +130,33 @@ class DataverseMetadata
                 'typeName' => 'authorIdentifier',
                 'multiple' => false,
                 'typeClass' => 'primitive',
-                'value' => $author['identifier']
+                'value' => $author->getIdentifier()
             ];
         }
 
         return $authorProps;
     }
 
-    public static function retrieveContactProps(array $contact): array
+    public static function retrieveContactProps(DatasetContact $contact): array
     {
         $contactProps = [
             'datasetContactName' => [
                 'typeName' => 'datasetContactName',
                 'multiple' => false,
                 'typeClass' => 'primitive',
-                'value' => $contact['name']
+                'value' => $contact->getName()
             ],
             'datasetContactEmail' => [
                 'typeClass' => 'primitive',
                 'multiple' => false,
                 'typeName' => 'datasetContactEmail',
-                'value' => $contact['email']
+                'value' => $contact->getEmail()
             ],
             'datasetContactAffiliation' => [
                 'typeName' => 'datasetContactAffiliation',
                 'multiple' => false,
                 'typeClass' => 'primitive',
-                'value' => $contact['affiliation']
+                'value' => $contact->getAffiliation()
             ],
         ];
 

@@ -2,6 +2,8 @@
 
 import('plugins.generic.dataverse.classes.study.DataverseDatasetData');
 import('plugins.generic.dataverse.classes.DataverseMetadata');
+import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
+import('plugins.generic.dataverse.classes.entities.DatasetContact');
 
 class DataverseDatasetDataCreator
 {
@@ -101,13 +103,13 @@ class DataverseDatasetDataCreator
         return $obj;
     }
 
-    public function createAuthorObject(array $author): array
+    public function createAuthorObject(DatasetAuthor $author): array
     {
         $authorProps = DataverseMetadata::retrieveAuthorProps($author);
         return $authorProps;
     }
 
-    public function createContactObject(array $contact): array
+    public function createContactObject(DatasetContact $contact): array
     {
         $contactProps = DataverseMetadata::retrieveContactProps($contact);
         return $contactProps;
