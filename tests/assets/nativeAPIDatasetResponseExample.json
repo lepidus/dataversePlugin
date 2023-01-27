@@ -188,6 +188,6 @@
                 }
             }
         ],
-        "citation": "Test, User, 2023, \"Test Dataset\", https://doi.org/10.12345/ABC/DEFGHI, Demo Dataverse, V1, UNF:6:dEgtc5Z1MSF3u7c+kF4kXg== [fileUNF]"
+        "citation": "Test, User, 2023, \"Test Dataset\", https://doi.org/10.12345/ABC/DEFGHI, Demo Dataverse, V1"
     }
 }

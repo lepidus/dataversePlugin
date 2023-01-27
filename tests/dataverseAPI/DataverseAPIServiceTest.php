@@ -24,18 +24,21 @@ class DataverseAPIServiceTest extends PKPTestCase
 
     private function createTestDataset(): void
     {
-        $contact = new DatasetContact('Castanheiras, Íris', 'iris@testmail.com', 'Dataverse');
-        $author = new DatasetAuthor('Castanheiras, Íris', 'Dataverse');
+        $contact = new DatasetContact('User, Test', 'testuser@example.com', 'Dataverse');
+        $author = new DatasetAuthor('User, Test', 'Dataverse', '0000-0000-0000-0000');
 
         $dataset = new Dataset();
-        $dataset->setTitle('test title');
-        $dataset->setDescription('test description');
+        $dataset->setTitle('Test Dataset');
+        $dataset->setDescription('<p>Test description</p>');
         $dataset->setAuthors(array($author));
         $dataset->setSubject('Other');
-        $dataset->setKeywords(array());
+        $dataset->setKeywords(array('test'));
         $dataset->setContact($contact);
-        $dataset->setPubCitation('test related publication citation');
-        $dataset->setCitation('test dataset citation');
+        $dataset->setPubCitation('User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems');
+        $dataset->setCitation(
+            'Test, User, 2023, "Test Dataset", <a href="https://doi.org/10.12345/ABC/DEFGHI">https://doi.org/10.12345/ABC/DEFGHI</a>, Demo Dataverse, V1'
+        );
+        $dataset->setData('depositor', 'User, Test (via Open Preprint Systems)');
 
         $this->dataset = $dataset;
         $this->author = $author;
@@ -47,12 +50,16 @@ class DataverseAPIServiceTest extends PKPTestCase
         $response = $this->getClientResponse($responseState);
 
         $clientMock = $this->getMockBuilder(IDataAPIClient::class)
-            ->setMethods(array('getDatasetData'))
+            ->setMethods(array( 'getDatasetData', 'getDatasetFactory'))
             ->getMock();
 
         $clientMock->expects($this->any())
             ->method('getDatasetData')
             ->will($this->returnValue($response));
+
+        $clientMock->expects($this->any())
+            ->method('getDatasetFactory')
+            ->will($this->returnValue(new NativeAPIDatasetFactory($response)));
 
         return $clientMock;
     }
@@ -63,32 +70,13 @@ class DataverseAPIServiceTest extends PKPTestCase
 
         if ($responseState == self::SUCCESS) {
             $message = 'OK';
-            $body = [
-                'title' => $this->dataset->getTitle(),
-                'description' => $this->dataset->getDescription(),
-                'authors' => [
-                    [
-                        'name' => $this->author->getName(),
-                        'affiliation' => $this->author->getAffiliation(),
-                        'identifier' => $this->author->getIdentifier(),
-                    ]
-                ],
-                'subject' => $this->dataset->getSubject(),
-                'keywords' => $this->dataset->getKeywords(),
-                'contact' => [
-                    'name' => $this->contact->getName(),
-                    'email' => $this->contact->getEmail(),
-                    'affiliation' => $this->contact->getAffiliation()
-                ],
-                'pubCitation' => $this->dataset->getPubCitation(),
-                'citation' => $this->dataset->getCitation()
-            ];
+            $data = file_get_contents(__DIR__ . '/../assets/nativeAPIDatasetResponseExample.json');
         } else {
             $message = 'Error Processing Request';
-            $body = [];
+            $data = null;
         }
 
-        return new DataverseResponse($statusCode, $message, $body);
+        return new DataverseResponse($statusCode, $message, $data);
     }
 
     public function testServiceSuccessfullyReturnsDatasetData(): void

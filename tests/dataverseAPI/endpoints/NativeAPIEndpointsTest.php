@@ -32,8 +32,8 @@ class NativeAPIEndpointsTest extends DataverseEndpointsTestCase
     public function testReturnsCorrectDatasetUrl(): void
     {
         $persistentId = 'doi:10.1234/AB5/CD6EF7';
-        $expectedDatasetUrl = 'https://demo.dataverse.org/api/datasets/:persistentId/?persistentId=' . $persistentId;
-        $datasetUrl = $this->endpoints->getDataverseDatasetUrl($persistentId);
+        $expectedDatasetUrl = 'https://demo.dataverse.org/api/datasets/export?exporter=dataverse_json&persistentId=' . $persistentId;
+        $datasetUrl = $this->endpoints->getDatasetDataUrl($persistentId);
 
         $this->assertEquals($expectedDatasetUrl, $datasetUrl);
     }

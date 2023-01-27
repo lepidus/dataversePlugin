@@ -30,7 +30,7 @@ class NativeAPIDatasetFactoryTest extends PKPTestCase
         $dataset->setContact($contact);
         $dataset->setPubCitation('User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems');
         $dataset->setCitation(
-            'Test, User, 2023, "Test Dataset", https://doi.org/10.12345/ABC/DEFGHI, Demo Dataverse, V1, UNF:6:dEgtc5Z1MSF3u7c+kF4kXg== [fileUNF]'
+            'Test, User, 2023, "Test Dataset", <a href="https://doi.org/10.12345/ABC/DEFGHI">https://doi.org/10.12345/ABC/DEFGHI</a>, Demo Dataverse, V1'
         );
         $dataset->setData('depositor', 'User, Test (via Open Preprint Systems)');
 
