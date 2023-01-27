@@ -33,16 +33,10 @@ class TemplateDispatcher extends DataverseDispatcher
                 $service = new DataverseAPIService();
                 $dataset = $service->getDataset($study->getPersistentId(), $client);
                 $templateMgr->assign('datasetCitation', $dataset->getCitation());
+                $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
             } catch (Exception $e) {
                 error_log($e->getMessage());
-
-                $dataverseNotificationMgr = new DataverseNotificationManager();
-                $templateMgr->assign(
-                    'datasetCitation',
-                    $dataverseNotificationMgr->getNotificationMessage($e->getCode())
-                );
             }
-            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
         }
 
         return false;
