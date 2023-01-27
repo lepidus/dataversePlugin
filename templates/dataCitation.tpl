@@ -9,9 +9,11 @@
  *
  *}
 
-<section class="item data_citation" id="datasetData">
-	<h2 class="label">{translate key="plugins.generic.dataverse.researchData"}</h2>
-	<span class="value">
-		<p></p>
-	</span>
+<section class="item data_citation">
+	<h2 class="label">
+		{translate key="plugins.generic.dataverse.researchData"}
+	</h2>
+	<div class="value">
+		{$datasetCitation}
+	</div>
 </section>
