@@ -75,7 +75,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             {capture assign=draftDatasetFileFormUrl}
                 {url 
                     router=$smarty.const.ROUTE_COMPONENT 
-                    component="plugins.generic.dataverse.handlers.DraftDatasetFileUploadHandler" 
+                    component="plugins.generic.dataverse.handlers.DataverseHandler" 
                     op="draftDatasetFiles"
                     submissionId=$submissionId
                     escape=false

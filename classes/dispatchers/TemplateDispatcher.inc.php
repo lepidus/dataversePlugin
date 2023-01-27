@@ -4,6 +4,8 @@ import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.APACitation');
 import('lib.pkp.classes.submission.SubmissionFile');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
+import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
+import('plugins.generic.dataverse.classes.dataverseAPI.DataverseAPIService');
 
 class TemplateDispatcher extends DataverseDispatcher
 {
@@ -12,7 +14,6 @@ class TemplateDispatcher extends DataverseDispatcher
         HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addDatasetDataToWorkflow'));
         HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
-        HookRegistry::register('PreprintHandler::view', array($this, 'loadResources'));
 
         parent::__construct($plugin);
     }
@@ -27,23 +28,21 @@ class TemplateDispatcher extends DataverseDispatcher
         $study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
         if (isset($study)) {
+            try {
+                $client = new NativeAPIClient($submission->getContextId());
+                $service = new DataverseAPIService();
+                $dataset = $service->getDataset($study->getPersistentId(), $client);
+                $templateMgr->assign('datasetCitation', $dataset->getCitation());
+            } catch (Exception $e) {
+                error_log($e->getMessage());
+
+                $dataverseNotificationMgr = new DataverseNotificationManager();
+                $templateMgr->assign(
+                    'datasetCitation',
+                    $dataverseNotificationMgr->getNotificationMessage($e->getCode())
+                );
+            }
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
-        }
-
-        return false;
-    }
-
-    public function loadResources(string $hookName, array $params): bool
-    {
-        $request = $params[0];
-        $submission = $params[1];
-        $templateManager = TemplateManager::getManager($request);
-        $pluginPath = $this->plugin->getPluginFullPath();
-
-        $study = $this->getSubmissionStudy($submission);
-        if (isset($study)) {
-            $this->loadJavaScript($pluginPath, $templateManager);
-            $this->addJavaScriptVariables($request, $templateManager, $study);
         }
 
         return false;
@@ -55,7 +54,7 @@ class TemplateDispatcher extends DataverseDispatcher
             'dataverseScripts',
             $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js',
             [
-                'contexts' => ['backend', 'frontend']
+                'contexts' => ['backend']
             ]
         );
     }

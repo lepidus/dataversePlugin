@@ -6,6 +6,8 @@ import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
 import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 import('plugins.generic.dataverse.classes.file.DraftDatasetFile');
 import('plugins.generic.dataverse.classes.entities.Dataset');
+import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
+import('plugins.generic.dataverse.classes.entities.DatasetContact');
 import('lib.pkp.tests.PKPTestCase');
 
 define('ATOM_ENTRY_XML_NAMESPACE', 'http://www.w3.org/2005/Atom');
@@ -19,21 +21,16 @@ class DataversePackageCreatorTest extends PKPTestCase
     private $subject = 'N/A';
     private $keywords = array('Modern History');
     private $citation = 'test citation';
-    private $author = array(
-        'authorName' => 'Castanheiras, Íris',
-        'affiliation' => 'Dataverse',
-        'identifier' => null
-    );
-    private $contact = array(
-        'name' => 'Castanheiras, Íris',
-        'email' => 'iriscastaneiras@testemail.com'
-    );
+    private $author;
+    private $contact;
     private $authors = array();
     private $files = array();
 
     public function setUp(): void
     {
         parent::setUp();
+        $this->createTestAuthor();
+        $this->createTestContact();
         $this->packageCreator = new DataversePackageCreator();
     }
 
@@ -50,6 +47,16 @@ class DataversePackageCreatorTest extends PKPTestCase
         parent::tearDown();
     }
 
+    private function createTestAuthor(): void
+    {
+        $this->author = new DatasetAuthor('Castanheiras, Íris', 'Dataverse');
+    }
+
+    private function createTestContact(): void
+    {
+        $this->contact = new DatasetContact('Castanheiras, Íris', 'iriscastaneiras@testemail.com');
+    }
+
     private function createDefaultTestAtomEntry(): void
     {
         $dataset = new Dataset();
@@ -58,8 +65,8 @@ class DataversePackageCreatorTest extends PKPTestCase
         $dataset->setSubject($this->subject);
         $dataset->setKeywords($this->keywords);
         $dataset->setAuthors(array($this->author));
-        $dataset->setContacts(array($this->contact));
-        $dataset->setCitation($this->citation);
+        $dataset->setContact($this->contact);
+        $dataset->setPubCitation($this->citation);
 
         $this->packageCreator->loadMetadata($dataset);
         $this->packageCreator->createAtomEntry();
@@ -70,8 +77,8 @@ class DataversePackageCreatorTest extends PKPTestCase
         $author = new AuthorAdapter(
             "Íris",
             "Castanheiras",
-            $this->author['affiliation'],
-            $this->contact['email']
+            $this->author->getAffiliation(),
+            $this->contact->getEmail()
         );
         $file = new DraftDatasetFile();
         $file->setData('sponsor', 'CAPES');
@@ -150,7 +157,7 @@ class DataversePackageCreatorTest extends PKPTestCase
             'atomEntryTitle' => $this->title,
             'atomEntryDescription' => $this->description,
             'atomEntrySubject' => $this->keywords[0],
-            'atomEntryCreator' => $this->author['authorName']
+            'atomEntryCreator' => $this->author->getName()
         );
 
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);
@@ -173,7 +180,7 @@ class DataversePackageCreatorTest extends PKPTestCase
             'atomEntryTitle' => $this->title,
             'atomEntryDescription' => $this->description,
             'atomEntrySubject' => $this->keywords[0],
-            'atomEntryCreator' => $this->author['authorName']
+            'atomEntryCreator' => $this->author->getName()
         );
 
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);

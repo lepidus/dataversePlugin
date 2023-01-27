@@ -1,8 +1,14 @@
 <?php
 
-class NativeAPIClient extends IDataAPIClient
+import('plugins.generic.dataverse.classes.dataverseAPI.clients.interfaces.IDataAPIClient');
+import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.NativeAPIEndpoints');
+import('plugins.generic.dataverse.classes.factories.dataset.NativeAPIDatasetFactory');
+import('plugins.generic.dataverse.classes.dataverseAPI.DataverseServer');
+import('plugins.generic.dataverse.classes.entities.DataverseResponse');
+
+class NativeAPIClient implements IDataAPIClient
 {
-    private $installation;
+    private $server;
 
     private $endpoints;
 
@@ -10,12 +16,17 @@ class NativeAPIClient extends IDataAPIClient
 
     public function __construct(int $contextId)
     {
-        $this->installation = new DataverseInstallation($contextId);
-        $this->endpoints = new NativeAPIEndpoints($this->installation);
+        $this->server = new DataverseServer($contextId);
+        $this->endpoints = new NativeAPIEndpoints($this->server);
         $this->httpClient = Application::get()->getHttpClient();
     }
 
-    public function getDataverseData(): array
+    public function getDatasetFactory(DataverseResponse $response): DatasetFactory
+    {
+        return new NativeAPIDatasetFactory($response);
+    }
+
+    public function getDataverseData(): DataverseResponse
     {
         $type = 'GET';
         $url = $this->endpoints->getDataverseCollectionUrl();
@@ -24,10 +35,10 @@ class NativeAPIClient extends IDataAPIClient
         return $this->executeRequest($type, $url, $options);
     }
 
-    public function getDatasetData(string $persistentId): array
+    public function getDatasetData(string $persistentId): DataverseResponse
     {
         $type = 'GET';
-        $url = $this->endpoints->getDataverseDatasetUrl($persistentId);
+        $url = $this->endpoints->getDatasetDataUrl($persistentId);
         $options = $this->getDataverseOptions();
 
         return $this->executeRequest($type, $url, $options);
@@ -43,25 +54,35 @@ class NativeAPIClient extends IDataAPIClient
 
     private function getDataverseHeaders(array $headers = []): array
     {
-        $apiToken = $this->installation->getCredentials()->getAPIToken();
+        $apiToken = $this->server->getCredentials()->getAPIToken();
         $dataverseHeaders = ['X-Dataverse-key' => $apiToken];
         array_merge($dataverseHeaders, $headers);
         return $dataverseHeaders;
     }
 
-    private function executeRequest(string $type, string $url, array $options): array
+    private function executeRequest(string $type, string $url, array $options): DataverseResponse
     {
         try {
             $response = $this->httpClient->request($type, $url, $options);
-            return [
-              'status' => $response->getStatusCode(),
-              'content' => $response->getBody()
-            ];
+            return new DataverseResponse(
+                $response->getStatusCode(),
+                $response->getReasonPhrase(),
+                $response->getBody(true)
+            );
         } catch (GuzzleHttp\Exception\RequestException $e) {
-            return [
-                'status' => $e->getResponse()->getStatusCode(),
-                'message' => $e->getMessage()
-            ];
+            $responseMessage = $e->getMessage();
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+                $responseBody = json_decode($response->getBody(true));
+                $responseMessage = $responseBody->status .
+                    ': ' . $responseBody->message .
+                    ' (' . $response->getStatusCode() . ' ' . $response->getReasonPhrase() . ')';
+            }
+
+            return new DataverseResponse(
+                $e->getCode(),
+                $responseMessage
+            );
         }
     }
 }

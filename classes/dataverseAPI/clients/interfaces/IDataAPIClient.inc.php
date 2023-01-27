@@ -2,7 +2,9 @@
 
 interface IDataAPIClient
 {
-    public function getDataverseData(): array;
+    public function getDatasetFactory(DataverseResponse $response): DatasetFactory;
 
-    public function getDatasetData(string $persistentId): array;
+    public function getDataverseData(): DataverseResponse;
+
+    public function getDatasetData(string $persistentId): DataverseResponse;
 }

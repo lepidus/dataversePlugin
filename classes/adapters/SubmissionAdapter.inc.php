@@ -9,7 +9,7 @@ class SubmissionAdapter extends DataObject
         ?string $subject,
         ?array $keywords,
         string $citation,
-        ?array $contact,
+        DatasetContact $contact,
         array $authors,
         array $files
     ): void {
@@ -74,12 +74,12 @@ class SubmissionAdapter extends DataObject
         $this->setData('citation', $citation);
     }
 
-    public function getContact(): array
+    public function getContact(): DatasetContact
     {
         return $this->getData('contact');
     }
 
-    public function setContact(?array $contact): void
+    public function setContact(DatasetContact $contact): void
     {
         $this->setData('contact', $contact);
     }

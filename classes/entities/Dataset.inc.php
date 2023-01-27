@@ -42,14 +42,14 @@ class Dataset extends DataObject
         $this->setData('authors', $authors);
     }
 
-    public function getContacts(): array
+    public function getContact(): DatasetContact
     {
-        return $this->getData('contacts');
+        return $this->getData('contact');
     }
 
-    public function setContacts(array $contacts): void
+    public function setContact(DatasetContact $contact): void
     {
-        $this->setData('contacts', $contacts);
+        $this->setData('contact', $contact);
     }
 
     public function getKeywords(): array
@@ -60,6 +60,16 @@ class Dataset extends DataObject
     public function setKeywords(array $keywords): void
     {
         $this->setData('keywords', $keywords);
+    }
+
+    public function getPubCitation(): string
+    {
+        return $this->getData('pubCitation');
+    }
+
+    public function setPubCitation(string $pubCitation): void
+    {
+        $this->setData('pubCitation', $pubCitation);
     }
 
     public function getCitation(): string

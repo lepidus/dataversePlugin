@@ -6,16 +6,16 @@ class NativeAPIEndpoints extends DataverseEndpoints
 {
     protected function getAPIBaseUrl(): string
     {
-        return $this->installation->getDataverseServerUrl() . '/api';
+        return $this->server->getDataverseServerUrl() . '/api';
     }
 
     public function getDataverseCollectionUrl(): string
     {
-        return $this->getAPIBaseUrl() . '/dataverses/' . $this->installation->getDataverseCollection();
+        return $this->getAPIBaseUrl() . '/dataverses/' . $this->server->getDataverseCollection();
     }
 
-    public function getDataverseDatasetUrl(string $persistentId): string
+    public function getDatasetDataUrl(string $persistentId): string
     {
-        return $this->getAPIBaseUrl() . '/datasets/:persistentId/?persistentId=' . $persistentId;
+        return $this->getAPIBaseUrl() . '/datasets/export?exporter=dataverse_json&persistentId=' . $persistentId;
     }
 }

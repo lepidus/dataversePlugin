@@ -135,11 +135,23 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 
 	it('Check Publication has Dataset Citation', function() {
 		cy.get('.label').contains('Research data');
-		cy.get('#datasetData > .value > p').contains(
+		cy.get('.data_citation .value').contains(
 			'Castanheiras, Íris, ' + currentYear + ', "The Rise of The Machine Empire"'
 		);
-		cy.get('.value > p > a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
-		cy.get('.value > p').contains(', ' + dataverseServerName + ', V1');
+		cy.get('.data_citation .value a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
+		cy.get('.data_citation .value').contains(', ' + dataverseServerName + ', V1');
+	});
+
+	it('Check Dataset Citation is visible for unauthenticated users', function() {
+		cy.logout();
+		cy.visit('index.php/' + serverPath);
+		cy.get('.articles div:first a').click();
+		cy.get('.label').contains('Research data');
+		cy.get('.data_citation .value').contains(
+			'Castanheiras, Íris, ' + currentYear + ', "The Rise of The Machine Empire"'
+		);
+		cy.get('.data_citation .value a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
+		cy.get('.data_citation .value').contains(', ' + dataverseServerName + ', V1');
 	});
 });
 

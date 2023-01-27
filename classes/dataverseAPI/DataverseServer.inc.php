@@ -1,6 +1,6 @@
 <?php
 
-class DataverseInstallation
+class DataverseServer
 {
     private $credentials;
 

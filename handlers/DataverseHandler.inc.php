@@ -2,9 +2,9 @@
 
 import('classes.handler.Handler');
 
-class DraftDatasetFileUploadHandler extends Handler
+class DataverseHandler extends Handler
 {
-    public function draftDatasetFiles($args, $request)
+    public function draftDatasetFiles($args, $request): JSONMessage
     {
         $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
         $dispatcher = $request->getDispatcher();

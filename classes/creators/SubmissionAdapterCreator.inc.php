@@ -2,6 +2,7 @@
 
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
 import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
+import('plugins.generic.dataverse.classes.entities.DatasetContact');
 import('plugins.generic.dataverse.classes.APACitation');
 
 class SubmissionAdapterCreator
@@ -28,15 +29,15 @@ class SubmissionAdapterCreator
         return $adapter;
     }
 
-    private function retrieveAuthors(Publication $publication, string $locale): array
+    private function retrieveAuthors(Publication $publication): array
     {
         $authors =  $publication->getData('authors');
         $authorAdapters = [];
 
         foreach ($authors as $author) {
-            $givenName = $author->getLocalizedGivenName($locale);
-            $familyName = $author->getLocalizedFamilyName($locale);
-            $affiliation = $author->getLocalizedData('affiliation', $locale);
+            $givenName = $author->getLocalizedGivenName();
+            $familyName = $author->getLocalizedFamilyName();
+            $affiliation = $author->getLocalizedData('affiliation');
             $email = $author->getData('email');
             $orcid = $author->getOrcid();
             $orcidNumber = null;
@@ -54,23 +55,21 @@ class SubmissionAdapterCreator
         return $authorAdapters;
     }
 
-    private function retrieveContact(Publication $publication): ?array
+    private function retrieveContact(Publication $publication): DatasetContact
     {
         $primaryAuthor = $publication->getPrimaryAuthor();
         if (!empty($primaryAuthor)) {
-            $locale = $primaryAuthor->getSubmissionLocale();
-            $givenName = $primaryAuthor->getLocalizedGivenName($locale);
-            $familyName = $primaryAuthor->getLocalizedFamilyName($locale);
+            $name = $primaryAuthor->getFullName(false, true);
             $email = $primaryAuthor->getEmail();
-            $affiliation = $primaryAuthor->getLocalizedData('affiliation', $locale);
-            return array(
-                'name' => $familyName . ', ' . $givenName,
-                'email' => $email,
-                'affiliation' => $affiliation
-            );
+            $affiliation = $primaryAuthor->getLocalizedData('affiliation');
         } else {
-            return null;
+            $request = Application::get()->getRequest();
+            $user = $request->getUser();
+            $name = $user->getFullName(false, true);
+            $email = $user->getEmail();
+            $affiliation = $user->getLocalizedData('affiliation');
         }
+        return new DatasetContact($name, $email, $affiliation);
     }
 
     private function retrieveFiles(int $submissionId): array

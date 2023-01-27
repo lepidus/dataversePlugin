@@ -2,11 +2,11 @@
 
 abstract class DataverseEndpoints
 {
-    protected $installation;
+    protected $server;
 
-    public function __construct(DataverseInstallation $installation)
+    public function __construct(DataverseServer $server)
     {
-        $this->installation = $installation;
+        $this->server = $server;
     }
 
     abstract protected function getAPIBaseUrl(): string;

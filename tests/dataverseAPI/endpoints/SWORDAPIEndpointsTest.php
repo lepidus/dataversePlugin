@@ -16,9 +16,9 @@ class SWORDAPIEndpointsTest extends DataverseEndpointsTestCase
         ];
     }
 
-    protected function createDataverseEndpoints(DataverseInstallation $installation): DataverseEndpoints
+    protected function createDataverseEndpoints(DataverseServer $server): DataverseEndpoints
     {
-        return new SWORDAPIEndpoints($installation);
+        return new SWORDAPIEndpoints($server);
     }
 
     public function testReturnsCorrectDataverseServiceDocumentUrl(): void
