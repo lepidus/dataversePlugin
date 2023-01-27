@@ -16,9 +16,9 @@ class NativeAPIEndpointsTest extends DataverseEndpointsTestCase
         ];
     }
 
-    protected function createDataverseEndpoints(DataverseInstallation $installation): DataverseEndpoints
+    protected function createDataverseEndpoints(DataverseServer $server): DataverseEndpoints
     {
-        return new NativeAPIEndpoints($installation);
+        return new NativeAPIEndpoints($server);
     }
 
     public function testReturnsCorrectDataverseCollectionUrl(): void

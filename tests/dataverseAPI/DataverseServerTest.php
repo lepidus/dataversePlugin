@@ -2,22 +2,22 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.entities.DataverseCredentials');
-import('plugins.generic.dataverse.classes.dataverseAPI.DataverseInstallation');
+import('plugins.generic.dataverse.classes.dataverseAPI.DataverseServer');
 
-class DataverseInstallationTest extends PKPTestCase
+class DataverseServerTest extends PKPTestCase
 {
     private $contextId = 9090;
 
     private $credentials;
 
-    private $installation;
+    private $server;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->registerMockDataverseCredentialsDAO();
-        $this->installation = new DataverseInstallation($this->contextId);
+        $this->server = new DataverseServer($this->contextId);
     }
 
     private function registerMockDataverseCredentialsDAO(): void
@@ -38,25 +38,25 @@ class DataverseInstallationTest extends PKPTestCase
         DAORegistry::registerDAO('DataverseCredentialsDAO', $dataverseCredentialsDAO);
     }
 
-    public function testReturnsCorrectCrendentialsOfInstallation(): void
+    public function testReturnsCorrectCrendentialsOfServer(): void
     {
-        $credentials = $this->installation->getCredentials();
+        $credentials = $this->server->getCredentials();
 
         $this->assertEquals($this->credentials, $credentials);
     }
 
-    public function testReturnsServerUrlOfInstallation(): void
+    public function testReturnsServerUrlOfServer(): void
     {
         $expectedServerUrl = 'https://demo.dataverse.org';
-        $serverUrl = $this->installation->getDataverseServerUrl();
+        $serverUrl = $this->server->getDataverseServerUrl();
 
         $this->assertEquals($expectedServerUrl, $serverUrl);
     }
 
-    public function testReturnsCollectionOfInstallation(): void
+    public function testReturnsCollectionOfServer(): void
     {
         $expectedCollection = 'example';
-        $collection = $this->installation->getDataverseCollection();
+        $collection = $this->server->getDataverseCollection();
 
         $this->assertEquals($expectedCollection, $collection);
     }

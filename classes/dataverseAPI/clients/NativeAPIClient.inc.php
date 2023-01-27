@@ -3,12 +3,12 @@
 import('plugins.generic.dataverse.classes.dataverseAPI.clients.interfaces.IDataAPIClient');
 import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.NativeAPIEndpoints');
 import('plugins.generic.dataverse.classes.factories.dataset.NativeAPIDatasetFactory');
-import('plugins.generic.dataverse.classes.dataverseAPI.DataverseInstallation');
+import('plugins.generic.dataverse.classes.dataverseAPI.DataverseServer');
 import('plugins.generic.dataverse.classes.entities.DataverseResponse');
 
 class NativeAPIClient implements IDataAPIClient
 {
-    private $installation;
+    private $server;
 
     private $endpoints;
 
@@ -16,8 +16,8 @@ class NativeAPIClient implements IDataAPIClient
 
     public function __construct(int $contextId)
     {
-        $this->installation = new DataverseInstallation($contextId);
-        $this->endpoints = new NativeAPIEndpoints($this->installation);
+        $this->server = new DataverseServer($contextId);
+        $this->endpoints = new NativeAPIEndpoints($this->server);
         $this->httpClient = Application::get()->getHttpClient();
     }
 
@@ -54,7 +54,7 @@ class NativeAPIClient implements IDataAPIClient
 
     private function getDataverseHeaders(array $headers = []): array
     {
-        $apiToken = $this->installation->getCredentials()->getAPIToken();
+        $apiToken = $this->server->getCredentials()->getAPIToken();
         $dataverseHeaders = ['X-Dataverse-key' => $apiToken];
         array_merge($dataverseHeaders, $headers);
         return $dataverseHeaders;

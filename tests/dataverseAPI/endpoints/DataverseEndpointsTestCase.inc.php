@@ -10,8 +10,8 @@ abstract class DataverseEndpointsTestCase extends PKPTestCase
     {
         $this->registerMockDataverseCredentialsDAO();
         $contextId = rand();
-        $installation = new DataverseInstallation($contextId);
-        $this->endpoints = $this->createDataverseEndpoints($installation);
+        $server = new DataverseServer($contextId);
+        $this->endpoints = $this->createDataverseEndpoints($server);
 
         parent::setUp();
     }
@@ -34,5 +34,5 @@ abstract class DataverseEndpointsTestCase extends PKPTestCase
 
     abstract protected function getDataverseCredentialsData(): array;
 
-    abstract protected function createDataverseEndpoints(DataverseInstallation $installation): DataverseEndpoints;
+    abstract protected function createDataverseEndpoints(DataverseServer $server): DataverseEndpoints;
 }

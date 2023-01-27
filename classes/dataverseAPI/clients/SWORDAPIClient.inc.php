@@ -10,22 +10,22 @@ class SWORDAPIClient implements IDataAPIClient
 
     private $swordClient;
 
-    private $installation;
+    private $server;
 
     private $endpoints;
 
     public function __construct(int $contextId)
     {
         $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => false));
-        $this->installation = new DataverseInstallation($contextId);
-        $this->endpoints = new SwordAPIEndpoints($this->installation);
+        $this->server = new DataverseServer($contextId);
+        $this->endpoints = new SwordAPIEndpoints($this->server);
     }
 
     public function getDataverseData(): array
     {
         $response = $this->swordClient->retrieveDepositReceipt(
             $this->endpoints->getDataverseCollectionUrl(),
-            $this->installation->getCredentials()->getAPIToken(),
+            $this->server->getCredentials()->getAPIToken(),
             self::SAC_PASSWORD,
             self::SAC_OBO
         );
@@ -41,7 +41,7 @@ class SWORDAPIClient implements IDataAPIClient
     {
         $response = $this->swordClient->retrieveAtomStatement(
             $this->endpoints->getDatasetStatementUrl($persistentId),
-            $this->installation->getCredentials()->getAPIToken(),
+            $this->server->getCredentials()->getAPIToken(),
             self::SAC_PASSWORD,
             self::SAC_OBO
         );
