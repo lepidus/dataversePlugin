@@ -144,8 +144,8 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 
 	it('Check Dataset Citation is visible for unauthenticated users', function() {
 		cy.logout();
-		cy.visit('index.php/' + serverPath);
-		cy.get('.articles div:first a').click();
+		cy.visit('index.php/' + serverPath + '/preprints');
+		cy.get('.articles div .title a').contains('The Rise of The Machine Empire').click();
 		cy.get('.label').contains('Research data');
 		cy.get('.data_citation .value').contains(
 			'Castanheiras, Íris, ' + currentYear + ', "The Rise of The Machine Empire"'

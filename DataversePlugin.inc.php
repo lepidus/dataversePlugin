@@ -14,8 +14,6 @@
 
 import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
-import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
-import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 
 class DataversePlugin extends GenericPlugin
 {

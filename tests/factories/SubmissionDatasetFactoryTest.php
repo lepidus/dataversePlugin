@@ -51,6 +51,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
             array('test'),
             'test citation',
             $datasetContact,
+            'user, test (via Dataverse)',
             array($author),
             array($file)
         );
@@ -69,6 +70,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $this->assertEquals($dataset->getSubject(), $this->submission->getSubject());
         $this->assertEquals($dataset->getAuthors(), array($this->datasetAuthor));
         $this->assertEquals($dataset->getContact(), $this->datasetContact);
+        $this->assertEquals($dataset->getDepositor(), $this->submission->getDepositor());
         $this->assertEquals($dataset->getKeywords(), $this->submission->getKeywords());
         $this->assertEquals($dataset->getPubCitation(), $this->submission->getCitation());
     }

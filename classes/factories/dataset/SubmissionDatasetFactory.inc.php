@@ -18,20 +18,28 @@ class SubmissionDatasetFactory extends DatasetFactory
         $submissionData = $this->submission->getAllData();
 
         $props = array();
-        $props['title'] = $submissionData['title'];
-        $props['description'] = $submissionData['abstract'];
-        $props['subject'] = $submissionData['subject'];
-        $props['keywords'] = $submissionData['keywords'];
-        $props['pubCitation'] = $submissionData['citation'];
-        $props['contact'] = $submissionData['contact'];
-
-        $props['authors'] = array_map(function (AuthorAdapter $author) {
-            return new DatasetAuthor(
-                $author->getFullName(),
-                $author->getAffiliation(),
-                $author->getOrcid()
-            );
-        }, $submissionData['authors']);
+        foreach ($submissionData as $attr => $value) {
+            switch ($attr) {
+                case 'abstract':
+                    $props['description'] = $value;
+                    break;
+                case 'citation':
+                    $props['pubCitation'] = $value;
+                    break;
+                case 'authors':
+                    $props['authors'] = array_map(function (AuthorAdapter $author) {
+                        return new DatasetAuthor(
+                            $author->getFullName(),
+                            $author->getAffiliation(),
+                            $author->getOrcid()
+                        );
+                    }, $value);
+                    break;
+                default:
+                    $props[$attr] = $value ?? null;
+                    break;
+            }
+        }
 
         return $props;
     }

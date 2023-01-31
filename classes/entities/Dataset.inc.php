@@ -52,6 +52,16 @@ class Dataset extends DataObject
         $this->setData('contact', $contact);
     }
 
+    public function getDepositor(): string
+    {
+        return $this->getData('depositor');
+    }
+
+    public function setDepositor(string $depositor): void
+    {
+        $this->setData('depositor', $depositor);
+    }
+
     public function getKeywords(): array
     {
         return $this->getData('keywords');

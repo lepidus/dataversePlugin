@@ -6,6 +6,7 @@ import('plugins.generic.dataverse.classes.study.DataverseStudy');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
 import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
+import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
 
 class DataverseService
 {
@@ -22,10 +23,10 @@ class DataverseService
         return $this->dataverseClient;
     }
 
-    public function setSubmission(Submission $submission): void
+    public function setSubmission(Submission $submission, User $submissionUser): void
     {
         $submissionAdapterCreator = new SubmissionAdapterCreator();
-        $submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($submission);
+        $submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($submission, $submissionUser);
         $this->submission = $submissionAdapter;
     }
 
@@ -152,7 +153,8 @@ class DataverseService
             $metadata = [
                 'datasetSubject' => $dataset->getSubject(),
                 'datasetAuthor' => $dataset->getAuthors(),
-                'datasetContact' => $dataset->getContact()
+                'datasetContact' => $dataset->getContact(),
+                'datasetDepositor' => $dataset->getDepositor()
             ];
 
             $datasetDataCreator = new DataverseDatasetDataCreator();

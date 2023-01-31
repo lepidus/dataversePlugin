@@ -96,6 +96,11 @@ class DataverseMetadata
                 'typeName' => 'datasetContact',
                 'multiple' => true,
                 'typeClass' => 'compound'
+            ],
+            'datasetDepositor' => [
+                'typeName' => 'depositor',
+                'multiple' => false,
+                'typeClass' => 'primitive'
             ]
         ];
 
@@ -151,14 +156,16 @@ class DataverseMetadata
                 'multiple' => false,
                 'typeName' => 'datasetContactEmail',
                 'value' => $contact->getEmail()
-            ],
-            'datasetContactAffiliation' => [
+            ]
+        ];
+        if ($contact->getAffiliation()) {
+            $contactProps['datasetContactAffiliation'] = [
                 'typeName' => 'datasetContactAffiliation',
                 'multiple' => false,
                 'typeClass' => 'primitive',
                 'value' => $contact->getAffiliation()
-            ],
-        ];
+            ];
+        }
 
         return $contactProps;
     }

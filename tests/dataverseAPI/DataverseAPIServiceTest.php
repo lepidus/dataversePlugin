@@ -38,7 +38,7 @@ class DataverseAPIServiceTest extends PKPTestCase
         $dataset->setCitation(
             'Test, User, 2023, "Test Dataset", <a href="https://doi.org/10.12345/ABC/DEFGHI">https://doi.org/10.12345/ABC/DEFGHI</a>, Demo Dataverse, V1'
         );
-        $dataset->setData('depositor', 'User, Test (via Open Preprint Systems)');
+        $dataset->setDepositor('User, Test (via Open Preprint Systems)');
 
         $this->dataset = $dataset;
         $this->author = $author;
