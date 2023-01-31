@@ -96,6 +96,11 @@ class DataverseMetadata
                 'typeName' => 'datasetContact',
                 'multiple' => true,
                 'typeClass' => 'compound'
+            ],
+            'datasetDepositor' => [
+                'typeName' => 'depositor',
+                'multiple' => false,
+                'typeClass' => 'primitive'
             ]
         ];
 

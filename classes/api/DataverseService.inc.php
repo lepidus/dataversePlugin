@@ -152,7 +152,8 @@ class DataverseService
             $metadata = [
                 'datasetSubject' => $dataset->getSubject(),
                 'datasetAuthor' => $dataset->getAuthors(),
-                'datasetContact' => $dataset->getContact()
+                'datasetContact' => $dataset->getContact(),
+                'datasetDepositor' => $dataset->getDepositor()
             ];
 
             $datasetDataCreator = new DataverseDatasetDataCreator();
