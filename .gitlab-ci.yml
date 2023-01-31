@@ -1,9 +1,14 @@
 variables:
     PLUGIN_NAME: 'dataverse'
     SAST_EXCLUDED_PATHS: libs/swordappv2-php-library
-    
+    GIT_SUBMODULE_STRATEGY: recursive 
+
 include:
   - project: 'documentacao-e-tarefas/modelosparaintegracaocontinua'
     ref: main
     file:
       - 'templates/groups/pkp_plugin.yml'
+      - 'templates/groups/ops_plugins_unit_tests_model.yml'
+
+before_script:
+  - apt update && apt install php-zip php-curl php-mysql -yqq
