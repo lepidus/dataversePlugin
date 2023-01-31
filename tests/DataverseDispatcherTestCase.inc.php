@@ -1,6 +1,7 @@
 <?php
 
 import('lib.pkp.tests.PKPTestCase');
+import('lib.pkp.classes.core.PKPRequest');
 import('plugins.generic.dataverse.DataversePlugin');
 
 class DataverseDispatcherTestCase extends PKPTestCase

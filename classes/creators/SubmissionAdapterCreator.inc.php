@@ -7,7 +7,7 @@ import('plugins.generic.dataverse.classes.APACitation');
 
 class SubmissionAdapterCreator
 {
-    public function createSubmissionAdapter(Submission $submission): SubmissionAdapter
+    public function createSubmissionAdapter(Submission $submission, User $submissionUser): SubmissionAdapter
     {
         $locale = $submission->getLocale();
         $publication = $submission->getCurrentPublication();
@@ -21,10 +21,11 @@ class SubmissionAdapterCreator
         $citation = $apaCitation->getFormattedCitationBySubmission($submission);
         $authors = $this->retrieveAuthors($publication, $locale);
         $files = $this->retrieveFiles($id);
-        $contact = $this->retrieveContact($publication);
+        $contact = $this->retrieveContact($publication, $submissionUser);
+        $depositor = $this->getSubmissionDepositor($submissionUser, $submission->getContextId());
 
         $adapter = new SubmissionAdapter();
-        $adapter->setRequiredData($id, $title, $abstract, $subject, $keywords, $citation, $contact, $authors, $files);
+        $adapter->setRequiredData($id, $title, $abstract, $subject, $keywords, $citation, $contact, $depositor, $authors, $files);
 
         return $adapter;
     }
@@ -55,7 +56,7 @@ class SubmissionAdapterCreator
         return $authorAdapters;
     }
 
-    private function retrieveContact(Publication $publication): DatasetContact
+    private function retrieveContact(Publication $publication, User $submissionUser): DatasetContact
     {
         $primaryAuthor = $publication->getPrimaryAuthor();
         if (!empty($primaryAuthor)) {
@@ -63,13 +64,19 @@ class SubmissionAdapterCreator
             $email = $primaryAuthor->getEmail();
             $affiliation = $primaryAuthor->getLocalizedData('affiliation');
         } else {
-            $request = Application::get()->getRequest();
-            $user = $request->getUser();
-            $name = $user->getFullName(false, true);
-            $email = $user->getEmail();
-            $affiliation = $user->getLocalizedData('affiliation');
+            $name = $submissionUser->getFullName(false, true);
+            $email = $submissionUser->getEmail();
+            $affiliation = $submissionUser->getLocalizedData('affiliation');
         }
         return new DatasetContact($name, $email, $affiliation);
+    }
+
+    private function getSubmissionDepositor(User $submissionUser, int $contextId): string
+    {
+        $context = Application::getContextDAO()->getById($contextId);
+        $name = $submissionUser->getFullName(false, true);
+
+        return $name . '(via ' . $context->getLocalizedName() . ')';
     }
 
     private function retrieveFiles(int $submissionId): array

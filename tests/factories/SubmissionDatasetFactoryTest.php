@@ -51,6 +51,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
             array('test'),
             'test citation',
             $datasetContact,
+            'user, test (via Dataverse)',
             array($author),
             array($file)
         );

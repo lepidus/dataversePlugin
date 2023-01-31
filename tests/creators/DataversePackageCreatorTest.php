@@ -23,6 +23,7 @@ class DataversePackageCreatorTest extends PKPTestCase
     private $citation = 'test citation';
     private $author;
     private $contact;
+    private $depositor = 'User, Test (via Dataverse)';
     private $authors = array();
     private $files = array();
 
@@ -94,6 +95,7 @@ class DataversePackageCreatorTest extends PKPTestCase
             $this->keywords,
             $this->citation,
             $this->contact,
+            $this->depositor,
             $this->authors,
             $this->files
         );

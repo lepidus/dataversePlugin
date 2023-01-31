@@ -2,6 +2,7 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('classes.journal.Journal');
+import('lib.pkp.classes.user.User');
 import('classes.submission.Submission');
 import('classes.publication.Publication');
 import('classes.article.Author');
@@ -13,6 +14,8 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
 {
     private $submissionAdapterCreator;
     private $submissionAdapter;
+    private $submissionUser;
+    private $submission;
     private $journal;
 
     private $contextId = 1;
@@ -35,12 +38,13 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
         $this->registerMockDAO();
 
         $this->submissionAdapterCreator = new SubmissionAdapterCreator();
+        $this->createSubmissionUser();
         $this->createTestSubmission();
         $this->createAuthors();
         $this->createTestPublication();
         $this->addCurrentPublicationToSubmission();
 
-        $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submission);
+        $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submission, $this->submissionUser);
         parent::setUp();
     }
 
@@ -63,6 +67,13 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
                    ->will($this->returnValue([$draftDatasetFile]));
 
         DAORegistry::registerDAO('DraftDatasetFileDAO', $draftDatasetFileDAO);
+    }
+
+    private function createSubmissionUser(): void
+    {
+        $this->submissionUser = new User();
+        $this->submissionUser->setGivenName('test', $this->locale);
+        $this->submissionUser->setFamilyName('user', $this->locale);
     }
 
     private function createAuthors(): void
