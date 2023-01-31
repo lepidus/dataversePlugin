@@ -76,7 +76,7 @@ class SubmissionAdapterCreator
         $context = Application::getContextDAO()->getById($contextId);
         $name = $submissionUser->getFullName(false, true);
 
-        return $name . '(via ' . $context->getLocalizedName() . ')';
+        return $name . ' (via ' . $context->getLocalizedName() . ')';
     }
 
     private function retrieveFiles(int $submissionId): array

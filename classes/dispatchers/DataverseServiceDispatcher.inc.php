@@ -35,19 +35,28 @@ class DataverseServiceDispatcher extends DataverseDispatcher
     {
         $form =& $params[0];
         $submission = $form->submission;
+        $submissionUser = $this->getCurrentUser();
 
         $service = $this->getDataverseService();
-        $service->setSubmission($submission);
+        $service->setSubmission($submission, $submissionUser);
         $service->depositPackage();
     }
 
     public function publishDeposit(string $hookName, array $params): void
     {
         $submission = $params[2];
+        $submissionUser = $this->getCurrentUser();
 
         $service = $this->getDataverseService();
-        $service->setSubmission($submission);
+        $service->setSubmission($submission, $submissionUser);
         $service->releaseStudy();
+    }
+
+    private function getCurrentUser(): User
+    {
+        $request = Application::get()->getRequest();
+        $currentUser = $request->getUser();
+        return $currentUser;
     }
 
     public function setupDraftDatasetFileHandler(string $hookname, Request $request): bool
