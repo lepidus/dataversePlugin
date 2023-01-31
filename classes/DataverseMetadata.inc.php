@@ -151,14 +151,16 @@ class DataverseMetadata
                 'multiple' => false,
                 'typeName' => 'datasetContactEmail',
                 'value' => $contact->getEmail()
-            ],
-            'datasetContactAffiliation' => [
+            ]
+        ];
+        if ($contact->getAffiliation()) {
+            $contactProps['datasetContactAffiliation'] = [
                 'typeName' => 'datasetContactAffiliation',
                 'multiple' => false,
                 'typeClass' => 'primitive',
                 'value' => $contact->getAffiliation()
-            ],
-        ];
+            ];
+        }
 
         return $contactProps;
     }

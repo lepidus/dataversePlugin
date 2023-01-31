@@ -21,7 +21,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['title'] = $submissionData['title'];
         $props['description'] = $submissionData['abstract'];
         $props['subject'] = $submissionData['subject'];
-        $props['keywords'] = $submissionData['keywords'];
+        $props['keywords'] = $submissionData['keywords'] ?? null;
         $props['pubCitation'] = $submissionData['citation'];
         $props['contact'] = $submissionData['contact'];
 
