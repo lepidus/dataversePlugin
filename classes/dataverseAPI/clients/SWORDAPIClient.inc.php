@@ -1,6 +1,10 @@
 <?php
 
-class SWORDAPIClient implements IDataAPIClient
+import('plugins.generic.dataverse.classes.dataverseAPI.clients.interfaces.IDepositAPIClient');
+import('plugins.generic.dataverse.classes.dataverseAPI.packagers.SWORDAPIDatasetPackager');
+import('plugins.generic.dataverse.classes.entities.DataverseResponse');
+
+class SWORDAPIClient implements IDepositAPIClient
 {
     private const SAC_PASSWORD = '';
 
@@ -21,35 +25,25 @@ class SWORDAPIClient implements IDataAPIClient
         $this->endpoints = new SwordAPIEndpoints($this->server);
     }
 
-    public function getDataverseData(): array
+    public function getDatasetPackager(Dataset $datataset): DatasetPackager
     {
-        $response = $this->swordClient->retrieveDepositReceipt(
-            $this->endpoints->getDataverseCollectionUrl(),
-            $this->server->getCredentials()->getAPIToken(),
-            self::SAC_PASSWORD,
-            self::SAC_OBO
-        );
-
-        return new DataverseResponse(
-            $response->sac_status,
-            $response->sac_phase,
-            $response->sac_xml
-        );
+        return new SWORDAPIDatasetPackager($datataset);
     }
 
-    public function getDatasetData(string $persistentId): array
+    public function depositDataset(DatasetPackager $packager): DataverseResponse
     {
-        $response = $this->swordClient->retrieveAtomStatement(
-            $this->endpoints->getDatasetStatementUrl($persistentId),
-            $this->server->getCredentials()->getAPIToken(),
+        $response = $this->swordClient->depositAtomEntry(
+            $this->endpoints->getDataverseCollectionUrl(),
+            $this->server->getApiToken(),
             self::SAC_PASSWORD,
-            self::SAC_OBO
+            self::SAC_OBO,
+            $packager->getPackagePath()
         );
 
         return new DataverseResponse(
             $response->sac_status,
-            $response->sac_phase,
-            $response->sac_xml
+            $response->sac_statusmessage,
+            $response->toString()
         );
     }
 }
