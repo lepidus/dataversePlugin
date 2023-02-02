@@ -6,7 +6,7 @@ import('plugins.generic.dataverse.classes.study.DataverseStudy');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
 import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
-import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
+import('plugins.generic.dataverse.classes.dataverseAPI.packagers.creators.AtomPackageCreator');
 
 class DataverseService
 {
@@ -43,9 +43,9 @@ class DataverseService
         return $receipt->sac_title;
     }
 
-    public function createPackage(): DataversePackageCreator
+    public function createPackage(): AtomPackageCreator
     {
-        $package = new DataversePackageCreator();
+        $package = new AtomPackageCreator();
         $factory = new SubmissionDatasetFactory($this->submission);
         $dataset = $factory->getDataset();
         $package->loadMetadata($dataset);
@@ -74,7 +74,7 @@ class DataverseService
         }
     }
 
-    public function depositStudy(DataversePackageCreator $package): ?DataverseStudy
+    public function depositStudy(AtomPackageCreator $package): ?DataverseStudy
     {
         $dataverseNotificationMgr = new DataverseNotificationManager();
         try {
