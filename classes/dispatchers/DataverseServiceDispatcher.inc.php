@@ -1,6 +1,9 @@
 <?php
 
+import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
+import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
+import('plugins.generic.dataverse.classes.dataverseAPI.DataverseAPIService');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 
@@ -8,7 +11,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
 {
     public function __construct(Plugin $plugin)
     {
-        HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'dataverseDepositOnSubmission'));
+        HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'datasetDepositOnSubmission'));
         HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDraftDatasetFileHandler'));
         HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
@@ -31,15 +34,24 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         return false;
     }
 
-    public function dataverseDepositOnSubmission(string $hookName, array $params): void
+    public function datasetDepositOnSubmission(string $hookName, array $params): void
     {
         $form =& $params[0];
         $submission = $form->submission;
         $submissionUser = $this->getCurrentUser();
 
-        $service = $this->getDataverseService();
-        $service->setSubmission($submission, $submissionUser);
-        $service->depositPackage();
+        $client = new SWORDAPIClient($submission->getContextId());
+        $service = new DataverseAPIService();
+        try {
+            $adapterCreator = new SubmissionAdapterCreator();
+            $submissionAdapter = $creator->create($submission, $submissionUser);
+            $study = $service->depositDataset($submissionAdapter, $client);
+        } catch (Exception $e) {
+            echo $e->getMessage();
+        }
+        // $service = $this->getDataverseService();
+        // $service->setSubmission($submission, $submissionUser);
+        // $service->depositPackage();
     }
 
     public function publishDeposit(string $hookName, array $params): void

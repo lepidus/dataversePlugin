@@ -51,11 +51,11 @@ class DataverseService
         $package->loadMetadata($dataset);
         $package->createAtomEntry();
 
-        import('lib.pkp.classes.file.TemporaryFileManager');
-        $temporaryFileManager = new TemporaryFileManager();
-        foreach ($this->submission->getFiles() as $draftDatasetFile) {
-            $file = $temporaryFileManager->getFile($draftDatasetFile->getData('fileId'), $draftDatasetFile->getData('userId'));
-            $package->addFileToPackage($file->getFilePath(), $file->getOriginalFileName());
+        foreach ($this->submission->getFiles() as $file) {
+            $package->addFileToPackage(
+                $file->getFilePath(),
+                $file->getOriginalFileName()
+            );
         }
         $package->createPackage();
 
