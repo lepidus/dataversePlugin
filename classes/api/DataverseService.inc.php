@@ -26,7 +26,7 @@ class DataverseService
     public function setSubmission(Submission $submission, User $submissionUser): void
     {
         $submissionAdapterCreator = new SubmissionAdapterCreator();
-        $submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($submission, $submissionUser);
+        $submissionAdapter = $submissionAdapterCreator->create($submission, $submissionUser);
         $this->submission = $submissionAdapter;
     }
 

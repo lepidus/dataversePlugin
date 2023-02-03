@@ -7,7 +7,7 @@ import('plugins.generic.dataverse.classes.APACitation');
 
 class SubmissionAdapterCreator
 {
-    public function createSubmissionAdapter(Submission $submission, User $submissionUser): SubmissionAdapter
+    public function create(Submission $submission, User $submissionUser): SubmissionAdapter
     {
         $locale = $submission->getLocale();
         $publication = $submission->getCurrentPublication();

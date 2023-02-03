@@ -44,7 +44,7 @@ class SubmissionAdapterCreatorTest extends PKPTestCase
         $this->createTestPublication();
         $this->addCurrentPublicationToSubmission();
 
-        $this->submissionAdapter = $this->submissionAdapterCreator->createSubmissionAdapter($this->submission, $this->submissionUser);
+        $this->submissionAdapter = $this->submissionAdapterCreator->create($this->submission, $this->submissionUser);
         parent::setUp();
     }
 

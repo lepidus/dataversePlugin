@@ -1,10 +1,10 @@
 <?php
 
-import('lib.pkp.tests.PKPTestCase');
+import('lib.pkp.tests.DatabaseTestCase');
 import('plugins.generic.dataverse.classes.dataverseAPI.DataverseAPIService');
 import('plugins.generic.dataverse.classes.entities.DataverseResponse');
 
-class DataverseAPIServiceTest extends PKPTestCase
+class DataverseAPIServiceTest extends DatabaseTestCase
 {
     private const SUCCESS = 200;
 
@@ -16,10 +16,19 @@ class DataverseAPIServiceTest extends PKPTestCase
 
     private $contact;
 
+    private $submission;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->createTestDataset();
+        $dataverseStudyDAO = new DataverseStudyDAO();
+        DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
+    }
+
+    protected function getAffectedTables(): array
+    {
+        return array('dataverse_studies');
     }
 
     private function createTestDataset(): void
@@ -45,12 +54,45 @@ class DataverseAPIServiceTest extends PKPTestCase
         $this->contact = $contact;
     }
 
+    private function createSubmission(): SubmissionAdapter
+    {
+        $author = new AuthorAdapter('test', 'user', 'Dataverse', 'user@test.com');
+
+        $datasetContact = new DatasetContact(
+            $author->getFullName(),
+            $author->getEmail(),
+            'Dataverse'
+        );
+
+        $file = new DraftDatasetFile();
+        $file->setData('submissionId', 909);
+        $file->setData('userId', 910);
+        $file->setData('fileId', 911);
+        $file->setData('fileName', 'sample.pdf');
+
+        $submission = new SubmissionAdapter();
+        $submission->setRequiredData(
+            909,
+            'Example title',
+            'Example abstract',
+            'Other',
+            array('test'),
+            'test citation',
+            $datasetContact,
+            'user, test (via Dataverse)',
+            array($author),
+            array($file)
+        );
+
+        return $submission;
+    }
+
     private function getDataClientMock(int $responseState): IDataAPIClient
     {
-        $response = $this->getClientResponse($responseState);
+        $response = $this->getDataClientResponse($responseState);
 
         $clientMock = $this->getMockBuilder(IDataAPIClient::class)
-            ->setMethods(array( 'getDatasetData', 'getDatasetFactory'))
+            ->setMethods(array('getDatasetData', 'getDatasetFactory'))
             ->getMock();
 
         $clientMock->expects($this->any())
@@ -64,13 +106,56 @@ class DataverseAPIServiceTest extends PKPTestCase
         return $clientMock;
     }
 
-    private function getClientResponse(int $responseState): DataverseResponse
+    private function getDepositClientMock(int $responseState): IDepositAPIClient
+    {
+        $response = $this->getDepositClientResponse($responseState);
+
+        $clientMock = $this->getMockBuilder(IDepositAPIClient::class)
+            ->setMethods(array('depositDataset', 'getDatasetPackager'))
+            ->getMock();
+
+        $clientMock->expects($this->any())
+            ->method('depositDataset')
+            ->will($this->returnValue($response));
+
+        $clientMock->expects($this->any())
+            ->method('getDatasetPackager')
+            ->will($this->returnValue(new SWORDAPIDatasetPackager($this->dataset)));
+
+        return $clientMock;
+    }
+
+    private function getDataClientResponse(int $responseState): DataverseResponse
     {
         $statusCode = $responseState;
 
         if ($responseState == self::SUCCESS) {
             $message = 'OK';
             $data = file_get_contents(__DIR__ . '/../assets/nativeAPIDatasetResponseExample.json');
+        } else {
+            $message = 'Error Processing Request';
+            $data = null;
+        }
+
+        return new DataverseResponse($statusCode, $message, $data);
+    }
+
+    private function getDepositClientResponse(int $responseState): DataverseResponse
+    {
+        $statusCode = $responseState;
+
+        if ($responseState == self::SUCCESS) {
+            $message = 'OK';
+            $data = json_encode(
+                array(
+                    'editUri' => 'https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:10.1234/AB5/CD6EF7',
+                    'editUri' => 'https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:10.1234/AB5/CD6EF7',
+                    'editMediaUri' => 'https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/doi:10.1234/AB5/CD6EF7',
+                    'statementUri' => 'https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/statement/study/doi:10.1234/AB5/CD6EF7',
+                    'persistentUri' => 'https://doi.org/10.1234/AB5/CD6EF7',
+                    'persistentId' => 'doi:10.1234/AB5/CD6EF7'
+                )
+            );
         } else {
             $message = 'Error Processing Request';
             $data = null;
@@ -104,5 +189,27 @@ class DataverseAPIServiceTest extends PKPTestCase
         $service = new DataverseAPIService();
 
         $dataset = $service->getDataset($persistentId, $client);
+    }
+
+    public function testServiceReturnsStudyWhenDepositIsSuccessful(): void
+    {
+        $client = $this->getDepositClientMock(self::SUCCESS);
+
+        $service = new DataverseAPIService();
+
+        $submission = $this->createSubmission();
+
+        $study = $service->depositDataset($submission, $client);
+
+        $expectedStudy = new DataverseStudy();
+        $expectedStudy->setId($study->getId());
+        $expectedStudy->setSubmissionId($submission->getId());
+        $expectedStudy->setEditUri('https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:10.1234/AB5/CD6EF7');
+        $expectedStudy->setEditMediaUri('https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/doi:10.1234/AB5/CD6EF7');
+        $expectedStudy->setStatementUri('https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/statement/study/doi:10.1234/AB5/CD6EF7');
+        $expectedStudy->setPersistentUri('https://doi.org/10.1234/AB5/CD6EF7');
+        $expectedStudy->setPersistentId('doi:10.1234/AB5/CD6EF7');
+
+        $this->assertEquals($expectedStudy, $study);
     }
 }
