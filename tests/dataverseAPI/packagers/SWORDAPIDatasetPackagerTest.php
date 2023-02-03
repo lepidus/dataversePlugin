@@ -51,7 +51,7 @@ class SWORDAPIDatasetPackagerTest extends PKPTestCase
 
     public function testPackagerLoadedMetadataFromDataset(): void
     {
-        $this->packager->createPackage();
+        $this->packager->createDatasetPackage();
 
         $atom = new DOMDocument();
         $atom->load($this->packager->getPackagePath());

@@ -34,7 +34,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         return false;
     }
 
-    public function datasetDepositOnSubmission(string $hookName, array $params): void
+    public function datasetDepositOnSubmission(string $hookName, array $params): bool
     {
         $form =& $params[0];
         $submission = $form->submission;
@@ -44,7 +44,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         $service = new DataverseAPIService();
         try {
             $adapterCreator = new SubmissionAdapterCreator();
-            $submissionAdapter = $creator->create($submission, $submissionUser);
+            $submissionAdapter = $adapterCreator->create($submission, $submissionUser);
             $study = $service->depositDataset($submissionAdapter, $client);
         } catch (Exception $e) {
             echo $e->getMessage();
@@ -52,6 +52,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         // $service = $this->getDataverseService();
         // $service->setSubmission($submission, $submissionUser);
         // $service->depositPackage();
+        return false;
     }
 
     public function publishDeposit(string $hookName, array $params): void

@@ -108,12 +108,21 @@ class DataverseAPIServiceTest extends DatabaseTestCase
     {
         $response = $this->getDepositClientResponse($responseState);
 
+        $file = new DatasetFile();
+        $file->setOriginalFileName('sample.pdf');
+        $file->setPath('/path/to/sample.pdf');
+        $this->dataset->setFiles([$file]);
+
         $clientMock = $this->getMockBuilder(IDepositAPIClient::class)
-            ->setMethods(array('depositDataset', 'getDatasetPackager'))
+            ->setMethods(array('depositDataset','depositDatasetFiles', 'getDatasetPackager'))
             ->getMock();
 
         $clientMock->expects($this->any())
             ->method('depositDataset')
+            ->will($this->returnValue($response));
+
+        $clientMock->expects($this->any())
+            ->method('depositDatasetFiles')
             ->will($this->returnValue($response));
 
         $clientMock->expects($this->any())

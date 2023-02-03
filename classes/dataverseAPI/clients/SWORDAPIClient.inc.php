@@ -61,9 +61,25 @@ class SWORDAPIClient implements IDepositAPIClient
         );
     }
 
-    public function depositDatasetFiles(string $persistentId, DatasetPackager $packager): DatasetResponse
+    public function depositDatasetFiles(string $persistentId, DatasetPackager $packager): DataverseResponse
     {
-        //
+        $atomPackager = $packager->getAtomPackager();
+        $response = $this->swordClient->deposit(
+            $this->endpoints->getDatasetEditMediaUrl($persistentId),
+            $this->server->getCredentials()->getAPIToken(),
+            self::SAC_PASSWORD,
+            self::SAC_OBO,
+            $atomPackager->getPackageFilePath(),
+            $atomPackager->getPackaging(),
+            $atomPackager->getContentType(),
+            self::SAC_INPROGRESS
+        );
+
+        return new DataverseResponse(
+            $response->sac_status,
+            $response->sac_statusmessage,
+            $response->toString()
+        );
     }
 
     private function retrievePersistentId(string $persistentUri)

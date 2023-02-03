@@ -9,7 +9,9 @@ abstract class DatasetPackager
         $this->dataset = $dataset;
     }
 
-    abstract public function createPackage(): void;
+    abstract public function createDatasetPackage(): void;
+
+    abstract public function createFilesPackage(): void;
 
     abstract public function getPackagePath(): string;
 }

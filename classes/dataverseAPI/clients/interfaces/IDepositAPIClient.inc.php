@@ -6,5 +6,5 @@ interface IDepositAPIClient
 
     public function depositDataset(DatasetPackager $packager): DataverseResponse;
 
-    public function depositDatasetFiles(string $persistentId, DatasetPackager $packager): DatasetResponse;
+    public function depositDatasetFiles(string $persistentId, DatasetPackager $packager): DataverseResponse;
 }

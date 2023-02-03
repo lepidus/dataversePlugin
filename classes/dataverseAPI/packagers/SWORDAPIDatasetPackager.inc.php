@@ -14,10 +14,21 @@ class SWORDAPIDatasetPackager extends DatasetPackager
         parent::__construct($dataset);
     }
 
-    public function createPackage(): void
+    public function createDatasetPackage(): void
     {
         $this->atomPackager->loadMetadata($this->dataset);
         $this->atomPackager->createAtomEntry();
+    }
+
+    public function createFilesPackage(): void
+    {
+        foreach ($this->dataset->getFiles() as $file) {
+            $this->atomPackager->addFileToPackage(
+                $file->getPath(),
+                $file->getOriginalFileName()
+            );
+        }
+        $this->atomPackager->createPackage();
     }
 
     public function getPackagePath(): string

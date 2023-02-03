@@ -30,32 +30,34 @@ class DataverseAPIService
         }
 
         $packager = $client->getDatasetPackager($dataset);
-        $packager->createPackage();
+        $packager->createDatasetPackage();
+        $packager->createFilesPackage();
 
-        $response = $client->depositDataset($packager);
-
-        if (
-            $response->getStatusCode() >= 200
-            && $response->getStatusCode() < 300
-        ) {
-            $study = $this->insertDataverseStudy(
-                $submission->getId(),
-                $response->getData()
-            );
-            return $study;
-        } else {
-            throw new Exception($response->getMessage(), $response->getStatusCode());
+        $depositResponse = $client->depositDataset($packager);
+        if ($depositResponse->getStatusCode() > 300) {
+            throw new Exception($depositResponse->getMessage(), $depositResponse->getStatusCode());
+            return null;
         }
 
-        return null;
+        $study = $this->insertDataverseStudy(
+            $submission->getId(),
+            $depositResponse->getData()
+        );
+
+        $filesDepositResponse = $client->depositDatasetFiles($study->getPersistentId(), $packager);
+        if ($depositResponse->getStatusCode() > 300) {
+            throw new Exception($depositResponse->getMessage(), $depositResponse->getStatusCode());
+            return null;
+        }
+
+        return $study;
     }
 
     private function insertDataverseStudy(int $submissionId, string $responseData): DataverseStudy
     {
-        $studyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-
         $studyData = json_decode($responseData);
 
+        $studyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $studyDAO->newDataObject();
         $study->setSubmissionId($submissionId);
         $study->setEditUri($studyData->editUri);
