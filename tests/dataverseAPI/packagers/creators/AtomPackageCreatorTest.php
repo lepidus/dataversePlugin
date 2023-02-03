@@ -81,8 +81,9 @@ class AtomPackageCreatorTest extends PKPTestCase
             $this->author->getAffiliation(),
             $this->contact->getEmail()
         );
-        $file = new DraftDatasetFile();
-        $file->setData('sponsor', 'CAPES');
+        $file = new TemporaryFile();
+        $file->setServerFileName('sample.pdf');
+        $file->setOriginalFileName('sample.pdf');
         array_push($this->authors, $author);
         array_push($this->files, $file);
 

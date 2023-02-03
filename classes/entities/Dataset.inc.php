@@ -2,7 +2,7 @@
 
 class Dataset extends DataObject
 {
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->getData('title');
     }
@@ -12,7 +12,7 @@ class Dataset extends DataObject
         $this->setData('title', $title);
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->getData('description');
     }
@@ -22,7 +22,7 @@ class Dataset extends DataObject
         $this->setData('description', $description);
     }
 
-    public function getSubject(): string
+    public function getSubject(): ?string
     {
         return $this->getData('subject');
     }
@@ -32,7 +32,7 @@ class Dataset extends DataObject
         $this->setData('subject', $subject);
     }
 
-    public function getAuthors(): array
+    public function getAuthors(): ?array
     {
         return $this->getData('authors');
     }
@@ -42,7 +42,7 @@ class Dataset extends DataObject
         $this->setData('authors', $authors);
     }
 
-    public function getContact(): DatasetContact
+    public function getContact(): ?DatasetContact
     {
         return $this->getData('contact');
     }
@@ -52,7 +52,7 @@ class Dataset extends DataObject
         $this->setData('contact', $contact);
     }
 
-    public function getDepositor(): string
+    public function getDepositor(): ?string
     {
         return $this->getData('depositor');
     }
@@ -62,7 +62,7 @@ class Dataset extends DataObject
         $this->setData('depositor', $depositor);
     }
 
-    public function getKeywords(): array
+    public function getKeywords(): ?array
     {
         return $this->getData('keywords');
     }
@@ -72,7 +72,7 @@ class Dataset extends DataObject
         $this->setData('keywords', $keywords);
     }
 
-    public function getPubCitation(): string
+    public function getPubCitation(): ?string
     {
         return $this->getData('pubCitation');
     }
@@ -82,7 +82,7 @@ class Dataset extends DataObject
         $this->setData('pubCitation', $pubCitation);
     }
 
-    public function getCitation(): string
+    public function getCitation(): ?string
     {
         return $this->getData('citation');
     }
@@ -90,5 +90,15 @@ class Dataset extends DataObject
     public function setCitation(string $citation): void
     {
         $this->setData('citation', $citation);
+    }
+
+    public function getFiles(): ?array
+    {
+        return $this->getData('files');
+    }
+
+    public function setFiles(array $files): void
+    {
+        $this->setData('files', $files);
     }
 }

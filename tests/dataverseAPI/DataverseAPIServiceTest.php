@@ -64,11 +64,9 @@ class DataverseAPIServiceTest extends DatabaseTestCase
             'Dataverse'
         );
 
-        $file = new DraftDatasetFile();
-        $file->setData('submissionId', 909);
-        $file->setData('userId', 910);
-        $file->setData('fileId', 911);
-        $file->setData('fileName', 'sample.pdf');
+        $file = new TemporaryFile();
+        $file->setServerFileName('sample.pdf');
+        $file->setOriginalFileName('sample.pdf');
 
         $submission = new SubmissionAdapter();
         $submission->setRequiredData(
@@ -189,6 +187,20 @@ class DataverseAPIServiceTest extends DatabaseTestCase
         $service = new DataverseAPIService();
 
         $dataset = $service->getDataset($persistentId, $client);
+    }
+
+    public function testDatasetIsNotDepositedWithoutFiles(): void
+    {
+        $client = $this->getDepositClientMock(self::SUCCESS);
+
+        $service = new DataverseAPIService();
+
+        $submission = $this->createSubmission();
+        $submission->setFiles(null);
+
+        $result = $service->depositDataset($submission, $client);
+
+        $this->assertNull($result);
     }
 
     public function testServiceReturnsStudyWhenDepositIsSuccessful(): void
