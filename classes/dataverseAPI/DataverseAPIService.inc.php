@@ -25,6 +25,10 @@ class DataverseAPIService
         $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
 
+        if (empty($dataset->getFiles())) {
+            return null;
+        }
+
         $packager = $client->getDatasetPackager($dataset);
         $packager->createPackage();
 
