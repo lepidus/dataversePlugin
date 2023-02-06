@@ -94,6 +94,13 @@ class DataverseService
             $dataverseNotificationMgr->createNotification($e->getCode());
         }
 
+        $dataverseUrl = $this->dataverseClient->getConfiguration()->getDataverseUrl();
+        $this->registerDatasetEventLog(
+            SUBMISSION_LOG_SUBMISSION_SUBMIT,
+            'plugins.generic.dataverse.log.researchDataDeposited',
+            ['serverURL' => $dataverseUrl]
+        );
+
         return $study;
     }
 
