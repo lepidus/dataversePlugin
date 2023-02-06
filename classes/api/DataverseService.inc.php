@@ -97,6 +97,20 @@ class DataverseService
         return $study;
     }
 
+    private function registerDatasetEventLog(int $eventType, string $message, array $params = [])
+    {
+        $request = Application::get()->getRequest();
+        $submission = Services::get('submission')->get($this->submission->getId());
+
+        SubmissionLog::logEvent(
+            $request,
+            $submission,
+            $eventType,
+            $message,
+            $params
+        );
+    }
+
     private function retrievePersistentId(string $persistentUri)
     {
         preg_match('/(?<=https:\/\/doi.org\/)(.)*/', $persistentUri, $matches);
