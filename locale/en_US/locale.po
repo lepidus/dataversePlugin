@@ -191,4 +191,5 @@ msgstr "Social Sciences"
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Other"
 
-
+msgid  "plugins.generic.dataverse.log.researchDataDeposited"
+msgstr "Research data deposited in {$serverURL}"
