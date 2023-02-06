@@ -40,18 +40,9 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         $submission = $form->submission;
         $submissionUser = $this->getCurrentUser();
 
-        $client = new SWORDAPIClient($submission->getContextId());
-        $service = new DataverseAPIService();
-        try {
-            $adapterCreator = new SubmissionAdapterCreator();
-            $submissionAdapter = $adapterCreator->create($submission, $submissionUser);
-            $study = $service->depositDataset($submissionAdapter, $client);
-        } catch (Exception $e) {
-            echo $e->getMessage();
-        }
-        // $service = $this->getDataverseService();
-        // $service->setSubmission($submission, $submissionUser);
-        // $service->depositPackage();
+        $service = $this->getDataverseService();
+        $service->setSubmission($submission, $submissionUser);
+        $service->depositPackage();
         return false;
     }
 
