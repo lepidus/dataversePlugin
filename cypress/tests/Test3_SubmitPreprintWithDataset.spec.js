@@ -203,9 +203,28 @@ describe('Create Submission without research data files', function() {
 			.click();
 		cy.get('#myQueue a:contains("View"):first').click();
 		cy.wait(1000);
-		cy.get('li > .pkpButton').click();
+		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
 		cy.get('#datasetData .value > p').contains('No research data transferred.');
+	});
+
+	it('Verify deposit event was not registered in activity log', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
+		cy.get('#myQueue a:contains("View"):first').click();
+		cy.wait(1000);
+		cy.get('#publication-button').click();
+		cy.contains('Activity Log').click();
+		cy.get('#submissionHistoryGridContainer').should(
+			'not.have.value',
+			'Research data deposited in ' + Cypress.env('dataverseURI')
+		);
+		
 	});
 });
 
