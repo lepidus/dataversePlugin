@@ -1,6 +1,7 @@
 variables:
     PLUGIN_NAME: 'dataverse'
     SAST_EXCLUDED_PATHS: libs/swordappv2-php-library
+    GIT_SUBMODULE_PATHS: libs/swordappv2-php-library
     GIT_SUBMODULE_STRATEGY: recursive 
 
 include:
