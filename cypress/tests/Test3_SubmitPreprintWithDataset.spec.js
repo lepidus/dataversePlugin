@@ -94,7 +94,7 @@ describe('Deposit Draft Dataverse on Submission', function() {
 		cy.wait(1000);
 		cy.get('#publication-button').click();
 		cy.contains('Activity Log').click();
-		cy.get('#submissionHistoryGridContainer').contains('Research data deposited in ' + Cypress.env('dataverseURI'));
+		cy.get('#submissionHistoryGridContainer').contains(/Research data deposited: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
 	});
 });
 
@@ -222,7 +222,7 @@ describe('Create Submission without research data files', function() {
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer').should(
 			'not.have.value',
-			'Research data deposited in ' + Cypress.env('dataverseURI')
+			'Research data deposited:'
 		);
 		
 	});
