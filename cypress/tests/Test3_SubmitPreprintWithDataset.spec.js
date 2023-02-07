@@ -91,7 +91,6 @@ describe('Deposit Draft Dataverse on Submission', function() {
 		cy.contains(adminUser).click();
 		cy.contains('Dashboard').click();
 		cy.get('#myQueue a:contains("View"):first').click();
-		cy.wait(1000);
 		cy.get('#publication-button').click();
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer').contains(/Research data deposited: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
@@ -108,7 +107,6 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 			.contains('Dashboard')
 			.click();
 		cy.get('#myQueue a:contains("View"):first').click();
-		cy.wait(1000);
 		cy.get('li > .pkpButton').click();
 		cy.get('#datasetTab-button').click();
 		cy.get('.pkpHeader__title h1').contains('Research data');
@@ -137,7 +135,6 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 			.contains('Dashboard')
 			.click();
 		cy.get('.pkpTabs__buttons > #archive-button').click();
-		cy.wait(1000);
 		cy.get('#archive a:contains("View"):first').click();
 		cy.get('#publication-button').click();
 		cy.get('.pkpHeader > .pkpHeader__actions > a:contains("View")').click();
@@ -202,7 +199,6 @@ describe('Create Submission without research data files', function() {
 			.contains('Dashboard')
 			.click();
 		cy.get('#myQueue a:contains("View"):first').click();
-		cy.wait(1000);
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
 		cy.get('#datasetData .value > p').contains('No research data transferred.');
@@ -217,7 +213,6 @@ describe('Create Submission without research data files', function() {
 			.contains('Dashboard')
 			.click();
 		cy.get('#myQueue a:contains("View"):first').click();
-		cy.wait(1000);
 		cy.get('#publication-button').click();
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer').should(
