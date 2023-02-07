@@ -192,4 +192,4 @@ msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Otra"
 
 msgid  "plugins.generic.dataverse.log.researchDataDeposited"
-msgstr "Datos de investigación depositados en {$serverURL}"
+msgstr "Datos de investigación depositados: {$persistentURL}"
