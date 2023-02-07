@@ -7,7 +7,7 @@ import('plugins.generic.dataverse.classes.APACitation');
 
 class SubmissionAdapterCreator
 {
-    public function createSubmissionAdapter(Submission $submission, User $submissionUser): SubmissionAdapter
+    public function create(Submission $submission, User $submissionUser): SubmissionAdapter
     {
         $locale = $submission->getLocale();
         $publication = $submission->getCurrentPublication();
@@ -83,6 +83,15 @@ class SubmissionAdapterCreator
     {
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
         $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submissionId);
-        return $draftDatasetFiles;
+        $files = array_map(function (DraftDatasetFile $draftFile) {
+            import('lib.pkp.classes.file.TemporaryFileManager');
+            $temporaryFileManager = new TemporaryFileManager();
+            return $temporaryFileManager->getFile(
+                $draftFile->getData('fileId'),
+                $draftFile->getData('userId')
+            );
+        }, $draftDatasetFiles);
+
+        return $files;
     }
 }

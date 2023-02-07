@@ -7,6 +7,11 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class DataverseStudyDAO extends DAO
 {
+    public function newDataObject(): DataverseStudy
+    {
+        return new DataverseStudy();
+    }
+
     public function getStudy(int $studyId): ?DataverseStudy
     {
         $result = Capsule::table('dataverse_studies')

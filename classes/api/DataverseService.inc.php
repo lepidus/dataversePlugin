@@ -1,12 +1,14 @@
 <?php
 
+import('lib.pkp.classes.log.SubmissionLog');
+import('classes.log.SubmissionEventLogEntry');
 import('plugins.generic.dataverse.classes.api.DataverseClient');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
 import('plugins.generic.dataverse.classes.study.DataverseStudy');
 import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
 import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
 import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
-import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
+import('plugins.generic.dataverse.classes.dataverseAPI.packagers.creators.AtomPackageCreator');
 
 class DataverseService
 {
@@ -26,7 +28,7 @@ class DataverseService
     public function setSubmission(Submission $submission, User $submissionUser): void
     {
         $submissionAdapterCreator = new SubmissionAdapterCreator();
-        $submissionAdapter = $submissionAdapterCreator->createSubmissionAdapter($submission, $submissionUser);
+        $submissionAdapter = $submissionAdapterCreator->create($submission, $submissionUser);
         $this->submission = $submissionAdapter;
     }
 
@@ -43,19 +45,19 @@ class DataverseService
         return $receipt->sac_title;
     }
 
-    public function createPackage(): DataversePackageCreator
+    public function createPackage(): AtomPackageCreator
     {
-        $package = new DataversePackageCreator();
+        $package = new AtomPackageCreator();
         $factory = new SubmissionDatasetFactory($this->submission);
         $dataset = $factory->getDataset();
         $package->loadMetadata($dataset);
         $package->createAtomEntry();
 
-        import('lib.pkp.classes.file.TemporaryFileManager');
-        $temporaryFileManager = new TemporaryFileManager();
-        foreach ($this->submission->getFiles() as $draftDatasetFile) {
-            $file = $temporaryFileManager->getFile($draftDatasetFile->getData('fileId'), $draftDatasetFile->getData('userId'));
-            $package->addFileToPackage($file->getFilePath(), $file->getOriginalFileName());
+        foreach ($this->submission->getFiles() as $file) {
+            $package->addFileToPackage(
+                $file->getFilePath(),
+                $file->getOriginalFileName()
+            );
         }
         $package->createPackage();
 
@@ -74,7 +76,7 @@ class DataverseService
         }
     }
 
-    public function depositStudy(DataversePackageCreator $package): ?DataverseStudy
+    public function depositStudy(AtomPackageCreator $package): ?DataverseStudy
     {
         $dataverseNotificationMgr = new DataverseNotificationManager();
         try {
@@ -94,7 +96,27 @@ class DataverseService
             $dataverseNotificationMgr->createNotification($e->getCode());
         }
 
+        $this->registerDatasetEventLog(
+            SUBMISSION_LOG_SUBMISSION_SUBMIT,
+            'plugins.generic.dataverse.log.researchDataDeposited',
+            ['persistentURL' => $study->getPersistentUri()]
+        );
+
         return $study;
+    }
+
+    private function registerDatasetEventLog(int $eventType, string $message, array $params = [])
+    {
+        $request = Application::get()->getRequest();
+        $submission = Services::get('submission')->get($this->submission->getId());
+
+        SubmissionLog::logEvent(
+            $request,
+            $submission,
+            $eventType,
+            $message,
+            $params
+        );
     }
 
     private function retrievePersistentId(string $persistentUri)

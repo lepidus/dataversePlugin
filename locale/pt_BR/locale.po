@@ -193,3 +193,6 @@ msgstr "Ciências Sociais"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Outros"
+
+msgid  "plugins.generic.dataverse.log.researchDataDeposited"
+msgstr "Dados de pesquisa depositados: {$persistentURL}"

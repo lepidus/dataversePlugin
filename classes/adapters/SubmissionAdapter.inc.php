@@ -12,7 +12,7 @@ class SubmissionAdapter extends DataObject
         DatasetContact $contact,
         string $depositor,
         array $authors,
-        array $files
+        ?array $files
     ): void {
         $this->setId($id);
         $this->setTitle($title);
@@ -106,12 +106,12 @@ class SubmissionAdapter extends DataObject
         $this->setData('authors', $authors);
     }
 
-    public function getFiles(): array
+    public function getFiles(): ?array
     {
         return $this->getData('files');
     }
 
-    public function setFiles(array $files): void
+    public function setFiles(?array $files): void
     {
         $this->setData('files', $files);
     }

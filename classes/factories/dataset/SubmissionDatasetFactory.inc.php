@@ -3,6 +3,7 @@
 import('plugins.generic.dataverse.classes.factories.dataset.DatasetFactory');
 import('plugins.generic.dataverse.classes.entities.Dataset');
 import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
+import('plugins.generic.dataverse.classes.entities.DatasetFile');
 
 class SubmissionDatasetFactory extends DatasetFactory
 {
@@ -33,6 +34,14 @@ class SubmissionDatasetFactory extends DatasetFactory
                             $author->getAffiliation(),
                             $author->getOrcid()
                         );
+                    }, $value);
+                    break;
+                case 'files':
+                    $props['files'] = array_map(function (TemporaryFile $file) {
+                        $datasetFile = new DatasetFile();
+                        $datasetFile->setOriginalFileName($file->getOriginalFileName());
+                        $datasetFile->setPath($file->getFilePath());
+                        return $datasetFile;
                     }, $value);
                     break;
                 default:

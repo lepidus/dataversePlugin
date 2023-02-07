@@ -8,7 +8,7 @@ define('TEMPORARY_FILES_DIR', '/tmp');
 define('PACKAGING', 'http://purl.org/net/sword/package/SimpleZip');
 define('CONTENT_TYPE', 'application/zip');
 
-class DataversePackageCreator extends PackagerAtomTwoStep
+class AtomPackageCreator extends PackagerAtomTwoStep
 {
     private $outPath;
     private $files = array();

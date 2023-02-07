@@ -1,7 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
-import('plugins.generic.dataverse.classes.creators.DataversePackageCreator');
+import('plugins.generic.dataverse.classes.dataverseAPI.packagers.creators.AtomPackageCreator');
 import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
 import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 import('plugins.generic.dataverse.classes.file.DraftDatasetFile');
@@ -13,7 +13,7 @@ import('lib.pkp.tests.PKPTestCase');
 define('ATOM_ENTRY_XML_NAMESPACE', 'http://www.w3.org/2005/Atom');
 define('ATOM_ENTRY_XML_DCTERMS', 'http://purl.org/dc/terms/');
 
-class DataversePackageCreatorTest extends PKPTestCase
+class AtomPackageCreatorTest extends PKPTestCase
 {
     private $id = 9090;
     private $title = 'The Rise of The Machine Empire';
@@ -32,7 +32,7 @@ class DataversePackageCreatorTest extends PKPTestCase
         parent::setUp();
         $this->createTestAuthor();
         $this->createTestContact();
-        $this->packageCreator = new DataversePackageCreator();
+        $this->packageCreator = new AtomPackageCreator();
     }
 
     public function tearDown(): void
@@ -81,8 +81,9 @@ class DataversePackageCreatorTest extends PKPTestCase
             $this->author->getAffiliation(),
             $this->contact->getEmail()
         );
-        $file = new DraftDatasetFile();
-        $file->setData('sponsor', 'CAPES');
+        $file = new TemporaryFile();
+        $file->setServerFileName('sample.pdf');
+        $file->setOriginalFileName('sample.pdf');
         array_push($this->authors, $author);
         array_push($this->files, $file);
 
@@ -118,14 +119,14 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntry();
 
-        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__, 2) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
+        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__, 4) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
     }
 
     public function testValidateAtomEntryFromSubmissionXmlFileStructure(): void
     {
         $this->createDefaultTestAtomEntryFromSubmission();
 
-        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__, 2) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
+        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__, 4) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
     }
 
     public function testValidateAtomEntryNamespaceAttributes(): void
@@ -192,7 +193,7 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntry();
 
-        $this->packageCreator->addFileToPackage(dirname(__FILE__, 2) . '/assets/testSample.csv', "sampleFileForTests.csv");
+        $this->packageCreator->addFileToPackage(dirname(__FILE__, 4) . '/assets/testSample.csv', "sampleFileForTests.csv");
         $this->packageCreator->createPackage();
 
         $this->assertTrue(file_exists($this->packageCreator->getPackageFilePath()));
@@ -202,7 +203,7 @@ class DataversePackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntryFromSubmission();
 
-        $this->packageCreator->addFileToPackage(dirname(__FILE__, 2) . '/assets/testSample.csv', "sampleFileForTests.csv");
+        $this->packageCreator->addFileToPackage(dirname(__FILE__, 4) . '/assets/testSample.csv', "sampleFileForTests.csv");
         $this->packageCreator->createPackage();
 
         $this->assertTrue(file_exists($this->packageCreator->getPackageFilePath()));
