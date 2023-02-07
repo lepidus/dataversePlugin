@@ -97,6 +97,7 @@ class DataverseService
         }
 
         $this->registerDatasetEventLog(
+            $study->getSubmissionId(),
             SUBMISSION_LOG_SUBMISSION_SUBMIT,
             'plugins.generic.dataverse.log.researchDataDeposited',
             ['persistentURL' => $study->getPersistentUri()]
@@ -105,10 +106,10 @@ class DataverseService
         return $study;
     }
 
-    private function registerDatasetEventLog(int $eventType, string $message, array $params = [])
+    private function registerDatasetEventLog(int $submissionId, int $eventType, string $message, array $params = [])
     {
         $request = Application::get()->getRequest();
-        $submission = Services::get('submission')->get($this->submission->getId());
+        $submission = Services::get('submission')->get($submissionId);
 
         SubmissionLog::logEvent(
             $request,
@@ -354,12 +355,18 @@ class DataverseService
                     NOTIFICATION_TYPE_SUCCESS,
                     __('plugins.generic.dataverse.notification.metadataUpdated')
                 );
+                $this->registerDatasetEventLog(
+                    $study->getSubmissionId(),
+                    SUBMISSION_LOG_METADATA_UPDATE,
+                    'plugins.generic.dataverse.log.researchDataUpdated'
+                );
                 return json_decode($response);
             }
         } catch (RuntimeException $e) {
             $dataverseNotificationMgr->createNotification($e->getCode());
             error_log($e->getMessage());
         }
+
         return null;
     }
 
