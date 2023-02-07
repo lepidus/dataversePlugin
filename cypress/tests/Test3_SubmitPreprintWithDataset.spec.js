@@ -85,6 +85,17 @@ describe('Deposit Draft Dataverse on Submission', function() {
 
 		cy.DataverseCreateSubmission(submissionData);
 	});
+
+	it('Check deposit event was registered in activity log', function() {
+		cy.login(adminUser, adminPassword);
+		cy.contains(adminUser).click();
+		cy.contains('Dashboard').click();
+		cy.get('#myQueue a:contains("View"):first').click();
+		cy.wait(1000);
+		cy.get('#publication-button').click();
+		cy.contains('Activity Log').click();
+		cy.get('#submissionHistoryGridContainer').contains('Research data deposited in ' + Cypress.env('dataverseURI'));
+	});
 });
 
 describe('Publish Draft Dataverse on Submission Publish', function() {
