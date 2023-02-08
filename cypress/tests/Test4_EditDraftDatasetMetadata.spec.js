@@ -28,6 +28,17 @@ let submissionData = {
 	]
 };
 
+let moderator = {
+	'username': 'hermesf',
+	'password': 'hermesfhermesf',
+	'email': 'hermesf@mailinator.com',
+	'givenName': 'Hermes',
+	'familyName': 'Fernandes',
+	'country': 'Brazil',
+	'affiliation': 'Dataverse Project',
+	'roles': ['Moderator']
+};
+
 describe('Tests setup', function() {
 	it('Creates a context', function() {
 		cy.login(adminUser, adminPassword);
@@ -49,6 +60,20 @@ describe('Tests setup', function() {
 		cy.get('button').contains('Save').click();
 
 		cy.contains('Settings Wizard', {timeout: 30000});
+	});
+
+	it('Creates a moderator user', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a').contains(adminUser).click();
+		cy.get('a:contains("Dashboard")').click();
+		cy.get('a:contains("Users & Roles")').click();
+
+		cy.createUser(moderator);
+		cy.logout();
+
+		cy.login(moderator.username);
+		cy.resetPassword(moderator.username, moderator.password);
+		cy.logout();
 	});
 });
 
