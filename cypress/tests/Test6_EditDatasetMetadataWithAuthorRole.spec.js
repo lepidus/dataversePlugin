@@ -75,4 +75,31 @@ describe('Edit Dataset Metadata after deposit', function() {
 			'Modern History'
 		);
 	});
+
+	it('Check Dataset metadata has changed', function() {
+		cy.login('iriscastanheiras');
+		cy.visit('index.php/' + serverPath + '/submissions');
+		cy.contains('View Castanheiras').click({force: true});
+		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('input[id^="datasetMetadata-datasetTitle-control"').should(
+			'have.value',
+			'The Rise of the Empire Machine'
+		);
+		cy.get(
+			'div[id^="datasetMetadata-datasetDescription-control"] > p'
+		).contains('An example abstract');
+		cy.get('#datasetMetadata-datasetKeywords-selected').contains(
+			'Modern History'
+		);
+	});
+
+	it('Check update event was registered in activity log', function() {
+		cy.findSubmissionAsEditor(adminUser, adminPassword, 'Castanheiras', serverPath);
+		cy.get('button[aria-controls="publication"]').click();
+		cy.contains('Activity Log').click();
+		cy.get('#submissionHistoryGridContainer tbody tr:first td').should(($cell) => {
+			expect($cell[1]).to.contain('Íris Castanheiras');
+			expect($cell[2]).to.contain('Research data metadata updated');
+		});
+	});
 });
