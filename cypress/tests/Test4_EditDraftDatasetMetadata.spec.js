@@ -6,7 +6,7 @@ const serverName = Cypress.env('serverName');
 const serverPath = Cypress.env('serverPath') || 'publicknowledge';
 
 let submissionData = {
-	submitterRole: 'Preprint Server manager',
+	submitterRole: 'Author',
 	title: 'The History of Coffee',
 	abstract: 'A descriptive text',
 	keywords: ['Documentary'],
@@ -34,6 +34,27 @@ describe('Deposit Draft Dataset', function () {
 		cy.get('a:contains(' + adminUser + '):visible').click();
 		cy.get('a:contains("Dashboard"):visible').click();
 		cy.configureDataversePlugin();
+	});
+
+	it('Creates a moderator user', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a:contains(' + adminUser + '):visible').click();
+		cy.get('a:contains("Dashboard"):visible').click();
+		cy.get('a:contains("Users & Roles")').click();
+
+		const manager = {
+			'username': 'hermesf',
+			'password': 'hermesfhermesf',
+			'email': 'hermesf@mailinator.com',
+			'givenName': 'Hermes',
+			'familyName': 'Fernandes',
+			'country': 'Brazil',
+			'affiliation': 'Dataverse Project',
+			'roles': ['Preprint Server manager']
+		};
+
+		cy.createUser(manager);
+		cy.logout();
 	});
 
 	it('Create Submission', function () {
@@ -65,7 +86,7 @@ describe('Deposit Draft Dataset', function () {
 
 describe('Edit Dataset Metadata Draft', function () {
 	it('Check dataset metadata form exists', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
@@ -77,7 +98,7 @@ describe('Edit Dataset Metadata Draft', function () {
 	});
 
 	it('Check dataset metadata edit is enabled when preprint is unpublished', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
@@ -93,7 +114,7 @@ describe('Edit Dataset Metadata Draft', function () {
 	});
 
 	it('Change dataset metadata if preprint is unpublished', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
@@ -131,7 +152,7 @@ describe('Edit Dataset Metadata Draft', function () {
 	});
 
 	it('Check dataset metadata has been changed', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
@@ -156,8 +177,21 @@ describe('Edit Dataset Metadata Draft', function () {
 		);
 	});
 
+	it('Check update event was registered in activity log', function () {
+		cy.login('hermesf', 'hermesfhermesf');
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
+		cy.get('button[aria-controls="publication"]').click();
+		cy.contains('Activity Log').click();
+		cy.get('#submissionHistoryGridContainer tbody tr:first td').should(($cell) => {
+			expect($cell[1]).to.contain('Hermes Fernandes');
+			expect($cell[2]).to.contain('Research data metadata updated');
+		});
+	});
+
 	it('Removes keyword metadata from dataset', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
@@ -178,7 +212,7 @@ describe('Edit Dataset Metadata Draft', function () {
 	});
 
 	it('Check keyword metadata has empty', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
@@ -194,7 +228,7 @@ describe('Edit Dataset Metadata Draft', function () {
 	});
 
 	it('Adds keyword metadata to dataset', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
@@ -221,7 +255,7 @@ describe('Edit Dataset Metadata Draft', function () {
 	});
 
 	it('Check keyword metadata has value', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
@@ -236,7 +270,7 @@ describe('Edit Dataset Metadata Draft', function () {
 
 describe('Edit Draft Dataset Files', function () {
 	it('Check dataset files list exists', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
@@ -248,7 +282,7 @@ describe('Edit Draft Dataset Files', function () {
 	});
 
 	it('Adds file to dataset', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
@@ -274,7 +308,7 @@ describe('Edit Draft Dataset Files', function () {
 	});
 
 	it('Delete Dataset file', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.visit(
 			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
 		);
@@ -298,9 +332,9 @@ describe('Edit Draft Dataset Files', function () {
 
 describe('Delete draft dataset', function () {
 	it('Check draft dataset button delete', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.get('a')
-			.contains(adminUser)
+			.contains('hermesf')
 			.click();
 		cy.get('a')
 			.contains('Dashboard')
@@ -316,9 +350,9 @@ describe('Delete draft dataset', function () {
 	});
 
 	it('Delete draft dataset', function () {
-		cy.login(adminUser, adminPassword);
+		cy.login('hermesf', 'hermesfhermesf');
 		cy.get('a')
-			.contains(adminUser)
+			.contains('hermesf')
 			.click();
 		cy.get('a')
 			.contains('Dashboard')
