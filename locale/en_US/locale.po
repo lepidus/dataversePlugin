@@ -198,4 +198,4 @@ msgid  "plugins.generic.dataverse.log.researchDataUpdated"
 msgstr "Research data metadata updated"
 
 msgid  "plugins.generic.dataverse.log.researchDataPublished"
-msgstr "Research data metadata published"
+msgstr "Research data published"
