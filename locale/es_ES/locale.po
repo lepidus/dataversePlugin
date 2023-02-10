@@ -204,7 +204,6 @@ msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Datos de investigación eliminados"
 
 msgid "plugin.generic.dataverse.notification.submission.researchData"
-msgstr "Este preprint ha depositado datos de investigación.
-Al publicar esta preprint, los datos también se publicarán en Dataverse.
-Asegúrese de que los datos de investigación depositado cumpla con los criterios
-desde su repositorio en el Dataverse."
+msgstr "Este preprint ha depositado datos de investigación: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
+"Al publicar esta preprint, los datos también se publicarán en Dataverse.<br>"
+"Asegúrese de que los datos de investigación depositado cumpla con los criterios desde su repositorio en el Dataverse."

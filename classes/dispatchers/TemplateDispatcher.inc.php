@@ -14,6 +14,7 @@ class TemplateDispatcher extends DataverseDispatcher
         HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addDatasetDataToWorkflow'));
         HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
+        HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNotice'));
 
         parent::__construct($plugin);
     }
@@ -259,5 +260,27 @@ class TemplateDispatcher extends DataverseDispatcher
         $templateMgr->setState([
             'components' => $workflowComponents
         ]);
+    }
+
+    public function addDatasetPublishNotice(string $hookName, \PKP\components\forms\FormComponent $form): void
+    {
+        if ($form->id !== 'publish' || !empty($form->errors)) {
+            return;
+        }
+
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($form->publication->getData('submissionId'));
+
+        if (empty($study)) {
+            return;
+        }
+
+        $params = [
+            'persistentUri' => $study->getPersistentUri()
+        ];
+
+        $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
+            'description' => __("plugin.generic.dataverse.notification.submission.researchData", $params),
+            'groupId' => 'default',
+        ]));
     }
 }
