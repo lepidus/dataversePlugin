@@ -95,9 +95,6 @@ msgstr "Erro desconhecido. Não foi possível conectar a {$dataverseUrl}"
 msgid "plugins.generic.dataverse.notification.metadataUpdated"
 msgstr "Metadados do dataset atualizados com sucesso."
 
-msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
-msgstr "Impossível conectar ao Dataverse."
-
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar arquivo de dados de pesquisa"
 
@@ -202,3 +199,6 @@ msgstr "Metadados dos dados de pesquisa atualizados"
 
 msgid  "plugins.generic.dataverse.log.researchDataPublished"
 msgstr "Dados de pesquisa publicados"
+
+msgid  "plugins.generic.dataverse.log.researchDataDeleted"
+msgstr "Dados de pesquisa excluídos"

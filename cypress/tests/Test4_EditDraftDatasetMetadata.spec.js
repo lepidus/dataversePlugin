@@ -370,4 +370,16 @@ describe('Delete draft dataset', function () {
 			.click();
 		cy.contains('No research data transferred.');
 	});
+
+	it('Check update event was registered in activity log', function () {
+		cy.login('hermesf', 'hermesfhermesf');
+		cy.visit(
+			'index.php/' + serverPath + '/workflow/access/' + submissionData.id
+		);
+		cy.contains('Activity Log').click();
+		cy.get('#submissionHistoryGridContainer tbody tr:first td').should(($cell) => {
+			expect($cell[1]).to.contain('Hermes Fernandes');
+			expect($cell[2]).to.contain('Research data deleted');
+		});
+	});
 });
