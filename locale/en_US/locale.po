@@ -92,9 +92,6 @@ msgstr "Unknown error. Could not connect to {$dataverseUrl}"
 msgid "plugins.generic.dataverse.notification.metadataUpdated"
 msgstr "Dataset metadata successfully updated."
 
-msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
-msgstr "Can't connect to Dataverse."
-
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Upload research data file"
 
@@ -199,3 +196,6 @@ msgstr "Research data metadata updated"
 
 msgid  "plugins.generic.dataverse.log.researchDataPublished"
 msgstr "Research data published"
+
+msgid  "plugins.generic.dataverse.log.researchDataDeleted"
+msgstr "Research data deleted"
