@@ -97,7 +97,7 @@ describe('Deposit Draft Dataverse on Submission', function() {
 	});
 });
 
-describe('Publish Draft Dataverse on Submission Publish', function() {
+describe('Publish research data when submission is published', function() {
 	it('Publish Created Submission', function() {
 		cy.login(adminUser, adminPassword);
 		cy.get('a')
@@ -121,11 +121,24 @@ describe('Publish Draft Dataverse on Submission Publish', function() {
 			'.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton'
 		).click();
 		cy.get('.pkp_modal_panel button:contains("Post")').click();
-		cy.wait(2000);
-		cy.get(
-			'.pkpPublication__versionPublished:contains("This version has been posted and can not be edited.")'
-		);
+		cy.get('.pkpPublication__versionPublished').should('contain', 'This version has been posted and can not be edited.');
 	});
+
+	it('Check publish event was registered in activity log', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
+		cy.get('#archive-button').click();
+		cy.get('#archive a:contains("View"):first').click();
+		cy.get('#publication-button').click();
+		cy.contains('Activity Log').click();
+		cy.get('#submissionHistoryGridContainer tbody tr:first').should('contain', 'Research data published');
+	});
+
 	it('Goes to preprint view page', function() {
 		cy.login(adminUser, adminPassword);
 		cy.get('a')
@@ -204,7 +217,7 @@ describe('Create Submission without research data files', function() {
 		cy.get('#datasetData .value > p').contains('No research data transferred.');
 	});
 
-	it('Verify deposit event was not registered in activity log', function() {
+	it('Check deposit event was not registered in activity log', function() {
 		cy.login(adminUser, adminPassword);
 		cy.get('a')
 			.contains(adminUser)
@@ -219,7 +232,23 @@ describe('Create Submission without research data files', function() {
 			'not.have.value',
 			'Research data deposited:'
 		);
-		
+	});
+
+	it('Check publish event was not registered in activity log', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
+		cy.get('#myQueue a:contains("View"):first').click();
+		cy.get('#publication-button').click();
+		cy.get('.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton').click();
+		cy.get('.pkp_modal_panel button:contains("Post")').click();
+		cy.get('.pkpPublication__versionPublished').should('contain', 'This version has been posted and can not be edited.');
+		cy.contains('Activity Log').click();
+		cy.get('#submissionHistoryGridContainer tbody tr:first').should('not.contain', 'Research data published');
 	});
 });
 

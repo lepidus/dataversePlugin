@@ -196,3 +196,6 @@ msgstr "Datos de investigación depositados: {$persistentURL}"
 
 msgid  "plugins.generic.dataverse.log.researchDataUpdated"
 msgstr "Metadatos de datos de investigación actualizados"
+
+msgid  "plugins.generic.dataverse.log.researchDataUpdated"
+msgstr "Datos de investigación publicado"

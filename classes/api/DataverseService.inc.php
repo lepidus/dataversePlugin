@@ -292,6 +292,11 @@ class DataverseService
                 $studyPublished = $this->dataverseClient->completeIncompleteDeposit($study->getEditUri());
                 if ($studyPublished) {
                     $dataverseNotificationMgr->createNotification(DATAVERSE_PLUGIN_HTTP_STATUS_OK);
+                    $this->registerDatasetEventLog(
+                        $study->getSubmissionId(),
+                        SUBMISSION_LOG_ARTICLE_PUBLISH,
+                        'plugins.generic.dataverse.log.researchDataPublished'
+                    );
                 }
             }
         } catch (RuntimeException $e) {
