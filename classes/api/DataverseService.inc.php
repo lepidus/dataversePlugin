@@ -435,7 +435,13 @@ class DataverseService
 
             if (json_decode($response)->status == 'OK') {
                 $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-                return $dataverseStudyDAO->deleteStudy($study);
+                $studyDeleted = $dataverseStudyDAO->deleteStudy($study);
+                $this->registerDatasetEventLog(
+                    $study->getSubmissionId(),
+                    SUBMISSION_LOG_METADATA_UPDATE,
+                    'plugins.generic.dataverse.log.researchDataDeleted'
+                );
+                return $studyDeleted;
             }
         } catch (RuntimeException $e) {
             $dataverseNotificationMgr = new DataverseNotificationManager();
