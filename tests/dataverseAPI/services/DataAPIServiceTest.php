@@ -30,9 +30,7 @@ class DataAPIServiceTest extends PKPTestCase
 
         if ($responseState == self::SUCCESS) {
             $message = 'OK';
-            $data = json_encode([
-                'serverName' => 'Demo Dataverse'
-            ]);
+            $data = file_get_contents(__DIR__ . '/../../assets/nativeAPICollectionResponseExample.json');
         } else {
             $message = 'Error Processing Request';
             $data = null;

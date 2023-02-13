@@ -17,8 +17,8 @@ class DataAPIService
             throw new Exception($response->getMessage(), $response->getStatusCode());
         }
 
-        $dataverseServerData = json_decode($response->getData());
+        $dataverseServerData = json_decode($response->getData())->data;
 
-        return $dataverseServerData->serverName;
+        return $dataverseServerData->name;
     }
 }

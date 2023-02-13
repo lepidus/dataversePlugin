@@ -29,7 +29,7 @@ class NativeAPIClient implements IDataAPIClient
     public function getDataverseData(): DataverseResponse
     {
         $type = 'GET';
-        $url = $this->endpoints->getDataverseCollectionUrl();
+        $url = $this->endpoints->getDataverseServerUrl();
         $options = $this->getDataverseOptions();
 
         return $this->executeRequest($type, $url, $options);
