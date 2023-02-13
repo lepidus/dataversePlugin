@@ -9,6 +9,11 @@ class NativeAPIEndpoints extends DataverseEndpoints
         return $this->server->getDataverseServerUrl() . '/api';
     }
 
+    public function getDataverseServerUrl(): string
+    {
+        return $this->getAPIBaseUrl() . '/dataverses/' . ':root';
+    }
+
     public function getDataverseCollectionUrl(): string
     {
         return $this->getAPIBaseUrl() . '/dataverses/' . $this->server->getDataverseCollection();

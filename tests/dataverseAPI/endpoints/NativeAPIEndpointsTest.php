@@ -21,6 +21,14 @@ class NativeAPIEndpointsTest extends DataverseEndpointsTestCase
         return new NativeAPIEndpoints($server);
     }
 
+    public function testReturnsCorrectDataverseServerUrl(): void
+    {
+        $expectedServerUrl = 'https://demo.dataverse.org/api/dataverses/:root';
+        $ServerUrl = $this->endpoints->getDataverseServerUrl();
+
+        $this->assertEquals($expectedServerUrl, $ServerUrl);
+    }
+
     public function testReturnsCorrectDataverseCollectionUrl(): void
     {
         $expectedCollectionUrl = 'https://demo.dataverse.org/api/dataverses/example';
