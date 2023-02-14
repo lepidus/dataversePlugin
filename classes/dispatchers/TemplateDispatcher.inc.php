@@ -7,6 +7,7 @@ import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
 import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
 import('plugins.generic.dataverse.classes.dataverseAPI.DataverseAPIService');
+import('plugins.generic.dataverse.classes.factories.DataverseServerFactory');
 
 class TemplateDispatcher extends DataverseDispatcher
 {
@@ -31,7 +32,9 @@ class TemplateDispatcher extends DataverseDispatcher
 
         if (isset($study)) {
             try {
-                $client = new NativeAPIClient($submission->getContextId());
+                $serverFactory = new DataverseServerFactory();
+                $server = $serverFactory->createDataverseServer($submission->getContextId());
+                $client = new NativeAPIClient($server);
                 $service = new DataverseAPIService();
                 $dataset = $service->getDataset($study->getPersistentId(), $client);
                 $templateMgr->assign('datasetCitation', $dataset->getCitation());
@@ -275,7 +278,9 @@ class TemplateDispatcher extends DataverseDispatcher
             return;
         }
 
-        $client = new NativeAPIClient($form->submissionContext->getId());
+        $serverFactory = new DataverseServerFactory();
+        $server = $serverFactory->createDataverseServer($form->submissionContext->getId());
+        $client = new NativeAPIClient($server);
         $service = new DataAPIService($client);
 
         $params = [

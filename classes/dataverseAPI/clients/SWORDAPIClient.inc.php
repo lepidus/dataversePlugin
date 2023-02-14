@@ -19,11 +19,11 @@ class SWORDAPIClient implements IDepositAPIClient
 
     private $endpoints;
 
-    public function __construct(int $contextId)
+    public function __construct(DataverseServer $server)
     {
         $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => false));
-        $this->server = new DataverseServer($contextId);
-        $this->endpoints = new SWORDAPIEndpoints($this->server);
+        $this->endpoints = new SWORDAPIEndpoints($server);
+        $this->server = $server;
     }
 
     public function getDatasetPackager(Dataset $datataset): DatasetPackager
