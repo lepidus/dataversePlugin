@@ -33,10 +33,14 @@ class TemplateDispatcher extends DataverseDispatcher
         if (isset($study)) {
             try {
                 $serverFactory = new DataverseServerFactory();
-                $server = $serverFactory->createDataverseServer($submission->getContextId());
+                $contentId = $submission->getContextId();
+                $server = $serverFactory->createDataverseServer($contentId);
+
                 $client = new NativeAPIClient($server);
                 $service = new DataverseAPIService();
+
                 $dataset = $service->getDataset($study->getPersistentId(), $client);
+
                 $templateMgr->assign('datasetCitation', $dataset->getCitation());
                 $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
             } catch (Exception $e) {
@@ -279,13 +283,16 @@ class TemplateDispatcher extends DataverseDispatcher
         }
 
         $serverFactory = new DataverseServerFactory();
-        $server = $serverFactory->createDataverseServer($form->submissionContext->getId());
+        $contentId = $form->submissionContext->getId();
+        $server = $serverFactory->createDataverseServer($contentId);
+
         $client = new NativeAPIClient($server);
         $service = new DataAPIService($client);
 
         $params = [
             'persistentUri' => $study->getPersistentUri(),
-            'serverName' => $service->getDataverseServerName()
+            'serverName' => $service->getDataverseServerName(),
+            'serverUrl' => $server->getDataverseServerUrl(),
         ];
 
         $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
