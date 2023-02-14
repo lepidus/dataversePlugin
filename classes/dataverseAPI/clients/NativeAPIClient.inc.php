@@ -25,10 +25,19 @@ class NativeAPIClient implements IDataAPIClient
         return new NativeAPIDatasetFactory($response);
     }
 
-    public function getDataverseData(): DataverseResponse
+    public function getDataverseServerData(): DataverseResponse
     {
         $type = 'GET';
         $url = $this->endpoints->getDataverseServerUrl();
+        $options = $this->getDataverseOptions();
+
+        return $this->executeRequest($type, $url, $options);
+    }
+
+    public function getDataverseCollectionData(): DataverseResponse
+    {
+        $type = 'GET';
+        $url = $this->endpoints->getDataverseCollectionUrl();
         $options = $this->getDataverseOptions();
 
         return $this->executeRequest($type, $url, $options);
