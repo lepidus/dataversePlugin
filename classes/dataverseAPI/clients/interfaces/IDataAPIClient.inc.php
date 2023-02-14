@@ -4,7 +4,9 @@ interface IDataAPIClient
 {
     public function getDatasetFactory(DataverseResponse $response): DatasetFactory;
 
-    public function getDataverseData(): DataverseResponse;
+    public function getDataverseServerData(): DataverseResponse;
+
+    public function getDataverseCollectionData(): DataverseResponse;
 
     public function getDatasetData(string $persistentId): DataverseResponse;
 }

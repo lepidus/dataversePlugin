@@ -3,7 +3,6 @@
 import('plugins.generic.dataverse.classes.dataverseAPI.clients.interfaces.IDataAPIClient');
 import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.NativeAPIEndpoints');
 import('plugins.generic.dataverse.classes.factories.dataset.NativeAPIDatasetFactory');
-import('plugins.generic.dataverse.classes.dataverseAPI.DataverseServer');
 import('plugins.generic.dataverse.classes.entities.DataverseResponse');
 
 class NativeAPIClient implements IDataAPIClient
@@ -14,11 +13,11 @@ class NativeAPIClient implements IDataAPIClient
 
     private $httpClient;
 
-    public function __construct(int $contextId)
+    public function __construct(DataverseServer $server)
     {
-        $this->server = new DataverseServer($contextId);
-        $this->endpoints = new NativeAPIEndpoints($this->server);
         $this->httpClient = Application::get()->getHttpClient();
+        $this->endpoints = new NativeAPIEndpoints($server);
+        $this->server = $server;
     }
 
     public function getDatasetFactory(DataverseResponse $response): DatasetFactory
@@ -26,7 +25,16 @@ class NativeAPIClient implements IDataAPIClient
         return new NativeAPIDatasetFactory($response);
     }
 
-    public function getDataverseData(): DataverseResponse
+    public function getDataverseServerData(): DataverseResponse
+    {
+        $type = 'GET';
+        $url = $this->endpoints->getDataverseServerUrl();
+        $options = $this->getDataverseOptions();
+
+        return $this->executeRequest($type, $url, $options);
+    }
+
+    public function getDataverseCollectionData(): DataverseResponse
     {
         $type = 'GET';
         $url = $this->endpoints->getDataverseCollectionUrl();

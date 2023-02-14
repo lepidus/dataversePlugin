@@ -5,17 +5,6 @@ import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.SWORDAPIEndpoin
 
 class SWORDAPIEndpointsTest extends DataverseEndpointsTestCase
 {
-    protected function getDataverseCredentialsData(): array
-    {
-        return [
-            'dataverseUrl' => 'https://demo.dataverse.org/dataverse/example',
-            'apiToken' => 'randomToken',
-            'termsOfUse' => [
-                'en_US' => 'https://demo.dataverse.org/terms-of-use'
-            ]
-        ];
-    }
-
     protected function createDataverseEndpoints(DataverseServer $server): DataverseEndpoints
     {
         return new SWORDAPIEndpoints($server);

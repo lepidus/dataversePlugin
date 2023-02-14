@@ -98,6 +98,30 @@ describe('Deposit Draft Dataverse on Submission', function() {
 });
 
 describe('Publish research data when submission is published', function() {
+	it('Check research data notice is displayed', function() {
+		cy.login(adminUser, adminPassword);
+		cy.get('a')
+			.contains(adminUser)
+			.click();
+		cy.get('a')
+			.contains('Dashboard')
+			.click();
+		cy.get('#myQueue a:contains("View"):first').click();
+		cy.get('li > .pkpButton').click();
+		cy.get('.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton').click();
+
+		cy.get('div[id^=publish').invoke('text').should(
+			'match',
+			/This preprint has deposited research data: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/
+		).and(
+			'contain',
+			'When posting this preprint, the data will also be published in Dataverse.'
+		).and(
+			'contain',
+			'Please make sure the research data is suitable for publication in ' + dataverseServerName
+		);
+	});
+	
 	it('Publish Created Submission', function() {
 		cy.login(adminUser, adminPassword);
 		cy.get('a')

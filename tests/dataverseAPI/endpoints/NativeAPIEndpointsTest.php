@@ -5,20 +5,17 @@ import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.NativeAPIEndpoi
 
 class NativeAPIEndpointsTest extends DataverseEndpointsTestCase
 {
-    protected function getDataverseCredentialsData(): array
-    {
-        return [
-            'dataverseUrl' => 'https://demo.dataverse.org/dataverse/example',
-            'apiToken' => 'randomToken',
-            'termsOfUse' => [
-                'en_US' => 'https://demo.dataverse.org/terms-of-use'
-            ]
-        ];
-    }
-
     protected function createDataverseEndpoints(DataverseServer $server): DataverseEndpoints
     {
         return new NativeAPIEndpoints($server);
+    }
+
+    public function testReturnsCorrectDataverseServerUrl(): void
+    {
+        $expectedServerUrl = 'https://demo.dataverse.org/api/dataverses/:root';
+        $ServerUrl = $this->endpoints->getDataverseServerUrl();
+
+        $this->assertEquals($expectedServerUrl, $ServerUrl);
     }
 
     public function testReturnsCorrectDataverseCollectionUrl(): void

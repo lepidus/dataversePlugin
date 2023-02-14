@@ -199,3 +199,8 @@ msgstr "Research data published"
 
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Research data deleted"
+
+msgid "plugin.generic.dataverse.notification.submission.researchData"
+msgstr "This preprint has deposited research data: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
+"When posting this preprint, the data will also be published in Dataverse.<br>"
+"Please make sure the research data is suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."

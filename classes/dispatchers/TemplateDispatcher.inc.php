@@ -5,7 +5,9 @@ import('plugins.generic.dataverse.classes.APACitation');
 import('lib.pkp.classes.submission.SubmissionFile');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
+import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
 import('plugins.generic.dataverse.classes.dataverseAPI.DataverseAPIService');
+import('plugins.generic.dataverse.classes.factories.DataverseServerFactory');
 
 class TemplateDispatcher extends DataverseDispatcher
 {
@@ -14,6 +16,7 @@ class TemplateDispatcher extends DataverseDispatcher
         HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addDatasetDataToWorkflow'));
         HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
+        HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNotice'));
 
         parent::__construct($plugin);
     }
@@ -29,9 +32,15 @@ class TemplateDispatcher extends DataverseDispatcher
 
         if (isset($study)) {
             try {
-                $client = new NativeAPIClient($submission->getContextId());
+                $serverFactory = new DataverseServerFactory();
+                $contentId = $submission->getContextId();
+                $server = $serverFactory->createDataverseServer($contentId);
+
+                $client = new NativeAPIClient($server);
                 $service = new DataverseAPIService();
+
                 $dataset = $service->getDataset($study->getPersistentId(), $client);
+
                 $templateMgr->assign('datasetCitation', $dataset->getCitation());
                 $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
             } catch (Exception $e) {
@@ -259,5 +268,36 @@ class TemplateDispatcher extends DataverseDispatcher
         $templateMgr->setState([
             'components' => $workflowComponents
         ]);
+    }
+
+    public function addDatasetPublishNotice(string $hookName, \PKP\components\forms\FormComponent $form): void
+    {
+        if ($form->id !== 'publish' || !empty($form->errors)) {
+            return;
+        }
+
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($form->publication->getData('submissionId'));
+
+        if (empty($study)) {
+            return;
+        }
+
+        $serverFactory = new DataverseServerFactory();
+        $contentId = $form->submissionContext->getId();
+        $server = $serverFactory->createDataverseServer($contentId);
+
+        $client = new NativeAPIClient($server);
+        $service = new DataAPIService($client);
+
+        $params = [
+            'persistentUri' => $study->getPersistentUri(),
+            'serverName' => $service->getDataverseServerName(),
+            'serverUrl' => $server->getDataverseServerUrl(),
+        ];
+
+        $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
+            'description' => __("plugin.generic.dataverse.notification.submission.researchData", $params),
+            'groupId' => 'default',
+        ]));
     }
 }
