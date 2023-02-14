@@ -5,6 +5,7 @@ import('plugins.generic.dataverse.classes.APACitation');
 import('lib.pkp.classes.submission.SubmissionFile');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
+import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
 import('plugins.generic.dataverse.classes.dataverseAPI.DataverseAPIService');
 
 class TemplateDispatcher extends DataverseDispatcher
@@ -274,8 +275,12 @@ class TemplateDispatcher extends DataverseDispatcher
             return;
         }
 
+        $client = new NativeAPIClient($form->submissionContext->getId());
+        $service = new DataAPIService($client);
+
         $params = [
-            'persistentUri' => $study->getPersistentUri()
+            'persistentUri' => $study->getPersistentUri(),
+            'serverName' => $service->getDataverseServerName()
         ];
 
         $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
