@@ -11,7 +11,7 @@ class DataAPIService
 
     public function getDataverseServerName(): string
     {
-        $response = $this->client->getDataverseData();
+        $response = $this->client->getDataverseServerData();
 
         if ($response->getStatusCode() > 300) {
             throw new Exception($response->getMessage(), $response->getStatusCode());
@@ -20,5 +20,18 @@ class DataAPIService
         $dataverseServerData = json_decode($response->getData())->data;
 
         return $dataverseServerData->name;
+    }
+
+    public function getDataverseCollectionName(): string
+    {
+        $response = $this->client->getDataverseCollectionData();
+
+        if ($response->getStatusCode() > 300) {
+            throw new Exception($response->getMessage(), $response->getStatusCode());
+        }
+
+        $dataverseCollectionData = json_decode($response->getData())->data;
+
+        return $dataverseCollectionData->name;
     }
 }

@@ -9,31 +9,29 @@ class DataAPIServiceTest extends PKPTestCase
 
     private const FAIL = 400;
 
-    private function getDataClientMock(int $responseState): IDataAPIClient
+    private function getDataAPIClientMock(string $method, int $responseState, string $data = null): IDataAPIClient
     {
-        $response = $this->getDataClientResponse($responseState);
+        $response = $this->getDataAPIClientResponse($responseState, $data);
 
         $clientMock = $this->getMockBuilder(IDataAPIClient::class)
-            ->setMethods(array('getDataverseData'))
+            ->setMethods(array($method))
             ->getMock();
 
         $clientMock->expects($this->any())
-            ->method('getDataverseData')
+            ->method($method)
             ->will($this->returnValue($response));
 
         return $clientMock;
     }
 
-    private function getDataClientResponse(int $responseState): DataverseResponse
+    private function getDataAPIClientResponse(int $responseState, string $data = null): DataverseResponse
     {
         $statusCode = $responseState;
 
         if ($responseState == self::SUCCESS) {
             $message = 'OK';
-            $data = file_get_contents(__DIR__ . '/../../assets/nativeAPICollectionResponseExample.json');
         } else {
             $message = 'Error Processing Request';
-            $data = null;
         }
 
         return new DataverseResponse($statusCode, $message, $data);
@@ -41,7 +39,13 @@ class DataAPIServiceTest extends PKPTestCase
 
     public function testReturnsDataverseServerNameWhenAPIRequestIsSuccessful(): void
     {
-        $client = $this->getDataClientMock(self::SUCCESS);
+        $data = json_encode(array(
+            'data' => array(
+                'name' => 'Demo Dataverse'
+            )
+        ));
+
+        $client = $this->getDataAPIClientMock('getDataverseServerData', self::SUCCESS, $data);
         $service = new DataAPIService($client);
 
         $this->assertEquals(
@@ -50,12 +54,29 @@ class DataAPIServiceTest extends PKPTestCase
         );
     }
 
+    public function testReturnsDataverseCollectionNameWhenAPIRequestIsSuccessful(): void
+    {
+        $data = json_encode(array(
+            'data' => array(
+                'name' => 'Example Collection'
+            )
+        ));
+
+        $client = $this->getDataAPIClientMock('getDataverseCollectionData', self::SUCCESS, $data);
+        $service = new DataAPIService($client);
+
+        $this->assertEquals(
+            'Example Collection',
+            $service->getDataverseCollectionName()
+        );
+    }
+
     public function testTrownExceptionWhenAPIRequestFail(): void
     {
         $this->expectExceptionCode(self::FAIL);
         $this->expectExceptionMessage('Error Processing Request');
 
-        $client = $this->getDataClientMock(self::FAIL);
+        $client = $this->getDataAPIClientMock('getDataverseServerData', self::FAIL);
         $service = new DataAPIService($client);
         $service->getDataverseServerName();
     }
