@@ -4,10 +4,11 @@ class DraftDatasetFilesValidator
 {
     public function galleyContainsResearchData(array $galleyFiles, array $datasetFiles): bool
     {
+        $filesDir = Config::getVar('files', 'files_dir');
         $contains = false;
 
         foreach ($galleyFiles as $galleyFile) {
-            $galleyFilePath = $galleyFile->getFilePath();
+            $galleyFilePath = $filesDir . '/' . $galleyFile->getData('path');
 
             foreach ($datasetFiles as $datasetFile) {
                 $datasetFilePath = $datasetFile->getFilePath();

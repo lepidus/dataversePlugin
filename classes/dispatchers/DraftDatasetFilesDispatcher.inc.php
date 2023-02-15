@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
+import('plugins.generic.dataverse.classes.DraftDatasetFilesValidator');
 
 class DraftDatasetFilesDispatcher extends DataverseDispatcher
 {
@@ -86,18 +87,15 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         ';
     }
 
-    public function validateDraftDatasetFiles(string $hookName, array $params): bool
+    public function validateDraftDatasetFiles(string $hookName, array $params): void
     {
         $form =& $params[0];
         $submission = $form->submission;
 
-        $galleys = $submission->getGalleys();
-        $galleyFiles = array_map(function (ArticleGalley $galley) {
-            return Services::get('submissionFile')->get($galley->getFileId());
-        }, $galleys);
-
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
         $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submission->getId());
+
+        $galleys = $submission->getGalleys();
 
         import('lib.pkp.classes.file.TemporaryFileManager');
         $datasetFiles = array_map(function (DraftDatasetFile $draftFile) {
@@ -108,6 +106,15 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             );
         }, $draftDatasetFiles);
 
-        return false;
+        $galleyFiles = array_map(function (ArticleGalley $galley) {
+            return Services::get('submissionFile')->get($galley->getFileId());
+        }, $galleys);
+
+        $validator = new DraftDatasetFilesValidator();
+        if ($validator->galleyContainsResearchData($galleyFiles, $datasetFiles)) {
+            $form->addErrorField('submitStep2FormNotification');
+            $form->addError('submitStep2FormNotification', __("plugins.generic.dataverse.notification.galleyContainsResearchData"));
+            return;
+        }
     }
 }
