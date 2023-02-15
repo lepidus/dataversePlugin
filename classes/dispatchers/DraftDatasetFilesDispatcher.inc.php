@@ -92,9 +92,21 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $submission = $form->submission;
 
         $galleys = $submission->getGalleys();
-        $galleyFiles = array_map(function ($galley) {
+        $galleyFiles = array_map(function (ArticleGalley $galley) {
             return Services::get('submissionFile')->get($galley->getFileId());
         }, $galleys);
+
+        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+        $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submission->getId());
+
+        import('lib.pkp.classes.file.TemporaryFileManager');
+        $datasetFiles = array_map(function (DraftDatasetFile $draftFile) {
+            $temporaryFileManager = new TemporaryFileManager();
+            return $temporaryFileManager->getFile(
+                $draftFile->getData('fileId'),
+                $draftFile->getData('userId')
+            );
+        }, $draftDatasetFiles);
 
         return false;
     }
