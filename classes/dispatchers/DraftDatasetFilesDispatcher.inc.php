@@ -7,6 +7,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     public function __construct(Plugin $plugin)
     {
         HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFilesContainer'));
+        HookRegistry::register('submissionsubmitstep2form::validate', array($this, 'validateDraftDatasetFiles'));
         HookRegistry::register('TemplateManager::display', array($this, 'loadDraftDatasetFilePageComponent'));
 
         parent::__construct($plugin);
@@ -83,5 +84,18 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             {/capture}
             {load_url_in_div id=""|uniqid|escape url=$draftDatasetFileFormUrl}
         ';
+    }
+
+    public function validateDraftDatasetFiles(string $hookName, array $params): bool
+    {
+        $form =& $params[0];
+        $submission = $form->submission;
+
+        $galleys = $submission->getGalleys();
+        $galleyFiles = array_map(function ($galley) {
+            return Services::get('submissionFile')->get($galley->getFileId());
+        }, $galleys);
+
+        return false;
     }
 }
