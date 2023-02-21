@@ -41,7 +41,38 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
         $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submission->getId());
 
-        $galleys = $submission->getGalleys();
+        if (empty($draftDatasetFiles)) {
+            return;
+        }
+
+        $this->validateDataverseTermsOfUse($form);
+        $this->validateGalleyContainsResearchData($form);
+    }
+
+    private function validateDataverseTermsOfUse(SubmissionSubmitStep2Form $form): void
+    {
+        $form->readUserVars(['termsOfUse']);
+
+        if (!$form->getData('termsOfUse')) {
+            $form->addError('dataverseStep2ValidationError', __('plugins.generic.dataverse.termsOfUse.error'));
+            $form->addErrorField('dataverseStep2ValidationError');
+        }
+    }
+
+    private function validateGalleyContainsResearchData(SubmissionSubmitStep2Form $form): void
+    {
+        $galleys = $form->submission->getGalleys();
+
+        if (empty($galleys)) {
+            return;
+        }
+
+        $galleyFiles = array_map(function (ArticleGalley $galley) {
+            return Services::get('submissionFile')->get($galley->getFileId());
+        }, $galleys);
+
+        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+        $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($form->submission->getId());
 
         import('lib.pkp.classes.file.TemporaryFileManager');
         $datasetFiles = array_map(function (DraftDatasetFile $draftFile) {
@@ -52,15 +83,10 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             );
         }, $draftDatasetFiles);
 
-        $galleyFiles = array_map(function (ArticleGalley $galley) {
-            return Services::get('submissionFile')->get($galley->getFileId());
-        }, $galleys);
-
         $validator = new DraftDatasetFilesValidator();
         if ($validator->galleyContainsResearchData($galleyFiles, $datasetFiles)) {
-            $form->addErrorField('submitStep2FormNotification');
-            $form->addError('submitStep2FormNotification', __("plugins.generic.dataverse.notification.galleyContainsResearchData"));
-            return;
+            $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.notification.galleyContainsResearchData"));
+            $form->addErrorField('dataverseStep2ValidationError');
         }
     }
 }
