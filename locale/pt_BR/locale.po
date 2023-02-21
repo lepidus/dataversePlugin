@@ -56,8 +56,8 @@ msgstr "Não é possível enviar o mesmo arquivo como dados de pesquisa e compos
 msgid "plugins.generic.dataverse.researchData"
 msgstr "Dados de pesquisa"
 
-msgid "plugins.generic.dataverse.datasetButton"
-msgstr "Enviar dados de pesquisa"
+msgid "plugins.generic.dataverse.addResearchData"
+msgstr "Adicione dados de pesquisa"
 
 msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Dataset depositado com sucesso em {$dataverseUrl}."
@@ -105,7 +105,7 @@ msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
 msgstr "Arquivo de dados de pesquisa"
 
 msgid "plugins.generic.dataverse.researchDataFile.error"
-msgstr "Um arquivo de dados de pesquisa é necessária. Certifique-se que você escolheu e enviou um arquivo."
+msgstr "Um arquivo de dados de pesquisa é necessário. Certifique-se que você escolheu e enviou um arquivo."
 
 msgid "plugins.generic.dataverse.termsOfUse.label"
 msgstr "Termos de uso do Dataverse"

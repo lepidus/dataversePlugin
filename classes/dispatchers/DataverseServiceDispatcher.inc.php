@@ -109,6 +109,7 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         $component =& $params[0];
         switch ($component) {
             case 'plugins.generic.dataverse.handlers.DataverseHandler':
+            case 'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler':
                 return true;
                 break;
         }

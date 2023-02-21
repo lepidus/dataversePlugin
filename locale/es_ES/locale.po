@@ -56,8 +56,8 @@ msgstr "No es posible enviar el mismo archivo en datos de investigación y galer
 msgid "plugins.generic.dataverse.researchData"
 msgstr "Datos de investigación"
 
-msgid "plugins.generic.dataverse.datasetButton"
-msgstr "Cargar Datos de investigación"
+msgid "plugins.generic.dataverse.addResearchData"
+msgstr "Anãdir datos de investigación"
 
 msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Conjunto de datos depositado con éxito en {$dataverseUrl}."

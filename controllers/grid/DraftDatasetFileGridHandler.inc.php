@@ -55,10 +55,10 @@ class DraftDatasetFileGridHandler extends GridHandler
                 'addFile',
                 new AjaxModal(
                     $router->url($request, null, null, 'addFile', null, $this->getRequestArgs()),
-                    __('plugins.generic.dataverse.researchData.addResearchData'),
+                    __('plugins.generic.dataverse.modal.addFile.title'),
                     'modal_add_item'
                 ),
-                __('plugins.generic.dataverse.researchData.addResearchData'),
+                __('plugins.generic.dataverse.addResearchData'),
                 'add_item'
             )
         );

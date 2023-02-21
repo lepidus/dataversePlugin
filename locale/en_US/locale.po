@@ -53,8 +53,8 @@ msgstr "It is not possible to send the same file in research data and galley."
 msgid "plugins.generic.dataverse.researchData"
 msgstr "Research data"
 
-msgid "plugins.generic.dataverse.datasetButton"
-msgstr "Upload research data"
+msgid "plugins.generic.dataverse.addResearchData"
+msgstr "Add research data"
 
 msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Dataset successful created in {$dataverseUrl}"
