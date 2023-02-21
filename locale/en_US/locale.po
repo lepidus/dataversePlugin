@@ -98,6 +98,9 @@ msgstr "Dataset metadata successfully updated."
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Upload research data file"
 
+msgid "plugins.generic.dataverse.researchDataFile.error"
+msgstr "A research data file is required. Please ensure that you have chosen and uploaded a file."
+
 msgid "plugins.generic.dataverse.termsOfUse.label"
 msgstr "Dataverse terms of use"
 

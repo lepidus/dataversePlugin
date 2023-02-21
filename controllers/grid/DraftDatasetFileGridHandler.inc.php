@@ -81,8 +81,8 @@ class DraftDatasetFileGridHandler extends GridHandler
 
     protected function getRowInstance()
     {
-        import('plugins.generic.dataverse.controllers.grid.ResearchDataFileGridRow');
-        return new ResearchDataFileGridRow(
+        import('plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridRow');
+        return new DraftDatasetFileGridRow(
             $this->getSubmission(),
             $this->getPublication()
         );
@@ -90,23 +90,23 @@ class DraftDatasetFileGridHandler extends GridHandler
 
     public function getFileNameColumn(): GridColumn
     {
-        import('plugins.generic.dataverse.controllers.grid.ResearchDataFileGridCellProvider');
+        import('plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridCellProvider');
         return new GridColumn(
             'label',
             'common.name',
             null,
             null,
-            new ResearchDataFileGridCellProvider()
+            new DraftDatasetFileGridCellProvider()
         );
     }
 
-    public function getNewFileForm(): ResearchDataFileForm
+    public function getNewFileForm(): DraftDatasetFileForm
     {
         $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
-        $template = $plugin->getTemplateResource('form/researchDataFileForm.tpl');
+        $template = $plugin->getTemplateResource('form/draftDatasetFileForm.tpl');
 
-        import('plugins.generic.dataverse.controllers.grid.form.ResearchDataFileForm');
-        return new ResearchDataFileForm(
+        import('plugins.generic.dataverse.controllers.grid.form.DraftDatasetFileForm');
+        return new DraftDatasetFileForm(
             $template,
             $this->getSubmission()->getId(),
             $this->getPublication()->getId()

@@ -104,6 +104,9 @@ msgstr "Enviar archivo de datos de investigación"
 msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
 msgstr "Archivo de datos de investigación"
 
+msgid "plugins.generic.dataverse.researchDataFile.error"
+msgstr "Se necesita un archivo de datos de investigación. Asegúrese de que ha elegido y cargado un archivo."
+
 msgid "plugins.generic.dataverse.termsOfUse.label"
 msgstr "Términos de uso del Dataverse"
 
