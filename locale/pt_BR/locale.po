@@ -111,10 +111,10 @@ msgid "plugins.generic.dataverse.termsOfUse.label"
 msgstr "Termos de uso do Dataverse"
 
 msgid "plugins.generic.dataverse.termsOfUse.description"
-msgstr "Depositar arquivo no Dataverse: <strong>{$dataverseName}</strong>, concordando com os <a href=\"{$termsOfUseURL}\" target=\"_new\">Termos de Uso</a>."
+msgstr "Depositar dados de pesquisa no Dataverse <strong>{$dataverseName}</strong>, concordando com os <a href=\"{$termsOfUseURL}\" target=\"_new\">Termos de Uso</a>."
 
 msgid "plugins.generic.dataverse.termsOfUse.error"
-msgstr "Para depositar este arquivo você deve aceitar os termos de uso."
+msgstr "Para depositar dados de pesquisa você deve aceitar os termos de uso do Dataverse."
 
 msgid "plugins.generic.dataverse.modal.deleteDatasetFile"
 msgstr "Excluir arquivo de dados de pesquisa"

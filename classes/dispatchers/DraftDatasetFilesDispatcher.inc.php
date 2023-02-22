@@ -8,7 +8,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     public function __construct(Plugin $plugin)
     {
         HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFileContainer'));
-        HookRegistry::register('submissionsubmitstep2form::validate', array($this, 'validateDraftDatasetFiles'));
+        HookRegistry::register('submissionsubmitstep2form::validate', array($this, 'addStep2Validation'));
 
         parent::__construct($plugin);
     }
@@ -20,6 +20,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
         $request = PKPApplication::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign('termsOfUseArgs', $this->getTermsOfUseArgs());
 
         $templateOutput = $templateMgr->fetch($form->_template);
         $pattern = '/<div[^>]+class="section formButtons form_buttons[^>]+>/';
@@ -33,7 +34,33 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         return $output;
     }
 
-    public function validateDraftDatasetFiles(string $hookName, array $params): void
+    private function getTermsOfUseArgs(): array
+    {
+        $context = Application::get()->getRequest()->getContext();
+        $locale = AppLocale::getLocale();
+
+        import('plugins.generic.dataverse.classes.factories.DataverseServerFactory');
+        $dvServerFactory = new DataverseServerFactory();
+        $dvServer = $dvServerFactory->createDataverseServer($context->getId());
+
+        import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
+        $dvAPIClient = new NativeAPIClient($dvServer);
+
+        import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
+        $dvDataService = new DataAPIService($dvAPIClient);
+
+        $dvCollectionName = $dvDataService->getDataverseCollectionName();
+
+        $credentials = $dvServer->getCredentials();
+        $termsOfUse = $credentials->getLocalizedData('termsOfUse', $locale);
+
+        return [
+            'termsOfUseURL' => $termsOfUse,
+            'dataverseName' => $dvCollectionName
+        ];
+    }
+
+    public function addStep2Validation(string $hookName, array $params): void
     {
         $form =& $params[0];
         $submission = $form->submission;
