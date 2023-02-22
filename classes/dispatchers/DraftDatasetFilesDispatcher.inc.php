@@ -1,87 +1,119 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
+import('plugins.generic.dataverse.classes.DraftDatasetFilesValidator');
 
 class DraftDatasetFilesDispatcher extends DataverseDispatcher
 {
     public function __construct(Plugin $plugin)
     {
-        HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFilesContainer'));
-        HookRegistry::register('TemplateManager::display', array($this, 'loadDraftDatasetFilePageComponent'));
+        HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFileContainer'));
+        HookRegistry::register('submissionsubmitstep2form::validate', array($this, 'addStep2Validation'));
 
         parent::__construct($plugin);
     }
 
-    public function loadDraftDatasetFilePageComponent(string $hookName, array $params): bool
+    public function addDraftDatasetFileContainer(string $hookName, array $params): ?string
     {
-        $templateMgr = &$params[0];
-        $request = Application::get()->getRequest();
+        $form = $params[0];
+        $output =& $params[1];
 
-        $templateMgr->addJavaScript(
-            'draftDatasetFilePage',
-            $this->plugin->getPluginFullPath() . '/js/DraftDatasetFilesPage.js',
-            [
-                'contexts' => ['backend'],
-                'priority' => STYLE_SEQUENCE_LAST,
-            ]
-        );
-
-        $templateMgr->addStyleSheet(
-            'draftDatasetFileUpload',
-            $this->plugin->getPluginFullPath() . '/styles/draftDatasetFileUpload.css',
-            [
-                'contexts' => ['backend']
-            ]
-        );
-
-        return false;
-    }
-
-    public function addDraftDatasetFilesContainer(string $hookName, array $params): bool
-    {
         $request = PKPApplication::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->assign('termsOfUseArgs', $this->getTermsOfUseArgs());
 
-        $form = $params[0];
-        $form->readUserVars(array('submissionId'));
-        $submissionId = $form->getData('submissionId');
-
-        $templateMgr->assign('submissionId', $submissionId);
-
-        $templateMgr->registerFilter("output", array($this, 'draftDatasetFilesContainerFilter'));
-
-        return false;
-    }
-
-    public function draftDatasetFilesContainerFilter(string $output, Smarty_Internal_Template $templateMgr): string
-    {
-        if (
-            preg_match('/<div[^>]+class="section formButtons form_buttons[^>]*"[^>]*>/', $output, $matches, PREG_OFFSET_CAPTURE)
-            && $templateMgr->template_resource == 'submission/form/step2.tpl'
-        ) {
-            $datasetFilesContainer = $this->getDraftDatasetFilesContainer();
-            $newOutput = $templateMgr->fetch('string:' . $datasetFilesContainer);
-            $newOutput .= $output;
-            $output = $newOutput;
-            $templateMgr->unregisterFilter('output', array($this, 'datasetFileFormFilter'));
+        $templateOutput = $templateMgr->fetch($form->_template);
+        $pattern = '/<div[^>]+class="section formButtons form_buttons[^>]+>/';
+        if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
+            $offset = $matches[0][1];
+            $output = substr($templateOutput, 0, $offset);
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('draftDatasetFile.tpl'));
+            $output .= substr($templateOutput, $offset);
         }
 
         return $output;
     }
 
-    private function getDraftDatasetFilesContainer(): string
+    private function getTermsOfUseArgs(): array
     {
-        return '
-            {capture assign=draftDatasetFileFormUrl}
-                {url 
-                    router=$smarty.const.ROUTE_COMPONENT 
-                    component="plugins.generic.dataverse.handlers.DataverseHandler" 
-                    op="draftDatasetFiles"
-                    submissionId=$submissionId
-                    escape=false
-                }
-            {/capture}
-            {load_url_in_div id=""|uniqid|escape url=$draftDatasetFileFormUrl}
-        ';
+        $context = Application::get()->getRequest()->getContext();
+        $locale = AppLocale::getLocale();
+
+        import('plugins.generic.dataverse.classes.factories.DataverseServerFactory');
+        $dvServerFactory = new DataverseServerFactory();
+        $dvServer = $dvServerFactory->createDataverseServer($context->getId());
+
+        import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
+        $dvAPIClient = new NativeAPIClient($dvServer);
+
+        import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
+        $dvDataService = new DataAPIService($dvAPIClient);
+
+        $dvCollectionName = $dvDataService->getDataverseCollectionName();
+
+        $credentials = $dvServer->getCredentials();
+        $termsOfUse = $credentials->getLocalizedData('termsOfUse', $locale);
+
+        return [
+            'termsOfUseURL' => $termsOfUse,
+            'dataverseName' => $dvCollectionName
+        ];
+    }
+
+    public function addStep2Validation(string $hookName, array $params): void
+    {
+        $form =& $params[0];
+        $submission = $form->submission;
+
+        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+        $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submission->getId());
+
+        if (empty($draftDatasetFiles)) {
+            return;
+        }
+
+        $this->validateDataverseTermsOfUse($form);
+        $this->validateGalleyContainsResearchData($form);
+    }
+
+    private function validateDataverseTermsOfUse(SubmissionSubmitStep2Form $form): void
+    {
+        $form->readUserVars(['termsOfUse']);
+
+        if (!$form->getData('termsOfUse')) {
+            $form->addError('dataverseStep2ValidationError', __('plugins.generic.dataverse.termsOfUse.error'));
+            $form->addErrorField('dataverseStep2ValidationError');
+        }
+    }
+
+    private function validateGalleyContainsResearchData(SubmissionSubmitStep2Form $form): void
+    {
+        $galleys = $form->submission->getGalleys();
+
+        if (empty($galleys)) {
+            return;
+        }
+
+        $galleyFiles = array_map(function (ArticleGalley $galley) {
+            return Services::get('submissionFile')->get($galley->getFileId());
+        }, $galleys);
+
+        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+        $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($form->submission->getId());
+
+        import('lib.pkp.classes.file.TemporaryFileManager');
+        $datasetFiles = array_map(function (DraftDatasetFile $draftFile) {
+            $temporaryFileManager = new TemporaryFileManager();
+            return $temporaryFileManager->getFile(
+                $draftFile->getData('fileId'),
+                $draftFile->getData('userId')
+            );
+        }, $draftDatasetFiles);
+
+        $validator = new DraftDatasetFilesValidator();
+        if ($validator->galleyContainsResearchData($galleyFiles, $datasetFiles)) {
+            $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.notification.galleyContainsResearchData"));
+            $form->addErrorField('dataverseStep2ValidationError');
+        }
     }
 }

@@ -14,12 +14,10 @@ const submissionData = {
 	keywords: ['Modern History'],
 	files: [
 		{
-			galleyLabel: 'CSV',
 			file: 'dummy.pdf',
 			fileName: 'Data Table.pdf'
 		},
 		{
-			galleyLabel: 'JPG',
 			file: 'dummy.pdf',
 			fileName: 'Amostra.pdf'
 		}
@@ -304,7 +302,7 @@ describe('Check dataset data edit is disabled', function() {
 			'div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]'
 		).should('be.disabled');
 		cy.get('button')
-			.contains('Upload research data')
+			.contains('Add research data')
 			.should('be.disabled');
 		cy.get(
 			'#datasetFiles .listPanel__item .listPanel__itemActions button'

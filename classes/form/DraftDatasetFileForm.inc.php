@@ -38,7 +38,6 @@ class DraftDatasetFileForm extends FormComponent
 
     private function getTermsOfUseData($contextId)
     {
-        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
         $locale = AppLocale::getLocale();
 
         $dvServerFactory = new DataverseServerFactory();

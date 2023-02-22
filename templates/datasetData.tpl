@@ -34,7 +34,7 @@
                         <template slot="actions">
                             <pkp-button ref="datasetFileModalButton"
                                 @click="$.pkp.plugins.generic.dataverse.datasetFileModalOpen">
-                                {translate key="plugins.generic.dataverse.datasetButton"}
+                                {translate key="plugins.generic.dataverse.addResearchData"}
                             </pkp-button>
                         </template>
                     </pkp-header>

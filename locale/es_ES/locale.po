@@ -50,11 +50,14 @@ msgstr "Ingrese una clave API para Dataverse."
 msgid "plugins.generic.dataverse.researchDataDescription"
 msgstr "Use este campo solo para enviar datos de investigación. Para enviar el manuscrito, utilice “{$addGalleyLabel}”"
 
+msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
+msgstr "Datos de investigación y galerada tienen el mismo archivo. Asegúrese de que los archivos se agreguen en la sección correspondiente."
+
 msgid "plugins.generic.dataverse.researchData"
 msgstr "Datos de investigación"
 
-msgid "plugins.generic.dataverse.datasetButton"
-msgstr "Cargar Datos de investigación"
+msgid "plugins.generic.dataverse.addResearchData"
+msgstr "Anãdir datos de investigación"
 
 msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Conjunto de datos depositado con éxito en {$dataverseUrl}."
@@ -101,14 +104,17 @@ msgstr "Enviar archivo de datos de investigación"
 msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
 msgstr "Archivo de datos de investigación"
 
+msgid "plugins.generic.dataverse.researchDataFile.error"
+msgstr "Se necesita un archivo de datos de investigación. Asegúrese de que ha elegido y cargado un archivo."
+
 msgid "plugins.generic.dataverse.termsOfUse.label"
 msgstr "Términos de uso del Dataverse"
 
 msgid "plugins.generic.dataverse.termsOfUse.description"
-msgstr "Depositar archivo en Dataverse: <strong>{$dataverseName}</strong>, estando de acuerdo con el <a href=\"{$termsOfUseURL}\" target=\"_new\">Términos de Uso</a>."
+msgstr "Depositar datos de investigación <strong>{$dataverseName}</strong>, estando de acuerdo con el <a href=\"{$termsOfUseURL}\" target=\"_new\">Términos de Uso</a>."
 
 msgid "plugins.generic.dataverse.termsOfUse.error"
-msgstr "Para depositar este archivo debe aceptar los términos de uso."
+msgstr "Para depositar datos de investigación debe aceptar los términos de uso del Dataverse."
 
 msgid "plugins.generic.dataverse.modal.deleteDatasetFile"
 msgstr "Eliminar archivo de datos de investigación"

@@ -290,7 +290,7 @@ describe('Edit Draft Dataset Files', function () {
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('button[aria-controls="dataset_files"]').click();
 		cy.get('button')
-			.contains('Upload research data')
+			.contains('Add research data')
 			.click();
 		cy.fixture('dummy.pdf', 'base64').then(fileContent => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').upload({

@@ -47,11 +47,14 @@ msgstr "Dataverse Terms of Use URL"
 msgid "plugins.generic.dataverse.researchDataDescription"
 msgstr "Use this field only for submitting research data. To send the manuscript, use “{$addGalleyLabel}”"
 
+msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
+msgstr "Research data and galley have the same file. Make sure the files are added in the proper section."
+
 msgid "plugins.generic.dataverse.researchData"
 msgstr "Research data"
 
-msgid "plugins.generic.dataverse.datasetButton"
-msgstr "Upload research data"
+msgid "plugins.generic.dataverse.addResearchData"
+msgstr "Add research data"
 
 msgid "plugins.generic.dataverse.notification.statusCreated"
 msgstr "Dataset successful created in {$dataverseUrl}"
@@ -95,14 +98,17 @@ msgstr "Dataset metadata successfully updated."
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Upload research data file"
 
+msgid "plugins.generic.dataverse.researchDataFile.error"
+msgstr "A research data file is required. Please ensure that you have chosen and uploaded a file."
+
 msgid "plugins.generic.dataverse.termsOfUse.label"
 msgstr "Dataverse terms of use"
 
 msgid "plugins.generic.dataverse.termsOfUse.description"
-msgstr "Deposit file in Dataverse: <strong>{$dataverseName}</strong>, agreeing to the <a href=\"{$termsOfUseURL}\" target=\"_new\">Terms of Use</a>."
+msgstr "Deposit research data in Dataverse <strong>{$dataverseName}</strong>, agreeing to the <a href=\"{$termsOfUseURL}\" target=\"_new\">Terms of Use</a>."
 
 msgid "plugins.generic.dataverse.termsOfUse.error"
-msgstr "To deposit this file you must accept the terms of use."
+msgstr "To deposit research data you must accept the Dataverse terms of use."
 
 msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
 msgstr "Research data file"

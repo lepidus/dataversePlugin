@@ -31,8 +31,7 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 				file: 'dummy.pdf',
 				fileName: data.title + '.pdf',
 				fileTitle: data.title,
-				genre: Cypress.env('defaultGenre'),
-				publishData: false
+				genre: Cypress.env('defaultGenre')
 			}
 		];
 	else
@@ -80,22 +79,24 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 		Cypress.env('contextTitles').en_US == 'Public Knowledge Preprint Server'
 	) {
 		data.files.forEach(file => {
-			cy.get('button:contains("Upload research data")').click();
-			cy.get('[data-modal="datasetModal"]').then($datasetModal => {
-				cy.fixture(file.file, 'base64').then(fileContent => {
-					cy.get('input[type=file]').upload({
-						fileContent,
-						fileName: file.fileName,
-						mimeType: 'application/pdf',
-						encoding: 'base64'
-					});
+			cy.contains('Add research data').click();
+			cy.wait(200);
+			cy.fixture(file.file, { encoding: 'base64' }).then(fileContent => {
+				cy.get('input[type=file]').upload({
+					fileContent,
+					'fileName': file.fileName,
+					'mimeType': 'application/pdf',
+					'encoding': 'base64'
 				});
-				cy.get('input[name="termsOfUse"').check();
-				cy.get('[data-modal="datasetModal"] button:contains("Save")').click();
 			});
+			cy.wait(200);
+			cy.get('#uploadForm button').contains('OK').click();
+			cy.wait(200);
 		});
 		// Other applications use the submission files list panel
 	}
+
+	cy.get('input[name="termsOfUse"').check();
 
 	// Save the ID to the data object
 	cy.location('search').then(search => {
