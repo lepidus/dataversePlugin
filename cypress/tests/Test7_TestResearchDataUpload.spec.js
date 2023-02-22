@@ -37,7 +37,7 @@ describe('Test research data upload features', function() {
 				fileName: 'Data Table.pdf',
 				mimeType: 'application/pdf',
 				encoding: 'base64'
-			});
+			}).as('fileUpload');
 		});
 		cy.wait(200);
 		cy.get('#uploadForm button').contains('OK').click();
@@ -63,13 +63,13 @@ describe('Test research data upload features', function() {
 		cy.get('button.submitFormButton').click();
 
 		cy.get('a:contains("Add galley")').click();
-		cy.wait(2000);
+		cy.wait(200);
 		cy.get('div.pkp_modal_panel').then($modalDiv => {
-			cy.wait(3000);
+			cy.wait(300);
 			if ($modalDiv.find('div.header:contains("Create New Galley")').length) {
 				cy.get('div.pkp_modal_panel input[id^="label-"]').type('PDF', {delay: 0});
 				cy.get('div.pkp_modal_panel button:contains("Save")').click();
-				cy.wait(2000);
+				cy.wait(200);
 			}
 		});
 		cy.get('select[id=genreId]').select('Preprint Text');
@@ -82,7 +82,7 @@ describe('Test research data upload features', function() {
 			});
 		});
 		cy.get('button').contains('Continue').click();
-		cy.wait(2000);
+		cy.wait(200);
 		cy.get('button').contains('Continue').click();
 		cy.get('button').contains('Complete').click();
 
