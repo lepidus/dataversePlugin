@@ -25,8 +25,7 @@ describe('View Dataverse Terms of Use page', function() {
 			.click();
 		cy.get('button.submitFormButton').click();
 
-		cy.get('button:contains("Upload research data")').click();
-        cy.get('span a').contains('Terms of Use').then(termsOfUse => {
+        cy.get('label a:contains(Terms of Use)').then(termsOfUse => {
             expect(termsOfUse).to.have.attr('href', Cypress.env('dataverseTermsOfUse'));
         });
 	});
