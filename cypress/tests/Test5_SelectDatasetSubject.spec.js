@@ -35,7 +35,7 @@ describe('Defines a subject to submission dataset', function() {
 		cy.get('button.submitFormButton').click();
 
 		cy.contains('Add research data').click();
-		cy.wait(200);
+		cy.wait(1000);
 		cy.fixture('dummy.pdf', 'base64').then(fileContent => {
 			cy.get('input[type=file]').upload({
 				fileContent,
@@ -45,17 +45,17 @@ describe('Defines a subject to submission dataset', function() {
 			});
 		});
 		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
 		cy.get('#uploadForm button').contains('OK').click();
 		cy.wait(200);
 
-		cy.get('input[name="termsOfUse"').check();
 
 		cy.location('search').then(search => {
 			submissionId = parseInt(search.split('=')[1], 10);
 		});
 
 		cy.waitJQuery();
-		cy.get('button.submitFormButton').click();
+		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.get('select[id^="datasetSubject"').should('be.visible');
 	});

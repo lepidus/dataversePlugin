@@ -25,12 +25,8 @@ describe('Test research data upload features', function() {
 			.click();
 		cy.get('button.submitFormButton').click();
 
-        cy.get('label a:contains(Terms of Use)').then(termsOfUse => {
-            expect(termsOfUse).to.have.attr('href', Cypress.env('dataverseTermsOfUse'));
-        });
-
 		cy.contains('Add research data').click();
-		cy.wait(200);
+		cy.wait(1000);
 		cy.fixture('dummy.pdf', 'base64').then(fileContent => {
 			cy.get('input[type=file]').upload({
 				fileContent,
@@ -40,12 +36,12 @@ describe('Test research data upload features', function() {
 			}).as('fileUpload');
 		});
 		cy.wait(200);
+		cy.get('label a:contains(Terms of Use)').then(termsOfUse => {
+            expect(termsOfUse).to.have.attr('href', Cypress.env('dataverseTermsOfUse'));
+        });
 		cy.get('#uploadForm button').contains('OK').click();
-		cy.wait(200);
 
-		cy.get('#submitStep2Form button.submitFormButton').click();
-
-		cy.get('#submitStep2FormNotification').should('contain', 'To deposit research data you must accept the Dataverse terms of use.');
+		cy.get('label[for="termsOfUse"]').should('contain', 'This field is required');
 	});
 
 	it('Check galley contains research data', function() {
@@ -87,7 +83,7 @@ describe('Test research data upload features', function() {
 		cy.get('button').contains('Complete').click();
 
 		cy.contains('Add research data').click();
-		cy.wait(200);
+		cy.wait(1000);
 		cy.fixture('dummy.pdf', 'base64').then(fileContent => {
 			cy.get('input[type=file]').upload({
 				fileContent,
@@ -97,9 +93,9 @@ describe('Test research data upload features', function() {
 			});
 		});
 		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
 		cy.get('#uploadForm button').contains('OK').click();
 		cy.wait(200);
-		cy.get('input[name="termsOfUse"').check();
 
 		cy.get('#submitStep2Form button.submitFormButton').click();
 

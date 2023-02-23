@@ -80,7 +80,7 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 	) {
 		data.files.forEach(file => {
 			cy.contains('Add research data').click();
-			cy.wait(200);
+			cy.wait(1000);
 			cy.fixture(file.file, { encoding: 'base64' }).then(fileContent => {
 				cy.get('input[type=file]').upload({
 					fileContent,
@@ -90,13 +90,12 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 				});
 			});
 			cy.wait(200);
+			cy.get('input[name="termsOfUse"').check();
 			cy.get('#uploadForm button').contains('OK').click();
 			cy.wait(200);
 		});
 		// Other applications use the submission files list panel
 	}
-
-	cy.get('input[name="termsOfUse"').check();
 
 	// Save the ID to the data object
 	cy.location('search').then(search => {
@@ -105,7 +104,7 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
 	});
 
 	cy.waitJQuery();
-	cy.get('button.submitFormButton').click();
+	cy.get('#submitStep2Form button.submitFormButton').click();
 
 	// === Submission Step 3 ===
 	// Metadata fields
