@@ -27,6 +27,11 @@
         {/fbvFormSection}
     {/fbvFormArea}
 
+    {capture assign="termsOfUseDescription"}{translate key="plugins.generic.dataverse.termsOfUse.description" params=$termsOfUseArgs}{/capture}    
+    {fbvFormSection label="plugins.generic.dataverse.termsOfUse.label" list=true}
+        {fbvElement type="checkbox" name="termsOfUse" id="termsOfUse" checked=false label=$termsOfUseDescription translate=false}
+    {/fbvFormSection}
+
     <p><span class="formRequired">{translate key="common.requiredField"}</span></p>
 
     {fbvFormButtons}
