@@ -16,6 +16,7 @@ class DraftDatasetFileForm extends Form
         $this->publicationId = $publicationId;
 
         $this->addCheck(new FormValidator($this, 'temporaryFileId', 'required', 'plugins.generic.dataverse.researchDataFile.error'));
+        $this->addCheck(new FormValidator($this, 'termsOfUse', 'required', 'plugins.generic.dataverse.termsOfUse.error'));
 
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
@@ -78,7 +79,8 @@ class DraftDatasetFileForm extends Form
     {
         $this->readUserVars([
             'temporaryFileId',
-            'submissionId'
+            'submissionId',
+            'termsOfUse'
         ]);
     }
 

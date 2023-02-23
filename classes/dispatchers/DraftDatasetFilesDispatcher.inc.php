@@ -39,24 +39,11 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $submission = $form->submission;
 
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
-        $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submission->getId());
-
-        if (empty($draftDatasetFiles)) {
+        if (empty($draftDatasetFileDAO->getBySubmissionId($submission->getId()))) {
             return;
         }
 
-        $this->validateDataverseTermsOfUse($form);
         $this->validateGalleyContainsResearchData($form);
-    }
-
-    private function validateDataverseTermsOfUse(SubmissionSubmitStep2Form $form): void
-    {
-        $form->readUserVars(['termsOfUse']);
-
-        if (!$form->getData('termsOfUse')) {
-            $form->addError('dataverseStep2ValidationError', __('plugins.generic.dataverse.termsOfUse.error'));
-            $form->addErrorField('dataverseStep2ValidationError');
-        }
     }
 
     private function validateGalleyContainsResearchData(SubmissionSubmitStep2Form $form): void
