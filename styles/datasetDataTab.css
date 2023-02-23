@@ -14,7 +14,7 @@
 
 #datasetData .pkpTabs::before {
     content: "";
-    display: table;
+    display: inherit;
     border-bottom: 1px solid #ddd;
     width: 100%;
 }
