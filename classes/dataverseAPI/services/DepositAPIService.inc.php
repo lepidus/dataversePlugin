@@ -1,26 +1,15 @@
 <?php
 
-class DataverseAPIService
+class DepositAPIService
 {
-    public function getDataset(string $persistentId, IDataAPIClient $client): ?Dataset
+    private $client;
+
+    public function __construct(IDepositAPIClient $client)
     {
-        $response = $client->getDatasetData($persistentId);
-
-        if (
-            $response->getStatusCode() >= 200
-            && $response->getStatusCode() < 300
-        ) {
-            $factory = $client->getDatasetFactory($response);
-            $dataset = $factory->getDataset();
-            return $dataset;
-        } else {
-            throw new Exception($response->getMessage(), $response->getStatusCode());
-        }
-
-        return null;
+        $this->client = $client;
     }
 
-    public function depositDataset(SubmissionAdapter $submission, IDepositAPIClient $client): ?DataverseStudy
+    public function depositDataset(SubmissionAdapter $submission): ?DataverseStudy
     {
         $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
@@ -29,11 +18,11 @@ class DataverseAPIService
             return null;
         }
 
-        $packager = $client->getDatasetPackager($dataset);
+        $packager = $this->client->getDatasetPackager($dataset);
         $packager->createDatasetPackage();
         $packager->createFilesPackage();
 
-        $depositResponse = $client->depositDataset($packager);
+        $depositResponse = $this->client->depositDataset($packager);
         if ($depositResponse->getStatusCode() > 300) {
             throw new Exception($depositResponse->getMessage(), $depositResponse->getStatusCode());
             return null;
@@ -44,7 +33,7 @@ class DataverseAPIService
             $depositResponse->getData()
         );
 
-        $filesDepositResponse = $client->depositDatasetFiles($study->getPersistentId(), $packager);
+        $filesDepositResponse = $this->client->depositDatasetFiles($study->getPersistentId(), $packager);
         if ($depositResponse->getStatusCode() > 300) {
             throw new Exception($depositResponse->getMessage(), $depositResponse->getStatusCode());
             return null;

@@ -21,6 +21,6 @@ class NativeAPIEndpoints extends DataverseEndpoints
 
     public function getDatasetDataUrl(string $persistentId): string
     {
-        return $this->getAPIBaseUrl() . '/datasets/export?exporter=dataverse_json&persistentId=' . $persistentId;
+        return $this->getAPIBaseUrl() . '/datasets/:persistentId/?persistentId=' . $persistentId;
     }
 }

@@ -1,15 +1,10 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
-import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
-import('plugins.generic.dataverse.classes.dataverseAPI.DataverseAPIService');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 
-class DataverseServiceDispatcher extends DataverseDispatcher
+class DataverseEventsDispatcher extends DataverseDispatcher
 {
-    public function __construct(Plugin $plugin)
+    protected function registerHooks(): void
     {
         HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'datasetDepositOnSubmission'));
         HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
@@ -18,8 +13,26 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDatasetsHandler'));
         HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
+    }
 
-        parent::__construct($plugin);
+    public function getDataverseConfiguration(): DataverseConfiguration
+    {
+        $context = $this->plugin->getRequest()->getContext();
+        $contextId = $context->getId();
+
+        import('plugins.generic.dataverse.classes.DataverseConfiguration');
+        return new DataverseConfiguration(
+            $this->plugin->getSetting($contextId, 'dataverseUrl'),
+            $this->plugin->getSetting($contextId, 'apiToken')
+        );
+    }
+
+    public function getDataverseService(): DataverseService
+    {
+        import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
+        $serviceFactory = new DataverseServiceFactory();
+        $service = $serviceFactory->build($this->getDataverseConfiguration(), $this->plugin);
+        return $service;
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool

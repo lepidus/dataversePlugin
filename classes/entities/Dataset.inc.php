@@ -82,16 +82,6 @@ class Dataset extends DataObject
         $this->setData('pubCitation', $pubCitation);
     }
 
-    public function getCitation(): ?string
-    {
-        return $this->getData('citation');
-    }
-
-    public function setCitation(string $citation): void
-    {
-        $this->setData('citation', $citation);
-    }
-
     public function getFiles(): ?array
     {
         return $this->getData('files');

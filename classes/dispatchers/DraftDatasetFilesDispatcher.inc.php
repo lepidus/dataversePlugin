@@ -1,16 +1,13 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.classes.DraftDatasetFilesValidator');
 
 class DraftDatasetFilesDispatcher extends DataverseDispatcher
 {
-    public function __construct(Plugin $plugin)
+    protected function registerHooks(): void
     {
         HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFileContainer'));
         HookRegistry::register('submissionsubmitstep2form::validate', array($this, 'addStep2Validation'));
-
-        parent::__construct($plugin);
     }
 
     public function addDraftDatasetFileContainer(string $hookName, array $params): ?string
@@ -70,6 +67,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             );
         }, $draftDatasetFiles);
 
+        import('plugins.generic.dataverse.classes.DraftDatasetFilesValidator');
         $validator = new DraftDatasetFilesValidator();
         if ($validator->galleyContainsResearchData($galleyFiles, $datasetFiles)) {
             $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.notification.galleyContainsResearchData"));

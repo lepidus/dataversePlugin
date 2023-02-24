@@ -34,4 +34,16 @@ class DataAPIService
 
         return $dataverseCollectionData->name;
     }
+
+    public function getDataset(string $persistentId): Dataset
+    {
+        $response = $this->client->getDatasetData($persistentId);
+
+        if ($response->getStatusCode() > 300) {
+            throw new Exception($response->getMessage(), $response->getStatusCode());
+        }
+
+        $factory = $this->client->getDatasetFactory($response);
+        return $factory->getDataset();
+    }
 }

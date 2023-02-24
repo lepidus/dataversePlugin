@@ -1,22 +1,19 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.classes.DataverseMetadata');
 
 class DatasetSubjectDispatcher extends DataverseDispatcher
 {
-    public function __construct(Plugin $plugin)
+    protected function registerHooks(): void
     {
         HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addSubjectField'));
         HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'readSubjectField'));
-
-        parent::__construct($plugin);
     }
 
     public function addSubjectField($hookName, $args): void
     {
         $templateMgr =& $args[1];
-        $output = &$args[2];
+        $output =& $args[2];
 
         $submissionId = $templateMgr->get_template_vars('submissionId');
         $submission = Services::get('submission')->get($submissionId);
@@ -25,7 +22,9 @@ class DatasetSubjectDispatcher extends DataverseDispatcher
         $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submissionId);
 
         if (!empty($draftDatasetFiles)) {
+            import('plugins.generic.dataverse.classes.DataverseMetadata');
             $dataverseSubjectVocab = DataverseMetadata::getDataverseSubjects();
+
             $datasetSubjectLabels = array_column($dataverseSubjectVocab, 'label');
             $datasetSubjectValues = array_column($dataverseSubjectVocab, 'value');
 
@@ -46,6 +45,7 @@ class DatasetSubjectDispatcher extends DataverseDispatcher
         $form->readUserVars(array('datasetSubject'));
         $subject = $form->getData('datasetSubject');
 
+        import('plugins.generic.dataverse.classes.DataverseMetadata');
         $dataverseSubjectVocab = DataverseMetadata::getDataverseSubjects();
         $datasetSubjectValues = array_column($dataverseSubjectVocab, 'value');
 

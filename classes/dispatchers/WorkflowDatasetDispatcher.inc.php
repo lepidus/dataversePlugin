@@ -6,138 +6,34 @@ import('lib.pkp.classes.submission.SubmissionFile');
 import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
 import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
-import('plugins.generic.dataverse.classes.dataverseAPI.DataverseAPIService');
 import('plugins.generic.dataverse.classes.factories.DataverseServerFactory');
 
-class TemplateDispatcher extends DataverseDispatcher
+class WorkflowDatasetDispatcher extends DataverseDispatcher
 {
-    public function __construct(Plugin $plugin)
+    protected function registerHooks(): void
     {
-        HookRegistry::register('Templates::Preprint::Details', array($this, 'addDataCitationSubmission'));
-        HookRegistry::register('Template::Workflow::Publication', array($this, 'addDatasetDataToWorkflow'));
-        HookRegistry::register('TemplateManager::display', array($this, 'loadResourceToWorkflow'));
-        HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNotice'));
-
-        parent::__construct($plugin);
+        HookRegistry::register('Template::Workflow::Publication', array($this, 'addResearchDataTab'));
+        HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
     }
 
-    public function addDataCitationSubmission(string $hookName, array $params): bool
+    private function getSubmissionStudy($submission): ?DataverseStudy
     {
-        $templateMgr =& $params[1];
-        $output =& $params[2];
-
-        $submission = $templateMgr->getTemplateVars('preprint');
-        $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
+        $dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
-
-        if (isset($study)) {
-            try {
-                $serverFactory = new DataverseServerFactory();
-                $contentId = $submission->getContextId();
-                $server = $serverFactory->createDataverseServer($contentId);
-
-                $client = new NativeAPIClient($server);
-                $service = new DataverseAPIService();
-
-                $dataset = $service->getDataset($study->getPersistentId(), $client);
-
-                $templateMgr->assign('datasetCitation', $dataset->getCitation());
-                $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
-            } catch (Exception $e) {
-                error_log($e->getMessage());
-            }
-        }
-
-        return false;
+        return $study;
     }
 
-    public function loadJavaScript($pluginPath, $templateManager)
+    private function getPluginFullPath($request): string
     {
-        $templateManager->addJavaScript(
-            'dataverseScripts',
-            $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js',
-            [
-                'contexts' => ['backend']
-            ]
-        );
+        return $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
     }
 
-    public function loadResourceToWorkflow(string $hookName, array $params): bool
-    {
-        $templateMgr = $params[0];
-        $template = $params[1];
-
-
-        if ($template == 'workflow/workflow.tpl' || $template == 'authorDashboard/authorDashboard.tpl') {
-            $request = Application::get()->getRequest();
-
-            $pluginPath = $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
-            $submission = $templateMgr->get_template_vars('submission');
-
-            $study = $this->getSubmissionStudy($submission);
-
-            $templateMgr->addStyleSheet(
-                'datasetData',
-                $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/styles/datasetDataTab.css',
-                [
-                    'contexts' => ['backend']
-                ]
-            );
-
-            if (!empty($study)) {
-                $templateMgr->addJavaScript(
-                    'dataverseHelper',
-                    $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dataverseHelper.js',
-                    [
-                        'inline' => false,
-                        'contexts' => ['backend']
-                    ]
-                );
-
-                $this->loadJavaScript($pluginPath, $templateMgr);
-                $this->addJavaScriptVariables($request, $templateMgr, $study);
-
-                $this->setupDatasetMetadataForm($request, $templateMgr, $study);
-                $this->setupDatasetFilesList($request, $templateMgr, $study);
-                $this->setupDatasetFileForm($request, $templateMgr, $study);
-            }
-        }
-        return false;
-    }
-
-    public function addJavaScriptVariables($request, $templateManager, $study): void
-    {
-        $dispatcher = $request->getDispatcher();
-        $context = $request->getContext();
-
-        $configuration = $this->getDataverseConfiguration();
-        $dataverseServer = $configuration->getDataverseServer();
-
-        $dataverseNotificationMgr = new DataverseNotificationManager();
-        $dataverseUrl = $configuration->getDataverseUrl();
-        $params = ['dataverseUrl' => $dataverseUrl];
-        $errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
-
-        $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
-
-        $data = [
-            'datasetApiUrl' => $apiUrl,
-            "errorMessage" => $errorMessage,
-        ];
-
-        $templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
-            'inline' => true,
-            'contexts' => ['backend', 'frontend']
-        ]);
-    }
-
-    public function addDatasetDataToWorkflow(string $hookName, array $params): bool
+    public function addResearchDataTab(string $hookName, array $params): bool
     {
         $templateMgr =& $params[1];
         $output =& $params[2];
-        $context = Application::get()->getRequest()->getContext();
-        $submission = $templateMgr->get_template_vars('submission');
 
+        $submission = $templateMgr->get_template_vars('submission');
         $study = $this->getSubmissionStudy($submission);
 
         $content = isset($study) ?
@@ -153,31 +49,127 @@ class TemplateDispatcher extends DataverseDispatcher
         return false;
     }
 
-    private function getSubmissionStudy($submission): ?DataverseStudy
+    public function loadResourcesToWorkflow(string $hookName, array $params): bool
     {
-        $dataverseStudyDao =& DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
-        return $study;
-    }
+        $templateMgr = $params[0];
+        $template = $params[1];
 
-    private function setupDatasetMetadataForm($request, $templateMgr, $study): void
-    {
+        if (
+            $template != 'workflow/workflow.tpl'
+            && $template != 'authorDashboard/authorDashboard.tpl'
+        ) {
+            return false;
+        }
+
+        $request = Application::get()->getRequest();
+
+        $pluginPath = $this->getPluginFullPath($request);
+        $params = [
+            'contexts' => ['backend']
+        ];
+
+        $templateMgr->addStyleSheet(
+            'datasetTab',
+            $pluginPath . '/styles/datasetDataTab.css',
+            $params
+        );
+        $templateMgr->addJavaScript(
+            'dataverseHelper',
+            $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dataverseHelper.js',
+            $params
+        );
+
+        $submission = $templateMgr->get_template_vars('submission');
+        $study = $this->getSubmissionStudy($submission);
+
         $context = $request->getContext();
         $dispatcher = $request->getDispatcher();
 
+        if (empty($study)) {
+            $action = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
+            $method = 'POST';
+
+            import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
+            $submissionAdapterCreator = new SubmissionAdapterCreator();
+            $submissionAdapter = $submissionAdapterCreator->create($submission, $request->getUser());
+
+            import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
+            $factory = new SubmissionDatasetFactory($submission);
+            $dataset = $factory->getDataset();
+        } else {
+            $action = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+            $method = 'PUT';
+
+            try {
+                import('plugins.generic.dataverse.classes.factories.DataverseServerFactory');
+                $serverFactory = new DataverseServerFactory();
+                $server = $serverFactory->createDataverseServer($context->getId());
+
+                import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
+                $client = new NativeAPIClient($server);
+
+                import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
+                $service = new DataAPIService($client);
+                $dataset = $service->getDataset($study->getPersistentId());
+            } catch (Exception $e) {
+                error_log($e->getMessage());
+            }
+        }
+
+        $this->setupDatasetMetadataForm($request, $templateMgr, $action, $method, $dataset);
+
+        // if (!empty($study)) {
+        //     $this->loadJavaScript($pluginPath, $templateMgr);
+        //     $this->addJavaScriptVariables($request, $templateMgr, $study);
+
+        //     // $this->setupDatasetFilesList($request, $templateMgr, $study);
+        //     // $this->setupDatasetFileForm($request, $templateMgr, $study);
+        // }
+
+        return false;
+    }
+
+    public function loadJavaScript($pluginPath, $templateManager)
+    {
+        $templateManager->addJavaScript(
+            'dataverseScripts',
+            $pluginPath . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'init.js',
+            [
+                'contexts' => ['backend']
+            ]
+        );
+    }
+
+    public function addJavaScriptVariables($request, $templateManager, $study): void
+    {
+        $dispatcher = $request->getDispatcher();
+        $context = $request->getContext();
+
+        $credentials = DAORegistry::getDAO('DataverseCredentialsDAO')->get($context->getId());
+        $dataverseUrl = $credentials->getDataverseUrl();
+        $params = ['dataverseUrl' => $dataverseUrl];
+
+        import('plugins.generic.dataverse.classes.DataverseNotificationManager');
+        $dataverseNotificationMgr = new DataverseNotificationManager();
+        $errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
+
         $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
-        $vocabSuggestionUrlBase =$request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'vocabs', null, null, ['vocab' => 'submissionKeyword']);
 
-        $datasetResponse = $this->getDataverseService()->getDatasetResponse($study);
+        $data = [
+            'datasetApiUrl' => $apiUrl,
+            "errorMessage" => $errorMessage,
+        ];
 
-        $supportedFormLocales = $context->getSupportedFormLocales();
-        $localeNames = AppLocale::getAllLocales();
-        $locales = array_map(function ($localeKey) use ($localeNames) {
-            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-        }, $supportedFormLocales);
+        $templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
+            'inline' => true,
+            'contexts' => ['backend', 'frontend']
+        ]);
+    }
 
+    private function setupDatasetMetadataForm(PKPRequest $request, TemplateManager $templateMgr, string $action, string $method, Dataset $dataset): void
+    {
         $this->plugin->import('classes.form.DatasetMetadataForm');
-        $datasetMetadataForm = new DatasetMetadataForm($apiUrl, $locales, $datasetResponse, $vocabSuggestionUrlBase);
+        $datasetMetadataForm = new DatasetMetadataForm($action, $method, $dataset);
 
         $this->addComponent($templateMgr, $datasetMetadataForm);
 

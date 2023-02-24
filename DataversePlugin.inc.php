@@ -29,15 +29,18 @@ class DataversePlugin extends GenericPlugin
 
     private function loadDispatcherClasses(): void
     {
-        import('plugins.generic.dataverse.classes.dispatchers.DraftDatasetFilesDispatcher');
-        import('plugins.generic.dataverse.classes.dispatchers.DataverseServiceDispatcher');
-        import('plugins.generic.dataverse.classes.dispatchers.DatasetSubjectDispatcher');
-        import('plugins.generic.dataverse.classes.dispatchers.TemplateDispatcher');
+        $dispatcherClasses = [
+            'DatasetCitationDispatcher',
+            'DatasetSubjectDispatcher',
+            'DataverseEventsDispatcher',
+            'DraftDatasetFilesDispatcher',
+            'WorkflowDatasetDispatcher'
+        ];
 
-        $DraftDatasetFilesDispatcher = new DraftDatasetFilesDispatcher($this);
-        $datasetSubjectDispatcher = new DatasetSubjectDispatcher($this);
-        $serviceDispatcher = new DataverseServiceDispatcher($this);
-        $templateDispatcher = new TemplateDispatcher($this);
+        foreach ($dispatcherClasses as $dispatcherClass) {
+            $this->import('classes.dispatchers.' . $dispatcherClass);
+            $dispatcher = new $dispatcherClass($this);
+        }
     }
 
     private function registerDAOClasses(): void

@@ -52,6 +52,15 @@ class NativeAPIClient implements IDataAPIClient
         return $this->executeRequest($type, $url, $options);
     }
 
+    public function getDatasetCitation(string $persistentId): DataverseResponse
+    {
+        // $type = 'GET';
+        // $url = $this->endpoints->getDatasetDataUrl($persistentId);
+        // $options = $this->getDataverseOptions();
+
+        // return $this->executeRequest($type, $url, $options);
+    }
+
     public function getDataverseOptions(array $headers = [], array $options = []): array
     {
         return [
