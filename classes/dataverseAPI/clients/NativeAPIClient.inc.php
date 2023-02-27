@@ -52,15 +52,6 @@ class NativeAPIClient implements IDataAPIClient
         return $this->executeRequest($type, $url, $options);
     }
 
-    public function getDatasetCitation(string $persistentId): DataverseResponse
-    {
-        // $type = 'GET';
-        // $url = $this->endpoints->getDatasetDataUrl($persistentId);
-        // $options = $this->getDataverseOptions();
-
-        // return $this->executeRequest($type, $url, $options);
-    }
-
     public function getDatasetFilesData(string $persistentId): DataverseResponse
     {
         $type = 'GET';
@@ -68,6 +59,16 @@ class NativeAPIClient implements IDataAPIClient
         $options = $this->getDataverseOptions();
 
         return $this->executeRequest($type, $url, $options);
+    }
+
+    public function retrieveDatasetFiles(string $fileData): array
+    {
+        return array_map(function (stdClass $file) {
+            $datasetFile = new DatasetFile();
+            $datasetFile->setId($file->dataFile->id);
+            $datasetFile->setTitle($file->label);
+            return $datasetFile;
+        }, json_decode($fileData)->data);
     }
 
     public function getDataverseOptions(array $headers = [], array $options = []): array

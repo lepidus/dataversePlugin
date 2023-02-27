@@ -43,7 +43,17 @@ class DataAPIService
             throw new Exception($response->getMessage(), $response->getStatusCode());
         }
 
-        $factory = $this->client->getDatasetFactory($response);
-        return $factory->getDataset();
+        return $this->client->getDatasetFactory($response)->getDataset();
+    }
+
+    public function getDatasetFiles(string $persistentId): array
+    {
+        $response = $this->client->getDatasetFilesData($persistentId);
+
+        if ($response->getStatusCode() > 300) {
+            throw new Exception($response->getMessage(), $response->getStatusCode());
+        }
+
+        return $this->client->retrieveDatasetFiles($response->getData());
     }
 }

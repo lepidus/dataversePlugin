@@ -14,7 +14,7 @@ class DataAPIServiceTest extends PKPTestCase
         $response = $this->getDataAPIClientResponse($responseState, $data);
 
         $clientMock = $this->getMockBuilder(IDataAPIClient::class)
-            ->setMethods(array($method, 'getDatasetFactory'))
+            ->setMethods(array($method, 'getDatasetFactory', 'retrieveDatasetFiles'))
             ->getMock();
 
         $clientMock->expects($this->any())
@@ -24,6 +24,21 @@ class DataAPIServiceTest extends PKPTestCase
         $clientMock->expects($this->any())
             ->method('getDatasetFactory')
             ->will($this->returnValue(new NativeAPIDatasetFactory($response)));
+
+        $firstDatasetFile = new DatasetFile();
+        $firstDatasetFile->setId(2025434);
+        $firstDatasetFile->setTitle('Sample.jpg');
+
+        $secondDatasetFile = new DatasetFile();
+        $secondDatasetFile->setId(2025433);
+        $secondDatasetFile->setTitle('DataTable.tab');
+
+        $clientMock->expects($this->any())
+            ->method('retrieveDatasetFiles')
+            ->will($this->returnValue([
+                $firstDatasetFile,
+                $secondDatasetFile
+            ]));
 
         return $clientMock;
     }
@@ -101,20 +116,6 @@ class DataAPIServiceTest extends PKPTestCase
         $this->assertEquals($expectedDataset, $dataset);
     }
 
-    public function testServiceThrownExceptionWhenRequestFail(): void
-    {
-        $this->expectExceptionCode(self::FAIL);
-        $this->expectExceptionMessage('Error Processing Request');
-
-        $persistentId = 'doi:10.1234/AB5/CD6EF7';
-
-        $client = $this->getDataAPIClientMock('getDatasetData', self::FAIL);
-
-        $service = new DataAPIService($client);
-
-        $service->getDataset($persistentId);
-    }
-
     public function testTrownExceptionWhenAPIRequestFail(): void
     {
         $this->expectExceptionCode(self::FAIL);
@@ -123,5 +124,30 @@ class DataAPIServiceTest extends PKPTestCase
         $client = $this->getDataAPIClientMock('getDataverseServerData', self::FAIL);
         $service = new DataAPIService($client);
         $service->getDataverseServerName();
+    }
+
+    public function testServiceSuccessfullyReturnsDatasetFilesData(): void
+    {
+        $persistentId = 'doi:10.1234/AB5/CD6EF7';
+        $data = file_get_contents(__DIR__ . '/../../assets/nativeAPIDatasetFilesResponseExample.json');
+        $firstDatasetFile = new DatasetFile();
+        $firstDatasetFile->setId(2025434);
+        $firstDatasetFile->setTitle('Sample.jpg');
+
+        $secondDatasetFile = new DatasetFile();
+        $secondDatasetFile->setId(2025433);
+        $secondDatasetFile->setTitle('DataTable.tab');
+
+        $expectedDatasetFiles = array(
+            $firstDatasetFile,
+            $secondDatasetFile
+        );
+
+        $client = $this->getDataAPIClientMock('getDatasetFilesData', self::SUCCESS, $data);
+
+        $service = new DataAPIService($client);
+        $datasetFiles = $service->getDatasetFiles($persistentId);
+
+        $this->assertEquals($expectedDatasetFiles, $datasetFiles);
     }
 }

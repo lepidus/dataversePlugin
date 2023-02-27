@@ -8,5 +8,7 @@ interface IDataAPIClient
 
     public function getDatasetData(string $persistentId): DataverseResponse;
 
-    public function getDatasetCitation(string $persistentId): DataverseResponse;
+    public function getDatasetFilesData(string $persistentId): DataverseResponse;
+
+    public function retrieveDatasetFiles(string $fileData): array;
 }
