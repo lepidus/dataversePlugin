@@ -16,7 +16,7 @@ class NativeAPIDatasetFactory extends DatasetFactory
     protected function sanitizeProps(): array
     {
         $responseData = json_decode($this->response->getData());
-        $datasetData = $responseData->data->latestVersion->metadataBlocks->citation->fields;
+        $datasetData = $responseData->data->fields;
 
         $props = [];
         foreach ($datasetData as $metadata) {

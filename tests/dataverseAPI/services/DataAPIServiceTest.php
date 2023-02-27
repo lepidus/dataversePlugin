@@ -14,12 +14,16 @@ class DataAPIServiceTest extends PKPTestCase
         $response = $this->getDataAPIClientResponse($responseState, $data);
 
         $clientMock = $this->getMockBuilder(IDataAPIClient::class)
-            ->setMethods(array($method))
+            ->setMethods(array($method, 'getDatasetFactory'))
             ->getMock();
 
         $clientMock->expects($this->any())
             ->method($method)
             ->will($this->returnValue($response));
+
+        $clientMock->expects($this->any())
+            ->method('getDatasetFactory')
+            ->will($this->returnValue(new NativeAPIDatasetFactory($response)));
 
         return $clientMock;
     }
@@ -69,6 +73,46 @@ class DataAPIServiceTest extends PKPTestCase
             'Example Collection',
             $service->getDataverseCollectionName()
         );
+    }
+
+    public function testServiceSuccessfullyReturnsDatasetData(): void
+    {
+        $persistentId = 'doi:10.1234/AB5/CD6EF7';
+        $data = file_get_contents(__DIR__ . '/../../assets/nativeAPIDatasetResponseExample.json');
+
+        $client = $this->getDataAPIClientMock('getDatasetData', self::SUCCESS, $data);
+
+        $service = new DataAPIService($client);
+        $dataset = $service->getDataset($persistentId);
+
+        $contact = new DatasetContact('User, Test', 'testuser@example.com', 'Dataverse');
+        $author = new DatasetAuthor('User, Test', 'Dataverse', '0000-0000-0000-0000');
+
+        $expectedDataset = new Dataset();
+        $expectedDataset->setTitle('Test Dataset');
+        $expectedDataset->setDescription('<p>Test description</p>');
+        $expectedDataset->setAuthors(array($author));
+        $expectedDataset->setSubject('Other');
+        $expectedDataset->setKeywords(array('test'));
+        $expectedDataset->setContact($contact);
+        $expectedDataset->setPubCitation('User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems');
+        $expectedDataset->setDepositor('User, Test (via Open Preprint Systems)');
+
+        $this->assertEquals($expectedDataset, $dataset);
+    }
+
+    public function testServiceThrownExceptionWhenRequestFail(): void
+    {
+        $this->expectExceptionCode(self::FAIL);
+        $this->expectExceptionMessage('Error Processing Request');
+
+        $persistentId = 'doi:10.1234/AB5/CD6EF7';
+
+        $client = $this->getDataAPIClientMock('getDatasetData', self::FAIL);
+
+        $service = new DataAPIService($client);
+
+        $service->getDataset($persistentId);
     }
 
     public function testTrownExceptionWhenAPIRequestFail(): void

@@ -9,11 +9,8 @@ class DepositAPIService
         $this->client = $client;
     }
 
-    public function depositDataset(SubmissionAdapter $submission): ?DataverseStudy
+    public function depositDataset(Dataset $dataset): ?array
     {
-        $factory = new SubmissionDatasetFactory($submission);
-        $dataset = $factory->getDataset();
-
         if (empty($dataset->getFiles())) {
             return null;
         }
@@ -22,41 +19,18 @@ class DepositAPIService
         $packager->createDatasetPackage();
         $packager->createFilesPackage();
 
-        $depositResponse = $this->client->depositDataset($packager);
-        if ($depositResponse->getStatusCode() > 300) {
-            throw new Exception($depositResponse->getMessage(), $depositResponse->getStatusCode());
-            return null;
+        $datasetDepositResponse = $this->client->depositDataset($packager);
+        if ($datasetDepositResponse->getStatusCode() > 300) {
+            throw new Exception($datasetDepositResponse->getMessage(), $datasetDepositResponse->getStatusCode());
         }
 
-        $study = $this->insertDataverseStudy(
-            $submission->getId(),
-            $depositResponse->getData()
-        );
+        $datasetData = json_decode($datasetDepositResponse->getData(), true);
 
-        $filesDepositResponse = $this->client->depositDatasetFiles($study->getPersistentId(), $packager);
-        if ($depositResponse->getStatusCode() > 300) {
-            throw new Exception($depositResponse->getMessage(), $depositResponse->getStatusCode());
-            return null;
+        $filesDepositResponse = $this->client->depositDatasetFiles($datasetData['persistentId'], $packager);
+        if ($filesDepositResponse->getStatusCode() > 300) {
+            throw new Exception($filesDepositResponse->getMessage(), $filesDepositResponse->getStatusCode());
         }
 
-        return $study;
-    }
-
-    private function insertDataverseStudy(int $submissionId, string $responseData): DataverseStudy
-    {
-        $studyData = json_decode($responseData);
-
-        $studyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $studyDAO->newDataObject();
-        $study->setSubmissionId($submissionId);
-        $study->setEditUri($studyData->editUri);
-        $study->setEditMediaUri($studyData->editMediaUri);
-        $study->setStatementUri($studyData->statementUri);
-        $study->setPersistentUri($studyData->persistentUri);
-        $study->setPersistentId($studyData->persistentId);
-        $studyId = $studyDAO->insertStudy($study);
-        $study->setId($studyId);
-
-        return $study;
+        return json_decode($filesDepositResponse->getData(), true);
     }
 }

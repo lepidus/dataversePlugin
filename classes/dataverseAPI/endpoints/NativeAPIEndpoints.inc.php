@@ -21,6 +21,6 @@ class NativeAPIEndpoints extends DataverseEndpoints
 
     public function getDatasetDataUrl(string $persistentId): string
     {
-        return $this->getAPIBaseUrl() . '/datasets/:persistentId/?persistentId=' . $persistentId;
+        return $this->getAPIBaseUrl() . '/datasets/:persistentId/versions/:latest/metadata/citation?persistentId=' . $persistentId;
     }
 }

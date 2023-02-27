@@ -37,7 +37,6 @@ class SWORDAPIDatasetPackagerTest extends PKPTestCase
         $this->dataset->setKeywords(array('test'));
         $this->dataset->setContact($contact);
         $this->dataset->setPubCitation('User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems');
-        $this->dataset->setCitation('Test Citation');
         $this->dataset->setDepositor('User, Test (via Open Preprint Systems)');
 
         $this->packager = new SWORDAPIDatasetPackager($this->dataset);

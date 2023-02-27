@@ -87,7 +87,7 @@ class Dataset extends DataObject
         return $this->getData('files');
     }
 
-    public function setFiles(array $files): void
+    public function setFiles(?array $files): void
     {
         $this->setData('files', $files);
     }
