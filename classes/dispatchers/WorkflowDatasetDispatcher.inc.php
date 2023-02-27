@@ -101,14 +101,11 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             $method = 'PUT';
 
             try {
-                import('plugins.generic.dataverse.classes.factories.DataverseServerFactory');
                 $serverFactory = new DataverseServerFactory();
                 $server = $serverFactory->createDataverseServer($context->getId());
 
-                import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
                 $client = new NativeAPIClient($server);
 
-                import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
                 $service = new DataAPIService($client);
                 $dataset = $service->getDataset($study->getPersistentId());
             } catch (Exception $e) {
@@ -118,13 +115,13 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
 
         $this->setupDatasetMetadataForm($request, $templateMgr, $action, $method, $dataset);
 
-        // if (!empty($study)) {
-        //     $this->loadJavaScript($pluginPath, $templateMgr);
-        //     $this->addJavaScriptVariables($request, $templateMgr, $study);
+        if (!empty($study)) {
+            $this->loadJavaScript($pluginPath, $templateMgr);
+            $this->addJavaScriptVariables($request, $templateMgr, $study);
 
-        //     // $this->setupDatasetFilesList($request, $templateMgr, $study);
-        //     // $this->setupDatasetFileForm($request, $templateMgr, $study);
-        // }
+            $this->setupDatasetFilesList($request, $templateMgr, $study);
+            $this->setupDatasetFileForm($request, $templateMgr, $study);
+        }
 
         return false;
     }
@@ -186,12 +183,12 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $context = $request->getContext();
         $dispatcher = $request->getDispatcher();
 
-        $datasetFilesResponse = $this->getDataverseService()->getDatasetFiles($study);
-        $datasetFiles = array();
+        $serverFactory = new DataverseServerFactory();
+        $server = $serverFactory->createDataverseServer($context->getId());
 
-        foreach ($datasetFilesResponse->data as $data) {
-            $datasetFiles[] = ["id" => $data->dataFile->id, "title" => $data->label];
-        }
+        $client = new NativeAPIClient($server);
+        $service = new DataAPIService($client);
+        $datasetFiles = $service->getDatasetFiles($study->getPersistentId());
 
         $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file', null, null, ['fileId' => '__id__']);
 
@@ -201,7 +198,9 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             __('plugins.generic.dataverse.researchData.files'),
             [
                 'apiUrl' => $apiUrl,
-                'items' => $datasetFiles
+                'items' => array_map(function (DatasetFile $datasetFile) {
+                    return $datasetFile->getVars();
+                }, $datasetFiles)
             ]
         );
 

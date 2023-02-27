@@ -63,6 +63,7 @@ class NativeAPIClient implements IDataAPIClient
 
     public function retrieveDatasetFiles(string $fileData): array
     {
+        import('plugins.generic.dataverse.classes.entities.DatasetFile');
         return array_map(function (stdClass $file) {
             $datasetFile = new DatasetFile();
             $datasetFile->setId($file->dataFile->id);

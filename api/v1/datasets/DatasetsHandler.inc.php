@@ -222,8 +222,12 @@ class DatasetsHandler extends APIHandler
     {
         $contextId = $request->getContext()->getId();
         $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
-        $dataverseDispatcher = new DataverseDispatcher($plugin);
-        $configuration = $dataverseDispatcher->getDataverseConfiguration($contextId);
+        import('plugins.generic.dataverse.classes.DataverseConfiguration');
+        $configuration = new DataverseConfiguration(
+            $plugin->getSetting($contextId, 'dataverseUrl'),
+            $plugin->getSetting($contextId, 'apiToken')
+        );
+        import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
         $serviceFactory = new DataverseServiceFactory();
 
         return $serviceFactory->build($configuration);

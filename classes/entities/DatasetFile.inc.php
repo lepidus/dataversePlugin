@@ -49,4 +49,9 @@ class DatasetFile
     {
         $this->path = $path;
     }
+
+    public function getVars(): array
+    {
+        return get_object_vars($this);
+    }
 }
