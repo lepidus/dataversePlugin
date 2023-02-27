@@ -28,7 +28,7 @@ class NativeAPIClient implements IDataAPIClient
     public function getDataverseServerData(): DataverseResponse
     {
         $type = 'GET';
-        $url = $this->endpoints->getDataverseServerUrl();
+        $url = $this->endpoints->getDataverseServerEndpoint();
         $options = $this->getDataverseOptions();
 
         return $this->executeRequest($type, $url, $options);
@@ -37,7 +37,7 @@ class NativeAPIClient implements IDataAPIClient
     public function getDataverseCollectionData(): DataverseResponse
     {
         $type = 'GET';
-        $url = $this->endpoints->getDataverseCollectionUrl();
+        $url = $this->endpoints->getDataverseCollectionEndpoint();
         $options = $this->getDataverseOptions();
 
         return $this->executeRequest($type, $url, $options);
@@ -46,7 +46,7 @@ class NativeAPIClient implements IDataAPIClient
     public function getDatasetData(string $persistentId): DataverseResponse
     {
         $type = 'GET';
-        $url = $this->endpoints->getDatasetDataUrl($persistentId);
+        $url = $this->endpoints->getDatasetDataEndpoint($persistentId);
         $options = $this->getDataverseOptions();
 
         return $this->executeRequest($type, $url, $options);
@@ -59,6 +59,15 @@ class NativeAPIClient implements IDataAPIClient
         // $options = $this->getDataverseOptions();
 
         // return $this->executeRequest($type, $url, $options);
+    }
+
+    public function getDatasetFilesData(string $persistentId): DataverseResponse
+    {
+        $type = 'GET';
+        $url = $this->endpoints->getDatasetFilesEndpoint($persistentId);
+        $options = $this->getDataverseOptions();
+
+        return $this->executeRequest($type, $url, $options);
     }
 
     public function getDataverseOptions(array $headers = [], array $options = []): array
