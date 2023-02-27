@@ -10,28 +10,37 @@ class NativeAPIEndpointsTest extends DataverseEndpointsTestCase
         return new NativeAPIEndpoints($server);
     }
 
-    public function testReturnsCorrectDataverseServerUrl(): void
+    public function testReturnsCorrectDataverseServerEndpoint(): void
     {
-        $expectedServerUrl = 'https://demo.dataverse.org/api/dataverses/:root';
-        $ServerUrl = $this->endpoints->getDataverseServerUrl();
+        $expectedServerEndpoint = 'https://demo.dataverse.org/api/dataverses/:root';
+        $ServerEndpoint = $this->endpoints->getDataverseServerEndpoint();
 
-        $this->assertEquals($expectedServerUrl, $ServerUrl);
+        $this->assertEquals($expectedServerEndpoint, $ServerEndpoint);
     }
 
-    public function testReturnsCorrectDataverseCollectionUrl(): void
+    public function testReturnsCorrectDataverseCollectionEndpoint(): void
     {
-        $expectedCollectionUrl = 'https://demo.dataverse.org/api/dataverses/example';
-        $collectionUrl = $this->endpoints->getDataverseCollectionUrl();
+        $expectedCollectionEndpoint = 'https://demo.dataverse.org/api/dataverses/example';
+        $collectionEndpoint = $this->endpoints->getDataverseCollectionEndpoint();
 
-        $this->assertEquals($expectedCollectionUrl, $collectionUrl);
+        $this->assertEquals($expectedCollectionEndpoint, $collectionEndpoint);
     }
 
-    public function testReturnsCorrectDatasetUrl(): void
+    public function testReturnsCorrectDatasetEndpoint(): void
     {
         $persistentId = 'doi:10.1234/AB5/CD6EF7';
-        $expectedDatasetUrl = 'https://demo.dataverse.org/api/datasets/:persistentId/versions/:latest/metadata/citation?persistentId=' . $persistentId;
-        $datasetUrl = $this->endpoints->getDatasetDataUrl($persistentId);
+        $expectedDatasetEndpoint = 'https://demo.dataverse.org/api/datasets/:persistentId/versions/:latest/metadata/citation?persistentId=' . $persistentId;
+        $datasetEndpoint = $this->endpoints->getDatasetDataEndpoint($persistentId);
 
-        $this->assertEquals($expectedDatasetUrl, $datasetUrl);
+        $this->assertEquals($expectedDatasetEndpoint, $datasetEndpoint);
+    }
+
+    public function testReturnsCorrectDatasetFilesEndpoint(): void
+    {
+        $persistentId = 'doi:10.1234/AB5/CD6EF7';
+        $expectedDatasetFilesEndpoint = 'https://demo.dataverse.org/api/datasets/:persistentId/versions/:latest/files?persistentId=' . $persistentId;
+        $datasetFilesEndpoint = $this->endpoints->getDatasetFilesEndpoint($persistentId);
+
+        $this->assertEquals($expectedDatasetFilesEndpoint, $datasetFilesEndpoint);
     }
 }
