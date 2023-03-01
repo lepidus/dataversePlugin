@@ -22,12 +22,8 @@ class DatasetCitationDispatcher extends DataverseDispatcher
             try {
                 $contentId = $submission->getContextId();
 
-                import('plugins.generic.dataverse.classes.factories.DataverseServerFactory');
-                $serverFactory = new DataverseServerFactory();
-                $server = $serverFactory->createDataverseServer($contentId);
-
                 import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
-                $client = new NativeAPIClient($server);
+                $client = new NativeAPIClient($contentId);
 
                 import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
                 $service = new DataAPIService($client);

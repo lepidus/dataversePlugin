@@ -13,17 +13,29 @@ class SWORDAPIClient implements IDepositAPIClient
 
     private const SAC_INPROGRESS = false;
 
-    private $swordClient;
+    private $contextId;
 
-    private $server;
-
-    private $endpoints;
-
-    public function __construct(DataverseServer $server)
+    public function __construct(int $contextId)
     {
-        $this->swordClient = new SWORDAPPClient(array(CURLOPT_SSL_VERIFYPEER => false));
-        $this->endpoints = new SWORDAPIEndpoints($server);
-        $this->server = $server;
+        $this->contextId = $contextId;
+    }
+
+    public function getCredentials(): DataverseCredentials
+    {
+        return DAORegistry::getDAO('DataverseCredentialsDAO')->get($contextId);
+    }
+
+    public function getAPIEndpoints(): SWORDAPIEndpoints
+    {
+        return new SWORDAPIEndpoints(
+            $this->credentials->getDataverseServerUrl(),
+            $this->credentials->getDataverseCollection()
+        );
+    }
+
+    public function getSWORDClient(): SWORDAPPClient
+    {
+        return new SWORDAPPClient([CURLOPT_SSL_VERIFYPEER => false]);
     }
 
     public function getDatasetPackager(Dataset $datataset): DatasetPackager
@@ -33,9 +45,9 @@ class SWORDAPIClient implements IDepositAPIClient
 
     public function depositDataset(DatasetPackager $packager): DataverseResponse
     {
-        $response = $this->swordClient->depositAtomEntry(
-            $this->endpoints->getDataverseCollectionUrl(),
-            $this->server->getCredentials()->getAPIToken(),
+        $response = $this->getSWORDClient()->depositAtomEntry(
+            $this->getAPIEndpoints()->getDataverseCollectionUrl(),
+            $this->credentials->getAPIToken(),
             self::SAC_PASSWORD,
             self::SAC_OBO,
             $packager->getPackagePath()
@@ -64,9 +76,9 @@ class SWORDAPIClient implements IDepositAPIClient
     public function depositDatasetFiles(string $persistentId, DatasetPackager $packager): DataverseResponse
     {
         $atomPackager = $packager->getAtomPackager();
-        $response = $this->swordClient->deposit(
-            $this->endpoints->getDatasetEditMediaUrl($persistentId),
-            $this->server->getCredentials()->getAPIToken(),
+        $response = $this->getSWORDClient()->deposit(
+            $this->getAPIEndpoints()->getDatasetEditMediaUrl($persistentId),
+            $this->credentials->getAPIToken(),
             self::SAC_PASSWORD,
             self::SAC_OBO,
             $atomPackager->getPackageFilePath(),

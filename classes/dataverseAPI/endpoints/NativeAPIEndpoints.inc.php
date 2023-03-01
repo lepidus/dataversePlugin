@@ -1,12 +1,20 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.DataverseEndpoints');
-
-class NativeAPIEndpoints extends DataverseEndpoints
+class NativeAPIEndpoints
 {
+    private $dataverseServerUrl;
+
+    private $dataverseCollection;
+
+    public function __construct(string $dataverseServerUrl, string $dataverseCollection)
+    {
+        $this->dataverseServerUrl = $dataverseServerUrl;
+        $this->dataverseCollection = $dataverseCollection;
+    }
+
     protected function getAPIBaseUrl(): string
     {
-        return $this->server->getDataverseServerUrl() . '/api';
+        return $this->dataverseServerUrl . '/api';
     }
 
     public function getDataverseServerEndpoint(): string
@@ -16,7 +24,7 @@ class NativeAPIEndpoints extends DataverseEndpoints
 
     public function getDataverseCollectionEndpoint(): string
     {
-        return $this->getAPIBaseUrl() . '/dataverses/' . $this->server->getDataverseCollection();
+        return $this->getAPIBaseUrl() . '/dataverses/' . $this->dataverseCollection;
     }
 
     public function getDatasetDataEndpoint(string $persistentId): string

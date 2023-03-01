@@ -7,17 +7,29 @@ import('plugins.generic.dataverse.classes.entities.DataverseResponse');
 
 class NativeAPIClient implements IDataAPIClient
 {
-    private $server;
+    private $contextId;
 
-    private $endpoints;
-
-    private $httpClient;
-
-    public function __construct(DataverseServer $server)
+    public function __construct(int $contextId)
     {
-        $this->httpClient = Application::get()->getHttpClient();
-        $this->endpoints = new NativeAPIEndpoints($server);
-        $this->server = $server;
+        $this->contextId = $contextId;
+    }
+
+    public function getCredentials(): DataverseCredentials
+    {
+        return DAORegistry::getDAO('DataverseCredentialsDAO')->get($contextId);
+    }
+
+    public function getAPIEndpoints(): NativeAPIEndpoints
+    {
+        return new NativeAPIEndpoints(
+            $this->credentials->getDataverseServerUrl(),
+            $this->credentials->getDataverseCollection()
+        );
+    }
+
+    public function getHttpClient(): \GuzzleHttp\Client
+    {
+        return Application::get()->getHttpClient();
     }
 
     public function getDatasetFactory(DataverseResponse $response): DatasetFactory
@@ -28,7 +40,7 @@ class NativeAPIClient implements IDataAPIClient
     public function getDataverseServerData(): DataverseResponse
     {
         $type = 'GET';
-        $url = $this->endpoints->getDataverseServerEndpoint();
+        $url = $this->getAPIEndpoints()->getDataverseServerEndpoint();
         $options = $this->getDataverseOptions();
 
         return $this->executeRequest($type, $url, $options);
@@ -37,7 +49,7 @@ class NativeAPIClient implements IDataAPIClient
     public function getDataverseCollectionData(): DataverseResponse
     {
         $type = 'GET';
-        $url = $this->endpoints->getDataverseCollectionEndpoint();
+        $url = $this->getAPIEndpoints()->getDataverseCollectionEndpoint();
         $options = $this->getDataverseOptions();
 
         return $this->executeRequest($type, $url, $options);
@@ -46,7 +58,7 @@ class NativeAPIClient implements IDataAPIClient
     public function getDatasetData(string $persistentId): DataverseResponse
     {
         $type = 'GET';
-        $url = $this->endpoints->getDatasetDataEndpoint($persistentId);
+        $url = $this->getAPIEndpoints()->getDatasetDataEndpoint($persistentId);
         $options = $this->getDataverseOptions();
 
         return $this->executeRequest($type, $url, $options);
@@ -55,7 +67,7 @@ class NativeAPIClient implements IDataAPIClient
     public function getDatasetFilesData(string $persistentId): DataverseResponse
     {
         $type = 'GET';
-        $url = $this->endpoints->getDatasetFilesEndpoint($persistentId);
+        $url = $this->getAPIEndpoints()->getDatasetFilesEndpoint($persistentId);
         $options = $this->getDataverseOptions();
 
         return $this->executeRequest($type, $url, $options);
@@ -82,7 +94,7 @@ class NativeAPIClient implements IDataAPIClient
 
     private function getDataverseHeaders(array $headers = []): array
     {
-        $apiToken = $this->server->getCredentials()->getAPIToken();
+        $apiToken = $this->credentials->getAPIToken();
         $dataverseHeaders = ['X-Dataverse-key' => $apiToken];
         array_merge($dataverseHeaders, $headers);
         return $dataverseHeaders;
@@ -91,7 +103,7 @@ class NativeAPIClient implements IDataAPIClient
     private function executeRequest(string $type, string $url, array $options): DataverseResponse
     {
         try {
-            $response = $this->httpClient->request($type, $url, $options);
+            $response = $this->getHttpClient()->request($type, $url, $options);
             return new DataverseResponse(
                 $response->getStatusCode(),
                 $response->getReasonPhrase(),

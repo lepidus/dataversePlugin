@@ -45,20 +45,14 @@ class DraftDatasetFileForm extends Form
         $context = Application::get()->getRequest()->getContext();
         $locale = AppLocale::getLocale();
 
-        import('plugins.generic.dataverse.classes.factories.DataverseServerFactory');
-        $dvServerFactory = new DataverseServerFactory();
-        $dvServer = $dvServerFactory->createDataverseServer($context->getId());
-
         import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
-        $dvAPIClient = new NativeAPIClient($dvServer);
+        $dvAPIClient = new NativeAPIClient($context->getId());
 
         import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
         $dvDataService = new DataAPIService($dvAPIClient);
 
+        $termsOfUse = $dvAPIClient->getCredentials()->getLocalizedData('termsOfUse', $locale);
         $dvCollectionName = $dvDataService->getDataverseCollectionName();
-
-        $credentials = $dvServer->getCredentials();
-        $termsOfUse = $credentials->getLocalizedData('termsOfUse', $locale);
 
         return [
             'termsOfUseURL' => $termsOfUse,

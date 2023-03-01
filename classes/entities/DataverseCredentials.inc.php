@@ -31,4 +31,20 @@ class DataverseCredentials extends DataObject
     {
         return $this->getData('termsOfUse');
     }
+
+    public function getDataverseServerUrl(): string
+    {
+        preg_match(
+            '/https:\/\/(.)*?(?=\/)/',
+            $this->getDataverseUrl(),
+            $matches
+        );
+        return $matches[0];
+    }
+
+    public function getDataverseCollection(): string
+    {
+        $explodedUrl = explode('/', $dataverseUrl);
+        return end($explodedUrl);
+    }
 }
