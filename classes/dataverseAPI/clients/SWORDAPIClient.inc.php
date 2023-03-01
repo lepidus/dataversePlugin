@@ -27,9 +27,10 @@ class SWORDAPIClient implements IDepositAPIClient
 
     public function getAPIEndpoints(): SWORDAPIEndpoints
     {
+        $credentials = $this->getCredentials();
         return new SWORDAPIEndpoints(
-            $this->credentials->getDataverseServerUrl(),
-            $this->credentials->getDataverseCollection()
+            $credentials->getDataverseServerUrl(),
+            $credentials->getDataverseCollection()
         );
     }
 
@@ -47,7 +48,7 @@ class SWORDAPIClient implements IDepositAPIClient
     {
         $response = $this->getSWORDClient()->depositAtomEntry(
             $this->getAPIEndpoints()->getDataverseCollectionUrl(),
-            $this->credentials->getAPIToken(),
+            $this->getCredentials()->getAPIToken(),
             self::SAC_PASSWORD,
             self::SAC_OBO,
             $packager->getPackagePath()
@@ -78,7 +79,7 @@ class SWORDAPIClient implements IDepositAPIClient
         $atomPackager = $packager->getAtomPackager();
         $response = $this->getSWORDClient()->deposit(
             $this->getAPIEndpoints()->getDatasetEditMediaUrl($persistentId),
-            $this->credentials->getAPIToken(),
+            $this->getCredentials()->getAPIToken(),
             self::SAC_PASSWORD,
             self::SAC_OBO,
             $atomPackager->getPackageFilePath(),

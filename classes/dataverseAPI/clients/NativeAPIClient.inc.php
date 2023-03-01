@@ -21,9 +21,10 @@ class NativeAPIClient implements IDataAPIClient
 
     public function getAPIEndpoints(): NativeAPIEndpoints
     {
+        $credentials = $this->getCredentials();
         return new NativeAPIEndpoints(
-            $this->credentials->getDataverseServerUrl(),
-            $this->credentials->getDataverseCollection()
+            $credentials->getDataverseServerUrl(),
+            $credentials->getDataverseCollection()
         );
     }
 
@@ -94,7 +95,7 @@ class NativeAPIClient implements IDataAPIClient
 
     private function getDataverseHeaders(array $headers = []): array
     {
-        $apiToken = $this->credentials->getAPIToken();
+        $apiToken = $this->getCredentials()->getAPIToken();
         $dataverseHeaders = ['X-Dataverse-key' => $apiToken];
         array_merge($dataverseHeaders, $headers);
         return $dataverseHeaders;
