@@ -92,6 +92,9 @@ msgstr "O servidor encontrou um erro interno que o impediu de atender a esta req
 msgid "plugins.generic.dataverse.notification.statusUnavailable"
 msgstr "Servidor não disponível. {$dataverseUrl} está temporariamente fora do ar. Por favor, tente novamente mais tarde"
 
+msgid "plugins.generic.dataverse.notification.researchDataNotFound"
+msgstr "Dados de pesquisa com ID {$persistentId} não encontrados."
+
 msgid "plugins.generic.dataverse.notification.unknownError"
 msgstr "Erro desconhecido. Não foi possível conectar a {$dataverseUrl}"
 

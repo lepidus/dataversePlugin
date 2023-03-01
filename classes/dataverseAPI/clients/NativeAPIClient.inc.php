@@ -16,7 +16,7 @@ class NativeAPIClient implements IDataAPIClient
 
     public function getCredentials(): DataverseCredentials
     {
-        return DAORegistry::getDAO('DataverseCredentialsDAO')->get($contextId);
+        return DAORegistry::getDAO('DataverseCredentialsDAO')->get($this->contextId);
     }
 
     public function getAPIEndpoints(): NativeAPIEndpoints

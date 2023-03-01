@@ -44,7 +44,7 @@ class DataverseCredentials extends DataObject
 
     public function getDataverseCollection(): string
     {
-        $explodedUrl = explode('/', $dataverseUrl);
+        $explodedUrl = explode('/', $this->getDataverseUrl());
         return end($explodedUrl);
     }
 }

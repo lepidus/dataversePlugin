@@ -22,7 +22,7 @@ class SWORDAPIClient implements IDepositAPIClient
 
     public function getCredentials(): DataverseCredentials
     {
-        return DAORegistry::getDAO('DataverseCredentialsDAO')->get($contextId);
+        return DAORegistry::getDAO('DataverseCredentialsDAO')->get($this->contextId);
     }
 
     public function getAPIEndpoints(): SWORDAPIEndpoints
