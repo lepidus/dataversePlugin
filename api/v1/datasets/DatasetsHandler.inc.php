@@ -18,6 +18,11 @@ class DatasetsHandler extends APIHandler
             ),
             'POST' => array(
                 array(
+                    'pattern' => $this->getEndpointPattern(),
+                    'handler' => array($this, 'addDataset'),
+                    'roles' => $roles
+                ),
+                array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
                     'handler' => array($this, 'addFile'),
                     'roles' => $roles
@@ -105,6 +110,20 @@ class DatasetsHandler extends APIHandler
             return $response->withJson(['message' => 'ok'], 200);
         } else {
             return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
+        }
+    }
+
+    public function addDataset($slimRequest, $response, $args)
+    {
+        $requestParams = $slimRequest->getParsedBody();
+        $queryParams = $slimRequest->getQueryParams();
+
+        $submissionId = $queryParams['submissionId'];
+
+        $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submissionId);
+
+        if (empty($draftDatasetFiles)) {
+            return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.researchDataFile.error');
         }
     }
 

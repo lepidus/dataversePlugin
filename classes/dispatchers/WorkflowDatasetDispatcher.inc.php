@@ -75,13 +75,10 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             return false;
         }
 
-        $pluginPath = $this->getPluginFullPath();
-        $params = ['contexts' => ['backend']];
-
         $templateMgr->addStyleSheet(
             'datasetTab',
-            $pluginPath . '/styles/datasetDataTab.css',
-            $params
+            $this->getPluginFullPath() . '/styles/datasetDataTab.css',
+            ['contexts' => ['backend']]
         );
 
         $submission = $templateMgr->get_template_vars('submission');
@@ -100,12 +97,23 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
 
+        $action = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
+
+        $templateMgr->addJavaScript(
+            'workflowDataset',
+            $this->getPluginFullPath() . '/js/WorkflowDataset.js',
+            ['contexts' => ['backend']]
+        );
+
+        $templateMgr->setState([
+            'datasetApiUrl' => $action
+        ]);
+
         $templateMgr->assign('requestArgs', [
             'submissionId' => $submission->getId(),
             'publicationId' => $submission->getCurrentPublication()->getId(),
         ]);
 
-        $action = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
 
         import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
         $submissionAdapterCreator = new SubmissionAdapterCreator();
