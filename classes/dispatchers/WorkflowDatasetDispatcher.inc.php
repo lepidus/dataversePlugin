@@ -59,7 +59,7 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         } catch (Exception $e) {
             error_log($e->getMessage());
             $templateMgr->assign('errorMessage', $e->getMessage());
-            return $templateMgr->fetch($this->plugin->getTemplateResource('datasetTab/researchDataNotFound.tpl'));
+            return $templateMgr->fetch($this->plugin->getTemplateResource('datasetTab/researchDataError.tpl'));
         }
     }
 
@@ -97,7 +97,14 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
     private function setupResearchDataDeposit(Submission $submission): void
     {
         $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
+
+        $templateMgr->assign('requestArgs', [
+            'submissionId' => $submission->getId(),
+            'publicationId' => $submission->getCurrentPublication()->getId(),
+        ]);
+
         $action = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
 
         import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
@@ -108,21 +115,14 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $factory = new SubmissionDatasetFactory($submissionAdapter);
         $dataset = $factory->getDataset();
 
+        $this->initDatasetMetadataForm($templateMgr, $action, 'POST', $dataset);
+    }
+
+    private function initDatasetMetadataForm(PKPTemplateManager $templateMgr, string $action, string $method, Dataset $dataset): void
+    {
         $this->plugin->import('classes.form.DatasetMetadataForm');
         $datasetMetadataForm = new DatasetMetadataForm($action, 'POST', $dataset);
 
-        HookRegistry::register('Form::config::before', function ($hookName, $form) {
-            if ($form->id != FORM_DATASET_METADATA) {
-                return;
-            }
-
-            $form->addField(new \PKP\components\forms\FieldHTML('noResearchData', [
-                'description' => __("plugins.generic.dataverse.researchData.noResearchData"),
-                'groupId' => 'default',
-            ]), [FIELD_POSITION_BEFORE, 'datasetTitle']);
-        });
-
-        $templateMgr = TemplateManager::getManager($request);
         $this->addComponent($templateMgr, $datasetMetadataForm);
 
         $workflowPublicationFormIds = $templateMgr->getState('publicationFormIds');

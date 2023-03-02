@@ -22,3 +22,12 @@
 #datasetData .filesList {
     padding: 2rem;
 }
+
+#draftDatasetFileGridContainer,
+#datasetTab .noResearchData {
+    padding-top: 2rem;
+}
+
+div:not(:last-child) > .pkp_controllers_grid {
+    margin-bottom: 0;
+  }
