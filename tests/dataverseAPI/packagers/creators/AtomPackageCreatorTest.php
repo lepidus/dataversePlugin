@@ -1,9 +1,6 @@
 <?php
 
-import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
 import('plugins.generic.dataverse.classes.dataverseAPI.packagers.creators.AtomPackageCreator');
-import('plugins.generic.dataverse.classes.adapters.SubmissionAdapter');
-import('plugins.generic.dataverse.classes.adapters.AuthorAdapter');
 import('plugins.generic.dataverse.classes.file.DraftDatasetFile');
 import('plugins.generic.dataverse.classes.entities.Dataset');
 import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
@@ -73,40 +70,6 @@ class AtomPackageCreatorTest extends PKPTestCase
         $this->packageCreator->createAtomEntry();
     }
 
-    private function createDefaultTestAtomEntryFromSubmission(): void
-    {
-        $author = new AuthorAdapter(
-            "Íris",
-            "Castanheiras",
-            $this->author->getAffiliation(),
-            $this->contact->getEmail()
-        );
-        $file = new TemporaryFile();
-        $file->setServerFileName('sample.pdf');
-        $file->setOriginalFileName('sample.pdf');
-        array_push($this->authors, $author);
-        array_push($this->files, $file);
-
-        $submission = new SubmissionAdapter();
-        $submission->setRequiredData(
-            $this->id,
-            $this->title,
-            $this->description,
-            $this->subject,
-            $this->keywords,
-            $this->citation,
-            $this->contact,
-            $this->depositor,
-            $this->authors,
-            $this->files
-        );
-
-        $factory = new SubmissionDatasetFactory($submission);
-        $dataset = $factory->getDataset();
-        $this->packageCreator->loadMetadata($dataset);
-        $this->packageCreator->createAtomEntry();
-    }
-
     public function testCreateAtomEntryInLocalTempFiles(): void
     {
         $this->createDefaultTestAtomEntry();
@@ -118,13 +81,6 @@ class AtomPackageCreatorTest extends PKPTestCase
     public function testValidateAtomEntryXmlFileStructure(): void
     {
         $this->createDefaultTestAtomEntry();
-
-        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__, 4) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
-    }
-
-    public function testValidateAtomEntryFromSubmissionXmlFileStructure(): void
-    {
-        $this->createDefaultTestAtomEntryFromSubmission();
 
         $this->assertXmlFileEqualsXmlFile(dirname(__FILE__, 4) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
     }
@@ -166,42 +122,9 @@ class AtomPackageCreatorTest extends PKPTestCase
         $this->assertEquals($expectedMetadata, $atomEntryMetadata);
     }
 
-    public function testValidateAtomEntryFromSubmissionRequiredMetadata(): void
-    {
-        $this->createDefaultTestAtomEntryFromSubmission();
-
-        $atom = new DOMDocument();
-        $atom->load($this->packageCreator->getAtomEntryPath());
-
-        $atomEntryMetadata = array(
-            'atomEntryTitle' => $atom->getElementsByTagName('title')->item(0)->nodeValue,
-            'atomEntryDescription' => $atom->getElementsByTagName('description')->item(0)->nodeValue,
-            'atomEntrySubject' => $atom->getElementsByTagName('subject')->item(0)->nodeValue,
-            'atomEntryCreator' => $atom->getElementsByTagName('creator')->item(0)->nodeValue
-        );
-        $expectedMetadata = array(
-            'atomEntryTitle' => $this->title,
-            'atomEntryDescription' => $this->description,
-            'atomEntrySubject' => $this->keywords[0],
-            'atomEntryCreator' => $this->author->getName()
-        );
-
-        $this->assertEquals($expectedMetadata, $atomEntryMetadata);
-    }
-
     public function testCreatePackageWithSampleFile(): void
     {
         $this->createDefaultTestAtomEntry();
-
-        $this->packageCreator->addFileToPackage(dirname(__FILE__, 4) . '/assets/testSample.csv', "sampleFileForTests.csv");
-        $this->packageCreator->createPackage();
-
-        $this->assertTrue(file_exists($this->packageCreator->getPackageFilePath()));
-    }
-
-    public function testCreatePackageFromSubmissionWithSampleFile(): void
-    {
-        $this->createDefaultTestAtomEntryFromSubmission();
 
         $this->packageCreator->addFileToPackage(dirname(__FILE__, 4) . '/assets/testSample.csv', "sampleFileForTests.csv");
         $this->packageCreator->createPackage();
