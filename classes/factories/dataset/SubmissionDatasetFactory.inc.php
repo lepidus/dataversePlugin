@@ -17,16 +17,18 @@ class SubmissionDatasetFactory extends DatasetFactory
     protected function sanitizeProps(): array
     {
         $publication = $this->submission->getCurrentPublication();
+        $authors = $this->submission->getAuthors();
 
         $props = [];
         $props['title'] = $publication->getLocalizedTitle('title');
         $props['description'] = $publication->getLocalizedData('abstract');
         $props['keywords'] = $publication->getData('keywords');
         $props['subject'] = $this->submission->getData('datasetSubject');
-        $props['authors'] = array_map([$this, 'createDatasetAuthor'], $this->submission->getAuthors());
+        $props['authors'] = array_map([$this, 'createDatasetAuthor'], $authors);
         $props['contact'] = $this->createDatasetContact();
         $props['depositor'] = $this->getDatasetDepositor();
         $props['pubCitation'] = $this->getDatasetPubCitation();
+        $props['files'] = $this->getDatasetFiles();
 
         return $props;
     }
@@ -55,6 +57,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         } else {
             $request = Application::get()->getRequest();
             $submissionUser = $request->getUser();
+
             $name = $submissionUser->getFullName(false, true);
             $email = $submissionUser->getEmail();
             $affiliation = $submissionUser->getLocalizedData('affiliation');
@@ -79,5 +82,33 @@ class SubmissionDatasetFactory extends DatasetFactory
         import('plugins.generic.dataverse.classes.APACitation');
         $apaCitation = new APACitation();
         return $apaCitation->getFormattedCitationBySubmission($this->submission);
+    }
+
+    private function getDatasetFiles(): array
+    {
+        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+        $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($this->submission->getId());
+
+        if (empty($draftDatasetFiles)) {
+            return [];
+        }
+
+        $temporaryFiles = array_map(function (DraftDatasetFile $draftDatasetFile) {
+            import('lib.pkp.classes.file.TemporaryFileManager');
+            $temporaryFileManager = new TemporaryFileManager();
+            return $temporaryFileManager->getFile(
+                $draftDatasetFile->getData('fileId'),
+                $draftDatasetFile->getData('userId')
+            );
+        }, $draftDatasetFiles);
+
+        $datasetFiles = array_map(function (TemporaryFile $temporaryFile) {
+            return new DatasetFile(
+                $temporaryFile->getOriginalFileName(),
+                $temporaryFile->getFilePath()
+            );
+        }, $temporaryFiles);
+
+        return $datasetFiles;
     }
 }

@@ -18,6 +18,8 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
     private $journal;
 
+    private $temporaryFile;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -27,6 +29,8 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
         $this->registerMockRequest();
         $this->registerMockJournalDAO();
+        $this->registerMockDraftDatasetFileDAO();
+        $this->registerMockTemporaryFileDAO();
     }
 
     protected function getMockedRegistryKeys(): array
@@ -36,13 +40,14 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
     protected function getMockedDAOs(): array
     {
-        return ['JournalDAO'];
+        return ['JournalDAO', 'DraftDatasetFileDAO'];
     }
 
     private function registerMockRequest(): void
     {
         import('lib.pkp.classes.user.User');
         $this->user = new User();
+        $this->user->setId(rand());
         $this->user->setGivenName('John', $this->locale);
         $this->user->setFamilyName('Doe', $this->locale);
 
@@ -71,6 +76,47 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
                    ->will($this->returnValue($this->journal));
 
         DAORegistry::registerDAO('JournalDAO', $journalDAO);
+    }
+
+    private function registerMockDraftDatasetFileDAO(): void
+    {
+        $draftDatasetFileDAO = $this->getMockBuilder(DraftDatasetFileDAO::class)
+            ->setMethods(array('getBySubmissionId'))
+            ->getMock();
+
+        import('plugins.generic.dataverse.classes.file.DraftDatasetFile');
+        $draftDatasetFile = new DraftDatasetFile();
+        $draftDatasetFile->setId(rand());
+        $draftDatasetFile->setData('submissionId', $this->submission->getId());
+        $draftDatasetFile->setData('userId', $this->user->getId());
+        $draftDatasetFile->setData('fileId', rand());
+        $draftDatasetFile->setData('fileName', 'test.pdf');
+
+
+        $draftDatasetFileDAO->expects($this->any())
+                   ->method('getBySubmissionId')
+                   ->will($this->returnValue([$draftDatasetFile]));
+
+        DAORegistry::registerDAO('DraftDatasetFileDAO', $draftDatasetFileDAO);
+    }
+
+    private function registerMockTemporaryFileDAO(): void
+    {
+        $temporaryFileDAO = $this->getMockBuilder(TemporaryFileDAO::class)
+            ->setMethods(array('getTemporaryFile'))
+            ->getMock();
+
+        import('plugins.generic.dataverse.classes.file.DraftDatasetFile');
+        $this->temporaryFile = new TemporaryFile();
+        $this->temporaryFile->setId(rand());
+        $this->temporaryFile->setServerFileName('sample.pdf');
+        $this->temporaryFile->setOriginalFileName('sample.pdf');
+
+        $temporaryFileDAO->expects($this->any())
+                   ->method('getTemporaryFile')
+                   ->will($this->returnValue($this->temporaryFile));
+
+        DAORegistry::registerDAO('TemporaryFileDAO', $temporaryFileDAO);
     }
 
     private function createTestSubmission(): Submission
@@ -133,6 +179,13 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $apaCitation = new APACitation();
         $datasetPubCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
+        $datasetFiles = [
+            new DatasetFile(
+                $this->temporaryFile->getFilePath(),
+                $this->temporaryFile->getOriginalFileName()
+            )
+        ];
+
         $expectedDataset = new Dataset();
         $expectedDataset->setTitle($this->publication->getLocalizedTitle());
         $expectedDataset->setDescription($this->publication->getLocalizedData('abstract'));
@@ -142,6 +195,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $expectedDataset->setContact($datasetContact);
         $expectedDataset->setDepositor($datasetDepositor);
         $expectedDataset->setPubCitation($datasetPubCitation);
+        $expectedDataset->setFiles($datasetFiles);
 
         $this->assertEquals($expectedDataset, $dataset);
     }
