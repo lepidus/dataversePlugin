@@ -36,6 +36,7 @@ class SWORDAPIClient implements IDepositAPIClient
 
     public function getSWORDClient(): SWORDAPPClient
     {
+        require_once('plugins/generic/dataverse/libs/swordappv2-php-library/swordappclient.php');
         return new SWORDAPPClient([CURLOPT_SSL_VERIFYPEER => false]);
     }
 
