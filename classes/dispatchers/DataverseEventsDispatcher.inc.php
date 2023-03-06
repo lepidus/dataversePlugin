@@ -76,19 +76,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         return $currentUser;
     }
 
-    public function setupDraftDatasetFileHandler(string $hookname, Request $request): bool
-    {
-        $router = $request->getRouter();
-        if ($router instanceof \APIRouter && str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
-            $this->plugin->import('api.v1.draftDatasetFiles.DraftDatasetFileHandler');
-            $handler = new DraftDatasetFileHandler();
-            $router->setHandler($handler);
-            $handler->getApp()->run();
-            exit;
-        }
-        return false;
-    }
-
     public function setupDatasetsHandler(string $hookname, Request $request): bool
     {
         $router = $request->getRouter();
@@ -121,7 +108,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     {
         $component =& $params[0];
         switch ($component) {
-            case 'plugins.generic.dataverse.handlers.DataverseHandler':
             case 'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler':
                 return true;
                 break;
