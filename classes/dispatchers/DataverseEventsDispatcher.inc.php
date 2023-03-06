@@ -8,7 +8,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     {
         HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'datasetDepositOnSubmission'));
         HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
-        HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDraftDatasetFileHandler'));
         HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDatasetsHandler'));
