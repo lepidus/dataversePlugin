@@ -114,13 +114,8 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             'publicationId' => $submission->getCurrentPublication()->getId(),
         ]);
 
-
-        import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-        $submissionAdapterCreator = new SubmissionAdapterCreator();
-        $submissionAdapter = $submissionAdapterCreator->create($submission, $request->getUser());
-
         import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
-        $factory = new SubmissionDatasetFactory($submissionAdapter);
+        $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
 
         $this->initDatasetMetadataForm($templateMgr, $action, 'POST', $dataset);

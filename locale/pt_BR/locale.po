@@ -108,7 +108,7 @@ msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
 msgstr "Arquivo de dados de pesquisa"
 
 msgid "plugins.generic.dataverse.researchDataFile.error"
-msgstr "Um arquivo de dados de pesquisa é necessário. Certifique-se que você escolheu e enviou um arquivo."
+msgstr "Dados de pesquisa são necessários. Certifique-se que você escolheu e enviou dados de pesquisa."
 
 msgid "plugins.generic.dataverse.termsOfUse.label"
 msgstr "Termos de uso do Dataverse"

@@ -125,6 +125,18 @@ class DatasetsHandler extends APIHandler
         if (empty($draftDatasetFiles)) {
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.researchDataFile.error');
         }
+
+        $submission = Services::get('submission')->get($submissionId);
+
+        import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
+        $datasetFactory = new SubmissionDatasetFactory($submission);
+        $dataset = $datasetFactory->getDataset();
+
+        import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
+        $swordClient = new SWORDAPIClient($submission->getContextId());
+        import('plugins.generic.dataverse.classes.dataverseAPI.services.DepositAPIService');
+        $depositService = new DepositAPIService($swordClient);
+        $depositService->depositDataset($dataset);
     }
 
     public function addFile($slimRequest, $response, $args)
