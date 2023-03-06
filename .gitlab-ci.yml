@@ -12,4 +12,4 @@ include:
       - 'templates/groups/ops_plugins_unit_tests_model.yml'
 
 before_script:
-  - apt update && apt install php-{zip,curl} php8.1-{zip,curl} -yqq
+  - apt update && apt install php-{zip,curl} php81-{zip,curl} -yqq
