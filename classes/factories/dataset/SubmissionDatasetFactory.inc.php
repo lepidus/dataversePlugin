@@ -22,7 +22,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props = [];
         $props['title'] = $publication->getLocalizedTitle('title');
         $props['description'] = $publication->getLocalizedData('abstract');
-        $props['keywords'] = $publication->getData('keywords');
+        $props['keywords'] = $publication->getLocalizedData('keywords');
         $props['subject'] = $this->submission->getData('datasetSubject');
         $props['authors'] = array_map([$this, 'createDatasetAuthor'], $authors);
         $props['contact'] = $this->createDatasetContact();
@@ -103,10 +103,10 @@ class SubmissionDatasetFactory extends DatasetFactory
         }, $draftDatasetFiles);
 
         $datasetFiles = array_map(function (TemporaryFile $temporaryFile) {
-            return new DatasetFile(
-                $temporaryFile->getOriginalFileName(),
-                $temporaryFile->getFilePath()
-            );
+            $datasetFile = new DatasetFile();
+            $datasetFile->setOriginalFileName($temporaryFile->getOriginalFileName());
+            $datasetFile->setPath($temporaryFile->getFilePath());
+            return $datasetFile;
         }, $temporaryFiles);
 
         return $datasetFiles;

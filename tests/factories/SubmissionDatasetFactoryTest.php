@@ -143,7 +143,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $publication->setData('locale', $this->locale);
         $publication->setData('title', 'The Rise of The Machine Empire');
         $publication->setData('abstract', 'An example abstract');
-        $publication->setData('keywords', ['Modern History']);
+        $publication->setData('keywords', ['Modern History'], $this->locale);
 
         $author->setData('publicationId', $publication->getId());
         $publication->setData('submissionId', $submission->getId());
@@ -179,23 +179,20 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $apaCitation = new APACitation();
         $datasetPubCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $datasetFiles = [
-            new DatasetFile(
-                $this->temporaryFile->getFilePath(),
-                $this->temporaryFile->getOriginalFileName()
-            )
-        ];
+        $datasetFile = new DatasetFile();
+        $datasetFile->setOriginalFileName($this->temporaryFile->getOriginalFileName());
+        $datasetFile->setPath($this->temporaryFile->getFilePath());
 
         $expectedDataset = new Dataset();
         $expectedDataset->setTitle($this->publication->getLocalizedTitle());
         $expectedDataset->setDescription($this->publication->getLocalizedData('abstract'));
-        $expectedDataset->setKeywords($this->publication->getData('keywords'));
+        $expectedDataset->setKeywords($this->publication->getLocalizedData('keywords'));
         $expectedDataset->setSubject($this->submission->getData('datasetSubject'));
         $expectedDataset->setAuthors([$datasetAuthor]);
         $expectedDataset->setContact($datasetContact);
         $expectedDataset->setDepositor($datasetDepositor);
         $expectedDataset->setPubCitation($datasetPubCitation);
-        $expectedDataset->setFiles($datasetFiles);
+        $expectedDataset->setFiles([$datasetFile]);
 
         $this->assertEquals($expectedDataset, $dataset);
     }
