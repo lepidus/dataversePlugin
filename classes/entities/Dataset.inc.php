@@ -2,6 +2,16 @@
 
 class Dataset extends DataObject
 {
+    public function getPersistentId(): ?string
+    {
+        return $this->getData('persistentId');
+    }
+
+    public function setPersistentId(string $persistentId): void
+    {
+        $this->setData('persistentId', $persistentId);
+    }
+
     public function getTitle(): ?string
     {
         return $this->getData('title');
