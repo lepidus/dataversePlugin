@@ -119,7 +119,6 @@ class DatasetsHandler extends APIHandler
         $queryParams = $slimRequest->getQueryParams();
 
         $submissionId = $queryParams['submissionId'];
-
         $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submissionId);
 
         if (empty($draftDatasetFiles)) {
@@ -128,15 +127,21 @@ class DatasetsHandler extends APIHandler
 
         $submission = Services::get('submission')->get($submissionId);
 
-        import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
-        $datasetFactory = new SubmissionDatasetFactory($submission);
-        $dataset = $datasetFactory->getDataset();
+        try {
+            import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
+            $datasetFactory = new SubmissionDatasetFactory($submission);
+            $dataset = $datasetFactory->getDataset();
 
-        import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
-        $swordClient = new SWORDAPIClient($submission->getContextId());
-        import('plugins.generic.dataverse.classes.dataverseAPI.services.DepositAPIService');
-        $depositService = new DepositAPIService($swordClient);
-        $depositService->depositDataset($dataset);
+            import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
+            $swordClient = new SWORDAPIClient($submission->getContextId());
+
+            import('plugins.generic.dataverse.classes.dataverseAPI.services.DepositAPIService');
+            $depositService = new DepositAPIService($swordClient);
+            $depositService->depositDataset($dataset);
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+            return $response->withStatus($e->getCode())->withJson(['error' => $e->getMessage()]);
+        }
     }
 
     public function addFile($slimRequest, $response, $args)
