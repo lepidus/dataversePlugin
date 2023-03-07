@@ -50,4 +50,13 @@ class NativeAPIEndpointsTest extends PKPTestCase
 
         $this->assertEquals($expectedDatasetFilesEndpoint, $datasetFilesEndpoint);
     }
+
+    public function testReturnsCorrectDatasetUpdateEndpoint(): void
+    {
+        $persistentId = 'doi:10.1234/AB5/CD6EF7';
+        $expectedDatasetUpdateEndpoint = 'https://demo.dataverse.org/api/datasets/:persistentId/editMetadata?persistentId=' . $persistentId . '&replace=true';
+        $datasetUpdateEndpoint = $this->endpoints->getDatasetUpdateEndpoint($persistentId);
+
+        $this->assertEquals($expectedDatasetUpdateEndpoint, $datasetUpdateEndpoint);
+    }
 }

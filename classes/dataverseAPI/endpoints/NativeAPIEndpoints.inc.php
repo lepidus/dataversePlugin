@@ -36,4 +36,9 @@ class NativeAPIEndpoints
     {
         return $this->getAPIBaseUrl() . '/datasets/:persistentId/versions/:latest/files?persistentId=' . $persistentId;
     }
+
+    public function getDatasetUpdateEndpoint(string $persistentId): string
+    {
+        return $this->getAPIBaseUrl() . '/datasets/:persistentId/editMetadata?persistentId=' . $persistentId . '&replace=true';
+    }
 }
