@@ -12,11 +12,17 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         parent::setUp();
     }
 
+    protected function tearDown(): void
+    {
+        $this->packager->clear();
+        parent::tearDown();
+    }
+
     public function testNativeAPIPackagerReturnsPackageDirPath(): void
     {
         $dataset = new Dataset();
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packageDirPath = $packager->getPackageDirPath();
+        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $packageDirPath = $this->packager->getPackageDirPath();
         $this->assertMatchesRegularExpression('/\/tmp\/dataverse.+/', $packageDirPath);
     }
 
@@ -25,13 +31,13 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset = new Dataset();
         $dataset->setTitle('Test title');
 
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->loadMetadata();
+        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $this->packager->loadMetadata();
 
-        $titleMetadata = $packager->getMetadataField('title');
+        $titleMetadata = $this->packager->getMetadataField('title');
         $titleMetadata['value'] = $dataset->getTitle();
 
-        $this->assertContains($titleMetadata, $packager->getDatasetMetadata());
+        $this->assertContains($titleMetadata, $this->packager->getDatasetMetadata());
     }
 
     public function testNativeAPIPackagerBuildsSimpleCompoundMetadata(): void
@@ -39,20 +45,22 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset = new Dataset();
         $dataset->setDescription('<p>Test description</p>');
 
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->loadMetadata();
+        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $this->packager->loadMetadata();
 
-        $descriptionMetadata = $packager->getMetadataField('description');
+        $descriptionMetadata = $this->packager->getMetadataField('description');
         $descriptionMetadata['value'] = [
             [
-                'typeName' => 'dsDescriptionValue',
-                'multiple' => false,
-                'typeClass' => 'primitive',
-                'value' => $dataset->getDescription()
+                'dsDescriptionValue' => [
+                    'typeName' => 'dsDescriptionValue',
+                    'multiple' => false,
+                    'typeClass' => 'primitive',
+                    'value' => $dataset->getDescription()
+                ]
             ]
         ];
 
-        $this->assertContains($descriptionMetadata, $packager->getDatasetMetadata());
+        $this->assertContains($descriptionMetadata, $this->packager->getDatasetMetadata());
     }
 
     public function testNativeAPIPackagerBuildsPubCitationMetadata(): void
@@ -60,20 +68,22 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset = new Dataset();
         $dataset->setPubCitation('User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems');
 
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->loadMetadata();
+        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $this->packager->loadMetadata();
 
-        $publicationMetadata = $packager->getMetadataField('pubCitation');
+        $publicationMetadata = $this->packager->getMetadataField('pubCitation');
         $publicationMetadata['value'] = [
             [
-                'typeName' => 'publicationCitation',
-                'multiple' => false,
-                'typeClass' => 'primitive',
-                'value' => $dataset->getPubCitation()
+                'publicationCitation' => [
+                    'typeName' => 'publicationCitation',
+                    'multiple' => false,
+                    'typeClass' => 'primitive',
+                    'value' => $dataset->getPubCitation()
+                ]
             ]
         ];
 
-        $this->assertContains($publicationMetadata, $packager->getDatasetMetadata());
+        $this->assertContains($publicationMetadata, $this->packager->getDatasetMetadata());
     }
 
     public function testNativeAPIPackagerBuildsMultiCompoundMetadata(): void
@@ -81,32 +91,34 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset = new Dataset();
         $dataset->setContact(new DatasetContact('Test name', 'test@mail.com', 'Dataverse'));
 
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->loadMetadata();
+        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $this->packager->loadMetadata();
 
-        $contactMetadata = $packager->getMetadataField('contact');
+        $contactMetadata = $this->packager->getMetadataField('contact');
         $contactMetadata['value'] = [
             [
-                'typeName' => 'datasetContactName',
-                'multiple' => false,
-                'typeClass' => 'primitive',
-                'value' => $dataset->getContact()->getName()
-            ],
-            [
-                'typeName' => 'datasetContactEmail',
-                'multiple' => false,
-                'typeClass' => 'primitive',
-                'value' => $dataset->getContact()->getEmail()
-            ],
-            [
-                'typeName' => 'datasetContactAffiliation',
-                'multiple' => false,
-                'typeClass' => 'primitive',
-                'value' => $dataset->getContact()->getAffiliation()
-            ],
+                'datasetContactName' => [
+                    'typeName' => 'datasetContactName',
+                    'multiple' => false,
+                    'typeClass' => 'primitive',
+                    'value' => $dataset->getContact()->getName()
+                ],
+                'datasetContactEmail' => [
+                    'typeName' => 'datasetContactEmail',
+                    'multiple' => false,
+                    'typeClass' => 'primitive',
+                    'value' => $dataset->getContact()->getEmail()
+                ],
+                'datasetContactAffiliation' => [
+                    'typeName' => 'datasetContactAffiliation',
+                    'multiple' => false,
+                    'typeClass' => 'primitive',
+                    'value' => $dataset->getContact()->getAffiliation()
+                ]
+            ]
         ];
 
-        $this->assertContains($contactMetadata, $packager->getDatasetMetadata());
+        $this->assertContains($contactMetadata, $this->packager->getDatasetMetadata());
     }
 
     public function testNativeAPIPackagerBuildsControlledVocabularyMetadata(): void
@@ -114,13 +126,13 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset = new Dataset();
         $dataset->setSubject('Other');
 
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->loadMetadata();
+        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $this->packager->loadMetadata();
 
-        $subjectMetadata = $packager->getMetadataField('subject');
+        $subjectMetadata = $this->packager->getMetadataField('subject');
         $subjectMetadata['value'] = [$dataset->getSubject()];
 
-        $this->assertContains($subjectMetadata, $packager->getDatasetMetadata());
+        $this->assertContains($subjectMetadata, $this->packager->getDatasetMetadata());
     }
 
     public function testNativeAPIPackagerIgnoreUndefinedMetadata(): void
@@ -129,20 +141,20 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset = new Dataset();
         $dataset->setFiles([$datasetFile]);
 
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->loadMetadata();
+        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $this->packager->loadMetadata();
 
-        $this->assertEmpty($packager->getDatasetMetadata());
+        $this->assertEmpty($this->packager->getDatasetMetadata());
     }
 
     public function testNativeAPIPackagerCreatesDatasetJson(): void
     {
         $dataset = new Dataset();
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->loadMetadata();
-        $packager->createDatasetPackage();
+        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $this->packager->loadMetadata();
+        $this->packager->createDatasetPackage();
 
-        $this->assertFileExists($packager->getPackageDirPath() . '/dataset.json');
+        $this->assertFileExists($this->packager->getPackageDirPath() . '/dataset.json');
     }
 
     public function testDatasetJsonContainsDatasetData(): void
@@ -150,12 +162,12 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset = new Dataset();
         $dataset->setTitle('Test title');
 
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->loadMetadata();
-        $packager->createDatasetPackage();
+        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $this->packager->loadMetadata();
+        $this->packager->createDatasetPackage();
 
-        $datasetJson = json_decode(file_get_contents($packager->getPackageDirPath() . '/dataset.json'), true);
+        $datasetJson = json_decode(file_get_contents($this->packager->getPackageDirPath() . '/dataset.json'), true);
 
-        $this->assertEquals($dataset->getTitle(), $datasetJson['datasetVersion']['metadataBlocks']['citation']['fields'][0]['value']);
+        $this->assertEquals($dataset->getTitle(), $datasetJson['fields'][0]['value']);
     }
 }
