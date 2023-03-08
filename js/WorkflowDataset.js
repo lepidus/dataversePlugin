@@ -25,6 +25,7 @@
 		pkp.eventBus.$on('form-success', (formId) => {
 			if (formId === 'datasetMetadata') {
 				pageRootComponent.workingPublication = workingPublication;
+				location.reload();
 			}
 		});
 
