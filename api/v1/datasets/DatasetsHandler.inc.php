@@ -126,22 +126,23 @@ class DatasetsHandler extends APIHandler
         }
 
         $submission = Services::get('submission')->get($submissionId);
+        import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
+        $datasetFactory = new SubmissionDatasetFactory($submission);
+        $dataset = $datasetFactory->getDataset();
+        $dataset->setTitle($requestParams['datasetTitle']);
+        $dataset->setDescription($requestParams['datasetDescription']);
+        $dataset->setKeywords($requestParams['datasetKeywords']);
+        $dataset->setSubject($requestParams['datasetSubject']);
 
         try {
-            import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
-            $datasetFactory = new SubmissionDatasetFactory($submission);
-            $dataset = $datasetFactory->getDataset();
-            $dataset->setTitle($requestParams['datasetTitle']);
-            $dataset->setDescription($requestParams['datasetDescription']);
-            $dataset->setKeywords($requestParams['datasetKeywords']);
-            $dataset->setSubject($requestParams['datasetSubject']);
-
             import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
             $swordClient = new SWORDAPIClient($submission->getContextId());
             import('plugins.generic.dataverse.classes.dataverseAPI.services.DepositAPIService');
             $depositService = new DepositAPIService($swordClient);
             $depositResponse = $depositService->depositDataset($dataset);
             $dataset->setPersistentId($depositResponse['persistentId']);
+
+            DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submissionId);
 
             import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
             $nativeAPIClient = new NativeAPIClient($submission->getContextId());
@@ -153,10 +154,7 @@ class DatasetsHandler extends APIHandler
             $study = $dataverseStudyDAO->newDataObject();
             $study->setAllData($depositResponse);
             $study->setSubmissionId($submissionId);
-            $studyId = $dataverseStudyDAO->insertStudy($study);
-            $study = $dataverseStudyDAO->getStudy($studyId);
-
-            return $response->withJson($study->getAllData(), 200);
+            $dataverseStudyDAO->insertStudy($study);
         } catch (Exception $e) {
             error_log($e->getMessage());
             return $response->withStatus($e->getCode())->withJson(['error' => $e->getMessage()]);
