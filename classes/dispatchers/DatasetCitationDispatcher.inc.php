@@ -19,21 +19,21 @@ class DatasetCitationDispatcher extends DataverseDispatcher
         $study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
         if (isset($study)) {
-            try {
-                $contentId = $submission->getContextId();
+            $contextId = $submission->getContextId();
 
-                import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
-                $client = new NativeAPIClient($contentId);
+            import('plugins.generic.dataverse.classes.DataverseConfiguration');
+            $configuration = new DataverseConfiguration(
+                $this->plugin->getSetting($contextId, 'dataverseUrl'),
+                $this->plugin->getSetting($contextId, 'apiToken')
+            );
 
-                import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
-                $service = new DataAPIService($client);
-                $dataset = $service->getDataset($study->getPersistentId());
+            import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
+            $serviceFactory = new DataverseServiceFactory();
+            $service = $serviceFactory->build($configuration);
 
-                $templateMgr->assign('datasetCitation', $dataset->getCitation());
-                $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
-            } catch (Exception $e) {
-                error_log($e->getMessage());
-            }
+            $citation = $service->getStudyCitation($study);
+            $templateMgr->assign('datasetCitation', $citation);
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
         }
 
         return false;
