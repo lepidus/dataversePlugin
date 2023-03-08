@@ -16,11 +16,7 @@ class SWORDAPIDatasetPackagerTest extends PKPTestCase
 
     public function tearDown(): void
     {
-        if (file_exists($this->packager->getPackagePath())) {
-            unlink($this->packager->getPackagePath());
-        }
-        rmdir($this->packager->getAtomPackager()->getOutPath() . '/files');
-        rmdir($this->packager->getAtomPackager()->getOutPath());
+        $this->packager->clear();
         parent::tearDown();
     }
 

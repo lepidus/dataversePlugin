@@ -14,6 +14,7 @@ class UpdateAPIService
         $packager = $this->client->getDatasetPackager($dataset);
         $packager->createDatasetPackage();
         $response = $this->client->updateDataset($dataset->getPersistentId(), $packager);
+        $packager->clear();
 
         if ($response->getStatusCode() !== 200) {
             throw new Exception($response->getMessage(), $response->getStatusCode());

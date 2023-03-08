@@ -36,6 +36,19 @@ class SWORDAPIDatasetPackager extends DatasetPackager
         return $this->atomPackager->getAtomEntryPath();
     }
 
+    public function clear(): void
+    {
+        if (file_exists($this->getPackagePath())) {
+            unlink($this->getPackagePath());
+        }
+        if (file_exists($this->atomPackager->getPackageFilePath())) {
+            unlink($this->atomPackager->getPackageFilePath());
+        }
+
+        rmdir($this->atomPackager->getOutPath() . '/files');
+        rmdir($this->atomPackager->getOutPath());
+    }
+
     public function getAtomPackager(): AtomPackageCreator
     {
         return $this->atomPackager;

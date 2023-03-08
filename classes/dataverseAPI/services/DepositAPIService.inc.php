@@ -25,11 +25,11 @@ class DepositAPIService
         }
 
         $datasetData = json_decode($datasetDepositResponse->getData(), true);
-
         $filesDepositResponse = $this->client->depositDatasetFiles($datasetData['persistentId'], $packager);
         if ($filesDepositResponse->getStatusCode() > 300) {
             throw new Exception($filesDepositResponse->getMessage(), $filesDepositResponse->getStatusCode());
         }
+        $packager->clear();
 
         return $datasetData;
     }

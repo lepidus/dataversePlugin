@@ -174,4 +174,12 @@ class NativeAPIDatasetPackager extends DatasetPackager
     {
         return $this->getPackageDirPath() . DIRECTORY_SEPARATOR . '/dataset.json';
     }
+
+    public function clear(): void
+    {
+        if (file_exists($this->getPackagePath())) {
+            unlink($this->getPackagePath());
+        }
+        rmdir($this->getPackageDirPath());
+    }
 }
