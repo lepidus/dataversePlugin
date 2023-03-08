@@ -138,19 +138,25 @@ class DatasetsHandler extends APIHandler
 
             import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
             $swordClient = new SWORDAPIClient($submission->getContextId());
-
             import('plugins.generic.dataverse.classes.dataverseAPI.services.DepositAPIService');
             $depositService = new DepositAPIService($swordClient);
-
             $depositResponse = $depositService->depositDataset($dataset);
             $dataset->setPersistentId($depositResponse['persistentId']);
 
             import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
             $nativeAPIClient = new NativeAPIClient($submission->getContextId());
-
             import('plugins.generic.dataverse.classes.dataverseAPI.services.UpdateAPIService');
             $updateService = new UpdateAPIService($nativeAPIClient);
             $updateService->updateDataset($dataset);
+
+            $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+            $study = $dataverseStudyDAO->newDataObject();
+            $study->setAllData($depositResponse);
+            $study->setSubmissionId($submissionId);
+            $studyId = $dataverseStudyDAO->insertStudy($study);
+            $study = $dataverseStudyDAO->getStudy($studyId);
+
+            return $response->withJson($study->getAllData(), 200);
         } catch (Exception $e) {
             error_log($e->getMessage());
             return $response->withStatus($e->getCode())->withJson(['error' => $e->getMessage()]);
