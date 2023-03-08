@@ -132,7 +132,8 @@ msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "No se encontró el borrador del archivo del conjunto de datos solicitado."
 
 msgid "plugins.generic.dataverse.researchData.noResearchData"
-msgstr "No se transfieren datos de investigación."
+msgstr "<strong>No se transfieren datos de investigación.</strong><br>"
+"Para transferir datos de investigación, complete el siguiente formulario y agregue los datos de investigación que desea depositar."
 
 msgid "plugins.generic.dataverse.researchData.metadata"
 msgstr "Metadatos"
