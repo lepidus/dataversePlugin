@@ -81,12 +81,21 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             ['contexts' => ['backend']]
         );
 
+        $templateMgr->addJavaScript(
+            'workflowDataset',
+            $this->getPluginFullPath() . '/js/WorkflowDataset.js',
+            ['contexts' => ['backend']]
+        );
+
         $submission = $templateMgr->get_template_vars('submission');
         $study = $this->getSubmissionStudy($submission->getId());
 
         if (is_null($study)) {
             $this->setupResearchDataDeposit($submission);
+            return false;
         }
+
+        $this->setupResearchDataUpdate($study);
 
         return false;
     }
@@ -98,12 +107,6 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $context = $request->getContext();
 
         $action = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
-
-        $templateMgr->addJavaScript(
-            'workflowDataset',
-            $this->getPluginFullPath() . '/js/WorkflowDataset.js',
-            ['contexts' => ['backend']]
-        );
 
         $templateMgr->setState([
             'datasetApiUrl' => $action
@@ -121,10 +124,49 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $this->initDatasetMetadataForm($templateMgr, $action, 'POST', $dataset);
     }
 
+    private function setupResearchDataUpdate(DataverseStudy $study): void
+    {
+        $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
+        $context = $request->getContext();
+
+        $action = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+
+        $templateMgr->setState([
+            'datasetApiUrl' => $action
+        ]);
+
+        $templateMgr->addJavaScript(
+            'dataverseHelper',
+            $this->getPluginFullPath() . '/js/DataverseHelper.js',
+            ['contexts' => ['backend']]
+        );
+
+        $templateMgr->addJavaScript(
+            'dataverseScripts',
+            $this->getPluginFullPath() . '/js/init.js',
+            ['contexts' => ['backend']]
+        );
+
+        $this->addJavaScriptVariables($request, $templateMgr, $study);
+
+        try {
+            $client = new NativeAPIClient($context->getId());
+            $service = new DataAPIService($client);
+            $dataset = $service->getDataset($study->getPersistentId());
+
+            $this->initDatasetMetadataForm($templateMgr, $action, 'PUT', $dataset);
+            $this->initDatasetFilesList($request, $templateMgr, $study);
+            $this->initDatasetFileForm($request, $templateMgr, $study);
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+        }
+    }
+
     private function initDatasetMetadataForm(PKPTemplateManager $templateMgr, string $action, string $method, Dataset $dataset): void
     {
         $this->plugin->import('classes.form.DatasetMetadataForm');
-        $datasetMetadataForm = new DatasetMetadataForm($action, 'POST', $dataset);
+        $datasetMetadataForm = new DatasetMetadataForm($action, $method, $dataset);
 
         $this->addComponent($templateMgr, $datasetMetadataForm);
 
@@ -133,6 +175,100 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
 
         $templateMgr->setState([
             'publicationFormIds' => $workflowPublicationFormIds
+        ]);
+    }
+
+    private function initDatasetFilesList($request, $templateMgr, $study): void
+    {
+        $context = $request->getContext();
+
+        $client = new NativeAPIClient($context->getId());
+        $service = new DataAPIService($client);
+
+        try {
+            $datasetFiles = $service->getDatasetFiles($study->getPersistentId());
+
+            $apiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file', null, null, ['fileId' => '__id__']);
+
+            import('plugins.generic.dataverse.classes.listPanel.DatasetFilesListPanel');
+            $datasetFilesListPanel = new DatasetFilesListPanel(
+                'datasetFiles',
+                __('plugins.generic.dataverse.researchData.files'),
+                [
+                    'apiUrl' => $apiUrl,
+                    'items' => array_map(function (DatasetFile $datasetFile) {
+                        return $datasetFile->getVars();
+                    }, $datasetFiles)
+                ]
+            );
+
+            $this->addComponent($templateMgr, $datasetFilesListPanel);
+
+            $templateMgr->setState([
+                'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
+                'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
+                'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete'),
+                'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
+            ]);
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+        }
+    }
+
+    public function initDatasetFileForm($request, $templateMgr, $study): void
+    {
+        $dispatcher = $request->getDispatcher();
+        $context = $request->getContext();
+        $locale = AppLocale::getLocale();
+
+        $temporaryFileApiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'temporaryFiles');
+        $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
+
+        $supportedFormLocales = $context->getSupportedFormLocales();
+        $localeNames = AppLocale::getAllLocales();
+        $locales = array_map(function ($localeKey) use ($localeNames) {
+            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+        }, $supportedFormLocales);
+
+        import('plugins.generic.dataverse.classes.form.DraftDatasetFileForm');
+        $draftDatasetFileForm = new DraftDatasetFileForm($apiUrl, $context, $locales, $temporaryFileApiUrl);
+
+        $this->addComponent(
+            $templateMgr,
+            $draftDatasetFileForm,
+            [
+                'errors' => [
+                    'termsOfUse' => [
+                        __('plugins.generic.dataverse.termsOfUse.error')
+                    ]
+                ]
+            ]
+        );
+    }
+
+    public function addJavaScriptVariables($request, $templateManager, $study): void
+    {
+        $dispatcher = $request->getDispatcher();
+        $context = $request->getContext();
+
+        $credentials = DAORegistry::getDAO('DataverseCredentialsDAO')->get($context->getId());
+        $dataverseUrl = $credentials->getDataverseUrl();
+        $params = ['dataverseUrl' => $dataverseUrl];
+
+        import('plugins.generic.dataverse.classes.DataverseNotificationManager');
+        $dataverseNotificationMgr = new DataverseNotificationManager();
+        $errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
+
+        $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+
+        $data = [
+            'datasetApiUrl' => $apiUrl,
+            "errorMessage" => $errorMessage,
+        ];
+
+        $templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
+            'inline' => true,
+            'contexts' => ['backend', 'frontend']
         ]);
     }
 
