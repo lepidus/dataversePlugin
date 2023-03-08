@@ -37,8 +37,8 @@ class DepositAPIServiceTest extends DatabaseTestCase
         $author = new DatasetAuthor('User, Test', 'Dataverse', '0000-0000-0000-0000');
 
         $file = new DatasetFile();
-        $file->setOriginalFileName('sample.pdf');
-        $file->setPath('/path/to/sample.pdf');
+        $file->setOriginalFileName('sample.csv');
+        $file->setPath(__DIR__ . '/../../assets/testSample.csv');
 
         $dataset = new Dataset();
         $dataset->setTitle('Test Dataset');
