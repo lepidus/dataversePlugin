@@ -1,11 +1,13 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dataverseAPI.clients.interfaces.IDataAPIClient');
+import('plugins.generic.dataverse.classes.dataverseAPI.clients.interfaces.IUpdateAPIClient');
 import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.NativeAPIEndpoints');
 import('plugins.generic.dataverse.classes.factories.dataset.NativeAPIDatasetFactory');
+import('plugins.generic.dataverse.classes.dataverseAPI.packagers.NativeAPIDatasetPackager');
 import('plugins.generic.dataverse.classes.entities.DataverseResponse');
 
-class NativeAPIClient implements IDataAPIClient
+class NativeAPIClient implements IDataAPIClient, IUpdateAPIClient
 {
     private $contextId;
 
@@ -31,6 +33,11 @@ class NativeAPIClient implements IDataAPIClient
     public function getHttpClient(): \GuzzleHttp\Client
     {
         return Application::get()->getHttpClient();
+    }
+
+    public function getDatasetPackager(Dataset $datataset): DatasetPackager
+    {
+        return new NativeAPIDatasetPackager($datataset);
     }
 
     public function getDatasetFactory(DataverseResponse $response): DatasetFactory
@@ -85,20 +92,30 @@ class NativeAPIClient implements IDataAPIClient
         }, json_decode($fileData)->data);
     }
 
+    public function updateDataset(string $persistentId, DatasetPackager $packager): DataverseResponse
+    {
+        $type = 'PUT';
+        $url = $this->getAPIEndpoints()->getDatasetUpdateEndpoint($persistentId);
+        $options = $this->getDataverseOptions(
+            ['Content-Type' => 'application/json'],
+            ['body' => GuzzleHttp\Psr7\Utils::tryFopen($packager->getPackagePath(), 'rb')]
+        );
+
+        return $this->executeRequest($type, $url, $options);
+    }
+
     public function getDataverseOptions(array $headers = [], array $options = []): array
     {
-        return [
-            'headers' => $this->getDataverseHeaders($headers),
-            $options
-        ];
+        $dataverseHeaders = ['headers' => $this->getDataverseHeaders($headers)];
+        return array_merge($dataverseHeaders, $options);
     }
 
     private function getDataverseHeaders(array $headers = []): array
     {
         $apiToken = $this->getCredentials()->getAPIToken();
         $dataverseHeaders = ['X-Dataverse-key' => $apiToken];
-        array_merge($dataverseHeaders, $headers);
-        return $dataverseHeaders;
+        $headers = array_merge($dataverseHeaders, $headers);
+        return $headers;
     }
 
     private function executeRequest(string $type, string $url, array $options): DataverseResponse
