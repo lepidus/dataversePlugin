@@ -1,6 +1,8 @@
 <?php
 
 import('lib.pkp.classes.handler.APIHandler');
+import('lib.pkp.classes.log.SubmissionLog');
+import('classes.log.SubmissionEventLogEntry');
 
 class DatasetsHandler extends APIHandler
 {
@@ -155,6 +157,13 @@ class DatasetsHandler extends APIHandler
             $study->setAllData($depositResponse);
             $study->setSubmissionId($submissionId);
             $dataverseStudyDAO->insertStudy($study);
+
+            $this->registerDatasetEventLog(
+                $submissionId,
+                SUBMISSION_LOG_SUBMISSION_SUBMIT,
+                'plugins.generic.dataverse.log.researchDataDeposited',
+                ['persistentURL' => $study->getPersistentUri()]
+            );
         } catch (Exception $e) {
             error_log($e->getMessage());
             return $response->withStatus($e->getCode())->withJson(['error' => $e->getMessage()]);
@@ -298,5 +307,19 @@ class DatasetsHandler extends APIHandler
         }
 
         return $datasetFiles;
+    }
+
+    private function registerDatasetEventLog(int $submissionId, int $eventType, string $message, array $params = [])
+    {
+        $request = Application::get()->getRequest();
+        $submission = Services::get('submission')->get($submissionId);
+
+        SubmissionLog::logEvent(
+            $request,
+            $submission,
+            $eventType,
+            $message,
+            $params
+        );
     }
 }
