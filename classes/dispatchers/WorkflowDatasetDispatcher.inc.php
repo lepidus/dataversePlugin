@@ -11,6 +11,7 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
     {
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addResearchDataTab'));
         HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
+        HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNotice'));
     }
 
     private function getSubmissionStudy(int $submissionId): ?DataverseStudy
@@ -286,5 +287,33 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $templateMgr->setState([
             'components' => $workflowComponents
         ]);
+    }
+
+    public function addDatasetPublishNotice(string $hookName, \PKP\components\forms\FormComponent $form): void
+    {
+        if ($form->id !== 'publish' || !empty($form->errors)) {
+            return;
+        }
+
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($form->publication->getData('submissionId'));
+
+        if (empty($study)) {
+            return;
+        }
+
+        $contentId = $form->submissionContext->getId();
+        $client = new NativeAPIClient($contentId);
+        $service = new DataAPIService($client);
+
+        $params = [
+            'persistentUri' => $study->getPersistentUri(),
+            'serverName' => $service->getDataverseServerName(),
+            'serverUrl' => $client->getCredentials()->getDataverseServerUrl(),
+        ];
+
+        $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
+            'description' => __("plugin.generic.dataverse.notification.submission.researchData", $params),
+            'groupId' => 'default',
+        ]));
     }
 }
