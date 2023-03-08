@@ -43,13 +43,22 @@ class NativeAPIDatasetPackager extends DatasetPackager
                     $metadataField['value'] = $value;
                     break;
                 case 'compound':
-                    if (is_object($value)) {
-                        $metadataField['value'] = $this->createMultiCompoundMetadata($metadataField, $value);
-                    } else {
-                        if (!is_array($value)) {
-                            $value = [$value];
-                        }
-                        $metadataField['value'] = $this->createSimpleCompoundMetadata($metadataField, $value);
+                    switch (gettype($value)) {
+                        case 'object':
+                            $metadataField['value'][] = $this->createMultiCompoundMetadata($metadataField, $value);
+                            break;
+                        case 'array':
+                            foreach ($value as $item) {
+                                if (is_object($item)) {
+                                    $metadataField['value'][] = $this->createMultiCompoundMetadata($metadataField, $item);
+                                } else {
+                                    $metadataField['value'][] = $this->createSimpleCompoundMetadata($metadataField, $item);
+                                }
+                            }
+                            break;
+                        case 'string':
+                            $metadataField['value'][] = $this->createSimpleCompoundMetadata($metadataField, $value);
+                            break;
                     }
                     break;
                 case 'controlledVocabulary':
@@ -108,47 +117,45 @@ class NativeAPIDatasetPackager extends DatasetPackager
         return isset($fields[$metadata]) ? $fields[$metadata] : [];
     }
 
-    private function createSimpleCompoundMetadata(array $metadataField, array $value): array
+    private function createSimpleCompoundMetadata(array $metadataField, string $value): array
     {
-        return array_map(function (string $value) use ($metadataField) {
-            $typeName = $metadataField['typeName'] == 'publication'
+        $typeName = $metadataField['typeName'] == 'publication'
                 ? $metadataField['typeName'] . 'Citation'
                 : $metadataField['typeName'] . 'Value';
-            return [
+
+        return [
+            $typeName => [
                 'typeName' =>  $typeName,
                 'multiple' => false,
                 'typeClass' => 'primitive',
                 'value' => $value
-            ];
-        }, $value);
+            ]
+        ];
     }
 
     private function createMultiCompoundMetadata(array $metadataField, object $object): array
     {
         $objectData = $object->getAllData();
 
-        return array_map(function (string $attr, string $value) use ($metadataField) {
-            return [
-                'typeName' =>  $metadataField['typeName'] . ucfirst($attr),
-                'multiple' => false,
-                'typeClass' => 'primitive',
-                'value' => $value
-            ];
-        }, array_keys($objectData), $objectData);
+        $metadataValue = [];
+        foreach ($objectData as $attr => $value) {
+            $metadataValue = array_merge($metadataValue, [
+                $metadataField['typeName'] . ucfirst($attr) => [
+                    'typeName' =>  $metadataField['typeName'] . ucfirst($attr),
+                    'multiple' => false,
+                    'typeClass' => 'primitive',
+                    'value' => $value
+                ]
+            ]);
+        }
+        return $metadataValue;
     }
 
     public function createDatasetPackage(): void
     {
         $this->loadMetadata();
         $datasetContent = [
-            'datasetVersion' => [
-                'metadataBlocks' => [
-                    'citation' => [
-                        'displayName' => 'Citation Metadata',
-                        'fields' => $this->getDatasetMetadata()
-                    ]
-                ]
-            ]
+            'fields' => $this->getDatasetMetadata()
         ];
 
         $datasetPackage = fopen($this->getPackagePath(), 'w');
