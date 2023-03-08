@@ -31,6 +31,6 @@ class DepositAPIService
             throw new Exception($filesDepositResponse->getMessage(), $filesDepositResponse->getStatusCode());
         }
 
-        return json_decode($filesDepositResponse->getData(), true);
+        return $datasetData;
     }
 }

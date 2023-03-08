@@ -131,13 +131,26 @@ class DatasetsHandler extends APIHandler
             import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
             $datasetFactory = new SubmissionDatasetFactory($submission);
             $dataset = $datasetFactory->getDataset();
+            $dataset->setTitle($requestParams['datasetTitle']);
+            $dataset->setDescription($requestParams['datasetDescription']);
+            $dataset->setKeywords($requestParams['datasetKeywords']);
+            $dataset->setSubject($requestParams['datasetSubject']);
 
             import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
             $swordClient = new SWORDAPIClient($submission->getContextId());
 
             import('plugins.generic.dataverse.classes.dataverseAPI.services.DepositAPIService');
             $depositService = new DepositAPIService($swordClient);
-            $depositService->depositDataset($dataset);
+
+            $depositResponse = $depositService->depositDataset($dataset);
+            $dataset->setPersistentId($depositResponse['persistentId']);
+
+            import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
+            $nativeAPIClient = new NativeAPIClient($submission->getContextId());
+
+            import('plugins.generic.dataverse.classes.dataverseAPI.services.UpdateAPIService');
+            $updateService = new UpdateAPIService($nativeAPIClient);
+            $updateService->updateDataset($dataset);
         } catch (Exception $e) {
             error_log($e->getMessage());
             return $response->withStatus($e->getCode())->withJson(['error' => $e->getMessage()]);
