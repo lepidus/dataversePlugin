@@ -1,0 +1,53 @@
+{
+    "status": "OK",
+    "data": [
+        {
+            "description": "",
+            "label": "Sample.jpg",
+            "restricted": false,
+            "version": 1,
+            "datasetVersionId": 226366,
+            "dataFile": {
+                "id": 2025434,
+                "persistentId": "doi:10.00000/FK2/1ABC2D/3EF4GH",
+                "pidURL": "https://doi.org/10.00000/FK2/1ABC2D/3EF4GH",
+                "filename": "sample.jpg",
+                "contentType": "application/pdf",
+                "filesize": 14572,
+                "description": "",
+                "storageIdentifier": "s3://demo-dataverse-org:1867ef091d5-c4a6bf0e08ab",
+                "rootDataFileId": -1,
+                "md5": "ab60d29270250992281cd480770f0685",
+                "checksum": {
+                    "type": "MD5",
+                    "value": "ab60d29270250992281cd480770f0685"
+                },
+                "creationDate": "2023-02-23"
+            }
+        },
+        {
+            "description": "",
+            "label": "DataTable.tab",
+            "restricted": false,
+            "version": 1,
+            "datasetVersionId": 226366,
+            "dataFile": {
+                "id": 2025433,
+                "persistentId": "doi:10.00000/FK2/1ABC2D/JXAFHE",
+                "pidURL": "https://doi.org/10.00000/FK2/1ABC2D/JXAFHE",
+                "filename": "DataTable.csv",
+                "contentType": "application/pdf",
+                "filesize": 14572,
+                "description": "",
+                "storageIdentifier": "s3://demo-dataverse-org:1867ef091d0-479b4f4424e1",
+                "rootDataFileId": -1,
+                "md5": "ab60d29270250992281cd480770f0685",
+                "checksum": {
+                    "type": "MD5",
+                    "value": "ab60d29270250992281cd480770f0685"
+                },
+                "creationDate": "2023-02-23"
+            }
+        }
+    ]
+}

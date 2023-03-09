@@ -1,31 +1,14 @@
 <?php
 
-import('plugins.generic.dataverse.classes.DataverseConfiguration');
-
-class DataverseDispatcher
+abstract class DataverseDispatcher
 {
-    public $plugin;
+    protected $plugin;
 
     public function __construct(Plugin $plugin)
     {
         $this->plugin = $plugin;
+        $this->registerHooks();
     }
 
-    public function getDataverseConfiguration(): DataverseConfiguration
-    {
-        $context = $this->plugin->getRequest()->getContext();
-        $contextId = $context->getId();
-
-        return new DataverseConfiguration(
-            $this->plugin->getSetting($contextId, 'dataverseUrl'),
-            $this->plugin->getSetting($contextId, 'apiToken')
-        );
-    }
-
-    public function getDataverseService(): DataverseService
-    {
-        $serviceFactory = new DataverseServiceFactory();
-        $service = $serviceFactory->build($this->getDataverseConfiguration(), $this->plugin);
-        return $service;
-    }
+    abstract protected function registerHooks(): void;
 }

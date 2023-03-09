@@ -1,5 +1,7 @@
 <?php
 
+define('DATAVERSE_API_STATUS_OK', 200);
+
 class DataAPIService
 {
     private $client;
@@ -13,7 +15,7 @@ class DataAPIService
     {
         $response = $this->client->getDataverseServerData();
 
-        if ($response->getStatusCode() > 300) {
+        if ($response->getStatusCode() != DATAVERSE_API_STATUS_OK) {
             throw new Exception($response->getMessage(), $response->getStatusCode());
         }
 
@@ -26,12 +28,34 @@ class DataAPIService
     {
         $response = $this->client->getDataverseCollectionData();
 
-        if ($response->getStatusCode() > 300) {
+        if ($response->getStatusCode() != DATAVERSE_API_STATUS_OK) {
             throw new Exception($response->getMessage(), $response->getStatusCode());
         }
 
         $dataverseCollectionData = json_decode($response->getData())->data;
 
         return $dataverseCollectionData->name;
+    }
+
+    public function getDataset(string $persistentId): Dataset
+    {
+        $response = $this->client->getDatasetData($persistentId);
+
+        if ($response->getStatusCode() != DATAVERSE_API_STATUS_OK) {
+            throw new Exception($response->getMessage(), $response->getStatusCode());
+        }
+
+        return $this->client->getDatasetFactory($response)->getDataset();
+    }
+
+    public function getDatasetFiles(string $persistentId): array
+    {
+        $response = $this->client->getDatasetFilesData($persistentId);
+
+        if ($response->getStatusCode() != DATAVERSE_API_STATUS_OK) {
+            throw new Exception($response->getMessage(), $response->getStatusCode());
+        }
+
+        return $this->client->retrieveDatasetFiles($response->getData());
     }
 }

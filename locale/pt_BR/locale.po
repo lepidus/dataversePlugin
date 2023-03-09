@@ -92,6 +92,9 @@ msgstr "O servidor encontrou um erro interno que o impediu de atender a esta req
 msgid "plugins.generic.dataverse.notification.statusUnavailable"
 msgstr "Servidor não disponível. {$dataverseUrl} está temporariamente fora do ar. Por favor, tente novamente mais tarde"
 
+msgid "plugins.generic.dataverse.notification.researchDataNotFound"
+msgstr "Dados de pesquisa com ID {$persistentId} não encontrados."
+
 msgid "plugins.generic.dataverse.notification.unknownError"
 msgstr "Erro desconhecido. Não foi possível conectar a {$dataverseUrl}"
 
@@ -105,7 +108,7 @@ msgid "plugins.generic.dataverse.modal.addFile.datasetFileLabel"
 msgstr "Arquivo de dados de pesquisa"
 
 msgid "plugins.generic.dataverse.researchDataFile.error"
-msgstr "Um arquivo de dados de pesquisa é necessário. Certifique-se que você escolheu e enviou um arquivo."
+msgstr "Dados de pesquisa são necessários. Certifique-se que você escolheu e enviou dados de pesquisa."
 
 msgid "plugins.generic.dataverse.termsOfUse.label"
 msgstr "Termos de uso do Dataverse"
@@ -129,7 +132,8 @@ msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
 
 msgid "plugins.generic.dataverse.researchData.noResearchData"
-msgstr "Não foram transferidos dados de pesquisa."
+msgstr "<strong>Não foram transferidos dados de pesquisa</strong>.<br>"
+"Para transferir dados de pesquisa, preencha o formulário abaixo e adicione os dados de pesquisa que deseja depositar."
 
 msgid "plugins.generic.dataverse.researchData.metadata"
 msgstr "Metadados"

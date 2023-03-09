@@ -2,11 +2,13 @@
 
 interface IDataAPIClient
 {
-    public function getDatasetFactory(DataverseResponse $response): DatasetFactory;
-
     public function getDataverseServerData(): DataverseResponse;
 
     public function getDataverseCollectionData(): DataverseResponse;
 
     public function getDatasetData(string $persistentId): DataverseResponse;
+
+    public function getDatasetFilesData(string $persistentId): DataverseResponse;
+
+    public function retrieveDatasetFiles(string $fileData): array;
 }

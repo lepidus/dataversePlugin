@@ -1,9 +1,15 @@
 (function ($) {
 
+	$.pkp.plugins.generic = $.pkp.plugins.generic || {};
+
 	$.pkp.plugins.generic.dataverse = {
+
 		pageRootComponent: null,
+
 		errors: [],
+
 		downloadFileUrl: null,
+
 		formSuccess: function (data) {
 			const pageRootComponent =
 				$.pkp.plugins.generic.dataverse.pageRootComponent;
@@ -11,6 +17,7 @@
 			$.pkp.plugins.generic.dataverse.refreshItems();
 			pageRootComponent.$modal.hide('datasetFileModal');
 		},
+
 		datasetFileModalOpen: function () {
 			const pageRootComponent =
 				$.pkp.plugins.generic.dataverse.pageRootComponent;
@@ -24,6 +31,7 @@
 
 			pageRootComponent.$modal.show('datasetFileModal');
 		},
+
 		refreshItems: function () {
 			const pageRootComponent =
 				$.pkp.plugins.generic.dataverse.pageRootComponent;
@@ -45,14 +53,16 @@
 				},
 			});
 		},
-		defineTermsOfUseErrors() {
+
+		defineTermsOfUseErrors: function() {
 			$('input[name="termsOfUse"]').on('change', (e) => {
 				$.pkp.plugins.generic.dataverse.validateTermsOfUse(
 					$(e.target).is(':checked')
 				);
 			});
 		},
-		validateTermsOfUse(value) {
+
+		validateTermsOfUse: function(value) {
 			const pageRootComponent =
 				$.pkp.plugins.generic.dataverse.pageRootComponent;
 
@@ -78,7 +88,8 @@
 				pageRootComponent.components.datasetFileForm.errors = newErrors;
 			}
 		},
-		openDeleteModal(id) {
+
+		openDeleteModal: function(id) {
 			const pageRootComponent =
 				$.pkp.plugins.generic.dataverse.pageRootComponent;
 
@@ -127,7 +138,8 @@
 				}
 			});
 		},
-		openDeleteDatasetModal() {
+
+		openDeleteDatasetModal: function() {
 			const pageRootComponent =
 				$.pkp.plugins.generic.dataverse.pageRootComponent;
 
@@ -153,7 +165,8 @@
 				}
 			});
 		},
-		getFileDownloadUrl(item) {
+
+		getFileDownloadUrl: function(item) {
 			const pageRootComponent =
 				$.pkp.plugins.generic.dataverse.pageRootComponent;
 
@@ -162,54 +175,7 @@
 			}
 
 			return;
-		},
+		}
 	};
-
-	$(document).ready(function () {
-		const pageRootComponent = pkp.registry._instances.app;
-
-		$.pkp.plugins.generic.dataverse.pageRootComponent = pageRootComponent;
-		$.pkp.plugins.generic.dataverse.formErrors =
-			pageRootComponent.components.datasetFileForm.errors;
-
-		pageRootComponent.components.datasetMetadata.action =
-			appDataverse.datasetApiUrl;
-
-		const workingPublication = pageRootComponent.workingPublication;
-
-		const datasetMetadataForm = $('#dataset_metadata > form');
-
-		const disabled = datasetMetadataForm.find('.pkpFormPage__buttons button').prop('disabled');
-
-		$('#datasetData > .pkpHeader > .pkpHeader__actions > button').prop('disabled', disabled);
-		$('#datasetFiles .pkpHeader > .pkpHeader__actions button').prop('disabled', disabled);
-		$('#datasetFiles .listPanel__item .listPanel__itemActions button').prop('disabled', disabled);
-
-		const observer = new MutationObserver(function (mutations) {
-			mutations.forEach(function (mutation) {
-				if (mutation.attributeName === 'action') {
-					pageRootComponent.components.datasetMetadata.action =
-						appDataverse.datasetApiUrl;
-				}
-				if (mutation.attributeName === 'disabled') {
-					let disabled = mutation.target.disabled;
-
-					$('#datasetData > .pkpHeader > .pkpHeader__actions > button').prop('disabled', disabled);
-					$('#datasetFiles .pkpHeader > .pkpHeader__actions button').prop('disabled', disabled);
-					$('#datasetFiles .listPanel__item .listPanel__itemActions button').prop('disabled', disabled);
-				}
-			});
-		});
-
-		observer.observe(datasetMetadataForm.get(0), {
-			attributes: true, subtree: true
-		});
-
-		pkp.eventBus.$on('form-success', (formId, newPublication) => {
-			if (formId === 'datasetMetadata') {
-				pageRootComponent.workingPublication = workingPublication;
-				insertCitationInTemplate();
-			}
-		});
-	});
+	
 })(jQuery);

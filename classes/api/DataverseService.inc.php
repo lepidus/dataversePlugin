@@ -13,6 +13,7 @@ import('plugins.generic.dataverse.classes.dataverseAPI.packagers.creators.AtomPa
 class DataverseService
 {
     private $dataverseClient;
+    private $submissionAdapter;
     private $submission;
 
     public function __construct(DataverseClient $dataverseClient)
@@ -29,7 +30,8 @@ class DataverseService
     {
         $submissionAdapterCreator = new SubmissionAdapterCreator();
         $submissionAdapter = $submissionAdapterCreator->create($submission, $submissionUser);
-        $this->submission = $submissionAdapter;
+        $this->submissionAdapter = $submissionAdapter;
+        $this->submission = $submission;
     }
 
     public function getDataverseName(): ?string
@@ -53,7 +55,7 @@ class DataverseService
         $package->loadMetadata($dataset);
         $package->createAtomEntry();
 
-        foreach ($this->submission->getFiles() as $file) {
+        foreach ($this->submissionAdapter->getFiles() as $file) {
             $package->addFileToPackage(
                 $file->getFilePath(),
                 $file->getOriginalFileName()
@@ -198,7 +200,7 @@ class DataverseService
     {
         try {
             $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
-            foreach ($this->submission->getFiles() as $draftDatasetFile) {
+            foreach ($this->submissionAdapter->getFiles() as $draftDatasetFile) {
                 $draftDatasetFileDAO->deleteObject($draftDatasetFile);
             }
         } catch (RuntimeException $e) {

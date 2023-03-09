@@ -1,25 +1,37 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
-import('plugins.generic.dataverse.classes.creators.SubmissionAdapterCreator');
-import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
-import('plugins.generic.dataverse.classes.dataverseAPI.DataverseAPIService');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
 
-class DataverseServiceDispatcher extends DataverseDispatcher
+class DataverseEventsDispatcher extends DataverseDispatcher
 {
-    public function __construct(Plugin $plugin)
+    protected function registerHooks(): void
     {
         HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'datasetDepositOnSubmission'));
         HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
-        HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDraftDatasetFileHandler'));
         HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDatasetsHandler'));
         HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
+    }
 
-        parent::__construct($plugin);
+    public function getDataverseConfiguration(): DataverseConfiguration
+    {
+        $context = $this->plugin->getRequest()->getContext();
+        $contextId = $context->getId();
+
+        import('plugins.generic.dataverse.classes.DataverseConfiguration');
+        return new DataverseConfiguration(
+            $this->plugin->getSetting($contextId, 'dataverseUrl'),
+            $this->plugin->getSetting($contextId, 'apiToken')
+        );
+    }
+
+    public function getDataverseService(): DataverseService
+    {
+        import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
+        $serviceFactory = new DataverseServiceFactory();
+        $service = $serviceFactory->build($this->getDataverseConfiguration(), $this->plugin);
+        return $service;
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -63,19 +75,6 @@ class DataverseServiceDispatcher extends DataverseDispatcher
         return $currentUser;
     }
 
-    public function setupDraftDatasetFileHandler(string $hookname, Request $request): bool
-    {
-        $router = $request->getRouter();
-        if ($router instanceof \APIRouter && str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
-            $this->plugin->import('api.v1.draftDatasetFiles.DraftDatasetFileHandler');
-            $handler = new DraftDatasetFileHandler();
-            $router->setHandler($handler);
-            $handler->getApp()->run();
-            exit;
-        }
-        return false;
-    }
-
     public function setupDatasetsHandler(string $hookname, Request $request): bool
     {
         $router = $request->getRouter();
@@ -108,7 +107,6 @@ class DataverseServiceDispatcher extends DataverseDispatcher
     {
         $component =& $params[0];
         switch ($component) {
-            case 'plugins.generic.dataverse.handlers.DataverseHandler':
             case 'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler':
                 return true;
                 break;

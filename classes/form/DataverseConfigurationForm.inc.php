@@ -59,6 +59,7 @@ class DataverseConfigurationForm extends Form
 
     public function validateCredentials(): bool
     {
+        import('plugins.generic.dataverse.classes.DataverseConfiguration');
         $client = new DataverseClient(new DataverseConfiguration($this->getData("dataverseUrl"), $this->getData("apiToken")));
         $connectionSuccessful = $client->checkConnectionWithDataverse();
 

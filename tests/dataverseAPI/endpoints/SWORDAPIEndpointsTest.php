@@ -1,13 +1,20 @@
 <?php
 
-import('plugins.generic.dataverse.tests.dataverseAPI.endpoints.DataverseEndpointsTestCase');
+import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.SWORDAPIEndpoints');
 
-class SWORDAPIEndpointsTest extends DataverseEndpointsTestCase
+class SWORDAPIEndpointsTest extends PKPTestCase
 {
-    protected function createDataverseEndpoints(DataverseServer $server): DataverseEndpoints
+    private $endpoints;
+
+    protected function setUp(): void
     {
-        return new SWORDAPIEndpoints($server);
+        $this->endpoints = new SWORDAPIEndpoints(
+            'https://demo.dataverse.org',
+            'example'
+        );
+
+        parent::setUp();
     }
 
     public function testReturnsCorrectDataverseServiceDocumentUrl(): void

@@ -16,11 +16,7 @@ class SWORDAPIDatasetPackagerTest extends PKPTestCase
 
     public function tearDown(): void
     {
-        if (file_exists($this->packager->getPackagePath())) {
-            unlink($this->packager->getPackagePath());
-        }
-        rmdir($this->packager->getAtomPackager()->getOutPath() . '/files');
-        rmdir($this->packager->getAtomPackager()->getOutPath());
+        $this->packager->clear();
         parent::tearDown();
     }
 
@@ -37,7 +33,6 @@ class SWORDAPIDatasetPackagerTest extends PKPTestCase
         $this->dataset->setKeywords(array('test'));
         $this->dataset->setContact($contact);
         $this->dataset->setPubCitation('User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems');
-        $this->dataset->setCitation('Test Citation');
         $this->dataset->setDepositor('User, Test (via Open Preprint Systems)');
 
         $this->packager = new SWORDAPIDatasetPackager($this->dataset);

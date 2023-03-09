@@ -15,26 +15,15 @@ class DatasetMetadataForm extends FormComponent
 {
     public $id = FORM_DATASET_METADATA;
 
-    public $method = 'PUT';
-
-    public function __construct($action, $locales, $datasetResponse, $vocabSuggestionUrlBase)
+    public function __construct($action, $method, $dataset)
     {
         $this->action = $action;
-        $this->locales = $locales;
-
-        $datasetData = new DataverseDatasetData();
-        if (!empty($datasetResponse)) {
-            $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks->citation->fields;
-            $datasetDataCreator = new DataverseDatasetDataCreator();
-            $datasetData = $datasetDataCreator->createDatasetData($metadataBlocks);
-        }
-
-        $dataverseSubjectVocab = DataverseMetadata::getDataverseSubjects();
+        $this->method = $method;
 
         $this->addField(new FieldText('datasetTitle', [
             'label' => __('plugins.generic.dataverse.metadataForm.title'),
             'isRequired' => true,
-            'value' => $datasetData->getData('title'),
+            'value' => $dataset->getTitle(),
             'size' => 'large',
         ]))
         ->addField(new FieldRichTextarea('datasetDescription', [
@@ -42,21 +31,28 @@ class DatasetMetadataForm extends FormComponent
             'isRequired' => true,
             'toolbar' => 'bold italic superscript subscript | link | blockquote bullist numlist | image | code',
             'plugins' => 'paste,link,lists,image,code',
-            'value' => implode($datasetData->getData('dsDescription')),
+            'value' => $dataset->getDescription()
         ]))
         ->addField(new FieldControlledVocab('datasetKeywords', [
             'label' => __('plugins.generic.dataverse.metadataForm.keyword'),
             'tooltip' => __('manager.setup.metadata.keywords.description'),
-            'apiUrl' => $vocabSuggestionUrlBase,
-            'locales' => $this->locales,
-            'selected' => $datasetData->getData('keyword') ? $datasetData->getData('keyword') : [],
-            'value' => $datasetData->getData('keyword')
+            'apiUrl' => $this->getVocabSuggestionUrlBase(),
+            // 'locales' => $this->locales,
+            'selected' => $dataset->getKeywords() ? $dataset->getKeywords() : [],
+            'value' => $dataset->getKeywords()
         ]))
         ->addField(new FieldSelect('datasetSubject', [
             'label' => __('plugins.generic.dataverse.metadataForm.subject.label'),
             'isRequired' => true,
-            'options' => $dataverseSubjectVocab,
-            'value' => $datasetData->getData('subject'),
+            'options' => DataverseMetadata::getDataverseSubjects(),
+            'value' => $dataset->getSubject(),
         ]));
+    }
+
+    private function getVocabSuggestionUrlBase()
+    {
+        $request = Application::get()->getRequest();
+        $contextPath = $request->getContext()->getPath();
+        return $request->getDispatcher()->url($request, ROUTE_API, $contextPath, 'vocabs', null, null, ['vocab' => 'submissionKeyword']);
     }
 }

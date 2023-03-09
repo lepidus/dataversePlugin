@@ -2,6 +2,16 @@
 
 class Dataset extends DataObject
 {
+    public function getPersistentId(): ?string
+    {
+        return $this->getData('persistentId');
+    }
+
+    public function setPersistentId(string $persistentId): void
+    {
+        $this->setData('persistentId', $persistentId);
+    }
+
     public function getTitle(): ?string
     {
         return $this->getData('title');
@@ -82,22 +92,12 @@ class Dataset extends DataObject
         $this->setData('pubCitation', $pubCitation);
     }
 
-    public function getCitation(): ?string
-    {
-        return $this->getData('citation');
-    }
-
-    public function setCitation(string $citation): void
-    {
-        $this->setData('citation', $citation);
-    }
-
     public function getFiles(): ?array
     {
         return $this->getData('files');
     }
 
-    public function setFiles(array $files): void
+    public function setFiles(?array $files): void
     {
         $this->setData('files', $files);
     }

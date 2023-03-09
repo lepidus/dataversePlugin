@@ -1,26 +1,44 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.DataverseEndpoints');
-
-class NativeAPIEndpoints extends DataverseEndpoints
+class NativeAPIEndpoints
 {
-    protected function getAPIBaseUrl(): string
+    private $dataverseServerUrl;
+
+    private $dataverseCollection;
+
+    public function __construct(string $dataverseServerUrl, string $dataverseCollection)
     {
-        return $this->server->getDataverseServerUrl() . '/api';
+        $this->dataverseServerUrl = $dataverseServerUrl;
+        $this->dataverseCollection = $dataverseCollection;
     }
 
-    public function getDataverseServerUrl(): string
+    protected function getAPIBaseUrl(): string
+    {
+        return $this->dataverseServerUrl . '/api';
+    }
+
+    public function getDataverseServerEndpoint(): string
     {
         return $this->getAPIBaseUrl() . '/dataverses/' . ':root';
     }
 
-    public function getDataverseCollectionUrl(): string
+    public function getDataverseCollectionEndpoint(): string
     {
-        return $this->getAPIBaseUrl() . '/dataverses/' . $this->server->getDataverseCollection();
+        return $this->getAPIBaseUrl() . '/dataverses/' . $this->dataverseCollection;
     }
 
-    public function getDatasetDataUrl(string $persistentId): string
+    public function getDatasetDataEndpoint(string $persistentId): string
     {
-        return $this->getAPIBaseUrl() . '/datasets/export?exporter=dataverse_json&persistentId=' . $persistentId;
+        return $this->getAPIBaseUrl() . '/datasets/:persistentId/versions/:latest/metadata/citation?persistentId=' . $persistentId;
+    }
+
+    public function getDatasetFilesEndpoint(string $persistentId): string
+    {
+        return $this->getAPIBaseUrl() . '/datasets/:persistentId/versions/:latest/files?persistentId=' . $persistentId;
+    }
+
+    public function getDatasetUpdateEndpoint(string $persistentId): string
+    {
+        return $this->getAPIBaseUrl() . '/datasets/:persistentId/editMetadata?persistentId=' . $persistentId . '&replace=true';
     }
 }

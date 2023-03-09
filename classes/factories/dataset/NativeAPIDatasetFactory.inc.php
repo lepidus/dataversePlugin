@@ -1,6 +1,8 @@
 <?php
 
 import('plugins.generic.dataverse.classes.factories.dataset.DatasetFactory');
+import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
+import('plugins.generic.dataverse.classes.entities.DatasetContact');
 
 class NativeAPIDatasetFactory extends DatasetFactory
 {
@@ -14,7 +16,7 @@ class NativeAPIDatasetFactory extends DatasetFactory
     protected function sanitizeProps(): array
     {
         $responseData = json_decode($this->response->getData());
-        $datasetData = $responseData->datasetVersion->metadataBlocks->citation->fields;
+        $datasetData = $responseData->data->fields;
 
         $props = [];
         foreach ($datasetData as $metadata) {
@@ -26,8 +28,12 @@ class NativeAPIDatasetFactory extends DatasetFactory
                     $props['authors'] = array_map(function (stdClass $author) {
                         return new DatasetAuthor(
                             $author->authorName->value,
-                            $author->authorAffiliation->value,
-                            $author->authorIdentifier->value
+                            isset($author->authorAffiliation->value) ?
+                                $author->authorAffiliation->value
+                                : null,
+                            isset($author->authorIdentifier->value) ?
+                                $author->authorIdentifier->value
+                                : null
                         );
                     }, $metadata->value);
                     break;
@@ -36,7 +42,9 @@ class NativeAPIDatasetFactory extends DatasetFactory
                     $props['contact'] = new DatasetContact(
                         $contact->datasetContactName->value,
                         $contact->datasetContactEmail->value,
-                        $contact->datasetContactAffiliation->value
+                        isset($contact->datasetContactAffiliation->value) ?
+                            $contact->datasetContactAffiliation->value
+                            : null
                     );
                     break;
                 case 'dsDescription':
@@ -57,15 +65,6 @@ class NativeAPIDatasetFactory extends DatasetFactory
                     break;
             }
         }
-
-        $citation = str_replace(
-            $responseData->persistentUrl,
-            '<a href="' . $responseData->persistentUrl . '">' .
-                $responseData->persistentUrl .
-            '</a>',
-            $responseData->datasetVersion->citation
-        );
-        $props['citation'] = $citation;
 
         return $props;
     }

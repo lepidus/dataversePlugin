@@ -1,14 +1,22 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.endpoints.DataverseEndpoints');
-
-class SWORDAPIEndpoints extends DataverseEndpoints
+class SWORDAPIEndpoints
 {
     private const DATAVERSE_API_VERSION = 'v1.1';
 
+    private $dataverseServerUrl;
+
+    private $dataverseCollection;
+
+    public function __construct(string $dataverseServerUrl, string $dataverseCollection)
+    {
+        $this->dataverseServerUrl = $dataverseServerUrl;
+        $this->dataverseCollection = $dataverseCollection;
+    }
+
     protected function getAPIBaseUrl(): string
     {
-        return $this->server->getDataverseServerUrl() . '/dvn/api/data-deposit/' . self::DATAVERSE_API_VERSION . '/swordv2';
+        return $this->dataverseServerUrl . '/dvn/api/data-deposit/' . self::DATAVERSE_API_VERSION . '/swordv2';
     }
 
     public function getDataverseServiceDocumentUrl(): string
@@ -18,12 +26,12 @@ class SWORDAPIEndpoints extends DataverseEndpoints
 
     public function getDataverseCollectionUrl(): string
     {
-        return $this->getAPIBaseUrl() . '/collection/dataverse/' . $this->server->getDataverseCollection();
+        return $this->getAPIBaseUrl() . '/collection/dataverse/' . $this->dataverseCollection;
     }
 
     public function getDataverseEditUrl(): string
     {
-        return $this->getAPIBaseUrl() . '/edit/dataverse/' . $this->server->getDataverseCollection();
+        return $this->getAPIBaseUrl() . '/edit/dataverse/' . $this->dataverseCollection;
     }
 
     public function getDatasetEditUrl(string $persistentId): string

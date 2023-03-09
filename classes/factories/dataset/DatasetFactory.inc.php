@@ -1,5 +1,7 @@
 <?php
 
+import('plugins.generic.dataverse.classes.entities.Dataset');
+
 abstract class DatasetFactory
 {
     protected $dataset;

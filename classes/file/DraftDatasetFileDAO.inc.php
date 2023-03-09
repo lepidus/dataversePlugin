@@ -51,6 +51,14 @@ class DraftDatasetFileDAO extends SchemaDAO
         );
     }
 
+    public function deleteBySubmissionId($submissionId)
+    {
+        $this->update(
+            "DELETE FROM $this->tableName WHERE submission_id = ?",
+            [(int) $submissionId]
+        );
+    }
+
     public function _fromRow($primaryRow)
     {
         $schemaService = Services::get('schema');

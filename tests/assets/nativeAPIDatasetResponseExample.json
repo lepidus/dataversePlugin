@@ -1,193 +1,128 @@
 {
-    "id": 987654,
-    "identifier": "FK2/U4AJ2E",
-    "persistentUrl": "https://doi.org/10.12345/ABC/DEFGHI",
-    "protocol": "doi",
-    "authority": "10.12345",
-    "publisher": "Demo Dataverse",
-    "publicationDate": "2023-01-18",
-    "storageIdentifier": "s3://10.12345/ABC/DEFGHI",
-    "datasetVersion": {
-        "id": 987654,
-        "datasetId": 1234567,
-        "datasetPersistentId": "doi:10.12345/ABC/DEFGHI",
-        "storageIdentifier": "s3://10.12345/ABC/DEFGHI",
-        "versionNumber": 1,
-        "versionMinorNumber": 0,
-        "versionState": "RELEASED",
-        "UNF": "UNF:6:dEgtc5Z1MSF3u7c+kF4kXg==",
-        "lastUpdateTime": "2023-01-18T18:16:48Z",
-        "releaseTime": "2023-01-18T18:16:48Z",
-        "createTime": "2023-01-18T18:16:21Z",
-        "license": {
-            "name": "CC0 1.0",
-            "uri": "http://creativecommons.org/publicdomain/zero/1.0"
-        },
-        "fileAccessRequest": false,
-        "metadataBlocks": {
-            "citation": {
-                "displayName": "Citation Metadata",
-                "name": "citation",
-                "fields": [
+    "status": "OK",
+    "data": {
+        "displayName": "Citation Metadata",
+        "name": "citation",
+        "fields": [
+            {
+                "typeName": "title",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "Test Dataset"
+            },
+            {
+                "typeName": "author",
+                "multiple": true,
+                "typeClass": "compound",
+                "value": [
                     {
-                        "typeName": "title",
-                        "multiple": false,
-                        "typeClass": "primitive",
-                        "value": "Test Dataset"
-                    },
-                    {
-                        "typeName": "author",
-                        "multiple": true,
-                        "typeClass": "compound",
-                        "value": [
-                            {
-                                "authorName": {
-                                    "typeName": "authorName",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "User, Test"
-                                },
-                                "authorAffiliation": {
-                                    "typeName": "authorAffiliation",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "Dataverse"
-                                },
-                                "authorIdentifierScheme": {
-                                    "typeName": "authorIdentifierScheme",
-                                    "multiple": false,
-                                    "typeClass": "controlledVocabulary",
-                                    "value": "ORCID"
-                                },
-                                "authorIdentifier": {
-                                    "typeName": "authorIdentifier",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "0000-0000-0000-0000"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "typeName": "datasetContact",
-                        "multiple": true,
-                        "typeClass": "compound",
-                        "value": [
-                            {
-                                "datasetContactName": {
-                                    "typeName": "datasetContactName",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "User, Test"
-                                },
-                                "datasetContactAffiliation": {
-                                    "typeName": "datasetContactAffiliation",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "Dataverse"
-                                },
-                                "datasetContactEmail": {
-                                    "typeName": "datasetContactEmail",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "testuser@example.com"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "typeName": "dsDescription",
-                        "multiple": true,
-                        "typeClass": "compound",
-                        "value": [
-                            {
-                                "dsDescriptionValue": {
-                                    "typeName": "dsDescriptionValue",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "<p>Test description</p>"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "typeName": "subject",
-                        "multiple": true,
-                        "typeClass": "controlledVocabulary",
-                        "value": [
-                            "Other"
-                        ]
-                    },
-                    {
-                        "typeName": "keyword",
-                        "multiple": true,
-                        "typeClass": "compound",
-                        "value": [
-                            {
-                                "keywordValue": {
-                                    "typeName": "keywordValue",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "test"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "typeName": "publication",
-                        "multiple": true,
-                        "typeClass": "compound",
-                        "value": [
-                            {
-                                "publicationCitation": {
-                                    "typeName": "publicationCitation",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "typeName": "depositor",
-                        "multiple": false,
-                        "typeClass": "primitive",
-                        "value": "User, Test (via Open Preprint Systems)"
+                        "authorName": {
+                            "typeName": "authorName",
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "value": "User, Test"
+                        },
+                        "authorAffiliation": {
+                            "typeName": "authorAffiliation",
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "value": "Dataverse"
+                        },
+                        "authorIdentifier": {
+                            "typeName": "authorIdentifier",
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "value": "0000-0000-0000-0000"
+                        }
                     }
                 ]
-            }
-        },
-        "files": [
+            },
             {
-                "description": "",
-                "label": "sample4.tab",
-                "restricted": false,
-                "version": 3,
-                "datasetVersionId": 987654,
-                "dataFile": {
-                    "id": 2022112,
-                    "persistentId": "doi:10.12345/ABC/DEFGHI/N7A7UT",
-                    "pidURL": "https://doi.org/10.12345/ABC/DEFGHI/N7A7UT",
-                    "filename": "sample4.tab",
-                    "contentType": "text/tab-separated-values",
-                    "filesize": 7889,
-                    "description": "",
-                    "storageIdentifier": "s3://demo-dataverse-org:185c618a8f5-2dbf50cd6718",
-                    "originalFileFormat": "text/csv",
-                    "originalFormatLabel": "Comma Separated Values",
-                    "originalFileSize": 7918,
-                    "originalFileName": "sample4.csv",
-                    "UNF": "UNF:6:dEgtc5Z1MSF3u7c+kF4kXg==",
-                    "rootDataFileId": -1,
-                    "md5": "39a7a4186536ae2c6365d4f787e682bd",
-                    "checksum": {
-                        "type": "MD5",
-                        "value": "39a7a4186536ae2c6365d4f787e682bd"
-                    },
-                    "creationDate": "2023-01-18"
-                }
+                "typeName": "datasetContact",
+                "multiple": true,
+                "typeClass": "compound",
+                "value": [
+                    {
+                        "datasetContactName": {
+                            "typeName": "datasetContactName",
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "value": "User, Test"
+                        },
+                        "datasetContactEmail": {
+                            "typeName": "datasetContactEmail",
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "value": "testuser@example.com"
+                        },
+                        "datasetContactAffiliation": {
+                            "typeName": "datasetContactAffiliation",
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "value": "Dataverse"
+                        }
+                    }
+                ]
+            },
+            {
+                "typeName": "dsDescription",
+                "multiple": true,
+                "typeClass": "compound",
+                "value": [
+                    {
+                        "dsDescriptionValue": {
+                            "typeName": "dsDescriptionValue",
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "value": "<p>Test description</p>"
+                        }
+                    }
+                ]
+            },
+            {
+                "typeName": "subject",
+                "multiple": true,
+                "typeClass": "controlledVocabulary",
+                "value": [
+                    "Other"
+                ]
+            },
+            {
+                "typeName": "keyword",
+                "multiple": true,
+                "typeClass": "compound",
+                "value": [
+                    {
+                        "keywordValue": {
+                            "typeName": "keywordValue",
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "value": "test"
+                        }
+                    }
+                ]
+            },
+            {
+                "typeName": "publication",
+                "multiple": true,
+                "typeClass": "compound",
+                "value": [
+                    {
+                        "publicationCitation": {
+                            "typeName": "publicationCitation",
+                            "multiple": false,
+                            "typeClass": "primitive",
+                            "value": "User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems"
+                        }
+                    }
+                ]
+            },
+            {
+                "typeName": "depositor",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "User, Test (via Open Preprint Systems)"
             }
-        ],
-        "citation": "Test, User, 2023, \"Test Dataset\", https://doi.org/10.12345/ABC/DEFGHI, Demo Dataverse, V1"
+        ]
     }
 }

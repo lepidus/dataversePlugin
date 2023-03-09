@@ -1,34 +1,57 @@
 <?php
 
-class DatasetFile extends DataObject
+class DatasetFile
 {
-    public function getName(): string
+    private $id;
+
+    private $title;
+
+    private $originalFileName;
+
+    private $path;
+
+    public function getId(): int
     {
-        return $this->getData('name');
+        return $this->id;
     }
 
-    public function setName(string $name): void
+    public function setId(int $id): void
     {
-        $this->setData('name', $name);
+        $this->id = $id;
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(string $title): void
+    {
+        $this->title = $title;
     }
 
     public function getOriginalFileName(): string
     {
-        return $this->getData('originalFileName');
+        return $this->originalFileName;
     }
 
     public function setOriginalFileName(string $originalFileName): void
     {
-        $this->setData('originalFileName', $originalFileName);
+        $this->originalFileName = $originalFileName;
     }
 
     public function getPath(): string
     {
-        return $this->getData('path');
+        return $this->path;
     }
 
     public function setPath(string $path): void
     {
-        $this->setData('path', $path);
+        $this->path = $path;
+    }
+
+    public function getVars(): array
+    {
+        return get_object_vars($this);
     }
 }
