@@ -74,7 +74,7 @@ class DataverseService
         }
         if (!empty($study)) {
             $this->defineAdditionalMetadata($study);
-            $this->deleteDraftDatasetFiles();
+            DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($study->getSubmissionId());
         }
     }
 
@@ -193,18 +193,6 @@ class DataverseService
         } catch (RuntimeException $e) {
             error_log($e->getMessage());
             $dataverseNotificationMgr->createNotification($e->getCode());
-        }
-    }
-
-    private function deleteDraftDatasetFiles()
-    {
-        try {
-            $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
-            foreach ($this->submissionAdapter->getFiles() as $draftDatasetFile) {
-                $draftDatasetFileDAO->deleteObject($draftDatasetFile);
-            }
-        } catch (RuntimeException $e) {
-            error_log($e->getMessage());
         }
     }
 
