@@ -93,14 +93,22 @@ class SubmissionDatasetFactory extends DatasetFactory
             return [];
         }
 
-        $temporaryFiles = array_map(function (DraftDatasetFile $draftDatasetFile) {
+        $temporaryFiles = array_map(function (DraftDatasetFile $draftDatasetFile) use ($draftDatasetFileDAO) {
             import('lib.pkp.classes.file.TemporaryFileManager');
             $temporaryFileManager = new TemporaryFileManager();
-            return $temporaryFileManager->getFile(
+            $file = $temporaryFileManager->getFile(
                 $draftDatasetFile->getData('fileId'),
                 $draftDatasetFile->getData('userId')
             );
+            if (!is_null($file)) {
+                return $file;
+            }
+            $draftDatasetFileDAO->deleteById($draftDatasetFile->getId());
         }, $draftDatasetFiles);
+
+        if (empty(array_filter($temporaryFiles))) {
+            return [];
+        }
 
         $datasetFiles = array_map(function (TemporaryFile $temporaryFile) {
             $datasetFile = new DatasetFile();
