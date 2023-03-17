@@ -133,7 +133,7 @@ class DatasetsHandler extends APIHandler
         $dataset = $datasetFactory->getDataset();
         $dataset->setTitle($requestParams['datasetTitle']);
         $dataset->setDescription($requestParams['datasetDescription']);
-        $dataset->setKeywords($requestParams['datasetKeywords']);
+        $dataset->setKeywords((array) $requestParams['datasetKeywords']);
         $dataset->setSubject($requestParams['datasetSubject']);
 
         try {
@@ -168,6 +168,8 @@ class DatasetsHandler extends APIHandler
             error_log($e->getMessage());
             return $response->withStatus($e->getCode())->withJson(['error' => $e->getMessage()]);
         }
+
+        return $response->withJson(['message' => 'ok'], 200);
     }
 
     public function addFile($slimRequest, $response, $args)
