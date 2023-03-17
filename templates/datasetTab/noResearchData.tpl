@@ -19,7 +19,7 @@
                 <div class="listPanel__itemIdentity">
                     <div class="listPanel__itemTitle">
                         <a :href="item.item.fileDownloadUrl">
-                            {{ item.item.title }}
+                            {{ item.item.fileName }}
                         </a>
                     </div>
                 </div>

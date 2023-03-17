@@ -12,6 +12,8 @@ class DatasetFilesListPanel extends ListPanel
 
     public $modalTitle = '';
 
+    public $title = '';
+
     public function __construct($id, $title, $args = [])
     {
         parent::__construct($id, $title, $args);
@@ -28,6 +30,7 @@ class DatasetFilesListPanel extends ListPanel
                 'apiUrl' => $this->apiUrl,
                 'isLoading' => $this->isLoading,
                 'modalTitle' => $this->modalTitle,
+                'title' => $this->title,
             ]
         );
 

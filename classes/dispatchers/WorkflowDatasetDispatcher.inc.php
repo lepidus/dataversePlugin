@@ -108,6 +108,7 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $request = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
+        $user = $request->getUser();
 
         $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
 
@@ -119,13 +120,28 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
 
-        $fileListApiUrl = 'teste';
-        $items = $items = array_map(function (DatasetFile $datasetFile) {
-            return $datasetFile->getVars();
-        }, $dataset->getFiles());
+        $fileListApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
 
-        // $fileFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
-        $fileFormAction = 'teste';
+        $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
+        $props = Services::get('schema')->getFullProps('draftDatasetFile');
+
+        $items = [];
+        foreach ($draftDatasetFiles as $draftDatasetFile) {
+            $draftDatasetFileProps = [];
+            foreach ($props as $prop) {
+                $draftDatasetFileProps[$prop] = $draftDatasetFile->getData($prop);
+            }
+            $items[] = $draftDatasetFileProps;
+        }
+
+        ksort($items);
+
+        $params = [
+            'submissionId' => $submission->getId(),
+            'userId' => $user->getId()
+        ];
+
+        $fileFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, $params);
 
         $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
         $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
@@ -202,7 +218,8 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
                 'apiUrl' => $apiUrl,
                 'items' => $items,
-                'modalTitle' => __('plugins.generic.dataverse.modal.addFile.title')
+                'modalTitle' => __('plugins.generic.dataverse.modal.addFile.title'),
+                'title' => __('plugins.generic.dataverse.researchData'),
             ]
         );
 

@@ -12,7 +12,6 @@ class DraftDatasetFileForm extends FormComponent
     public function __construct($action, $context)
     {
         $this->action = $action;
-        $this->locales = $locales;
         $this->id = 'datasetFileForm';
         $this->method = 'POST';
 
