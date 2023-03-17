@@ -21,46 +21,41 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         return $study;
     }
 
-    private function getPluginFullPath(): string
-    {
-        $request = Application::get()->getRequest();
-        return $request->getBaseUrl() . DIRECTORY_SEPARATOR . $this->plugin->getPluginPath();
-    }
-
     public function addResearchDataTab(string $hookName, array $params): bool
     {
         $templateMgr =& $params[1];
         $output =& $params[2];
 
-        $content = $this->getDatasetTabContent($templateMgr);
+        $submission = $templateMgr->get_template_vars('submission');
+
+        $content = $this->getDatasetTabContent($submission);
 
         $output .= sprintf(
             '<tab id="datasetTab" label="%s">%s</tab>',
             __("plugins.generic.dataverse.researchData"),
-            $content
+            $templateMgr->fetch($content)
         );
 
         return false;
     }
 
-    private function getDatasetTabContent(Smarty_Internal_Template $templateMgr): string
+    private function getDatasetTabContent(Submission $submission): string
     {
-        $submission = $templateMgr->get_template_vars('submission');
         $study = $this->getSubmissionStudy($submission->getId());
 
         if (is_null($study)) {
-            return $templateMgr->fetch($this->plugin->getTemplateResource('datasetTab/noResearchData.tpl'));
+            return $this->plugin->getTemplateResource('datasetTab/noResearchData.tpl');
         }
 
         $apiClient = new NativeAPIClient($submission->getContextId());
         $dataService = new DataAPIService($apiClient);
         try {
             $dataset = $dataService->getDataset($study->getPersistentId());
-            return $templateMgr->fetch($this->plugin->getTemplateResource('datasetTab/datasetData.tpl'));
+            return $this->plugin->getTemplateResource('datasetTab/datasetData.tpl');
         } catch (Exception $e) {
             error_log($e->getMessage());
             $templateMgr->assign('errorMessage', $e->getMessage());
-            return $templateMgr->fetch($this->plugin->getTemplateResource('datasetTab/researchDataError.tpl'));
+            return $this->plugin->getTemplateResource('datasetTab/researchDataError.tpl');
         }
     }
 
@@ -78,15 +73,22 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
 
         $templateMgr->addStyleSheet(
             'datasetTab',
-            $this->getPluginFullPath() . '/styles/datasetDataTab.css',
+            $this->plugin->getPluginFullPath() . '/styles/datasetDataTab.css',
             ['contexts' => ['backend']]
         );
 
         $templateMgr->addJavaScript(
-            'workflowDataset',
-            $this->getPluginFullPath() . '/js/WorkflowDataset.js',
-            ['contexts' => ['backend']]
+            'dataverseWorkflowPage',
+            $this->plugin->getPluginFullPath() . '/js/DataverseWorkflowPage.js',
+            [
+                'priority' => STYLE_SEQUENCE_LAST,
+                'contexts' => ['backend']
+            ]
         );
+
+        $templateMgr->assign([
+            'pageComponent' => 'DataverseWorkflowPage',
+        ]);
 
         $submission = $templateMgr->get_template_vars('submission');
         $study = $this->getSubmissionStudy($submission->getId());
@@ -107,22 +109,27 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
 
-        $action = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
+        $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
 
         $templateMgr->setState([
-            'datasetApiUrl' => $action
-        ]);
-
-        $templateMgr->assign('requestArgs', [
-            'submissionId' => $submission->getId(),
-            'publicationId' => $submission->getCurrentPublication()->getId(),
+            'datasetApiUrl' => $metadataFormAction
         ]);
 
         import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
         $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
 
-        $this->initDatasetMetadataForm($templateMgr, $action, 'POST', $dataset);
+        $fileListApiUrl = 'teste';
+        $items = $items = array_map(function (DatasetFile $datasetFile) {
+            return $datasetFile->getVars();
+        }, $dataset->getFiles());
+
+        // $fileFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
+        $fileFormAction = 'teste';
+
+        $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
+        $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
+        $this->initDatasetFileForm($templateMgr, $fileFormAction);
     }
 
     private function setupResearchDataUpdate(DataverseStudy $study): void
@@ -131,21 +138,19 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
 
-        $action = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
-
         $templateMgr->setState([
             'datasetApiUrl' => $action
         ]);
 
         $templateMgr->addJavaScript(
             'dataverseHelper',
-            $this->getPluginFullPath() . '/js/DataverseHelper.js',
+            $this->plugin->getPluginFullPath() . '/js/DataverseHelper.js',
             ['contexts' => ['backend']]
         );
 
         $templateMgr->addJavaScript(
             'dataverseScripts',
-            $this->getPluginFullPath() . '/js/init.js',
+            $this->plugin->getPluginFullPath() . '/js/init.js',
             ['contexts' => ['backend']]
         );
 
@@ -155,10 +160,18 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             $client = new NativeAPIClient($context->getId());
             $service = new DataAPIService($client);
             $dataset = $service->getDataset($study->getPersistentId());
+            $datasetFiles = $service->getDatasetFiles($study->getPersistentId());
 
-            $this->initDatasetMetadataForm($templateMgr, $action, 'PUT', $dataset);
-            $this->initDatasetFilesList($request, $templateMgr, $study);
-            $this->initDatasetFileForm($request, $templateMgr, $study);
+            $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
+            $fileListApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file', null, null, ['fileId' => '__id__']);
+            $fileFormAction = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
+            $items = array_map(function (DatasetFile $datasetFile) {
+                return $datasetFile->getVars();
+            }, $datasetFiles);
+
+            $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'PUT', $dataset);
+            $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
+            $this->initDatasetFileForm($templateMgr, $fileFormAction);
         } catch (Exception $e) {
             error_log($e->getMessage());
         }
@@ -179,60 +192,37 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         ]);
     }
 
-    private function initDatasetFilesList($request, $templateMgr, $study): void
+    private function initDatasetFilesList($templateMgr, $apiUrl, $items): void
     {
-        $context = $request->getContext();
+        import('plugins.generic.dataverse.classes.listPanel.DatasetFilesListPanel');
+        $datasetFilesListPanel = new DatasetFilesListPanel(
+            'datasetFiles',
+            __('plugins.generic.dataverse.researchData.files'),
+            [
+                'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
+                'apiUrl' => $apiUrl,
+                'items' => $items,
+                'modalTitle' => __('plugins.generic.dataverse.modal.addFile.title')
+            ]
+        );
 
-        $client = new NativeAPIClient($context->getId());
-        $service = new DataAPIService($client);
+        $this->addComponent($templateMgr, $datasetFilesListPanel);
 
-        try {
-            $datasetFiles = $service->getDatasetFiles($study->getPersistentId());
-
-            $apiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file', null, null, ['fileId' => '__id__']);
-
-            import('plugins.generic.dataverse.classes.listPanel.DatasetFilesListPanel');
-            $datasetFilesListPanel = new DatasetFilesListPanel(
-                'datasetFiles',
-                __('plugins.generic.dataverse.researchData.files'),
-                [
-                    'apiUrl' => $apiUrl,
-                    'items' => array_map(function (DatasetFile $datasetFile) {
-                        return $datasetFile->getVars();
-                    }, $datasetFiles)
-                ]
-            );
-
-            $this->addComponent($templateMgr, $datasetFilesListPanel);
-
-            $templateMgr->setState([
-                'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
-                'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
-                'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete'),
-                'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
-            ]);
-        } catch (Exception $e) {
-            error_log($e->getMessage());
-        }
+        $templateMgr->setState([
+            'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
+            'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
+            'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete'),
+            'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
+        ]);
     }
 
-    public function initDatasetFileForm($request, $templateMgr, $study): void
+    public function initDatasetFileForm($templateMgr, $apiUrl): void
     {
-        $dispatcher = $request->getDispatcher();
+        $request = Application::get()->getRequest();
         $context = $request->getContext();
-        $locale = AppLocale::getLocale();
-
-        $temporaryFileApiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'temporaryFiles');
-        $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
-
-        $supportedFormLocales = $context->getSupportedFormLocales();
-        $localeNames = AppLocale::getAllLocales();
-        $locales = array_map(function ($localeKey) use ($localeNames) {
-            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-        }, $supportedFormLocales);
 
         import('plugins.generic.dataverse.classes.form.DraftDatasetFileForm');
-        $draftDatasetFileForm = new DraftDatasetFileForm($apiUrl, $context, $locales, $temporaryFileApiUrl);
+        $draftDatasetFileForm = new DraftDatasetFileForm($apiUrl, $context);
 
         $this->addComponent(
             $templateMgr,
@@ -273,7 +263,7 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         ]);
     }
 
-    private function addComponent($templateMgr, $component, $args = []): void
+    private function addComponent(PKPTemplateManager $templateMgr, $component, $args = []): void
     {
         $workflowComponents = $templateMgr->getState('components');
         $workflowComponents[$component->id] = $component->getConfig();
