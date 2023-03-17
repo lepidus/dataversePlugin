@@ -2,15 +2,20 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
     name: "DataverseWorkflowPage",
     data() {
         return {
-            datasetMetadataForm: {},
             fileFormErrors: [],
             isLoading: false,
             latestGetRequest: "",
         };
     },
     computed: {
-        filesEmpty: function () {
+        isFilesEmpty: function () {
             return this.components.datasetFiles.items.length === 0;
+        },
+
+        isPosted: function () {
+            return (
+                this.workingPublication.status === pkp.const.STATUS_PUBLISHED
+            );
         },
     },
     methods: {
@@ -18,6 +23,16 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             $('input[name="termsOfUse"]').on("change", (e) => {
                 this.validateTermsOfUse($(e.target).is(":checked"));
             });
+        },
+
+        setDatasetForms(publication) {
+            let form = { ...this.components.datasetMetadata };
+            form.canSubmit =
+                this.canEditPublication &&
+                publication.status !== pkp.const.STATUS_PUBLISHED;
+
+            this.components.datasetMetadata = {};
+            this.components.datasetMetadata = form;
         },
 
         fileFormSuccess(data) {
@@ -131,8 +146,14 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }
         },
     },
-    mounted() {
+    created() {
         this.fileFormErrors = this.components.datasetFileForm.errors;
+        this.setDatasetForms(this.workingPublication);
+    },
+    watch: {
+        workingPublication(newVal, oldVal) {
+            this.setDatasetForms(newVal);
+        },
     },
 });
 

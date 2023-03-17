@@ -8,8 +8,11 @@
             <h2>{{ components.datasetFiles.title }}</h2>
             <spinner v-if="components.datasetFiles.isLoading"></spinner>
             <template slot="actions">
-                <pkp-button ref="fileModalButton"
-                    @click="openAddFileModal">
+                <pkp-button 
+                    ref="fileModalButton"
+                    @click="openAddFileModal"
+                    :disabled="isPosted"
+                >
                     {{ components.datasetFiles.addFileLabel }}
                 </pkp-button>
             </template>
@@ -24,8 +27,11 @@
                     </div>
                 </div>
                 <div class="listPanel__itemActions">
-                    <pkp-button @click="openDeleteFileModal(item.item.id)"
-                        class="pkpButton--isWarnable">
+                    <pkp-button 
+                        @click="openDeleteFileModal(item.item.id)"
+                        :disabled="isPosted"
+                        class="pkpButton--isWarnable"
+                    >
                         {{ __('common.delete') }}
                     </pkp-button>
                 </div>
@@ -43,5 +49,5 @@
             </pkp-form>
         </modal-content>
     </modal>
-    <pkp-form v-if="!filesEmpty" v-bind="components.datasetMetadata" @set="set"></pkp-form>
+    <pkp-form v-if="!isFilesEmpty" v-bind="components.datasetMetadata" @set="set"></pkp-form>
 </div>

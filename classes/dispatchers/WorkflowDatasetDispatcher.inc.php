@@ -199,13 +199,6 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $datasetMetadataForm = new DatasetMetadataForm($action, $method, $dataset);
 
         $this->addComponent($templateMgr, $datasetMetadataForm);
-
-        $workflowPublicationFormIds = $templateMgr->getState('publicationFormIds');
-        $workflowPublicationFormIds[] = FORM_DATASET_METADATA;
-
-        $templateMgr->setState([
-            'publicationFormIds' => $workflowPublicationFormIds
-        ]);
     }
 
     private function initDatasetFilesList($templateMgr, $apiUrl, $items): void
