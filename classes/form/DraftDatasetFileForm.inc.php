@@ -9,7 +9,7 @@ use PKP\components\forms\FieldOptions;
 
 class DraftDatasetFileForm extends FormComponent
 {
-    public function __construct($action, $context, $locales, $temporaryFileApiUrl)
+    public function __construct($action, $context)
     {
         $this->action = $action;
         $this->locales = $locales;
@@ -17,6 +17,7 @@ class DraftDatasetFileForm extends FormComponent
         $this->method = 'POST';
 
         $termsOfUseParams = $this->getTermsOfUseData($context->getId());
+        $temporaryFileApiUrl = $this->getTemporaryFileApiUrl($context);
 
         $this->addField(new FieldUpload('datasetFile', [
             'isRequired' => true,
@@ -33,6 +34,13 @@ class DraftDatasetFileForm extends FormComponent
             ],
             'value' => false
         ]));
+    }
+
+    private function getTemporaryFileApiUrl($context): string
+    {
+        $request = Application::get()->getRequest();
+        $temporaryFileApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'temporaryFiles');
+        return $temporaryFileApiUrl;
     }
 
     private function getTermsOfUseData($contextId)
