@@ -14,38 +14,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
     },
     methods: {
-        refreshItems() {
-            var self = this;
-            this.isLoading = true;
-            this.latestGetRequest = $.pkp.classes.Helper.uuid();
-
-            $.ajax({
-                url: this.components.datasetFiles.apiUrl,
-                type: "GET",
-                _uuid: this.latestGetRequest,
-                error: function (r) {
-                    if (self.latestGetRequest !== this._uuid) {
-                        return;
-                    }
-                    self.ajaxErrorCallback(r);
-                },
-                success: function (r) {
-                    if (self.latestGetRequest !== this._uuid) {
-                        return;
-                    }
-                    self.setItems(r.items);
-                },
-                complete() {
-                    if (self.latestGetRequest !== this._uuid) {
-                        return;
-                    }
-                    self.isLoading = false;
-                },
+        checkTermsOfUse() {
+            $('input[name="termsOfUse"]').on("change", (e) => {
+                this.validateTermsOfUse($(e.target).is(":checked"));
             });
-        },
-
-        setItems(items) {
-            this.components.datasetFiles.items = items;
         },
 
         fileFormSuccess(data) {
@@ -55,6 +27,8 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 
         openAddFileModal() {
             this.components.datasetFileForm.fields.map((f) => (f.value = ""));
+
+            this.components.datasetFileForm.errors = this.fileFormErrors;
 
             this.$modal.show("fileForm");
         },
@@ -105,6 +79,60 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 },
             });
         },
+
+        refreshItems() {
+            var self = this;
+            this.isLoading = true;
+            this.latestGetRequest = $.pkp.classes.Helper.uuid();
+
+            $.ajax({
+                url: this.components.datasetFiles.apiUrl,
+                type: "GET",
+                _uuid: this.latestGetRequest,
+                error: function (r) {
+                    if (self.latestGetRequest !== this._uuid) {
+                        return;
+                    }
+                    self.ajaxErrorCallback(r);
+                },
+                success: function (r) {
+                    if (self.latestGetRequest !== this._uuid) {
+                        return;
+                    }
+                    self.setItems(r.items);
+                },
+                complete() {
+                    if (self.latestGetRequest !== this._uuid) {
+                        return;
+                    }
+                    self.isLoading = false;
+                },
+            });
+        },
+
+        setItems(items) {
+            this.components.datasetFiles.items = items;
+        },
+
+        validateTermsOfUse(value) {
+            let newErrors = { ...this.components.datasetFileForm.errors };
+            if (!!value) {
+                if (!this.components.datasetFileForm.errors["termsOfUse"]) {
+                    return;
+                }
+                delete newErrors["termsOfUse"];
+                this.components.datasetFileForm.errors = newErrors;
+            } else {
+                if (this.components.datasetFileForm.errors["termsOfUse"]) {
+                    return;
+                }
+                newErrors["termsOfUse"] = this.fileFormErrors["termsOfUse"];
+                this.components.datasetFileForm.errors = newErrors;
+            }
+        },
+    },
+    mounted() {
+        this.fileFormErrors = this.components.datasetFileForm.errors;
     },
 });
 
