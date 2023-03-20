@@ -3,20 +3,29 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
     data() {
         return {
             datasetCitation: '',
+            datasetCitationUrl: null,
             fileFormErrors: [],
             isLoading: false,
             latestGetRequest: '',
+            dataset: null,
         };
     },
     computed: {
-        isFilesEmpty: function () {
+        isFilesEmpty: function() {
             return this.components.datasetFiles.items.length === 0;
         },
 
-        isPosted: function () {
+        isPosted: function() {
             return (
                 this.workingPublication.status === pkp.const.STATUS_PUBLISHED
             );
+        },
+
+        researchDataCount: function() {
+            if (this.dataset) {
+                return this.components.datasetFiles.items.length.toString();
+            }
+            return '0';
         },
     },
     methods: {
@@ -63,7 +72,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                             'X-Http-Method-Override': 'DELETE',
                         },
                         error: this.ajaxErrorCallback,
-                        success: function (r) {
+                        success: function(r) {
                             self.$modal.hide('delete');
                             location.reload();
                         },
@@ -108,7 +117,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                             'X-Http-Method-Override': 'DELETE',
                         },
                         error: self.ajaxErrorCallback,
-                        success: function (r) {
+                        success: function(r) {
                             self.setItems(
                                 self.components.datasetFiles.items.filter(
                                     (i) => i.id !== id
@@ -131,13 +140,13 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 url: this.components.datasetFiles.apiUrl,
                 type: 'GET',
                 _uuid: this.latestGetRequest,
-                error: function (r) {
+                error: function(r) {
                     if (self.latestGetRequest !== this._uuid) {
                         return;
                     }
                     self.ajaxErrorCallback(r);
                 },
-                success: function (r) {
+                success: function(r) {
                     if (self.latestGetRequest !== this._uuid) {
                         return;
                     }
