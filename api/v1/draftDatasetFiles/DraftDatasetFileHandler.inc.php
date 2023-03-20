@@ -24,7 +24,7 @@ class DraftDatasetFileHandler extends APIHandler
             ),
             'DELETE' => array(
                 array(
-                    'pattern' => $this->getEndpointPattern(),
+                    'pattern' => $this->getEndpointPattern() . '/{draftDatasetFileId}',
                     'handler' => array($this, 'delete'),
                 ),
             )
@@ -82,11 +82,9 @@ class DraftDatasetFileHandler extends APIHandler
 
     public function delete($slimRequest, $response, $args)
     {
-        $queryParams = $slimRequest->getQueryParams();
-
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
 
-        $draftDatasetFile = $draftDatasetFileDAO->getById((int) $queryParams['id']);
+        $draftDatasetFile = $draftDatasetFileDAO->getById((int) $args['draftDatasetFileId']);
 
         if (!$draftDatasetFile) {
             return $response->withStatus(404)->withJsonError('api.draftDatasetFile.404.drafDatasetFileNotFound');
