@@ -25,7 +25,7 @@
 
 #draftDatasetFileGridContainer,
 #datasetTab .noResearchData {
-    padding-top: 2rem;
+    padding: 2rem 0;
 }
 
 div:not(:last-child) > .pkp_controllers_grid {

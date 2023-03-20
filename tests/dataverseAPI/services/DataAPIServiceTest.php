@@ -27,11 +27,11 @@ class DataAPIServiceTest extends PKPTestCase
 
         $firstDatasetFile = new DatasetFile();
         $firstDatasetFile->setId(2025434);
-        $firstDatasetFile->setTitle('Sample.jpg');
+        $firstDatasetFile->setFileName('Sample.jpg');
 
         $secondDatasetFile = new DatasetFile();
         $secondDatasetFile->setId(2025433);
-        $secondDatasetFile->setTitle('DataTable.tab');
+        $secondDatasetFile->setFileName('DataTable.tab');
 
         $clientMock->expects($this->any())
             ->method('retrieveDatasetFiles')
@@ -132,11 +132,11 @@ class DataAPIServiceTest extends PKPTestCase
         $data = file_get_contents(__DIR__ . '/../../assets/nativeAPIDatasetFilesResponseExample.json');
         $firstDatasetFile = new DatasetFile();
         $firstDatasetFile->setId(2025434);
-        $firstDatasetFile->setTitle('Sample.jpg');
+        $firstDatasetFile->setFileName('Sample.jpg');
 
         $secondDatasetFile = new DatasetFile();
         $secondDatasetFile->setId(2025433);
-        $secondDatasetFile->setTitle('DataTable.tab');
+        $secondDatasetFile->setFileName('DataTable.tab');
 
         $expectedDatasetFiles = array(
             $firstDatasetFile,

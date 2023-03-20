@@ -87,7 +87,7 @@ class NativeAPIClient implements IDataAPIClient, IUpdateAPIClient
         return array_map(function (stdClass $file) {
             $datasetFile = new DatasetFile();
             $datasetFile->setId($file->dataFile->id);
-            $datasetFile->setTitle($file->label);
+            $datasetFile->setFileName($file->label);
             return $datasetFile;
         }, json_decode($fileData)->data);
     }
