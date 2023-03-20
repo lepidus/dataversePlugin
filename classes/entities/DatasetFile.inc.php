@@ -4,7 +4,7 @@ class DatasetFile
 {
     private $id;
 
-    private $title;
+    private $fileName;
 
     private $originalFileName;
 
@@ -20,14 +20,14 @@ class DatasetFile
         $this->id = $id;
     }
 
-    public function getTitle(): string
+    public function getFileName(): string
     {
-        return $this->title;
+        return $this->fileName;
     }
 
-    public function setTitle(string $title): void
+    public function setFileName(string $fileName): void
     {
-        $this->title = $title;
+        $this->fileName = $fileName;
     }
 
     public function getOriginalFileName(): string
