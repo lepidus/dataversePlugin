@@ -43,8 +43,11 @@
         name="fileForm"
         @opened="checkTermsOfUse"
     >
-        <modal-content close-label="common.close" modal-name="fileForm"
-            :title="components.datasetFiles.modalTitle">
+        <modal-content 
+            close-label="common.close"
+            modal-name="fileForm"
+            :title="components.datasetFiles.modalTitle"
+        >
             <pkp-form style="margin: -1rem" v-bind="components.datasetFileForm" @set="set" @success="fileFormSuccess">
             </pkp-form>
         </modal-content>

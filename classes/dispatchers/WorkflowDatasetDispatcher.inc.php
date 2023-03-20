@@ -112,10 +112,6 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
 
         $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
 
-        $templateMgr->setState([
-            'datasetApiUrl' => $metadataFormAction
-        ]);
-
         import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
         $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
@@ -155,22 +151,10 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $context = $request->getContext();
 
         $templateMgr->setState([
-            'datasetApiUrl' => $action
+            'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
+            'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
+            'datasetCitationUrl' => $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
         ]);
-
-        $templateMgr->addJavaScript(
-            'dataverseHelper',
-            $this->plugin->getPluginFullPath() . '/js/DataverseHelper.js',
-            ['contexts' => ['backend']]
-        );
-
-        $templateMgr->addJavaScript(
-            'dataverseScripts',
-            $this->plugin->getPluginFullPath() . '/js/init.js',
-            ['contexts' => ['backend']]
-        );
-
-        $this->addJavaScriptVariables($request, $templateMgr, $study);
 
         try {
             $client = new NativeAPIClient($context->getId());
@@ -179,8 +163,8 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             $datasetFiles = $service->getDatasetFiles($study->getPersistentId());
 
             $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
-            $fileListApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file', null, null, ['fileId' => '__id__']);
-            $fileFormAction = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
+            $fileListApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/files', null, null, ['persistentId' => $study->getPersistentId()]);
+            $fileFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
             $items = array_map(function (DatasetFile $datasetFile) {
                 return $datasetFile->getVars();
             }, $datasetFiles);
@@ -220,9 +204,7 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
 
         $templateMgr->setState([
             'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
-            'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
-            'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete'),
-            'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
+            'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete')
         ]);
     }
 
@@ -245,32 +227,6 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
                 ]
             ]
         );
-    }
-
-    public function addJavaScriptVariables($request, $templateManager, $study): void
-    {
-        $dispatcher = $request->getDispatcher();
-        $context = $request->getContext();
-
-        $credentials = DAORegistry::getDAO('DataverseCredentialsDAO')->get($context->getId());
-        $dataverseUrl = $credentials->getDataverseUrl();
-        $params = ['dataverseUrl' => $dataverseUrl];
-
-        import('plugins.generic.dataverse.classes.DataverseNotificationManager');
-        $dataverseNotificationMgr = new DataverseNotificationManager();
-        $errorMessage = $dataverseNotificationMgr->getNotificationMessage(DATAVERSE_PLUGIN_HTTP_STATUS_BAD_REQUEST, $params);
-
-        $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
-
-        $data = [
-            'datasetApiUrl' => $apiUrl,
-            "errorMessage" => $errorMessage,
-        ];
-
-        $templateManager->addJavaScript('dataverse', 'appDataverse = ' . json_encode($data) . ';', [
-            'inline' => true,
-            'contexts' => ['backend', 'frontend']
-        ]);
     }
 
     private function addComponent(PKPTemplateManager $templateMgr, $component, $args = []): void
