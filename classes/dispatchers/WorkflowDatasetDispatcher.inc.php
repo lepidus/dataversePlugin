@@ -31,7 +31,7 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $content = $this->getDatasetTabContent($submission);
 
         $output .= sprintf(
-            '<tab id="datasetTab" label="%s">%s</tab>',
+            '<tab id="datasetTab" label="%s" :badge="researchDataCount">%s</tab>',
             __("plugins.generic.dataverse.researchData"),
             $templateMgr->fetch($content)
         );
@@ -150,12 +150,6 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
 
-        $templateMgr->setState([
-            'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
-            'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
-            'datasetCitationUrl' => $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
-        ]);
-
         try {
             $client = new NativeAPIClient($context->getId());
             $service = new DataAPIService($client);
@@ -172,6 +166,13 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'PUT', $dataset);
             $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
             $this->initDatasetFileForm($templateMgr, $fileFormAction);
+
+            $templateMgr->setState([
+                'dataset' => $dataset,
+                'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
+                'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
+                'datasetCitationUrl' => $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
+            ]);
         } catch (Exception $e) {
             error_log($e->getMessage());
         }
@@ -179,8 +180,16 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
 
     private function initDatasetMetadataForm(PKPTemplateManager $templateMgr, string $action, string $method, Dataset $dataset): void
     {
+        $context = Application::get()->getRequest()->getContext();
+
+        $supportedFormLocales = $context->getSupportedFormLocales();
+        $localeNames = AppLocale::getAllLocales();
+        $locales = array_map(function ($localeKey) use ($localeNames) {
+            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+        }, $supportedFormLocales);
+
         $this->plugin->import('classes.form.DatasetMetadataForm');
-        $datasetMetadataForm = new DatasetMetadataForm($action, $method, $dataset);
+        $datasetMetadataForm = new DatasetMetadataForm($action, $method, $locales, $dataset);
 
         $this->addComponent($templateMgr, $datasetMetadataForm);
     }
