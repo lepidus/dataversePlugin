@@ -15,10 +15,11 @@ class DatasetMetadataForm extends FormComponent
 {
     public $id = FORM_DATASET_METADATA;
 
-    public function __construct($action, $method, $dataset)
+    public function __construct($action, $method, $locales, $dataset)
     {
         $this->action = $action;
         $this->method = $method;
+        $this->locales = $locales;
 
         $this->addField(new FieldText('datasetTitle', [
             'label' => __('plugins.generic.dataverse.metadataForm.title'),
@@ -37,6 +38,7 @@ class DatasetMetadataForm extends FormComponent
             'label' => __('plugins.generic.dataverse.metadataForm.keyword'),
             'tooltip' => __('manager.setup.metadata.keywords.description'),
             'apiUrl' => $this->getVocabSuggestionUrlBase(),
+            'locales' => $this->locales,
             'selected' => (array) $dataset->getKeywords() ?? [],
             'value' => (array) $dataset->getKeywords() ?? []
         ]))
