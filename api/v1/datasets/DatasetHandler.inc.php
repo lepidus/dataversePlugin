@@ -4,7 +4,7 @@ import('lib.pkp.classes.handler.APIHandler');
 import('lib.pkp.classes.log.SubmissionLog');
 import('classes.log.SubmissionEventLogEntry');
 
-class DatasetsHandler extends APIHandler
+class DatasetHandler extends APIHandler
 {
     public function __construct()
     {
@@ -42,14 +42,14 @@ class DatasetsHandler extends APIHandler
                     'roles' => $roles
                 ),
                 array(
-                    'pattern' => $this->getEndpointPattern() . '/{studyId}',
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/citation',
                     'handler' => array($this, 'getCitation'),
                     'roles' => $roles
                 ),
             ),
             'DELETE' => array(
                 array(
-                    'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/files',
                     'handler' => array($this, 'deleteFile'),
                     'roles' => $roles
                 ),
@@ -136,40 +136,33 @@ class DatasetsHandler extends APIHandler
         $dataset->setKeywords((array) $requestParams['datasetKeywords']);
         $dataset->setSubject($requestParams['datasetSubject']);
 
-        try {
-            import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
-            $swordClient = new SWORDAPIClient($submission->getContextId());
-            import('plugins.generic.dataverse.classes.dataverseAPI.services.DepositAPIService');
-            $depositService = new DepositAPIService($swordClient);
-            $depositResponse = $depositService->depositDataset($dataset);
-            $dataset->setPersistentId($depositResponse['persistentId']);
+        import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
+        $swordClient = new SWORDAPIClient($submission->getContextId());
+        import('plugins.generic.dataverse.classes.dataverseAPI.services.DepositAPIService');
+        $depositService = new DepositAPIService($swordClient);
+        $depositResponse = $depositService->depositDataset($dataset);
+        $dataset->setPersistentId($depositResponse['persistentId']);
 
-            DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submissionId);
+        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submissionId);
 
-            import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
-            $nativeAPIClient = new NativeAPIClient($submission->getContextId());
-            import('plugins.generic.dataverse.classes.dataverseAPI.services.UpdateAPIService');
-            $updateService = new UpdateAPIService($nativeAPIClient);
-            $updateService->updateDataset($dataset);
+        import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
+        $nativeAPIClient = new NativeAPIClient($submission->getContextId());
+        import('plugins.generic.dataverse.classes.dataverseAPI.services.UpdateAPIService');
+        $updateService = new UpdateAPIService($nativeAPIClient);
+        $updateService->updateDataset($dataset);
 
-            $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-            $study = $dataverseStudyDAO->newDataObject();
-            $study->setAllData($depositResponse);
-            $study->setSubmissionId($submissionId);
-            $dataverseStudyDAO->insertStudy($study);
+        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $dataverseStudyDAO->newDataObject();
+        $study->setAllData($depositResponse);
+        $study->setSubmissionId($submissionId);
+        $dataverseStudyDAO->insertStudy($study);
 
-            $this->registerDatasetEventLog(
-                $submissionId,
-                SUBMISSION_LOG_SUBMISSION_SUBMIT,
-                'plugins.generic.dataverse.log.researchDataDeposited',
-                ['persistentURL' => $study->getPersistentUri()]
-            );
-        } catch (Exception $e) {
-            error_log($e->getMessage());
-            return $response->withStatus($e->getCode())->withJson(['error' => $e->getMessage()]);
-        }
-
-        return $response->withJson(['message' => 'ok'], 200);
+        $this->registerDatasetEventLog(
+            $submissionId,
+            SUBMISSION_LOG_SUBMISSION_SUBMIT,
+            'plugins.generic.dataverse.log.researchDataDeposited',
+            ['persistentURL' => $study->getPersistentUri()]
+        );
     }
 
     public function addFile($slimRequest, $response, $args)
@@ -199,7 +192,7 @@ class DatasetsHandler extends APIHandler
             return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
         }
 
-        return $response->withJson($datasetFileData, 200);
+        return $response->withJson($datasetFileData, 201);
     }
 
     public function getFiles($slimRequest, $response, $args)
@@ -305,7 +298,7 @@ class DatasetsHandler extends APIHandler
         $datasetFiles = array();
 
         foreach ($datasetFilesResponse->data as $data) {
-            $datasetFiles[] = ['id' => $data->dataFile->id, 'title' => $data->label];
+            $datasetFiles[] = ['id' => $data->dataFile->id, 'fileName' => $data->label];
         }
 
         return $datasetFiles;
