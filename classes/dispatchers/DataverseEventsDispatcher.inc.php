@@ -10,8 +10,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
         HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
-        HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDatasetsHandler'));
-        HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDraftDatasetFileHandler'));
+        HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDataverseAPIHandlers'));
         HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
     }
 
@@ -76,30 +75,28 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         return $currentUser;
     }
 
-    public function setupDatasetsHandler(string $hookname, Request $request): bool
+    public function setupDataverseAPIHandlers(string $hookname, Request $request): void
     {
         $router = $request->getRouter();
-        if ($router instanceof \APIRouter && str_contains($request->getRequestPath(), 'api/v1/datasets')) {
-            $this->plugin->import('api.v1.datasets.DatasetsHandler');
-            $handler = new DatasetsHandler();
-            $router->setHandler($handler);
-            $handler->getApp()->run();
-            exit;
+        if (!($router instanceof \APIRouter)) {
+            return;
         }
-        return false;
-    }
 
-    public function setupDraftDatasetFileHandler(string $hookname, Request $request): bool
-    {
-        $router = $request->getRouter();
-        if ($router instanceof \APIRouter && str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
+        if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
+            $this->plugin->import('api.v1.datasets.DatasetHandler');
+            $handler = new DatasetHandler();
+        } elseif (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
             $this->plugin->import('api.v1.draftDatasetFiles.DraftDatasetFileHandler');
             $handler = new DraftDatasetFileHandler();
-            $router->setHandler($handler);
-            $handler->getApp()->run();
-            exit;
         }
-        return false;
+
+        if (!isset($handler)) {
+            return;
+        }
+
+        $router->setHandler($handler);
+        $handler->getApp()->run();
+        exit;
     }
 
     public function loadDraftDatasetFileSchema($hookname, $params): bool
