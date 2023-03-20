@@ -312,6 +312,7 @@ describe('Edit Draft Dataset Files', function() {
         cy.get('#datasetFiles .listPanel__items').contains(
             'riseOfEmpireMachine.pdf'
         );
+        cy.get('#datasetTab-button .pkpBadge').contains('2');
     });
 
     it('Delete Dataset file', function() {
@@ -334,6 +335,7 @@ describe('Edit Draft Dataset Files', function() {
             'not.include.text',
             'riseOfEmpireMachine.pdf'
         );
+        cy.get('#datasetTab-button .pkpBadge').contains('1');
     });
 });
 
