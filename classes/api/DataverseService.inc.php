@@ -255,7 +255,7 @@ class DataverseService
                 '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>',
                 $citation
             );
-            return $citation;
+            return preg_replace('/,+.UNF[^]]+]/', '', $citation);
         }
         return null;
     }
