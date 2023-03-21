@@ -11,17 +11,17 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         };
     },
     computed: {
-        isFilesEmpty: function() {
+        isFilesEmpty: function () {
             return this.components.datasetFiles.items.length === 0;
         },
 
-        isPosted: function() {
+        isPosted: function () {
             return (
                 this.workingPublication.status === pkp.const.STATUS_PUBLISHED
             );
         },
 
-        researchDataCount: function() {
+        researchDataCount: function () {
             if (this.dataset) {
                 return this.components.datasetFiles.items.length.toString();
             }
@@ -42,9 +42,8 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 
         getFileDownloadUrl(item) {
             return (
-                this.components.datasetFiles.apiUrl.replace('__id__', item.id) +
-                '&filename=' +
-                item.title
+                this.components.datasetFileForm.action +
+                `?fileId=${item.id}&filename=${item.fileName}`
             );
         },
 
@@ -72,7 +71,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                             'X-Http-Method-Override': 'DELETE',
                         },
                         error: this.ajaxErrorCallback,
-                        success: function(r) {
+                        success: function (r) {
                             self.$modal.hide('delete');
                             location.reload();
                         },
@@ -117,7 +116,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                             'X-Http-Method-Override': 'DELETE',
                         },
                         error: self.ajaxErrorCallback,
-                        success: function(r) {
+                        success: function (r) {
                             self.setItems(
                                 self.components.datasetFiles.items.filter(
                                     (i) => i.id !== id
@@ -140,13 +139,13 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 url: this.components.datasetFiles.apiUrl,
                 type: 'GET',
                 _uuid: this.latestGetRequest,
-                error: function(r) {
+                error: function (r) {
                     if (self.latestGetRequest !== this._uuid) {
                         return;
                     }
                     self.ajaxErrorCallback(r);
                 },
-                success: function(r) {
+                success: function (r) {
                     if (self.latestGetRequest !== this._uuid) {
                         return;
                     }
