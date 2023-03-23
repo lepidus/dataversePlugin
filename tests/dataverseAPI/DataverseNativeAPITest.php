@@ -18,6 +18,14 @@ class DataverseNativeAPITest extends PKPTestCase
         $this->assertInstanceOf(CollectionOperationsInterface::class, $collectionOperations);
     }
 
+    public function testReturnsADatasetOperationsClass(): void
+    {
+        $dataverseNativeAPI = new DataverseNativeAPI();
+        $datasetOperations = $dataverseNativeAPI->getDatasetOperations();
+
+        $this->assertInstanceOf(DatasetOperationsInterface::class, $datasetOperations);
+    }
+
     public function testDataverseOperationsIsConfigured(): void
     {
         $config = new DataverseCredentials();
