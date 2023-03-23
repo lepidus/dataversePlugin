@@ -55,7 +55,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $datasetFactory = new SubmissionDatasetFactory($submission);
         $dataset = $datasetFactory->getDataset();
 
-        if (!empty($dataset->getFiles())) {
+        if (empty($dataset->getFiles())) {
             return false;
         }
 
@@ -72,6 +72,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
         try {
             $datasetIdentifier = $dataverseAPI->getCollectionOperations()->createDataset($datasetPackagePath);
+            foreach ($dataset->getFiles() as $file) {
+                $dataverseAPI->getDatasetOperations()->addFile($datasetIdentifier->getPersistentId(), $file);
+            }
         } catch (Exception $e) {
             error_log($e->getMessage());
             return false;
