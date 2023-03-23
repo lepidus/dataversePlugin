@@ -46,7 +46,7 @@ abstract class NativeAPIDataverseOperations
         } catch (GuzzleHttp\Exception\RequestException $e) {
             $responseMessage = $e->getMessage();
             if ($e->hasResponse()) {
-                $responseMessage = $e->getResponse()->getBody(true) . ' (' .$e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase() . ')';
+                $responseMessage = $e->getResponse()->getBody(true) . ' (' . $e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase() . ')';
             }
 
             return new DataverseResponse(
