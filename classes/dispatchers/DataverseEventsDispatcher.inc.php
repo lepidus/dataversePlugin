@@ -50,11 +50,44 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     {
         $form =& $params[0];
         $submission = $form->submission;
-        $submissionUser = $this->getCurrentUser();
 
-        $service = $this->getDataverseService();
-        $service->setSubmission($submission, $submissionUser);
-        $service->depositPackage();
+        import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
+        $datasetFactory = new SubmissionDatasetFactory($submission);
+        $dataset = $datasetFactory->getDataset();
+
+        if (!empty($dataset->getFiles())) {
+            return false;
+        }
+
+        import('plugins.generic.dataverse.classes.dataverseAPI.packagers.NativeAPIDatasetPackager');
+        $packager = new NativeAPIDatasetPackager($dataset);
+        $packager->createDatasetPackage();
+        $datasetPackagePath = $packager->getPackagePath();
+
+        $dataverseConfig = DAORegistry::getDAO('DataverseCredentialsDAO')->get($submission->getContextId());
+
+        import('plugins.generic.dataverse.classes.dataverseAPI.DataverseNativeAPI');
+        $dataverseAPI = new DataverseNativeAPI();
+        $dataverseAPI->configure($dataverseConfig);
+
+        try {
+            $datasetIdentifier = $dataverseAPI->getCollectionOperations()->createDataset($datasetPackagePath);
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+
+        $swordAPIBaseUrl = $dataverseConfig->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
+        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $dataverseStudyDAO->newDataObject();
+        $study->setSubmissionId($submission->getId());
+        $study->setPersistentId($datasetIdentifier->getPersistentId());
+        $study->setEditUri($swordAPIBaseUrl . 'edit/study/' . $datasetIdentifier->getPersistentId());
+        $study->setEditMediaUri($swordAPIBaseUrl . 'edit-media/study/' . $datasetIdentifier->getPersistentId());
+        $study->setStatementUri($swordAPIBaseUrl . 'statement/study/' . $datasetIdentifier->getPersistentId());
+        $study->setPersistentUri('https://doi.org/' . str_replace('doi:', '', $datasetIdentifier->getPersistentId()));
+        $dataverseStudyDAO->insertStudy($study);
+
         return false;
     }
 
