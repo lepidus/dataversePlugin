@@ -5,7 +5,7 @@ import('plugins.generic.dataverse.classes.dataverseAPI.operations.interfaces.Col
 
 class NativeAPICollectionOperations extends NativeAPIDataverseOperations implements CollectionOperationsInterface
 {
-    public function createDataset(string $datasetPackagePath): DataverseStudy
+    public function createDataset(string $datasetPackagePath): DatasetIdentifier
     {
         $apiURL = $this->createAPIURL(['dataverses', $this->collectionAlias, 'datasets']);
         $requestType = 'POST';

@@ -37,7 +37,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
             if (empty($metadataField)) {
                 continue;
             }
-            switch($metadataField['typeClass']) {
+            switch ($metadataField['typeClass']) {
                 case 'primitive':
                     $metadataField['value'] = $value;
                     break;
@@ -77,9 +77,9 @@ class NativeAPIDatasetPackager extends DatasetPackager
                 'typeClass' => 'primitive'
             ],
             'authors' => [
-                'typeName'=> 'author',
-                'multiple'=> true,
-                'typeClass'=> 'compound'
+                'typeName' => 'author',
+                'multiple' => true,
+                'typeClass' => 'compound'
             ],
             'description' => [
                 'typeName' => 'dsDescription',

@@ -160,6 +160,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
     public function testDatasetJsonContainsDatasetData(): void
     {
         $dataset = new Dataset();
+        $dataset->setPersistentId('doi:10.5072/FK2/TEST');
         $dataset->setTitle('Test title');
 
         $this->packager = new NativeAPIDatasetPackager($dataset);
