@@ -20,7 +20,7 @@ class NativeAPICollectionOperations extends NativeAPIDataverseOperations impleme
 
         $response = $this->executeRequest($requestType, $apiURL, $options);
 
-        if ($response->getStatusCode() !== 201) {
+        if ($response->getStatusCode() !== HTTP_STATUS_OK) {
             throw new Exception('Error creating dataset: ' . $response->getMessage());
         }
 
