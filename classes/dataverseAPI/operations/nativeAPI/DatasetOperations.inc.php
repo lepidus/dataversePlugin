@@ -1,9 +1,9 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.operations.NativeAPIDataverseOperations');
-import('plugins.generic.dataverse.classes.dataverseAPI.operations.interfaces.DatasetOperationsInterface');
+import('plugins.generic.dataverse.classes.dataverseAPI.operations.nativeAPI.NativeAPIOperations');
+import('plugins.generic.dataverse.classes.dataverseAPI.operations.nativeAPI.interfaces.DatasetOperationsInterface');
 
-class NativeAPIDatasetOperations extends NativeAPIDataverseOperations implements DatasetOperationsInterface
+class DatasetOperations extends NativeAPIOperations implements DatasetOperationsInterface
 {
     public function addFile(string $persistentId, DatasetFile $file): DatasetFile
     {
@@ -27,12 +27,13 @@ class NativeAPIDatasetOperations extends NativeAPIDataverseOperations implements
             throw new Exception('Error adding file: ' . $response->getMessage());
         }
 
-        return $this->retrieveDatasetFile($response->getData());
+        return $this->retrieveDatasetFile($response);
     }
 
-    private function retrieveDatasetFile(string $responseData): DatasetFile
+    private function retrieveDatasetFile(DataverseAPIResponse $response): DatasetFile
     {
-        $fileData = json_decode($responseData, true)['data'];
+        $fileResponse = $response->getBodyAsArray();
+        $fileData = $fileResponse['data'];
         $file = new DatasetFile();
         $file->setId($fileData['files'][0]['dataFile']['id']);
         $file->setFilename($fileData['files'][0]['label']);

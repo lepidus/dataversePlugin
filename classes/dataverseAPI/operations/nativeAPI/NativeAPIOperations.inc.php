@@ -3,7 +3,9 @@
 define('HTTP_STATUS_OK', 200);
 define('HTTP_STATUS_CREATED', 201);
 
-abstract class NativeAPIDataverseOperations
+import('plugins.generic.dataverse.classes.dataverseAPI.response.DataverseAPIResponse');
+
+abstract class NativeAPIOperations
 {
     protected $serverURL;
 
@@ -39,7 +41,7 @@ abstract class NativeAPIDataverseOperations
         return $headers;
     }
 
-    protected function executeRequest(string $type, string $url, array $options): DataverseResponse
+    protected function executeRequest(string $type, string $url, array $options): DataverseAPIResponse
     {
         try {
             $response = $this->getHttpClient()->request($type, $url, $options);
@@ -49,12 +51,12 @@ abstract class NativeAPIDataverseOperations
                 $responseMessage = $e->getResponse()->getBody(true) . ' (' . $e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase() . ')';
             }
 
-            return new DataverseResponse(
+            return new DataverseAPIResponse(
                 $e->getCode(),
                 $responseMessage
             );
         }
-        return new DataverseResponse(
+        return new DataverseAPIResponse(
             $response->getStatusCode(),
             $response->getReasonPhrase(),
             $response->getBody(true)

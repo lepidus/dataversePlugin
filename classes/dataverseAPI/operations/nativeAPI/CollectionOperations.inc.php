@@ -1,9 +1,9 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.operations.NativeAPIDataverseOperations');
-import('plugins.generic.dataverse.classes.dataverseAPI.operations.interfaces.CollectionOperationsInterface');
+import('plugins.generic.dataverse.classes.dataverseAPI.operations.nativeAPI.NativeAPIOperations');
+import('plugins.generic.dataverse.classes.dataverseAPI.operations.nativeAPI.interfaces.CollectionOperationsInterface');
 
-class NativeAPICollectionOperations extends NativeAPIDataverseOperations implements CollectionOperationsInterface
+class CollectionOperations extends NativeAPIOperations implements CollectionOperationsInterface
 {
     public function createDataset(string $datasetPackagePath): DatasetIdentifier
     {
@@ -24,16 +24,6 @@ class NativeAPICollectionOperations extends NativeAPIDataverseOperations impleme
             throw new Exception('Error creating dataset: ' . $response->getMessage());
         }
 
-        return $this->retrieveDatasetIdentifier($response->getData());
-    }
-
-    public function retrieveDatasetIdentifier(string $responseData): DatasetIdentifier
-    {
-        $datasetData = json_decode($responseData, true)['data'];
-        $datasetIdentifier = new DatasetIdentifier(
-            $datasetData['id'],
-            $datasetData['persistentId']
-        );
-        return $datasetIdentifier;
+        return $response->getBodyAsEntity(DatasetIdentifier::class);
     }
 }

@@ -1,18 +1,17 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.DataverseAPI');
-import('plugins.generic.dataverse.classes.dataverseAPI.operations.implementations.NativeAPICollectionOperations');
-import('plugins.generic.dataverse.classes.dataverseAPI.operations.implementations.NativeAPIDatasetOperations');
+import('plugins.generic.dataverse.classes.dataverseAPI.operations.nativeAPI.CollectionOperations');
+import('plugins.generic.dataverse.classes.dataverseAPI.operations.nativeAPI.DatasetOperations');
 
-class DataverseNativeAPI implements DataverseAPI
+class DataverseNativeAPI
 {
     private $collectionOperations;
     private $datasetOperations;
 
     public function __construct()
     {
-        $this->collectionOperations = new NativeAPICollectionOperations();
-        $this->datasetOperations = new NativeAPIDatasetOperations();
+        $this->collectionOperations = new CollectionOperations();
+        $this->datasetOperations = new DatasetOperations();
     }
 
     public function configure(DataverseCredentials $config): void
