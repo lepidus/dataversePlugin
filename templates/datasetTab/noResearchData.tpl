@@ -1,9 +1,20 @@
 <section class="noResearchData">
     <span>{translate key="plugins.generic.dataverse.researchData.noResearchData"}</span>
 </section>
-<pkp-button>
+<pkp-button @click="$modal.show('uploadResearchData')">
     {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
 </pkp-button>
+
+<modal 
+    v-bind="MODAL_PROPS" 
+    name="uploadResearchData"
+>
+    <modal-content 
+        close-label="common.close"
+        modal-name="uploadResearchData"
+        title="{translate key="plugins.generic.dataverse.researchData.uploadResearchData"}">
+    </modal-content>
+</modal>
 
 <div class="filesList -pkpClearfix">
     <list-panel v-bind="components.datasetFiles" @set="set">
