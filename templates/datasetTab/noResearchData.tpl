@@ -1,6 +1,9 @@
 <section class="noResearchData">
     <span>{translate key="plugins.generic.dataverse.researchData.noResearchData"}</span>
 </section>
+<pkp-button>
+    {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
+</pkp-button>
 
 <div class="filesList -pkpClearfix">
     <list-panel v-bind="components.datasetFiles" @set="set">

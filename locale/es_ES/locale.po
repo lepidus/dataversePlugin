@@ -134,6 +134,9 @@ msgstr "No se encontró el borrador del archivo del conjunto de datos solicitado
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "<strong>No se transfieren datos de investigación.</strong><br>"
 
+msgid "plugins.generic.dataverse.researchData.uploadResearchData"
+msgstr "Cargar dados de pesquisa"
+
 msgid "plugins.generic.dataverse.researchData.metadata"
 msgstr "Metadatos"
 

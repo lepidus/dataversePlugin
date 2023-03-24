@@ -131,6 +131,9 @@ msgstr "The draft dataset file you requested was not found."
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "<strong>No research data transferred.</strong><br>"
 
+msgid "plugins.generic.dataverse.researchData.uploadResearchData"
+msgstr "Upload research data"
+
 msgid "plugins.generic.dataverse.researchData.metadata"
 msgstr "Metadata"
 
