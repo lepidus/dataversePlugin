@@ -1,6 +1,6 @@
 <?php
 
-import('plugins.generic.dataverse.classes.entities.DatasetIdentifier');
+import('plugins.generic.dataverse.classes.dataverseAPI.entities.DatasetIdentifier');
 
 interface CollectionOperationsInterface
 {
