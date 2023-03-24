@@ -51,7 +51,7 @@ class DataverseAPIResponse
         $entity = new $entityClass();
 
         if (!$entity->validateData($data)) {
-            throw new InvalidArgumentException('The given data is not valid for the given entity');
+            throw new InvalidArgumentException('The response data is not valid for the given entity');
         }
 
         $entity->setAllData($data);
