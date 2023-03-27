@@ -7,14 +7,6 @@ describe('Test research data deposit in dataset tab', function() {
         cy.configureDataversePlugin();
     });
 
-    it('Dataset metadata form should not be displayed without research data', function() {
-        cy.login('ccorino', null, 'publicknowledge');
-        cy.contains('View').click({ force: true });
-
-        cy.get('button[aria-controls="datasetTab"]').click();
-        cy.get('#datasetTab > form').should('not.exist');
-    });
-
     it('Research data deposited in dataset tab', function() {
         const currentYear = new Date().getFullYear();
         const dataverseServerName = Cypress.env('dataverseServerName');
@@ -22,6 +14,9 @@ describe('Test research data deposit in dataset tab', function() {
         cy.login('ccorino', null, 'publicknowledge');
         cy.contains('View').click({ force: true });
         cy.get('button[aria-controls="datasetTab"]').click();
+        cy.get('button')
+            .contains('Upload research data')
+            .click();
 
         cy.contains('Add research data').click();
         cy.wait(1000);
