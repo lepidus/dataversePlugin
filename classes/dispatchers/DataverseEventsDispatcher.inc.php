@@ -1,6 +1,8 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
+import('lib.pkp.classes.log.SubmissionLog');
+import('classes.log.SubmissionEventLogEntry');
 
 class DataverseEventsDispatcher extends DataverseDispatcher
 {
@@ -50,6 +52,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     {
         $form =& $params[0];
         $submission = $form->submission;
+        $request = Application::get()->getRequest();
 
         import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
         $datasetFactory = new SubmissionDatasetFactory($submission);
@@ -77,10 +80,17 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             }
         } catch (Exception $e) {
             error_log($e->getMessage());
+            import('classes.notification.NotificationManager');
+            $notificationMgr = new NotificationManager();
+            $notificationMgr->createTrivialNotification(
+                $request->getUser()->getId(),
+                NOTIFICATION_TYPE_ERROR,
+                array('contents' => __('plugins.generic.dataverse.notification.requestError'))
+            );
             return false;
         }
 
-        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submissionId);
+        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submission->getId());
 
         $swordAPIBaseUrl = $dataverseConfig->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
@@ -92,6 +102,14 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $study->setStatementUri($swordAPIBaseUrl . 'statement/study/' . $datasetIdentifier->getPersistentId());
         $study->setPersistentUri('https://doi.org/' . str_replace('doi:', '', $datasetIdentifier->getPersistentId()));
         $dataverseStudyDAO->insertStudy($study);
+
+        SubmissionLog::logEvent(
+            $request,
+            $submission,
+            SUBMISSION_LOG_SUBMISSION_SUBMIT,
+            'plugins.generic.dataverse.log.researchDataDeposited',
+            ['persistentURL' => $study->getPersistentUri()]
+        );
 
         return false;
     }
