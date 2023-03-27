@@ -10,10 +10,9 @@ class NativeAPIDatasetPackager extends DatasetPackager
 
     private $files = [];
 
-
     public function __construct(Dataset $dataset)
     {
-        $this->packageDirPath = tempnam(TEMPORARY_FILES_DIR, 'dataverse');
+        $this->packageDirPath = tempnam('/tmp', 'dataverse');
         unlink($this->packageDirPath);
         mkdir($this->packageDirPath);
         parent::__construct($dataset);
@@ -38,7 +37,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
             if (empty($metadataField)) {
                 continue;
             }
-            switch($metadataField['typeClass']) {
+            switch ($metadataField['typeClass']) {
                 case 'primitive':
                     $metadataField['value'] = $value;
                     break;
@@ -78,9 +77,9 @@ class NativeAPIDatasetPackager extends DatasetPackager
                 'typeClass' => 'primitive'
             ],
             'authors' => [
-                'typeName'=> 'author',
-                'multiple'=> true,
-                'typeClass'=> 'compound'
+                'typeName' => 'author',
+                'multiple' => true,
+                'typeClass' => 'compound'
             ],
             'description' => [
                 'typeName' => 'dsDescription',
@@ -154,9 +153,13 @@ class NativeAPIDatasetPackager extends DatasetPackager
     public function createDatasetPackage(): void
     {
         $this->loadMetadata();
-        $datasetContent = [
-            'fields' => $this->getDatasetMetadata()
-        ];
+
+        $datasetContent = [];
+        if (is_null($this->dataset->getPersistentId())) {
+            $datasetContent['datasetVersion']['metadataBlocks']['citation']['fields'] = $this->getDatasetMetadata();
+        } else {
+            $datasetContent['fields'] = $this->getDatasetMetadata();
+        }
 
         $datasetPackage = fopen($this->getPackagePath(), 'w');
         fwrite($datasetPackage, json_encode($datasetContent));

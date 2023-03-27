@@ -111,7 +111,9 @@ class DatasetHandler extends APIHandler
         if ($dataverseResponse) {
             return $response->withJson(['message' => 'ok'], 200);
         } else {
-            return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
+            return $response
+                ->withStatus(500)
+                ->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
         }
     }
 
@@ -136,26 +138,39 @@ class DatasetHandler extends APIHandler
         $dataset->setKeywords((array) $requestParams['datasetKeywords']);
         $dataset->setSubject($requestParams['datasetSubject']);
 
-        import('plugins.generic.dataverse.classes.dataverseAPI.clients.SWORDAPIClient');
-        $swordClient = new SWORDAPIClient($submission->getContextId());
-        import('plugins.generic.dataverse.classes.dataverseAPI.services.DepositAPIService');
-        $depositService = new DepositAPIService($swordClient);
-        $depositResponse = $depositService->depositDataset($dataset);
-        $dataset->setPersistentId($depositResponse['persistentId']);
+        import('plugins.generic.dataverse.classes.dataverseAPI.packagers.NativeAPIDatasetPackager');
+        $packager = new NativeAPIDatasetPackager($dataset);
+        $packager->createDatasetPackage();
+        $datasetPackagePath = $packager->getPackagePath();
 
-        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submissionId);
+        $dataverseConfig = DAORegistry::getDAO('DataverseCredentialsDAO')->get($submission->getContextId());
 
-        import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
-        $nativeAPIClient = new NativeAPIClient($submission->getContextId());
-        import('plugins.generic.dataverse.classes.dataverseAPI.services.UpdateAPIService');
-        $updateService = new UpdateAPIService($nativeAPIClient);
-        $updateService->updateDataset($dataset);
+        import('plugins.generic.dataverse.classes.dataverseAPI.DataverseNativeAPI');
+        $dataverseAPI = new DataverseNativeAPI();
+        $dataverseAPI->configure($dataverseConfig);
 
+        try {
+            $datasetIdentifier = $dataverseAPI->getCollectionOperations()->createDataset($datasetPackagePath);
+            foreach ($dataset->getFiles() as $file) {
+                $dataverseAPI->getDatasetOperations()->addFile($datasetIdentifier->getPersistentId(), $file);
+            }
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+
+        $swordAPIBaseUrl = $dataverseConfig->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->newDataObject();
-        $study->setAllData($depositResponse);
-        $study->setSubmissionId($submissionId);
+        $study->setSubmissionId($submission->getId());
+        $study->setPersistentId($datasetIdentifier->getPersistentId());
+        $study->setEditUri($swordAPIBaseUrl . 'edit/study/' . $datasetIdentifier->getPersistentId());
+        $study->setEditMediaUri($swordAPIBaseUrl . 'edit-media/study/' . $datasetIdentifier->getPersistentId());
+        $study->setStatementUri($swordAPIBaseUrl . 'statement/study/' . $datasetIdentifier->getPersistentId());
+        $study->setPersistentUri('https://doi.org/' . str_replace('doi:', '', $datasetIdentifier->getPersistentId()));
         $dataverseStudyDAO->insertStudy($study);
+
+        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submissionId);
 
         $this->registerDatasetEventLog(
             $submissionId,
@@ -163,6 +178,8 @@ class DatasetHandler extends APIHandler
             'plugins.generic.dataverse.log.researchDataDeposited',
             ['persistentURL' => $study->getPersistentUri()]
         );
+
+        return $response->withJson(['message' => 'ok'], 200);
     }
 
     public function addFile($slimRequest, $response, $args)

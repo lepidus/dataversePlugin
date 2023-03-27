@@ -133,7 +133,9 @@ msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
 
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "<strong>Não foram transferidos dados de pesquisa</strong>.<br>"
-"Para transferir dados de pesquisa, preencha o formulário abaixo e adicione os dados de pesquisa que deseja depositar."
+
+msgid "plugins.generic.dataverse.researchData.uploadResearchData"
+msgstr "Enviar dados de pesquisa"
 
 msgid "plugins.generic.dataverse.researchData.metadata"
 msgstr "Metadados"
