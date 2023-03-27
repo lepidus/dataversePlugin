@@ -34,7 +34,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
 
         foreach ($datasetData as $attr => $value) {
             $metadataField = $this->getMetadataField($attr);
-            if (empty($metadataField)) {
+            if (empty($metadataField) || is_null($value)) {
                 continue;
             }
             switch ($metadataField['typeClass']) {
@@ -138,6 +138,9 @@ class NativeAPIDatasetPackager extends DatasetPackager
 
         $metadataValue = [];
         foreach ($objectData as $attr => $value) {
+            if (is_null($value)) {
+                continue;
+            }
             $metadataValue = array_merge($metadataValue, [
                 $metadataField['typeName'] . ucfirst($attr) => [
                     'typeName' =>  $metadataField['typeName'] . ucfirst($attr),
