@@ -90,8 +90,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return false;
         }
 
-        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submission->getId());
-
         $swordAPIBaseUrl = $dataverseConfig->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->newDataObject();
@@ -110,6 +108,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             'plugins.generic.dataverse.log.researchDataDeposited',
             ['persistentURL' => $study->getPersistentUri()]
         );
+
+        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submission->getId());
+        $packager->clear();
 
         return false;
     }
