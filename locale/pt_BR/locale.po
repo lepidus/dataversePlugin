@@ -89,6 +89,9 @@ msgstr "O formato da mídia enviada na requisição não é suportado pelo servi
 msgid "plugins.generic.dataverse.notification.statusInternalServerError" 
 msgstr "O servidor encontrou um erro interno que o impediu de atender a esta requisição."
 
+msgid "plugins.generic.dataverse.notification.requestError" 
+msgstr "Erro ao depositar os dados de pesquisa."
+
 msgid "plugins.generic.dataverse.notification.statusUnavailable"
 msgstr "Servidor não disponível. {$dataverseUrl} está temporariamente fora do ar. Por favor, tente novamente mais tarde"
 

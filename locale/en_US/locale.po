@@ -98,6 +98,9 @@ msgstr "Unknown error. Could not connect to {$dataverseUrl}"
 msgid "plugins.generic.dataverse.notification.metadataUpdated"
 msgstr "Dataset metadata successfully updated."
 
+msgid "plugins.generic.dataverse.notification.requestError" 
+msgstr "Error depositing research data."
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Upload research data file"
 

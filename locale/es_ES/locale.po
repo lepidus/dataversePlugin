@@ -98,6 +98,9 @@ msgstr "Datos de investigación con ID {$persistentId} no encontrados."
 msgid "plugins.generic.dataverse.notification.unknownError"
 msgstr "Error desconocido. Incapaz de conectarse a {$dataverseUrl}"
 
+msgid "plugins.generic.dataverse.notification.requestError" 
+msgstr "Error al depositar datos de investigación."
+
 msgid "plugins.generic.dataverse.notification.metadataUpdated"
 msgstr "Los metadatos del conjunto de datos se actualizaron correctamente."
 
