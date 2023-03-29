@@ -84,25 +84,37 @@ class DraftDatasetFileForm extends Form
 
     public function execute(...$functionArgs)
     {
-        $userId = Application::get()->getRequest()->getUser()->getId();
+        $request = Application::get()->getRequest();
+        $user = $request->getUser();
 
         $temporaryFileDao = DAORegistry::getDAO('TemporaryFileDAO');
         $temporaryFile = $temporaryFileDao->getTemporaryFile(
             $this->getData('temporaryFileId'),
-            $userId
+            $user->getId()
         );
 
         import('plugins.generic.dataverse.classes.file.DraftDatasetFileDAO');
         $draftDatasetFileDAO = new DraftDatasetFileDAO();
         $draftDatasetFile = $draftDatasetFileDAO->newDataObject();
         $draftDatasetFile->setData('submissionId', $this->getData('submissionId'));
-        $draftDatasetFile->setData('userId', $userId);
+        $draftDatasetFile->setData('userId', $user->getId());
         $draftDatasetFile->setData('fileId', $temporaryFile->getId());
         $draftDatasetFile->setData('fileName', $temporaryFile->getOriginalFileName());
+        $draftDatasetFileDAO->insertObject($draftDatasetFile);
 
-        $draftDatasetFileId = $draftDatasetFileDAO->insertObject($draftDatasetFile);
+        $submission = Services::get('submission')->get($this->getData('submissionId'));
+
+        import('lib.pkp.classes.log.SubmissionLog');
+        import('lib.pkp.classes.log.SubmissionFileEventLogEntry');
+        \SubmissionLog::logEvent(
+            $request,
+            $submission,
+            SUBMISSION_LOG_FILE_UPLOAD,
+            'plugins.generic.dataverse.log.researchDataAdded',
+            ['filename' => $draftDatasetFile->getData('fileName')]
+        );
 
         parent::execute(...$functionArgs);
-        return $draftDatasetFileId;
+        return $draftDatasetFile->getId();
     }
 }

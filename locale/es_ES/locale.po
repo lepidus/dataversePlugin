@@ -206,6 +206,9 @@ msgstr "Ciencias sociales"
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Otra"
 
+msgid  "plugins.generic.dataverse.log.researchDataAdded"
+msgstr "Archivo \"{$filename}\" añadido como datos de investigación."
+
 msgid  "plugins.generic.dataverse.log.researchDataDeposited"
 msgstr "Datos de investigación depositados: {$persistentURL}"
 
