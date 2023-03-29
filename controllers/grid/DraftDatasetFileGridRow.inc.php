@@ -18,12 +18,14 @@ class DraftDatasetFileGridRow extends GridRow
     public function initialize($request, $template = null)
     {
         parent::initialize($request, $template);
+        $rowData = $this->getData();
 
         $fileId = $this->getId();
         if (!empty($fileId)) {
             $router = $request->getRouter();
             $actionArgs = $this->getRequestArgs();
             $actionArgs['fileId'] = $fileId;
+            $actionArgs['fileName'] = $rowData->getData('fileName');
 
             import('lib.pkp.classes.linkAction.request.RemoteActionConfirmationModal');
             $this->addAction(new LinkAction(

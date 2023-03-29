@@ -162,6 +162,16 @@ class DraftDatasetFileGridHandler extends GridHandler
             $draftDatasetFileDAO = new DraftDatasetFileDAO();
             $draftDatasetFileDAO->deleteById($fileId);
 
+            import('lib.pkp.classes.log.SubmissionLog');
+            import('lib.pkp.classes.log.SubmissionFileEventLogEntry');
+            \SubmissionLog::logEvent(
+                $request,
+                $this->getSubmission(),
+                SUBMISSION_LOG_FILE_UPLOAD,
+                'plugins.generic.dataverse.log.researchDataFileDeleted',
+                ['filename' => $args['fileName']]
+            );
+
             return DAO::getDataChangedEvent();
         }
 

@@ -110,7 +110,7 @@ class DraftDatasetFileForm extends Form
             $request,
             $submission,
             SUBMISSION_LOG_FILE_UPLOAD,
-            'plugins.generic.dataverse.log.researchDataAdded',
+            'plugins.generic.dataverse.log.researchDataFileAdded',
             ['filename' => $draftDatasetFile->getData('fileName')]
         );
 
