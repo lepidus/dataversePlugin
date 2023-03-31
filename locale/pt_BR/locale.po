@@ -206,6 +206,12 @@ msgstr "Ciências Sociais"
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Outros"
 
+msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
+msgstr "Arquivo \"{$filename}\" adicionado como dados de pesquisa."
+
+msgid  "plugins.generic.dataverse.log.researchDataFileDeleted"
+msgstr "Arquivo \"{$filename}\" excluído dos dados de pesquisa."
+
 msgid  "plugins.generic.dataverse.log.researchDataDeposited"
 msgstr "Dados de pesquisa depositados: {$persistentURL}"
 
