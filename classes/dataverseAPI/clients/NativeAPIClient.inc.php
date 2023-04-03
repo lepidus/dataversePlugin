@@ -128,17 +128,20 @@ class NativeAPIClient implements IDataAPIClient, IUpdateAPIClient
                 $response->getBody(true)
             );
         } catch (GuzzleHttp\Exception\RequestException $e) {
+            $responseCode = $e->getCode();
             $responseMessage = $e->getMessage();
-            if ($e->hasResponse()) {
+            if (
+                $e->hasResponse()
+                && !empty(json_decode($e->getResponse()->getBody(true), true))
+            ) {
                 $response = $e->getResponse();
                 $responseBody = json_decode($response->getBody(true));
-                $responseMessage = $responseBody->status .
-                    ': ' . $responseBody->message .
-                    ' (' . $response->getStatusCode() . ' ' . $response->getReasonPhrase() . ')';
+                $responseCode = $response->getStatusCode();
+                $responseMessage = $responseBody->message;
             }
 
             return new DataverseResponse(
-                $e->getCode(),
+                $responseCode,
                 $responseMessage
             );
         }
