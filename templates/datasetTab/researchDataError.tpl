@@ -3,6 +3,8 @@
         <h1>{translate key="plugins.generic.dataverse.researchData"}</h1>
     </pkp-header>
     <span class="value">
-        <p>{$errorMessage}</p>
+        <p>
+            {translate key="plugins.generic.dataverse.notification.connectionError" errorMessage=$errorMessage}
+        </p>
     </span>
 </section>
