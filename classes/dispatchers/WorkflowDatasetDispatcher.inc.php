@@ -53,7 +53,8 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             $dataset = $dataService->getDataset($study->getPersistentId());
             return $this->plugin->getTemplateResource('datasetTab/datasetData.tpl');
         } catch (Exception $e) {
-            error_log($e->getMessage());
+            error_log('Dataverse error: ' . $e->getMessage());
+            $templateMgr = TemplateManager::getManager(Application::get()->getRequest());
             $templateMgr->assign('errorMessage', $e->getMessage());
             return $this->plugin->getTemplateResource('datasetTab/researchDataError.tpl');
         }
@@ -174,7 +175,7 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
                 'datasetCitationUrl' => $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
             ]);
         } catch (Exception $e) {
-            error_log($e->getMessage());
+            error_log('Dataverse error: ' . $e->getMessage());
         }
     }
 

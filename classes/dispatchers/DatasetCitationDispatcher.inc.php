@@ -31,9 +31,13 @@ class DatasetCitationDispatcher extends DataverseDispatcher
             $serviceFactory = new DataverseServiceFactory();
             $service = $serviceFactory->build($configuration);
 
-            $citation = $service->getStudyCitation($study);
-            $templateMgr->assign('datasetCitation', $citation);
-            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
+            try {
+                $citation = $service->getStudyCitation($study);
+                $templateMgr->assign('datasetCitation', $citation);
+                $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
+            } catch (Exception $e) {
+                error_log('Dataverse Error: ' . $e->getMessage());
+            }
         }
 
         return false;

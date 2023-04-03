@@ -40,7 +40,7 @@ class DraftDatasetFileForm extends Form
         ];
     }
 
-    private function getTermsOfUseArgs(): array
+    private function getTermsOfUseArgs()
     {
         try {
             $context = Application::get()->getRequest()->getContext();
@@ -60,7 +60,7 @@ class DraftDatasetFileForm extends Form
                 'dataverseName' => $dvCollectionName
             ];
         } catch (Exception $e) {
-            error_log($e->getMessage());
+            error_log('Dataverse error: ' . $e->getMessage());
         }
     }
 

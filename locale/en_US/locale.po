@@ -95,6 +95,9 @@ msgstr "Service Unavailable. {$dataverseUrl} is temporarily busy. Please try aga
 msgid "plugins.generic.dataverse.notification.unknownError"
 msgstr "Unknown error. Could not connect to {$dataverseUrl}"
 
+msgid "plugins.generic.dataverse.notification.connectionError"
+msgstr "Error connecting to Dataverse: {$errorMessage}"
+
 msgid "plugins.generic.dataverse.notification.metadataUpdated"
 msgstr "Dataset metadata successfully updated."
 

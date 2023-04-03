@@ -49,12 +49,15 @@ class DraftDatasetFileForm extends FormComponent
         $client = new NativeAPIClient($contextId);
         $service = new DataAPIService($client);
 
-        $dvCollectionName = $service->getDataverseCollectionName();
-        $termsOfUse = $client->getCredentials()->getLocalizedData('termsOfUse', $locale);
-
-        return [
-            'dataverseName' => $dvCollectionName,
-            'termsOfUseURL' => $termsOfUse
-        ];
+        try {
+            $dvCollectionName = $service->getDataverseCollectionName();
+            $termsOfUse = $client->getCredentials()->getLocalizedData('termsOfUse', $locale);
+            return [
+                'dataverseName' => $dvCollectionName,
+                'termsOfUseURL' => $termsOfUse
+            ];
+        } catch (\Exception $e) {
+            error_log('Dataverse error: ' . $e->getMessage());
+        }
     }
 }
