@@ -1,7 +1,5 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
-import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('lib.pkp.classes.submission.SubmissionFile');
 
