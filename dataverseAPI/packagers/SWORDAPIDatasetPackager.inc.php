@@ -1,7 +1,7 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.packagers.DatasetPackager');
-import('plugins.generic.dataverse.classes.dataverseAPI.packagers.creators.AtomPackageCreator');
+import('plugins.generic.dataverse.dataverseAPI.packagers.DatasetPackager');
+import('plugins.generic.dataverse.dataverseAPI.packagers.creators.AtomPackageCreator');
 
 class SWORDAPIDatasetPackager extends DatasetPackager
 {

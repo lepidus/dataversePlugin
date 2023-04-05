@@ -1,6 +1,6 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.packagers.DatasetPackager');
+import('plugins.generic.dataverse.dataverseAPI.packagers.DatasetPackager');
 
 class NativeAPIDatasetPackager extends DatasetPackager
 {

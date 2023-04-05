@@ -1,6 +1,6 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.packagers.creators.AtomPackageCreator');
+import('plugins.generic.dataverse.dataverseAPI.packagers.creators.AtomPackageCreator');
 import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFile');
 import('plugins.generic.dataverse.classes.entities.Dataset');
 import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
