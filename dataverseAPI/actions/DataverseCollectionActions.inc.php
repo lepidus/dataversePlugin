@@ -12,12 +12,7 @@ class DataverseCollectionActions implements DataverseCollectionActionsInterface
         $uri = $nativeAPI->getCurrentDataverseURI();
         $response = $nativeAPI->makeRequest('GET', $uri);
 
-        $jsonContent = json_decode($response->getBody(), true);
-        $dataverseCollectionData = $jsonContent['data'];
-        $dataverseCollection = new DataverseCollection();
-        $dataverseCollection->setAllData($dataverseCollectionData);
-
-        return $dataverseCollection;
+        return $this->getDataverseCollection($response);
     }
 
     public function getRoot(): DataverseCollection
@@ -26,12 +21,7 @@ class DataverseCollectionActions implements DataverseCollectionActionsInterface
         $uri = $nativeAPI->getRootDataverseURI();
         $response = $nativeAPI->makeRequest('GET', $uri);
 
-        $jsonContent = json_decode($response->getBody(), true);
-        $dataverseCollectionData = $jsonContent['data'];
-        $dataverseCollection = new DataverseCollection();
-        $dataverseCollection->setAllData($dataverseCollectionData);
-
-        return $dataverseCollection;
+        return $this->getDataverseCollection($response);
     }
 
     public function publish(): void
@@ -39,5 +29,15 @@ class DataverseCollectionActions implements DataverseCollectionActionsInterface
         $nativeAPI = new NativeAPI();
         $uri = $nativeAPI->getCurrentDataverseURI() . '/actions/:publish';
         $response = $nativeAPI->makeRequest('POST', $uri);
+    }
+
+    private function createDataverseCollection(DataverseReponse $response): DataverseCollection
+    {
+        $jsonContent = json_decode($response->getBody(), true);
+        $dataverseCollectionData = $jsonContent['data'];
+        $dataverseCollection = new DataverseCollection();
+        $dataverseCollection->setAllData($dataverseCollectionData);
+
+        return $dataverseCollection;
     }
 }
