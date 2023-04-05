@@ -113,7 +113,7 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
 
         $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
 
-        import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
+        import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
 

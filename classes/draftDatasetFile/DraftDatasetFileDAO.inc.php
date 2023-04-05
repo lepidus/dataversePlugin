@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.classes.db.SchemaDAO');
-import('plugins.generic.dataverse.classes.file.DraftDatasetFile');
+import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFile');
 
 class DraftDatasetFileDAO extends SchemaDAO
 {

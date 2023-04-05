@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.tests.DatabaseTestCase');
-import('plugins.generic.dataverse.classes.daos.DataverseCredentialsDAO');
+import('plugins.generic.dataverse.classes.dataverseCredentials.DataverseCredentialsDAO');
 
 class DataverseCredentialsDAOTest extends DatabaseTestCase
 {

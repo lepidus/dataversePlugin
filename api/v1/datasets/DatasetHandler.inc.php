@@ -130,7 +130,7 @@ class DatasetHandler extends APIHandler
         }
 
         $submission = Services::get('submission')->get($submissionId);
-        import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
+        import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $datasetFactory = new SubmissionDatasetFactory($submission);
         $dataset = $datasetFactory->getDataset();
         $dataset->setTitle($requestParams['datasetTitle']);

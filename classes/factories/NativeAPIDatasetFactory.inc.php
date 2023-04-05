@@ -1,6 +1,6 @@
 <?php
 
-import('plugins.generic.dataverse.classes.factories.dataset.DatasetFactory');
+import('plugins.generic.dataverse.classes.factories.DatasetFactory');
 import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
 import('plugins.generic.dataverse.classes.entities.DatasetContact');
 

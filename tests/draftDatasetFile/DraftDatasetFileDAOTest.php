@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.tests.DatabaseTestCase');
-import('plugins.generic.dataverse.classes.file.DraftDatasetFileDAO');
+import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
 import('lib.pkp.classes.db.DAO');
 
 class DraftDatasetFileDAOTest extends DatabaseTestCase

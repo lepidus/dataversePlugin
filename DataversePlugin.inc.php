@@ -45,9 +45,9 @@ class DataversePlugin extends GenericPlugin
 
     private function registerDAOClasses(): void
     {
-        import('plugins.generic.dataverse.classes.file.DraftDatasetFileDAO');
-        import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
-        import('plugins.generic.dataverse.classes.daos.DataverseCredentialsDAO');
+        import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
+        import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudyDAO');
+        import('plugins.generic.dataverse.classes.dataverseCredentials.DataverseCredentialsDAO');
 
         $draftDatasetFileDAO = new DraftDatasetFileDAO();
         $dataverseStudyDAO = new DataverseStudyDAO();

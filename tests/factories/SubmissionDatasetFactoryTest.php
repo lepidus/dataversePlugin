@@ -2,7 +2,9 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.entities.DatasetContact');
-import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
+import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFile');
+import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
+import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
 
 class SubmissionDatasetFactoryTest extends PKPTestCase
 {
@@ -29,8 +31,8 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
         $this->registerMockRequest();
         $this->registerMockJournalDAO();
-        $this->registerMockDraftDatasetFileDAO();
         $this->registerMockTemporaryFileDAO();
+        $this->registerMockDraftDatasetFileDAO();
     }
 
     protected function getMockedRegistryKeys(): array
@@ -40,7 +42,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
     protected function getMockedDAOs(): array
     {
-        return ['JournalDAO', 'DraftDatasetFileDAO'];
+        return ['JournalDAO', 'TemporaryFileDAO'];
     }
 
     private function registerMockRequest(): void
@@ -84,7 +86,6 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
             ->setMethods(array('getBySubmissionId'))
             ->getMock();
 
-        import('plugins.generic.dataverse.classes.file.DraftDatasetFile');
         $draftDatasetFile = new DraftDatasetFile();
         $draftDatasetFile->setId(rand());
         $draftDatasetFile->setData('submissionId', $this->submission->getId());
@@ -106,7 +107,6 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
             ->setMethods(array('getTemporaryFile'))
             ->getMock();
 
-        import('plugins.generic.dataverse.classes.file.DraftDatasetFile');
         $this->temporaryFile = new TemporaryFile();
         $this->temporaryFile->setId(rand());
         $this->temporaryFile->setServerFileName('sample.pdf');

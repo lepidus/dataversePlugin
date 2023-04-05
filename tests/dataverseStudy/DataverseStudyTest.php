@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataverse.classes.study.DataverseStudy');
+import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudy');
 
 final class DataverseStudyTest extends PKPTestCase
 {

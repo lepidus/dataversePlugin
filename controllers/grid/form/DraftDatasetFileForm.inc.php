@@ -93,7 +93,7 @@ class DraftDatasetFileForm extends Form
             $user->getId()
         );
 
-        import('plugins.generic.dataverse.classes.file.DraftDatasetFileDAO');
+        import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
         $draftDatasetFileDAO = new DraftDatasetFileDAO();
         $draftDatasetFile = $draftDatasetFileDAO->newDataObject();
         $draftDatasetFile->setData('submissionId', $this->getData('submissionId'));

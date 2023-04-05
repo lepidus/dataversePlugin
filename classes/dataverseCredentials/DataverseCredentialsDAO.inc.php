@@ -1,6 +1,6 @@
 <?php
 
-import('plugins.generic.dataverse.classes.entities.DataverseCredentials');
+import('plugins.generic.dataverse.classes.dataverseCredentials.DataverseCredentials');
 
 class DataverseCredentialsDAO
 {

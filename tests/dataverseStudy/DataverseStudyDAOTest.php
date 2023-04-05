@@ -1,8 +1,8 @@
 <?php
 
 import('lib.pkp.tests.DatabaseTestCase');
-import('plugins.generic.dataverse.classes.study.DataverseStudy');
-import('plugins.generic.dataverse.classes.study.DataverseStudyDAO');
+import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudy');
+import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudyDAO');
 import('lib.pkp.classes.db.DAO');
 
 class DataverseStudyDAOTest extends DatabaseTestCase
