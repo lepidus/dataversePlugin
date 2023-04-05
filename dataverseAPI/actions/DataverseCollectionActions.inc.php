@@ -28,7 +28,7 @@ class DataverseCollectionActions implements DataverseCollectionActionsInterface
     {
         $nativeAPI = new NativeAPI();
         $uri = $nativeAPI->getCurrentDataverseURI() . '/actions/:publish';
-        $response = $nativeAPI->makeRequest('POST', $uri);
+        $nativeAPI->makeRequest('POST', $uri);
     }
 
     private function createDataverseCollection(DataverseReponse $response): DataverseCollection

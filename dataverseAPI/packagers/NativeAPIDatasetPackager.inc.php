@@ -178,7 +178,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
 
     public function getPackagePath(): string
     {
-        return $this->getPackageDirPath() . DIRECTORY_SEPARATOR . '/dataset.json';
+        return $this->getPackageDirPath() . DIRECTORY_SEPARATOR . 'dataset.json';
     }
 
     public function clear(): void
