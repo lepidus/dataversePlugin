@@ -1,5 +1,7 @@
 <?php
 
+import('plugins.generic.dataverse.dataverseAPI.http.HttpClient');
+
 class NativeAPI
 {
     private $serverUrl;
@@ -10,11 +12,12 @@ class NativeAPI
     public function __construct()
     {
         $contextId = Application::get()->getRequest()->getContext()->getId();
-        $credentials = DAORegisty::getDAO('DataverseCredentialsDAO')->get($contextId);
+        $credentials = DAORegistry::getDAO('DataverseCredentialsDAO')->get($contextId);
 
         $this->serverUrl = $credentials->getDataverseServerUrl();
         $this->apiToken = $credentials->getAPIToken();
         $this->dataverseAlias = $credentials->getDataverseCollection();
+
         $this->httpClient = new HttpClient();
     }
 
@@ -23,7 +26,17 @@ class NativeAPI
         return $this->serverUrl . '/api/' . join('/', $pathParams);
     }
 
-    public function makeRequest(string $method, string $uri, array $options): array
+    public function getCurrentDataverseURI(): string
+    {
+        return $this->createURI('dataverses', $this->dataverseAlias);
+    }
+
+    public function getRootDataverseURI(): string
+    {
+        return $this->createURI('dataverses', ':root');
+    }
+
+    public function makeRequest(string $method, string $uri, array $options = []): DataverseResponse
     {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
 
