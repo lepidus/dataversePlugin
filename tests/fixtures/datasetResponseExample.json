@@ -1,0 +1,183 @@
+{
+  "status": "OK",
+  "data": {
+    "id": 1234567,
+    "identifier": "FK2/ABCDEFG",
+    "persistentUrl": "https://doi.org/10.12345/FK2/ABCDEFG",
+    "protocol": "doi",
+    "authority": "10.12345",
+    "publisher": "Test Dataverse",
+    "storageIdentifier": "s3://10.12345/FK2/ABCDEFG",
+    "latestVersion": {
+      "id": 123456,
+      "datasetId": 1234567,
+      "datasetPersistentId": "doi:10.12345/FK2/ABCDEFG",
+      "storageIdentifier": "s3://10.12345/FK2/ABCDEFG",
+      "versionState": "DRAFT",
+      "lastUpdateTime": "2023-03-27T21:13:38Z",
+      "createTime": "2023-03-27T21:13:36Z",
+      "fileAccessRequest": true,
+      "metadataBlocks": {
+        "citation": {
+          "displayName": "Citation Metadata",
+          "name": "citation",
+          "fields": [
+            {
+              "typeName": "title",
+              "multiple": false,
+              "typeClass": "primitive",
+              "value": "Test title"
+            },
+            {
+              "typeName": "author",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "authorName": {
+                    "typeName": "authorName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Test, Author"
+                  },
+                  "authorAffiliation": {
+                    "typeName": "authorAffiliation",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Dataverse"
+                  },
+                  "authorIdentifier": {
+                    "typeName": "authorIdentifier",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "0000-0000-0000-0000"
+                  }
+                },
+                {
+                  "authorName": {
+                    "typeName": "authorName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Example, User"
+                  }
+                }
+              ]
+            },
+            {
+              "typeName": "datasetContact",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "datasetContactName": {
+                    "typeName": "datasetContactName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Test, Contact"
+                  },
+                  "datasetContactAffiliation": {
+                    "typeName": "datasetContactAffiliation",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Dataverse"
+                  },
+                  "datasetContactEmail": {
+                    "typeName": "datasetContactEmail",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "test@example.com"
+                  }
+                }
+              ]
+            },
+            {
+              "typeName": "dsDescription",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "dsDescriptionValue": {
+                    "typeName": "dsDescriptionValue",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "<p>An example description</p>"
+                  }
+                }
+              ]
+            },
+            {
+              "typeName": "keyword",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "keywordValue": {
+                    "typeName": "keywordValue",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "test"
+                  }
+                }
+              ]
+            },
+            {
+              "typeName": "subject",
+              "multiple": true,
+              "typeClass": "controlledVocabulary",
+              "value": [
+                "Other"
+              ]
+            },
+            {
+              "typeName": "publication",
+              "multiple": true,
+              "typeClass": "compound",
+              "value": [
+                {
+                  "publicationCitation": {
+                    "typeName": "publicationCitation",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "Related publication"
+                  }
+                }
+              ]
+            },
+            {
+              "typeName": "depositor",
+              "multiple": false,
+              "typeClass": "primitive",
+              "value": "Test, Depositor"
+            }
+          ]
+        }
+      },
+      "files": [
+        {
+          "description": "",
+          "label": "sample.pdf",
+          "restricted": false,
+          "version": 1,
+          "datasetVersionId": 123456,
+          "dataFile": {
+            "id": 9876543,
+            "persistentId": "",
+            "pidURL": "",
+            "filename": "sample.pdf",
+            "contentType": "application/pdf",
+            "filesize": 77123,
+            "description": "",
+            "storageIdentifier": "s3://test-dataverse-org:18724eb61dd-4ff6a864cb6c",
+            "rootDataFileId": -1,
+            "md5": "97a36af46c74151b55378c02055f796b",
+            "checksum": {
+              "type": "MD5",
+              "value": "97a36af46c74151b55378c02055f796b"
+            },
+            "creationDate": "2020-01-01"
+          }
+        }
+      ]
+    }
+  }
+}

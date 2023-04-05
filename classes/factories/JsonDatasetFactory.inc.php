@@ -4,21 +4,23 @@ import('plugins.generic.dataverse.classes.factories.DatasetFactory');
 import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
 import('plugins.generic.dataverse.classes.entities.DatasetContact');
 
-class NativeAPIDatasetFactory extends DatasetFactory
+class JsonDatasetFactory extends DatasetFactory
 {
-    private $response;
+    private $jsonContent;
 
-    public function __construct(DataverseResponse $response)
+    public function __construct(string $jsonContent)
     {
-        $this->response = $response;
+        $this->jsonContent = $jsonContent;
     }
 
     protected function sanitizeProps(): array
     {
-        $responseData = json_decode($this->response->getData());
-        $datasetData = $responseData->data->fields;
+        $responseData = json_decode($this->jsonContent);
+        $datasetVersion = $responseData->data->latestVersion;
+        $datasetData = $datasetVersion->metadataBlocks->citation->fields;
 
         $props = [];
+        $props['persistentId'] = $datasetVersion->datasetPersistentId;
         foreach ($datasetData as $metadata) {
             if ($metadata->typeClass == 'primitive') {
                 $props[$metadata->typeName] = $metadata->value;
@@ -65,6 +67,14 @@ class NativeAPIDatasetFactory extends DatasetFactory
                     break;
             }
         }
+
+        $props['files'] = array_map(function (stdClass $file) {
+            $datasetFile = new DatasetFile();
+            $datasetFile->setId($file->dataFile->id);
+            $datasetFile->setFileName($file->label);
+            $datasetFile->setOriginalFileName($file->dataFile->filename);
+            return $datasetFile;
+        }, $datasetVersion->files);
 
         return $props;
     }

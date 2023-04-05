@@ -82,7 +82,7 @@ class AtomPackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntry();
 
-        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__, 4) . '/assets/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
+        $this->assertXmlFileEqualsXmlFile(dirname(__FILE__, 4) . '/fixtures/atomEntryExampleForTesting.xml', $this->packageCreator->getAtomEntryPath());
     }
 
     public function testValidateAtomEntryNamespaceAttributes(): void
@@ -126,7 +126,7 @@ class AtomPackageCreatorTest extends PKPTestCase
     {
         $this->createDefaultTestAtomEntry();
 
-        $this->packageCreator->addFileToPackage(dirname(__FILE__, 4) . '/assets/testSample.csv', "sampleFileForTests.csv");
+        $this->packageCreator->addFileToPackage(dirname(__FILE__, 4) . '/fixtures/testSample.csv', "sampleFileForTests.csv");
         $this->packageCreator->createPackage();
 
         $this->assertTrue(file_exists($this->packageCreator->getPackageFilePath()));
