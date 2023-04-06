@@ -11,7 +11,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         $uri = $this->getCurrentDataverseURI();
         $response = $this->nativeAPIRequest('GET', $uri);
 
-        return $this->getDataverseCollection($response);
+        return $this->createDataverseCollection($response);
     }
 
     public function getRoot(): DataverseCollection
@@ -28,7 +28,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         $this->nativeAPIRequest('POST', $uri);
     }
 
-    private function createDataverseCollection(DataverseReponse $response): DataverseCollection
+    private function createDataverseCollection(DataverseResponse $response): DataverseCollection
     {
         $jsonContent = json_decode($response->getBody(), true);
         $dataverseCollectionData = $jsonContent['data'];

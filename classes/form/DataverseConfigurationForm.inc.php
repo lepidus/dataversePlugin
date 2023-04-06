@@ -1,8 +1,8 @@
 <?php
 
 import('lib.pkp.classes.form.Form');
-import('plugins.generic.dataverse.classes.api.DataverseClient');
-import('plugins.generic.dataverse.classes.daos.DataverseCredentialsDAO');
+import('plugins.generic.dataverse.classes.dataverseCredentials.DataverseCredentialsDAO');
+import('plugins.generic.dataverse.dataverseAPI.actions.DataverseCollectionActions');
 
 class DataverseConfigurationForm extends Form
 {
@@ -59,10 +59,18 @@ class DataverseConfigurationForm extends Form
 
     public function validateCredentials(): bool
     {
-        import('plugins.generic.dataverse.classes.DataverseConfiguration');
-        $client = new DataverseClient(new DataverseConfiguration($this->getData("dataverseUrl"), $this->getData("apiToken")));
-        $connectionSuccessful = $client->checkConnectionWithDataverse();
+        $credentials = new DataverseCredentials();
+        $credentials->setDataverseUrl($this->getData('dataverseUrl'));
+        $credentials->setApiToken($this->getData('apiToken'));
 
-        return $connectionSuccessful;
+        $dataverseCollectionActions = new DataverseCollectionActions($credentials);
+
+        try {
+            $dataverseCollectionActions->get();
+        } catch (DataverseException $e) {
+            return false;
+        }
+
+        return true;
     }
 }
