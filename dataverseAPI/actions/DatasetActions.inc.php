@@ -1,18 +1,18 @@
 <?php
 
 import('plugins.generic.dataverse.dataverseAPI.actions.interfaces.DatasetActionsInterface');
-import('plugins.generic.dataverse.dataverseAPI.native.NativeAPI');
+import('plugins.generic.dataverse.dataverseAPI.actions.DataverseActions');
 import('plugins.generic.dataverse.dataverseAPI.packagers.NativeAPIDatasetPackager');
 import('plugins.generic.dataverse.classes.factories.JsonDatasetFactory');
 import('plugins.generic.dataverse.classes.entities.DatasetIdentifier');
 
-class DatasetActions implements DatasetActionsInterface
+class DatasetActions extends DataverseActions implements DatasetActionsInterface
 {
     public function get(string $persistendId): Dataset
     {
-        $nativeAPI = new NativeAPI();
-        $uri = $nativeAPI->createUri('datasets', ':persistentId?persistentId=' . $persistendId);
-        $response = $nativeAPI->makeRequest('GET', $uri);
+        $args = '?persistentId=' . $persistendId;
+        $uri = $this->createNativeAPIURI('datasets', ':persistentId' . $args);
+        $response = $this->nativeAPIRequest('GET', $uri);
 
         $datasetFactory = new JsonDatasetFactory($response->getBody());
         return $datasetFactory->getDataset();
@@ -23,13 +23,12 @@ class DatasetActions implements DatasetActionsInterface
         $packager = new NativeAPIDatasetPackager($dataset);
         $packager->createDatasetPackage();
 
-        $nativeAPI = new NativeAPI();
-        $uri = $nativeAPI->getCurrentDataverseURI() . '/datasets';
+        $uri = $this->getCurrentDataverseURI() . '/datasets';
         $options = [
             'headers' => ['Content-Type' => 'application/json'],
             'body' => GuzzleHttp\Psr7\Utils::tryFopen($packager->getPackagePath(), 'rb')
         ];
-        $response = $nativeAPI->makeRequest('POST', $uri, $options);
+        $response = $this->nativeAPIRequest('POST', $uri, $options);
 
         $jsonContent = json_decode($response->getBody(), true);
         $datasetIdentifier = new DatasetIdentifier();
@@ -44,30 +43,28 @@ class DatasetActions implements DatasetActionsInterface
         $packager = new NativeAPIDatasetPackager($dataset);
         $packager->createDatasetPackage();
 
-        $nativeAPI = new NativeAPI();
         $args = '?persistentId=' . $dataset->getPersistentId() . '&replace=true';
-        $uri = $nativeAPI->createUri('datasets', ':persistentId', 'editMetadata', $args);
+        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'editMetadata', $args);
         $options = [
             'headers' => ['Content-Type' => 'application/json'],
             'body' => GuzzleHttp\Psr7\Utils::tryFopen($packager->getPackagePath(), 'rb')
         ];
-        $nativeAPI->makeRequest('PUT', $uri, $options);
+        $this->nativeAPIRequest('PUT', $uri, $options);
         $packager->clear();
     }
 
     public function delete(string $persistendId): void
     {
-        $nativeAPI = new NativeAPI();
-        $uri = $nativeAPI->createUri('datasets', ':persistentId', 'versions', ':draft?persistentId=' . $persistendId);
-        $nativeAPI->makeRequest('DELETE', $uri);
+        $args = '?persistentId=' . $persistendId;
+        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions', ':draft' . $args);
+        $this->nativeAPIRequest('DELETE', $uri);
     }
 
     public function publish(string $persistendId): void
     {
-        $nativeAPI = new NativeAPI();
         $args = '?persistentId=' . $persistendId . '&type=major';
-        $uri = $nativeAPI->createUri('datasets', ':persistentId', 'actions', ':publish' . $args);
+        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'actions', ':publish' . $args);
 
-        $nativeAPI->makeRequest('POST', $uri);
+        $this->nativeAPIRequest('POST', $uri);
     }
 }
