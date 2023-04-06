@@ -2,11 +2,11 @@
 
 interface DatasetFileActionsInterface
 {
-    public function getByDatasetId(string $datasetId): array;
+    public function getByDatasetId(string $persistentId): array;
 
-    public function add(ResearchDataFile $researchDataFile): void;
+    public function add(string $persistentId, string $filename, string $filePath): void;
 
-    public function delete(string $datasetFileId): void;
+    public function delete(int $datasetFileId): void;
 
-    public function download(string $datasetFileId): void;
+    public function download(int $datasetFileId, string $filename): void;
 }
