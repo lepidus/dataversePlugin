@@ -232,16 +232,10 @@ class DatasetHandler extends APIHandler
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        $service = $this->getDataverseService($this->getRequest());
+        $dataverseClient = new DataverseClient();
+        $dataverseClient->getDatasetFileActions()->delete($queryParams['fileId']);
 
-        $fileDeleted = $service->deleteDatasetFile($study, $queryParams['fileId']);
-
-        if (!$fileDeleted) {
-            return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
-        }
-
-        $items = $this->getDatasetFiles($study);
-        return $response->withJson(['items' => $items], 200);
+        return $response->withJson(['message' => 'ok'], 200);
     }
 
     public function deleteDataset($slimRequest, $response, $args)
