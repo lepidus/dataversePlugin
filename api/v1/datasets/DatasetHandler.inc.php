@@ -170,32 +170,27 @@ class DatasetHandler extends APIHandler
 
     public function addFile($slimRequest, $response, $args)
     {
-        $requestParams = $slimRequest->getParsedBody();
         $request = $this->getRequest();
         $user = $request->getUser();
 
+        $requestParams = $slimRequest->getParsedBody();
+        $fileId = $requestParams['datasetFile']['temporaryFileId'];
+
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
-        $fileId = $requestParams['datasetFile']['temporaryFileId'];
 
         import('lib.pkp.classes.file.TemporaryFileManager');
         $temporaryFileManager = new TemporaryFileManager();
         $file = $temporaryFileManager->getFile($fileId, $user->getId());
 
-        $service = $this->getDataverseService($request);
-        $dataverseResponse = $service->addDatasetFile($study, $file);
+        $dataverseClient = new DataverseClient();
+        $dataverseClient->getDatasetFileActions()->add(
+            $study->getPersistentId(),
+            $file->getOriginalFileName(),
+            $file->getFilePath()
+        );
 
-        $datasetFileData = [
-            'fileName' => $file->getOriginalFileName()
-        ];
-
-        $temporaryFileManager->deleteById($file->getId(), $user->getId());
-
-        if (!$dataverseResponse) {
-            return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
-        }
-
-        return $response->withJson($datasetFileData, 201);
+        return $response->withJson(['message' => 'ok'], 200);
     }
 
     public function getFiles($slimRequest, $response, $args)
@@ -203,11 +198,16 @@ class DatasetHandler extends APIHandler
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        $datasetFiles = $this->getDatasetFiles($study);
+        $dataverseClient = new DataverseClient();
+        $datasetFiles = $dataverseClient->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
 
-        ksort($datasetFiles);
+        $items = array_map(function (DatasetFile $file) {
+            return $file->getVars();
+        }, $datasetFiles);
 
-        return $response->withJson(['items' => $datasetFiles], 200);
+        ksort($items);
+
+        return $response->withJson(['items' => $items], 200);
     }
 
     public function getCitation($slimRequest, $response, $args)
@@ -274,20 +274,6 @@ class DatasetHandler extends APIHandler
         }
 
         return $response->withJson(['message' => 'ok'], 200);
-    }
-
-    private function getDatasetFiles($study): array
-    {
-        $service = $this->getDataverseService($this->getRequest());
-        $datasetFilesResponse = $service->getDatasetFiles($study);
-
-        $datasetFiles = array();
-
-        foreach ($datasetFilesResponse->data as $data) {
-            $datasetFiles[] = ['id' => $data->dataFile->id, 'fileName' => $data->label];
-        }
-
-        return $datasetFiles;
     }
 
     private function registerDatasetEventLog(int $submissionId, int $eventType, string $message, array $params = [])

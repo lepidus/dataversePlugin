@@ -16,6 +16,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         $jsonContent = json_decode($response->getBody(), true);
 
         return array_map(function (array $file) {
+            import('plugins.generic.dataverse.classes.entities.DatasetFile');
             $datasetFile = new DatasetFile();
             $datasetFile->setId($file['dataFile']['id']);
             $datasetFile->setFileName($file['label']);
