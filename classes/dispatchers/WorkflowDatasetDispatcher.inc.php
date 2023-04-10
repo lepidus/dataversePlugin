@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
+import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 import('lib.pkp.classes.submission.SubmissionFile');
 
 class WorkflowDatasetDispatcher extends DataverseDispatcher
@@ -45,13 +46,12 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             return $this->plugin->getTemplateResource('datasetTab/noResearchData.tpl');
         }
 
-        $apiClient = new NativeAPIClient($submission->getContextId());
-        $dataService = new DataAPIService($apiClient);
+        $dataverseClient = new DataverseClient();
         try {
-            $dataset = $dataService->getDataset($study->getPersistentId());
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
             return $this->plugin->getTemplateResource('datasetTab/datasetData.tpl');
-        } catch (Exception $e) {
-            error_log('Dataverse error: ' . $e->getMessage());
+        } catch (DataverseException $e) {
+            error_log('Dataverse API error: ' . $e->getMessage());
             $templateMgr = TemplateManager::getManager(Application::get()->getRequest());
             $templateMgr->assign('errorMessage', $e->getMessage());
             return $this->plugin->getTemplateResource('datasetTab/researchDataError.tpl');
@@ -120,14 +120,9 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
         $props = Services::get('schema')->getFullProps('draftDatasetFile');
 
-        $items = [];
-        foreach ($draftDatasetFiles as $draftDatasetFile) {
-            $draftDatasetFileProps = [];
-            foreach ($props as $prop) {
-                $draftDatasetFileProps[$prop] = $draftDatasetFile->getData($prop);
-            }
-            $items[] = $draftDatasetFileProps;
-        }
+        $items = array_map(function ($draftDatasetFile) use ($props) {
+            return array_combine($props, $draftDatasetFile->getData());
+        }, $draftDatasetFiles);
 
         ksort($items);
 
@@ -150,17 +145,15 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $context = $request->getContext();
 
         try {
-            $client = new NativeAPIClient($context->getId());
-            $service = new DataAPIService($client);
-            $dataset = $service->getDataset($study->getPersistentId());
-            $datasetFiles = $service->getDatasetFiles($study->getPersistentId());
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
 
             $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
             $fileListApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/files', null, null, ['persistentId' => $study->getPersistentId()]);
             $fileFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/file');
             $items = array_map(function (DatasetFile $datasetFile) {
                 return $datasetFile->getVars();
-            }, $datasetFiles);
+            }, $dataset->getFiles());
 
             $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'PUT', $dataset);
             $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
@@ -172,8 +165,8 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
                 'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
                 'datasetCitationUrl' => $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
             ]);
-        } catch (Exception $e) {
-            error_log('Dataverse error: ' . $e->getMessage());
+        } catch (DataverseException $e) {
+            error_log('Dataverse API error: ' . $e->getMessage());
         }
     }
 
@@ -266,13 +259,15 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         }
 
         $contentId = $form->submissionContext->getId();
-        $client = new NativeAPIClient($contentId);
-        $service = new DataAPIService($client);
+        $dataverseClient = new DataverseClient();
+        $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions->getRoot();
+
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($form->submission->getContextId());
 
         $params = [
             'persistentUri' => $study->getPersistentUri(),
-            'serverName' => $service->getDataverseServerName(),
-            'serverUrl' => $client->getConfiguration()->getDataverseServerUrl(),
+            'serverName' => $rootDataverseCollection->getName(),
+            'serverUrl' => $configuration->getDataverseServerUrl(),
         ];
 
         $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
