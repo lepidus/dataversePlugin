@@ -17,26 +17,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
     }
 
-    public function getDataverseConfiguration(): DataverseConfiguration
-    {
-        $context = $this->plugin->getRequest()->getContext();
-        $contextId = $context->getId();
-
-        import('plugins.generic.dataverse.classes.DataverseConfiguration');
-        return new DataverseConfiguration(
-            $this->plugin->getSetting($contextId, 'dataverseUrl'),
-            $this->plugin->getSetting($contextId, 'apiToken')
-        );
-    }
-
-    public function getDataverseService(): DataverseService
-    {
-        import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
-        $serviceFactory = new DataverseServiceFactory();
-        $service = $serviceFactory->build($this->getDataverseConfiguration(), $this->plugin);
-        return $service;
-    }
-
     public function modifySubmissionSchema(string $hookName, array $params): bool
     {
         $schema =& $params[0];
@@ -69,13 +49,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $service = $this->getDataverseService();
         $service->setSubmission($submission, $submissionUser);
         $service->releaseStudy();
-    }
-
-    private function getCurrentUser(): User
-    {
-        $request = Application::get()->getRequest();
-        $currentUser = $request->getUser();
-        return $currentUser;
     }
 
     public function setupDataverseAPIHandlers(string $hookname, Request $request): void
