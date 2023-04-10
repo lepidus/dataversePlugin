@@ -243,13 +243,8 @@ class DatasetHandler extends APIHandler
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        $service = $this->getDataverseService($this->getRequest());
-
-        $datasetDeleted = $service->deleteDraftDataset($study);
-
-        if (!$datasetDeleted) {
-            return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
-        }
+        $dataverseClient = new DataverseClient();
+        $dataverseClient->getDatasetActions()->delete($study->getPersistentId());
 
         return $response->withJson(['message' => 'ok'], 200);
     }
@@ -264,19 +259,5 @@ class DatasetHandler extends APIHandler
         $dataverseClient->getDatasetFileActions()->download($fileId, $filename);
 
         return $response->withJson(['message' => 'ok'], 200);
-    }
-
-    private function registerDatasetEventLog(int $submissionId, int $eventType, string $message, array $params = [])
-    {
-        $request = Application::get()->getRequest();
-        $submission = Services::get('submission')->get($submissionId);
-
-        SubmissionLog::logEvent(
-            $request,
-            $submission,
-            $eventType,
-            $message,
-            $params
-        );
     }
 }
