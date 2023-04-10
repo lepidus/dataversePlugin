@@ -40,28 +40,22 @@ class DraftDatasetFileForm extends Form
         ];
     }
 
-    private function getTermsOfUseArgs()
+    private function getTermsOfUseArgs(): array
     {
-        try {
-            $context = Application::get()->getRequest()->getContext();
-            $locale = AppLocale::getLocale();
+        $contextId = Application::get()->getRequest()->getContext()->getId();
+        $locale = AppLocale::getLocale();
 
-            import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
-            $dvAPIClient = new NativeAPIClient($context->getId());
+        import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+        $dataverseClient = new DataverseClient();
+        $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
 
-            import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
-            $dvDataService = new DataAPIService($dvAPIClient);
+        $credentials = DAORegistry::getDAO('DataverseCredentialsDAO')->get($contextId);
+        $termsOfUse = $credentials->getLocalizedData('termsOfUse', $locale);
 
-            $termsOfUse = $dvAPIClient->getCredentials()->getLocalizedData('termsOfUse', $locale);
-            $dvCollectionName = $dvDataService->getDataverseCollectionName();
-
-            return [
-                'termsOfUseURL' => $termsOfUse,
-                'dataverseName' => $dvCollectionName
-            ];
-        } catch (Exception $e) {
-            error_log('Dataverse error: ' . $e->getMessage());
-        }
+        return [
+            'termsOfUseURL' => $termsOfUse,
+            'dataverseName' => $dataverseCollection->getName()
+        ];
     }
 
     public function fetch($request, $template = null, $display = false)
