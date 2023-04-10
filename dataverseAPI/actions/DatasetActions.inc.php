@@ -18,6 +18,27 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         return $datasetFactory->getDataset();
     }
 
+    public function getCitation(string $persistendId): string
+    {
+        $uri = $this->createSWORDAPIURI('edit', 'study', $persistendId);
+        $response = $this->swordAPIRequest('GET', $uri);
+
+        $doc = new DOMDocument();
+        $doc->loadXML($response->getBody());
+
+        $bibliographicCitation = $doc->getElementsByTagName('bibliographicCitation')->item(0)->nodeValue;
+        $persistentUrl = $doc->getElementsByTagName('link')->item(4)->getAttribute('href');
+
+        $citation = str_replace(
+            $persistentUrl,
+            '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>',
+            $bibliographicCitation
+        );
+
+        return preg_replace('/,+.UNF[^]]+]/', '', $citation);
+
+    }
+
     public function create(Dataset $dataset): DatasetIdentifier
     {
         $packager = new NativeAPIDatasetPackager($dataset);

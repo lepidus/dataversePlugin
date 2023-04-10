@@ -180,7 +180,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 type: 'GET',
                 error: this.ajaxErrorCallback,
                 success: (r) => {
-                    this.datasetCitation = r.data.citation;
+                    this.datasetCitation = r.citation;
                 },
             });
         },

@@ -233,12 +233,10 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $service = $this->getDataverseService($this->getRequest());
+        $dataverseClient = new DataverseClient();
+        $citation = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId());
 
-        $citation = $service->getStudyCitation($study);
-
-        $data = ['citation' => $citation];
-        return $response->withJson(['data' => $data], 200);
+        return $response->withJson(['citation' => $citation], 200);
     }
 
     public function deleteFile($slimRequest, $response, $args)
@@ -290,21 +288,6 @@ class DatasetHandler extends APIHandler
         }
 
         return $response->withJson(['message' => 'ok'], 200);
-    }
-
-    private function getDataverseService($request): DataverseService
-    {
-        $contextId = $request->getContext()->getId();
-        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
-        import('plugins.generic.dataverse.classes.DataverseConfiguration');
-        $configuration = new DataverseConfiguration(
-            $plugin->getSetting($contextId, 'dataverseUrl'),
-            $plugin->getSetting($contextId, 'apiToken')
-        );
-        import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
-        $serviceFactory = new DataverseServiceFactory();
-
-        return $serviceFactory->build($configuration);
     }
 
     private function getDatasetFiles($study): array
