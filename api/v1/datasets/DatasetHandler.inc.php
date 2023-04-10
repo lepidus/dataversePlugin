@@ -4,6 +4,7 @@ import('lib.pkp.classes.handler.APIHandler');
 import('lib.pkp.classes.log.SubmissionLog');
 import('classes.log.SubmissionEventLogEntry');
 import('plugins.generic.dataverse.classes.services.DatasetService');
+import('plugins.generic.dataverse.classes.services.DatasetFileService');
 
 class DatasetHandler extends APIHandler
 {
@@ -81,10 +82,7 @@ class DatasetHandler extends APIHandler
     public function edit($slimRequest, $response, $args)
     {
         $requestParams = $slimRequest->getParsedBody();
-        $studyId = $args['studyId'];
-
-        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dataverseStudyDAO->getStudy($studyId);
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudy($args['studyId']);
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
@@ -170,25 +168,14 @@ class DatasetHandler extends APIHandler
 
     public function addFile($slimRequest, $response, $args)
     {
-        $request = $this->getRequest();
-        $user = $request->getUser();
-
         $requestParams = $slimRequest->getParsedBody();
         $fileId = $requestParams['datasetFile']['temporaryFileId'];
 
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        import('lib.pkp.classes.file.TemporaryFileManager');
-        $temporaryFileManager = new TemporaryFileManager();
-        $file = $temporaryFileManager->getFile($fileId, $user->getId());
-
-        $dataverseClient = new DataverseClient();
-        $dataverseClient->getDatasetFileActions()->add(
-            $study->getPersistentId(),
-            $file->getOriginalFileName(),
-            $file->getFilePath()
-        );
+        $datasetFileService = new DatasetFileService();
+        $datasetFileService->add($study, $fileId);
 
         return $response->withJson(['message' => 'ok'], 200);
     }
@@ -232,8 +219,12 @@ class DatasetHandler extends APIHandler
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        $dataverseClient = new DataverseClient();
-        $dataverseClient->getDatasetFileActions()->delete($queryParams['fileId']);
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $datasetFileService = new DatasetFileService();
+        $datasetFileService->delete($study, $queryParams['fileId'], $queryParams['filename']);
 
         return $response->withJson(['message' => 'ok'], 200);
     }

@@ -89,7 +89,7 @@ class DatasetService
         SubmissionLog::logEvent(
             $request,
             $submission,
-            SUBMISSION_LOG_SUBMISSION_SUBMIT,
+            SUBMISSION_LOG_METADATA_UPDATE,
             'plugins.generic.dataverse.log.researchDataUpdated'
         );
     }
@@ -106,9 +106,8 @@ class DatasetService
         SubmissionLog::logEvent(
             $request,
             $submission,
-            SUBMISSION_LOG_SUBMISSION_SUBMIT,
+            SUBMISSION_LOG_METADATA_UPDATE,
             'plugins.generic.dataverse.log.researchDataDeleted'
         );
-
     }
 }

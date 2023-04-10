@@ -109,7 +109,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         url:
                             this.components.datasetFiles.apiUrl +
                             '&fileId=' +
-                            id,
+                            id +
+                            '&filename=' +
+                            datasetFile.fileName,
                         type: 'POST',
                         headers: {
                             'X-Csrf-Token': pkp.currentUser.csrfToken,
