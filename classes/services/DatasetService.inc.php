@@ -46,8 +46,8 @@ class DatasetService
 
         $request = Application::get()->getRequest();
         $contextId = $request->getContext()->getId();
-        $credentials = DAORegistry::getDAO('DataverseCredentialsDAO')->get($contextId);
-        $swordAPIBaseUrl = $credentials->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+        $swordAPIBaseUrl = $configuration->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
 
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->newDataObject();

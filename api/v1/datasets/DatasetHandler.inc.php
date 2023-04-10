@@ -143,7 +143,7 @@ class DatasetHandler extends APIHandler
         $packager->createDatasetPackage();
         $datasetPackagePath = $packager->getPackagePath();
 
-        $dataverseConfig = DAORegistry::getDAO('DataverseCredentialsDAO')->get($submission->getContextId());
+        $dataverseConfig = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
 
         import('plugins.generic.dataverse.classes.dataverseAPI.DataverseNativeAPI');
         $dataverseAPI = new DataverseNativeAPI();

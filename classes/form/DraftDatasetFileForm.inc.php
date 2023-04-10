@@ -51,7 +51,7 @@ class DraftDatasetFileForm extends FormComponent
 
         try {
             $dvCollectionName = $service->getDataverseCollectionName();
-            $termsOfUse = $client->getCredentials()->getLocalizedData('termsOfUse', $locale);
+            $termsOfUse = $client->getConfiguration()->getLocalizedData('termsOfUse', $locale);
             return [
                 'dataverseName' => $dvCollectionName,
                 'termsOfUseURL' => $termsOfUse

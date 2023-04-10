@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.classes.form.Form');
-import('plugins.generic.dataverse.classes.dataverseCredentials.DataverseCredentialsDAO');
+import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
 import('plugins.generic.dataverse.dataverseAPI.actions.DataverseCollectionActions');
 
 class DataverseConfigurationForm extends Form
@@ -17,15 +17,15 @@ class DataverseConfigurationForm extends Form
         parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
         $this->addCheck(new FormValidatorUrl($this, 'dataverseUrl', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlRequired'));
         $this->addCheck(new FormValidator($this, 'apiToken', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.tokenRequired'));
-        $this->addCheck(new FormValidatorCustom($this, 'termsOfUse', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlNotValid', array($this, 'validateCredentials')));
+        $this->addCheck(new FormValidatorCustom($this, 'termsOfUse', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlNotValid', array($this, 'validateConfiguration')));
         $this->addCheck(new FormValidatorPost($this));
     }
 
     public function initData(): void
     {
-        $credentialsDAO = DAORegistry::getDAO('DataverseCredentialsDAO');
-        $credentials = $credentialsDAO->get($this->contextId);
-        $data = $credentials->getAllData();
+        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
+        $configuration = $configurationDAO->get($this->contextId);
+        $data = $configuration->getAllData();
         foreach ($data as $name => $value) {
             $this->setData($name, $value);
         }
@@ -57,13 +57,13 @@ class DataverseConfigurationForm extends Form
         parent::execute(...$functionArgs);
     }
 
-    public function validateCredentials(): bool
+    public function validateConfiguration(): bool
     {
-        $credentials = new DataverseCredentials();
-        $credentials->setDataverseUrl($this->getData('dataverseUrl'));
-        $credentials->setApiToken($this->getData('apiToken'));
+        $configuration = new DataverseConfiguration();
+        $configuration->setDataverseUrl($this->getData('dataverseUrl'));
+        $configuration->setApiToken($this->getData('apiToken'));
 
-        $dataverseCollectionActions = new DataverseCollectionActions($credentials);
+        $dataverseCollectionActions = new DataverseCollectionActions($configuration);
 
         try {
             $dataverseCollectionActions->get();

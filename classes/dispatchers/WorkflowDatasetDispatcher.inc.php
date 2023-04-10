@@ -272,7 +272,7 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $params = [
             'persistentUri' => $study->getPersistentUri(),
             'serverName' => $service->getDataverseServerName(),
-            'serverUrl' => $client->getCredentials()->getDataverseServerUrl(),
+            'serverUrl' => $client->getConfiguration()->getDataverseServerUrl(),
         ];
 
         $form->addField(new \PKP\components\forms\FieldHTML('researchData', [

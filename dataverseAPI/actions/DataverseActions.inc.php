@@ -16,21 +16,21 @@ abstract class DataverseActions
     protected $client;
 
     public function __construct(
-        DataverseCredentials $credentials = null,
+        DataverseConfiguration $configuration = null,
         \GuzzleHttp\Client $client = null
     ) {
-        if (is_null($credentials)) {
+        if (is_null($configuration)) {
             $contextId = Application::get()->getRequest()->getContext()->getId();
-            $credentials = DAORegistry::getDAO('DataverseCredentialsDAO')->get($contextId);
+            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
         }
 
         if (is_null($client)) {
             $client = Application::get()->getHttpClient();
         }
 
-        $this->serverURL = $credentials->getDataverseServerUrl();
-        $this->apiToken = $credentials->getAPIToken();
-        $this->dataverseAlias = $credentials->getDataverseCollection();
+        $this->serverURL = $configuration->getDataverseServerUrl();
+        $this->apiToken = $configuration->getAPIToken();
+        $this->dataverseAlias = $configuration->getDataverseCollection();
         $this->client = $client;
     }
 

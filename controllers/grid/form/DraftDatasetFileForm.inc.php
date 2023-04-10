@@ -49,8 +49,8 @@ class DraftDatasetFileForm extends Form
         $dataverseClient = new DataverseClient();
         $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
 
-        $credentials = DAORegistry::getDAO('DataverseCredentialsDAO')->get($contextId);
-        $termsOfUse = $credentials->getLocalizedData('termsOfUse', $locale);
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+        $termsOfUse = $configuration->getLocalizedData('termsOfUse', $locale);
 
         return [
             'termsOfUseURL' => $termsOfUse,

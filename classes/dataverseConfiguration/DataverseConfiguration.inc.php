@@ -1,6 +1,6 @@
 <?php
 
-class DataverseCredentials extends DataObject
+class DataverseConfiguration extends DataObject
 {
     public function setDataverseUrl(string $url): void
     {
