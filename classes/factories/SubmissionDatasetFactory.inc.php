@@ -3,6 +3,7 @@
 import('plugins.generic.dataverse.classes.factories.DatasetFactory');
 import('plugins.generic.dataverse.classes.entities.Dataset');
 import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
+import('plugins.generic.dataverse.classes.entities.DatasetContact');
 import('plugins.generic.dataverse.classes.entities.DatasetFile');
 
 class SubmissionDatasetFactory extends DatasetFactory
