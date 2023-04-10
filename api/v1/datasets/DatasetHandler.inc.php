@@ -89,32 +89,18 @@ class DatasetHandler extends APIHandler
         }
 
         $requestParams = $slimRequest->getParsedBody();
+        import('plugins.generic.dataverse.classes.entities.Dataset');
+        $dataset = new Dataset();
+        $dataset->setPersistentId($study->getPersistentId());
+        $dataset->setTitle($requestParams['datasetTitle']);
+        $dataset->setDescription($requestParams['datasetDescription']);
+        $dataset->setKeywords((array) $requestParams['datasetKeywords']);
+        $dataset->setSubject($requestParams['datasetSubject']);
 
-        $service = $this->getDataverseService($this->getRequest());
-        $datasetResponse = $service->getDatasetResponse($study);
+        $dataverseClient = new DataverseClient();
+        $dataverseClient->getDatasetActions()->update($dataset);
 
-        import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
-        $datasetDataCreator = new DataverseDatasetDataCreator();
-
-        $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks->citation->fields;
-        $datasetSubject = $datasetDataCreator->getMetadata($metadataBlocks, 'subject');
-
-        if ($requestParams['datasetSubject'] == $datasetSubject[0]) {
-            unset($requestParams['datasetSubject']);
-        }
-
-        $datasetMetadataFields = $datasetDataCreator->createMetadataFields($requestParams);
-        $datasetMetadata = json_encode($datasetMetadataFields);
-
-        $dataverseResponse = $service->updateDatasetData($datasetMetadata, $study);
-
-        if ($dataverseResponse) {
-            return $response->withJson(['message' => 'ok'], 200);
-        } else {
-            return $response
-                ->withStatus(500)
-                ->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
-        }
+        return $response->withJson(['message' => 'ok'], 200);
     }
 
     public function addDataset($slimRequest, $response, $args)

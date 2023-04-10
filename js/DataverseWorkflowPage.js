@@ -210,7 +210,6 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         pkp.eventBus.$on('form-success', (formId) => {
             if (formId === 'datasetMetadata') {
                 this.setDatasetCitation();
-                location.reload();
             }
         });
 
