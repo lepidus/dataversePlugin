@@ -40,6 +40,20 @@ class DataverseStudyDAO extends DAO
         return $study;
     }
 
+    public function getByPersistentId(string $persistentId): ?DataverseStudy
+    {
+        $result = Capsule::table('dataverse_studies')
+            ->where('persistent_id', $persistentId)
+            ->get();
+
+        $study = null;
+        foreach ($result->toArray() as $row) {
+            $study = $this->returnStudyFromRow(get_object_vars($row));
+        }
+
+        return $study;
+    }
+
     public function insertStudy(DataverseStudy $study): int
     {
         Capsule::table('dataverse_studies')

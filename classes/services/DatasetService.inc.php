@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+import('plugins.generic.dataverse.classes.entities.Dataset');
 
 class DatasetService
 {
@@ -64,9 +65,50 @@ class DatasetService
             $submission,
             SUBMISSION_LOG_SUBMISSION_SUBMIT,
             'plugins.generic.dataverse.log.researchDataDeposited',
-            ['persistendId' => $study->getPersistentId()]
+            ['persistentId' => $study->getPersistentId()]
         );
 
         DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submission->getId());
+    }
+
+    public function update(array $data): void
+    {
+        $dataset = new Dataset();
+        $dataset->setAllData($data);
+
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataverseClient->getDatasetActions()->update($dataset);
+        } catch (DataverseException $e) {
+            error_log('Dataverse API error: ' . $e->getMessage());
+        }
+
+        $request = Application::get()->getRequest();
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getByPersistentId($dataset->getPersistentId());
+        $submission = Services::get('submission')->get($study->getSubmissionId());
+        SubmissionLog::logEvent(
+            $request,
+            $submission,
+            SUBMISSION_LOG_SUBMISSION_SUBMIT,
+            'plugins.generic.dataverse.log.researchDataUpdated'
+        );
+    }
+
+    public function delete(DataverseStudy $study): void
+    {
+        $dataverseClient = new DataverseClient();
+        $dataverseClient->getDatasetActions()->delete($study->getPersistentId());
+
+        DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
+
+        $request = Application::get()->getRequest();
+        $submission = Services::get('submission')->get($study->getSubmissionId());
+        SubmissionLog::logEvent(
+            $request,
+            $submission,
+            SUBMISSION_LOG_SUBMISSION_SUBMIT,
+            'plugins.generic.dataverse.log.researchDataDeleted'
+        );
+
     }
 }

@@ -3,6 +3,7 @@
 import('lib.pkp.classes.handler.APIHandler');
 import('lib.pkp.classes.log.SubmissionLog');
 import('classes.log.SubmissionEventLogEntry');
+import('plugins.generic.dataverse.classes.services.DatasetService');
 
 class DatasetHandler extends APIHandler
 {
@@ -79,6 +80,7 @@ class DatasetHandler extends APIHandler
 
     public function edit($slimRequest, $response, $args)
     {
+        $requestParams = $slimRequest->getParsedBody();
         $studyId = $args['studyId'];
 
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
@@ -88,17 +90,15 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $requestParams = $slimRequest->getParsedBody();
-        import('plugins.generic.dataverse.classes.entities.Dataset');
-        $dataset = new Dataset();
-        $dataset->setPersistentId($study->getPersistentId());
-        $dataset->setTitle($requestParams['datasetTitle']);
-        $dataset->setDescription($requestParams['datasetDescription']);
-        $dataset->setKeywords((array) $requestParams['datasetKeywords']);
-        $dataset->setSubject($requestParams['datasetSubject']);
+        $data = [];
+        $data['persistentId'] = $study->getPersistentId();
+        $data['title'] = $requestParams['datasetTitle'];
+        $data['description'] = $requestParams['datasetDescription'];
+        $data['keywords'] = (array) $requestParams['datasetKeywords'];
+        $data['subject'] = $requestParams['datasetSubject'];
 
-        $dataverseClient = new DataverseClient();
-        $dataverseClient->getDatasetActions()->update($dataset);
+        $datasetService = new DatasetService();
+        $datasetService->update($data);
 
         return $response->withJson(['message' => 'ok'], 200);
     }
@@ -243,8 +243,12 @@ class DatasetHandler extends APIHandler
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        $dataverseClient = new DataverseClient();
-        $dataverseClient->getDatasetActions()->delete($study->getPersistentId());
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $datasetService = new DatasetService();
+        $datasetService->delete($study);
 
         return $response->withJson(['message' => 'ok'], 200);
     }
