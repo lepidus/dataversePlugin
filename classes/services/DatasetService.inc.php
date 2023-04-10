@@ -5,12 +5,8 @@ import('plugins.generic.dataverse.classes.entities.Dataset');
 
 class DatasetService
 {
-    public function depositBySubmission(Submission $submission): void
+    public function deposit(int $submissionId, Dataset $dataset): void
     {
-        import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
-        $datasetFactory = new SubmissionDatasetFactory($submission);
-        $dataset = $datasetFactory->getDataset();
-
         if (empty($dataset->getFiles())) {
             return;
         }
@@ -47,6 +43,8 @@ class DatasetService
 
         $request = Application::get()->getRequest();
         $contextId = $request->getContext()->getId();
+        $submission = Services::get('submission')->get($submissionId);
+
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
         $swordAPIBaseUrl = $configuration->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
 

@@ -64,7 +64,7 @@
                     </pkp-form>
                 </modal-content>
             </modal>
-            <pkp-form style="margin: -1rem" v-bind="components.datasetMetadata" @set="set"></pkp-form>
+            <pkp-form style="margin: -1rem" v-bind="components.datasetMetadata" @set="set" @success="location.reload()"></pkp-form>
         </div>
     </modal-content>
 </modal>

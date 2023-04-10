@@ -118,10 +118,9 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $fileListApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
 
         $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
-        $props = Services::get('schema')->getFullProps('draftDatasetFile');
 
         $items = array_map(function ($draftDatasetFile) use ($props) {
-            return array_combine($props, $draftDatasetFile->getData());
+            return $draftDatasetFile->getAllData();
         }, $draftDatasetFiles);
 
         ksort($items);

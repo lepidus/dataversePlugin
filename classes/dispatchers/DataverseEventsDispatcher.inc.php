@@ -35,8 +35,12 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $submission = $form->submission;
         $request = Application::get()->getRequest();
 
+        import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
+        $datasetFactory = new SubmissionDatasetFactory($submission);
+        $dataset = $datasetFactory->getDataset();
+
         $datasetService = new DatasetService();
-        $datasetService->depositBySubmission($submission);
+        $datasetService->deposit($submission->getId(), $dataset);
 
         return false;
     }

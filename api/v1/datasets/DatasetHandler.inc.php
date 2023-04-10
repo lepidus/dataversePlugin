@@ -114,6 +114,7 @@ class DatasetHandler extends APIHandler
         }
 
         $submission = Services::get('submission')->get($submissionId);
+
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $datasetFactory = new SubmissionDatasetFactory($submission);
         $dataset = $datasetFactory->getDataset();
@@ -122,46 +123,8 @@ class DatasetHandler extends APIHandler
         $dataset->setKeywords((array) $requestParams['datasetKeywords']);
         $dataset->setSubject($requestParams['datasetSubject']);
 
-        import('plugins.generic.dataverse.classes.dataverseAPI.packagers.NativeAPIDatasetPackager');
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->createDatasetPackage();
-        $datasetPackagePath = $packager->getPackagePath();
-
-        $dataverseConfig = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
-
-        import('plugins.generic.dataverse.classes.dataverseAPI.DataverseNativeAPI');
-        $dataverseAPI = new DataverseNativeAPI();
-        $dataverseAPI->configure($dataverseConfig);
-
-        try {
-            $datasetIdentifier = $dataverseAPI->getCollectionOperations()->createDataset($datasetPackagePath);
-            foreach ($dataset->getFiles() as $file) {
-                $dataverseAPI->getDatasetOperations()->addFile($datasetIdentifier->getPersistentId(), $file);
-            }
-        } catch (Exception $e) {
-            error_log($e->getMessage());
-            return false;
-        }
-
-        $swordAPIBaseUrl = $dataverseConfig->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
-        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dataverseStudyDAO->newDataObject();
-        $study->setSubmissionId($submission->getId());
-        $study->setPersistentId($datasetIdentifier->getPersistentId());
-        $study->setEditUri($swordAPIBaseUrl . 'edit/study/' . $datasetIdentifier->getPersistentId());
-        $study->setEditMediaUri($swordAPIBaseUrl . 'edit-media/study/' . $datasetIdentifier->getPersistentId());
-        $study->setStatementUri($swordAPIBaseUrl . 'statement/study/' . $datasetIdentifier->getPersistentId());
-        $study->setPersistentUri('https://doi.org/' . str_replace('doi:', '', $datasetIdentifier->getPersistentId()));
-        $dataverseStudyDAO->insertStudy($study);
-
-        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submissionId);
-
-        $this->registerDatasetEventLog(
-            $submissionId,
-            SUBMISSION_LOG_SUBMISSION_SUBMIT,
-            'plugins.generic.dataverse.log.researchDataDeposited',
-            ['persistentURL' => $study->getPersistentUri()]
-        );
+        $datasetService = new DatasetService();
+        $datasetService->deposit($submission->getId(), $dataset);
 
         return $response->withJson(['message' => 'ok'], 200);
     }
