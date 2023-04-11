@@ -49,6 +49,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     {
         $submission = $params[2];
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
+
+        if (is_null($study)) {
+            return;
+        }
+
         $datasetService = new DatasetService();
         $datasetService->publish($study);
     }

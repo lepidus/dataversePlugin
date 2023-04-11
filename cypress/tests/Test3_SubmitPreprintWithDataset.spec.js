@@ -92,7 +92,7 @@ describe('Deposit Draft Dataverse on Submission', function() {
         cy.get('#publication-button').click();
         cy.contains('Activity Log').click();
         cy.get('#submissionHistoryGridContainer').contains(
-            /Research data deposited: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/
+            /Research data deposited: doi:10.{6}\/.{3}\/.{6}/
         );
     });
 });
