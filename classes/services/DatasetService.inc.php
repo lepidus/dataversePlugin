@@ -2,6 +2,8 @@
 
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 import('plugins.generic.dataverse.classes.entities.Dataset');
+import('lib.pkp.classes.log.SubmissionLog');
+import('classes.log.SubmissionEventLogEntry');
 
 class DatasetService
 {
@@ -39,6 +41,7 @@ class DatasetService
                 $notificationContents
             );
             error_log('Dataverse API error: ' . $e->getMessage());
+            return;
         }
 
         $request = Application::get()->getRequest();
@@ -79,6 +82,7 @@ class DatasetService
             $dataverseClient->getDatasetActions()->update($dataset);
         } catch (DataverseException $e) {
             error_log('Dataverse API error: ' . $e->getMessage());
+            return;
         }
 
         $request = Application::get()->getRequest();
@@ -94,8 +98,13 @@ class DatasetService
 
     public function delete(DataverseStudy $study): void
     {
-        $dataverseClient = new DataverseClient();
-        $dataverseClient->getDatasetActions()->delete($study->getPersistentId());
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataverseClient->getDatasetActions()->delete($study->getPersistentId());
+        } catch (DataverseException $e) {
+            error_log('Dataverse API error: ' . $e->getMessage());
+            return;
+        }
 
         DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
 
@@ -106,6 +115,26 @@ class DatasetService
             $submission,
             SUBMISSION_LOG_METADATA_UPDATE,
             'plugins.generic.dataverse.log.researchDataDeleted'
+        );
+    }
+
+    public function publish(DataverseStudy $study): void
+    {
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataverseClient->getDatasetActions()->publish($study->getPersistentId());
+        } catch (DataverseException $e) {
+            error_log('Dataverse API error: ' . $e->getMessage());
+            return;
+        }
+
+        $request = Application::get()->getRequest();
+        $submission = Services::get('submission')->get($study->getSubmissionId());
+        SubmissionLog::logEvent(
+            $request,
+            $submission,
+            SUBMISSION_LOG_ARTICLE_PUBLISH,
+            'plugins.generic.dataverse.log.researchDataPublished'
         );
     }
 }

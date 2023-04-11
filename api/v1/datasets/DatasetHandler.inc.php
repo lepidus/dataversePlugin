@@ -1,8 +1,6 @@
 <?php
 
 import('lib.pkp.classes.handler.APIHandler');
-import('lib.pkp.classes.log.SubmissionLog');
-import('classes.log.SubmissionEventLogEntry');
 import('plugins.generic.dataverse.classes.services.DatasetService');
 import('plugins.generic.dataverse.classes.services.DatasetFileService');
 

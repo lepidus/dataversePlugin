@@ -257,11 +257,10 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             return;
         }
 
-        $contentId = $form->submissionContext->getId();
         $dataverseClient = new DataverseClient();
-        $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions->getRoot();
+        $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
 
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($form->submission->getContextId());
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($form->submissionContext->getId());
 
         $params = [
             'persistentUri' => $study->getPersistentUri(),

@@ -1,6 +1,8 @@
 <?php
 
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+import('lib.pkp.classes.log.SubmissionLog');
+import('classes.log.SubmissionEventLogEntry');
 
 class DatasetFileService
 {
@@ -22,6 +24,7 @@ class DatasetFileService
             );
         } catch (DataverseException $e) {
             error_log('Dataverse API error: ' . $e->getMessage());
+            return;
         }
 
         $submission = Services::get('submission')->get($study->getSubmissionId());
@@ -41,6 +44,7 @@ class DatasetFileService
             $dataverseClient->getDatasetFileActions()->delete($fileId);
         } catch (DataverseException $e) {
             error_log('Dataverse API error: ' . $e->getMessage());
+            return;
         }
 
         $request = Application::get()->getRequest();

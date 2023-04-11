@@ -48,11 +48,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     public function publishDeposit(string $hookName, array $params): void
     {
         $submission = $params[2];
-        $submissionUser = $this->getCurrentUser();
-
-        $service = $this->getDataverseService();
-        $service->setSubmission($submission, $submissionUser);
-        $service->releaseStudy();
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
+        $datasetService = new DatasetService();
+        $datasetService->publish($study);
     }
 
     public function setupDataverseAPIHandlers(string $hookname, Request $request): void

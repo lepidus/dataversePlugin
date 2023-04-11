@@ -19,7 +19,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         $uri = $this->getRootDataverseURI();
         $response = $this->nativeAPIRequest('GET', $uri);
 
-        return $this->getDataverseCollection($response);
+        return $this->createDataverseCollection($response);
     }
 
     public function publish(): void
