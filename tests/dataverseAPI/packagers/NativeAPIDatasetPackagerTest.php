@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataverse.classes.dataverseAPI.packagers.NativeAPIDatasetPackager');
+import('plugins.generic.dataverse.dataverseAPI.packagers.NativeAPIDatasetPackager');
 
 class NativeAPIDatasetPackagerTest extends PKPTestCase
 {

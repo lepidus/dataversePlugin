@@ -109,7 +109,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         url:
                             this.components.datasetFiles.apiUrl +
                             '&fileId=' +
-                            id,
+                            id +
+                            '&filename=' +
+                            datasetFile.fileName,
                         type: 'POST',
                         headers: {
                             'X-Csrf-Token': pkp.currentUser.csrfToken,
@@ -180,7 +182,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 type: 'GET',
                 error: this.ajaxErrorCallback,
                 success: (r) => {
-                    this.datasetCitation = r.data.citation;
+                    this.datasetCitation = r.citation;
                 },
             });
         },
@@ -210,7 +212,6 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         pkp.eventBus.$on('form-success', (formId) => {
             if (formId === 'datasetMetadata') {
                 this.setDatasetCitation();
-                location.reload();
             }
         });
 

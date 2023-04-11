@@ -59,50 +59,8 @@ msgstr "Datos de investigación"
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Anãdir datos de investigación"
 
-msgid "plugins.generic.dataverse.notification.statusCreated"
-msgstr "Conjunto de datos depositado con éxito en {$dataverseUrl}."
-
-msgid "plugins.generic.dataverse.notification.statusPublished"
-msgstr "Conjunto de datos publicado en: {$dataverseUrl}."
-
-msgid "plugins.generic.dataverse.notification.statusBadRequest"
-msgstr "El servidor de Dataverse no puede procesar la solicitud debido a errores en la solicitud"
-
-msgid "plugins.generic.dataverse.notification.statusUnauthorized" 
-msgstr "Acceso no autorizado. No tienes permiso para acceder a este recurso."
-
-msgid "plugins.generic.dataverse.notification.statusForbidden"
-msgstr "Acceso denegado. Verifica tus credenciales para acceder a {$dataverseUrl}"
-
-msgid "plugins.generic.dataverse.notification.statusNotFound" 
-msgstr "El servidor no pudo encontrar el recurso solicitado."
-
-msgid "plugins.generic.dataverse.notification.statusPreconditionFailed" 
-msgstr "Las condiciones del encabezado de la solicitud no se cumplen."
-
-msgid "plugins.generic.dataverse.notification.statusPayloadTooLarge" 
-msgstr "La entidad de solicitud es mayor que los límites definidos por el servidor"
-
-msgid "plugins.generic.dataverse.notification.statusUnsupportedMediaType" 
-msgstr "El formato multimedia enviado en la solicitud no es compatible con el servidor"
-
-msgid "plugins.generic.dataverse.notification.statusInternalServerError" 
-msgstr "El servidor encontró un error interno que le impidió atender esta solicitud."
-
-msgid "plugins.generic.dataverse.notification.statusUnavailable"
-msgstr "Servidor no disponible. {$dataverseUrl} está temporalmente fuera de línea. Por favor, inténtelo de nuevo más tarde."
-
-msgid "plugins.generic.dataverse.notification.researchDataNotFound"
-msgstr "Datos de investigación con ID {$persistentId} no encontrados."
-
-msgid "plugins.generic.dataverse.notification.unknownError"
-msgstr "Error desconocido. Incapaz de conectarse a {$dataverseUrl}"
-
-msgid "plugins.generic.dataverse.notification.connectionError"
-msgstr "Error al conectarse a Dataverse: {$errorMessage}"
-
-msgid "plugins.generic.dataverse.notification.requestError" 
-msgstr "Error al depositar datos de investigación."
+msgid "plugins.generic.dataverse.notification.error.depositFailed"
+msgstr "Erro al depositar datos de investigación en Dataverse: {$error}"
 
 msgid "plugins.generic.dataverse.notification.metadataUpdated"
 msgstr "Los metadatos del conjunto de datos se actualizaron correctamente."
@@ -216,7 +174,7 @@ msgid  "plugins.generic.dataverse.log.researchDataFileDeleted"
 msgstr "Archivo \"{$filename}\" excluido de los datos de investigación."
 
 msgid  "plugins.generic.dataverse.log.researchDataDeposited"
-msgstr "Datos de investigación depositados: {$persistentURL}"
+msgstr "Datos de investigación depositados: {$persistentId}"
 
 msgid  "plugins.generic.dataverse.log.researchDataUpdated"
 msgstr "Metadatos de datos de investigación actualizados"

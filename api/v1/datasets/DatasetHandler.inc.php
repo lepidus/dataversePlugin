@@ -1,8 +1,8 @@
 <?php
 
 import('lib.pkp.classes.handler.APIHandler');
-import('lib.pkp.classes.log.SubmissionLog');
-import('classes.log.SubmissionEventLogEntry');
+import('plugins.generic.dataverse.classes.services.DatasetService');
+import('plugins.generic.dataverse.classes.services.DatasetFileService');
 
 class DatasetHandler extends APIHandler
 {
@@ -79,42 +79,24 @@ class DatasetHandler extends APIHandler
 
     public function edit($slimRequest, $response, $args)
     {
-        $studyId = $args['studyId'];
-
-        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dataverseStudyDAO->getStudy($studyId);
+        $requestParams = $slimRequest->getParsedBody();
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudy($args['studyId']);
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $requestParams = $slimRequest->getParsedBody();
+        $data = [];
+        $data['persistentId'] = $study->getPersistentId();
+        $data['title'] = $requestParams['datasetTitle'];
+        $data['description'] = $requestParams['datasetDescription'];
+        $data['keywords'] = (array) $requestParams['datasetKeywords'];
+        $data['subject'] = $requestParams['datasetSubject'];
 
-        $service = $this->getDataverseService($this->getRequest());
-        $datasetResponse = $service->getDatasetResponse($study);
+        $datasetService = new DatasetService();
+        $datasetService->update($data);
 
-        import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
-        $datasetDataCreator = new DataverseDatasetDataCreator();
-
-        $metadataBlocks = $datasetResponse->data->latestVersion->metadataBlocks->citation->fields;
-        $datasetSubject = $datasetDataCreator->getMetadata($metadataBlocks, 'subject');
-
-        if ($requestParams['datasetSubject'] == $datasetSubject[0]) {
-            unset($requestParams['datasetSubject']);
-        }
-
-        $datasetMetadataFields = $datasetDataCreator->createMetadataFields($requestParams);
-        $datasetMetadata = json_encode($datasetMetadataFields);
-
-        $dataverseResponse = $service->updateDatasetData($datasetMetadata, $study);
-
-        if ($dataverseResponse) {
-            return $response->withJson(['message' => 'ok'], 200);
-        } else {
-            return $response
-                ->withStatus(500)
-                ->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
-        }
+        return $response->withJson(['message' => 'ok'], 200);
     }
 
     public function addDataset($slimRequest, $response, $args)
@@ -130,7 +112,8 @@ class DatasetHandler extends APIHandler
         }
 
         $submission = Services::get('submission')->get($submissionId);
-        import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
+
+        import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $datasetFactory = new SubmissionDatasetFactory($submission);
         $dataset = $datasetFactory->getDataset();
         $dataset->setTitle($requestParams['datasetTitle']);
@@ -138,46 +121,8 @@ class DatasetHandler extends APIHandler
         $dataset->setKeywords((array) $requestParams['datasetKeywords']);
         $dataset->setSubject($requestParams['datasetSubject']);
 
-        import('plugins.generic.dataverse.classes.dataverseAPI.packagers.NativeAPIDatasetPackager');
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->createDatasetPackage();
-        $datasetPackagePath = $packager->getPackagePath();
-
-        $dataverseConfig = DAORegistry::getDAO('DataverseCredentialsDAO')->get($submission->getContextId());
-
-        import('plugins.generic.dataverse.classes.dataverseAPI.DataverseNativeAPI');
-        $dataverseAPI = new DataverseNativeAPI();
-        $dataverseAPI->configure($dataverseConfig);
-
-        try {
-            $datasetIdentifier = $dataverseAPI->getCollectionOperations()->createDataset($datasetPackagePath);
-            foreach ($dataset->getFiles() as $file) {
-                $dataverseAPI->getDatasetOperations()->addFile($datasetIdentifier->getPersistentId(), $file);
-            }
-        } catch (Exception $e) {
-            error_log($e->getMessage());
-            return false;
-        }
-
-        $swordAPIBaseUrl = $dataverseConfig->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
-        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dataverseStudyDAO->newDataObject();
-        $study->setSubmissionId($submission->getId());
-        $study->setPersistentId($datasetIdentifier->getPersistentId());
-        $study->setEditUri($swordAPIBaseUrl . 'edit/study/' . $datasetIdentifier->getPersistentId());
-        $study->setEditMediaUri($swordAPIBaseUrl . 'edit-media/study/' . $datasetIdentifier->getPersistentId());
-        $study->setStatementUri($swordAPIBaseUrl . 'statement/study/' . $datasetIdentifier->getPersistentId());
-        $study->setPersistentUri('https://doi.org/' . str_replace('doi:', '', $datasetIdentifier->getPersistentId()));
-        $dataverseStudyDAO->insertStudy($study);
-
-        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submissionId);
-
-        $this->registerDatasetEventLog(
-            $submissionId,
-            SUBMISSION_LOG_SUBMISSION_SUBMIT,
-            'plugins.generic.dataverse.log.researchDataDeposited',
-            ['persistentURL' => $study->getPersistentUri()]
-        );
+        $datasetService = new DatasetService();
+        $datasetService->deposit($submission->getId(), $dataset);
 
         return $response->withJson(['message' => 'ok'], 200);
     }
@@ -185,31 +130,15 @@ class DatasetHandler extends APIHandler
     public function addFile($slimRequest, $response, $args)
     {
         $requestParams = $slimRequest->getParsedBody();
-        $request = $this->getRequest();
-        $user = $request->getUser();
+        $fileId = $requestParams['datasetFile']['temporaryFileId'];
 
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
-        $fileId = $requestParams['datasetFile']['temporaryFileId'];
 
-        import('lib.pkp.classes.file.TemporaryFileManager');
-        $temporaryFileManager = new TemporaryFileManager();
-        $file = $temporaryFileManager->getFile($fileId, $user->getId());
+        $datasetFileService = new DatasetFileService();
+        $datasetFileService->add($study, $fileId);
 
-        $service = $this->getDataverseService($request);
-        $dataverseResponse = $service->addDatasetFile($study, $file);
-
-        $datasetFileData = [
-            'fileName' => $file->getOriginalFileName()
-        ];
-
-        $temporaryFileManager->deleteById($file->getId(), $user->getId());
-
-        if (!$dataverseResponse) {
-            return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
-        }
-
-        return $response->withJson($datasetFileData, 201);
+        return $response->withJson(['message' => 'ok'], 200);
     }
 
     public function getFiles($slimRequest, $response, $args)
@@ -217,11 +146,16 @@ class DatasetHandler extends APIHandler
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        $datasetFiles = $this->getDatasetFiles($study);
+        $dataverseClient = new DataverseClient();
+        $datasetFiles = $dataverseClient->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
 
-        ksort($datasetFiles);
+        $items = array_map(function (DatasetFile $file) {
+            return $file->getVars();
+        }, $datasetFiles);
 
-        return $response->withJson(['items' => $datasetFiles], 200);
+        ksort($items);
+
+        return $response->withJson(['items' => $items], 200);
     }
 
     public function getCitation($slimRequest, $response, $args)
@@ -233,12 +167,10 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $service = $this->getDataverseService($this->getRequest());
+        $dataverseClient = new DataverseClient();
+        $citation = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId());
 
-        $citation = $service->getStudyCitation($study);
-
-        $data = ['citation' => $citation];
-        return $response->withJson(['data' => $data], 200);
+        return $response->withJson(['citation' => $citation], 200);
     }
 
     public function deleteFile($slimRequest, $response, $args)
@@ -248,16 +180,14 @@ class DatasetHandler extends APIHandler
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        $service = $this->getDataverseService($this->getRequest());
-
-        $fileDeleted = $service->deleteDatasetFile($study, $queryParams['fileId']);
-
-        if (!$fileDeleted) {
-            return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $items = $this->getDatasetFiles($study);
-        return $response->withJson(['items' => $items], 200);
+        $datasetFileService = new DatasetFileService();
+        $datasetFileService->delete($study, $queryParams['fileId'], $queryParams['filename']);
+
+        return $response->withJson(['message' => 'ok'], 200);
     }
 
     public function deleteDataset($slimRequest, $response, $args)
@@ -265,73 +195,25 @@ class DatasetHandler extends APIHandler
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        $service = $this->getDataverseService($this->getRequest());
-
-        $datasetDeleted = $service->deleteDraftDataset($study);
-
-        if (!$datasetDeleted) {
-            return $response->withStatus(500)->withJsonError('plugins.generic.dataverse.notification.statusInternalServerError');
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
+
+        $datasetService = new DatasetService();
+        $datasetService->delete($study);
 
         return $response->withJson(['message' => 'ok'], 200);
     }
 
     public function downloadDatasetFile($slimRequest, $response, $args)
     {
-        $service = $this->getDataverseService($this->getRequest());
         $queryParams = $slimRequest->getQueryParams();
         $fileId = (int) $queryParams['fileId'];
         $filename = $queryParams['filename'];
 
-        $dataverseResponse = $service->downloadDatasetFileById($fileId, $filename);
-
-        if ($dataverseResponse['statusCode'] != 200) {
-            return $response->withStatus($dataverseResponse['statusCode'])->withJsonError($dataverseResponse['message']);
-        }
+        $dataverseClient = new DataverseClient();
+        $dataverseClient->getDatasetFileActions()->download($fileId, $filename);
 
         return $response->withJson(['message' => 'ok'], 200);
-    }
-
-    private function getDataverseService($request): DataverseService
-    {
-        $contextId = $request->getContext()->getId();
-        $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
-        import('plugins.generic.dataverse.classes.DataverseConfiguration');
-        $configuration = new DataverseConfiguration(
-            $plugin->getSetting($contextId, 'dataverseUrl'),
-            $plugin->getSetting($contextId, 'apiToken')
-        );
-        import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
-        $serviceFactory = new DataverseServiceFactory();
-
-        return $serviceFactory->build($configuration);
-    }
-
-    private function getDatasetFiles($study): array
-    {
-        $service = $this->getDataverseService($this->getRequest());
-        $datasetFilesResponse = $service->getDatasetFiles($study);
-
-        $datasetFiles = array();
-
-        foreach ($datasetFilesResponse->data as $data) {
-            $datasetFiles[] = ['id' => $data->dataFile->id, 'fileName' => $data->label];
-        }
-
-        return $datasetFiles;
-    }
-
-    private function registerDatasetEventLog(int $submissionId, int $eventType, string $message, array $params = [])
-    {
-        $request = Application::get()->getRequest();
-        $submission = Services::get('submission')->get($submissionId);
-
-        SubmissionLog::logEvent(
-            $request,
-            $submission,
-            $eventType,
-            $message,
-            $params
-        );
     }
 }

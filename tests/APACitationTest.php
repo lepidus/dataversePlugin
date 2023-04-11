@@ -5,7 +5,7 @@ import('lib.pkp.classes.db.DAO');
 import('classes.submission.Submission');
 import('classes.publication.Publication');
 import('classes.article.Author');
-import('plugins.generic.dataverse.classes.study.DataverseStudy');
+import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudy');
 import('plugins.generic.dataverse.classes.APACitation');
 
 class APACitationTest extends PKPTestCase

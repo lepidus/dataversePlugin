@@ -6,7 +6,6 @@ use PKP\components\forms\FieldRichTextarea;
 use PKP\components\forms\FieldControlledVocab;
 use PKP\components\forms\FieldSelect;
 
-import('plugins.generic.dataverse.classes.creators.DataverseDatasetDataCreator');
 import('plugins.generic.dataverse.classes.DataverseMetadata');
 
 define('FORM_DATASET_METADATA', 'datasetMetadata');

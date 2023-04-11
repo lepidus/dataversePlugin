@@ -1,8 +1,5 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseAPI.clients.NativeAPIClient');
-import('plugins.generic.dataverse.classes.dataverseAPI.services.DataAPIService');
-
 use PKP\components\forms\FormComponent;
 use PKP\components\forms\FieldUpload;
 use PKP\components\forms\FieldOptions;
@@ -46,18 +43,20 @@ class DraftDatasetFileForm extends FormComponent
     {
         $locale = AppLocale::getLocale();
 
-        $client = new NativeAPIClient($contextId);
-        $service = new DataAPIService($client);
+        import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+        $dataverseClient = new DataverseClient();
+
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
 
         try {
-            $dvCollectionName = $service->getDataverseCollectionName();
-            $termsOfUse = $client->getCredentials()->getLocalizedData('termsOfUse', $locale);
+            $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
+            $termsOfUse = $configuration->getLocalizedData('termsOfUse', $locale);
             return [
-                'dataverseName' => $dvCollectionName,
+                'dataverseName' => $dataverseCollection->getName(),
                 'termsOfUseURL' => $termsOfUse
             ];
         } catch (\Exception $e) {
-            error_log('Dataverse error: ' . $e->getMessage());
+            error_log('Dataverse API error: ' . $e->getMessage());
         }
     }
 }

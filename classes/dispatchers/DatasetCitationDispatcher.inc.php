@@ -15,28 +15,21 @@ class DatasetCitationDispatcher extends DataverseDispatcher
         $output =& $params[2];
 
         $submission = $templateMgr->getTemplateVars('preprint');
+        $contextId = $submission->getContextId();
+
         $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDao->getStudyBySubmissionId($submission->getId());
 
         if (isset($study)) {
-            $contextId = $submission->getContextId();
-
-            import('plugins.generic.dataverse.classes.DataverseConfiguration');
-            $configuration = new DataverseConfiguration(
-                $this->plugin->getSetting($contextId, 'dataverseUrl'),
-                $this->plugin->getSetting($contextId, 'apiToken')
-            );
-
-            import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
-            $serviceFactory = new DataverseServiceFactory();
-            $service = $serviceFactory->build($configuration);
+            import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+            $dataverseClient = new DataverseClient();
 
             try {
-                $citation = $service->getStudyCitation($study);
+                $citation = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId());
                 $templateMgr->assign('datasetCitation', $citation);
                 $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
-            } catch (Exception $e) {
-                error_log('Dataverse Error: ' . $e->getMessage());
+            } catch (DataverseException $e) {
+                error_log('Dataverse API error: ' . $e->getMessage());
             }
         }
 

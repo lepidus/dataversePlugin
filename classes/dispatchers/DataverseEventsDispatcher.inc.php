@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
+import('plugins.generic.dataverse.classes.services.DatasetService');
 import('lib.pkp.classes.log.SubmissionLog');
 import('classes.log.SubmissionEventLogEntry');
 
@@ -14,26 +15,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDataverseAPIHandlers'));
         HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
-    }
-
-    public function getDataverseConfiguration(): DataverseConfiguration
-    {
-        $context = $this->plugin->getRequest()->getContext();
-        $contextId = $context->getId();
-
-        import('plugins.generic.dataverse.classes.DataverseConfiguration');
-        return new DataverseConfiguration(
-            $this->plugin->getSetting($contextId, 'dataverseUrl'),
-            $this->plugin->getSetting($contextId, 'apiToken')
-        );
-    }
-
-    public function getDataverseService(): DataverseService
-    {
-        import('plugins.generic.dataverse.classes.creators.DataverseServiceFactory');
-        $serviceFactory = new DataverseServiceFactory();
-        $service = $serviceFactory->build($this->getDataverseConfiguration(), $this->plugin);
-        return $service;
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -54,63 +35,12 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $submission = $form->submission;
         $request = Application::get()->getRequest();
 
-        import('plugins.generic.dataverse.classes.factories.dataset.SubmissionDatasetFactory');
+        import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $datasetFactory = new SubmissionDatasetFactory($submission);
         $dataset = $datasetFactory->getDataset();
 
-        if (empty($dataset->getFiles())) {
-            return false;
-        }
-
-        import('plugins.generic.dataverse.classes.dataverseAPI.packagers.NativeAPIDatasetPackager');
-        $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->createDatasetPackage();
-        $datasetPackagePath = $packager->getPackagePath();
-
-        $dataverseConfig = DAORegistry::getDAO('DataverseCredentialsDAO')->get($submission->getContextId());
-
-        import('plugins.generic.dataverse.classes.dataverseAPI.DataverseNativeAPI');
-        $dataverseAPI = new DataverseNativeAPI();
-        $dataverseAPI->configure($dataverseConfig);
-
-        try {
-            $datasetIdentifier = $dataverseAPI->getCollectionOperations()->createDataset($datasetPackagePath);
-            foreach ($dataset->getFiles() as $file) {
-                $dataverseAPI->getDatasetOperations()->addFile($datasetIdentifier->getPersistentId(), $file);
-            }
-        } catch (Exception $e) {
-            error_log($e->getMessage());
-            import('classes.notification.NotificationManager');
-            $notificationMgr = new NotificationManager();
-            $notificationMgr->createTrivialNotification(
-                $request->getUser()->getId(),
-                NOTIFICATION_TYPE_ERROR,
-                array('contents' => __('plugins.generic.dataverse.notification.requestError'))
-            );
-            return false;
-        }
-
-        $swordAPIBaseUrl = $dataverseConfig->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
-        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dataverseStudyDAO->newDataObject();
-        $study->setSubmissionId($submission->getId());
-        $study->setPersistentId($datasetIdentifier->getPersistentId());
-        $study->setEditUri($swordAPIBaseUrl . 'edit/study/' . $datasetIdentifier->getPersistentId());
-        $study->setEditMediaUri($swordAPIBaseUrl . 'edit-media/study/' . $datasetIdentifier->getPersistentId());
-        $study->setStatementUri($swordAPIBaseUrl . 'statement/study/' . $datasetIdentifier->getPersistentId());
-        $study->setPersistentUri('https://doi.org/' . str_replace('doi:', '', $datasetIdentifier->getPersistentId()));
-        $dataverseStudyDAO->insertStudy($study);
-
-        SubmissionLog::logEvent(
-            $request,
-            $submission,
-            SUBMISSION_LOG_SUBMISSION_SUBMIT,
-            'plugins.generic.dataverse.log.researchDataDeposited',
-            ['persistentURL' => $study->getPersistentUri()]
-        );
-
-        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submission->getId());
-        $packager->clear();
+        $datasetService = new DatasetService();
+        $datasetService->deposit($submission->getId(), $dataset);
 
         return false;
     }
@@ -118,18 +48,14 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     public function publishDeposit(string $hookName, array $params): void
     {
         $submission = $params[2];
-        $submissionUser = $this->getCurrentUser();
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
 
-        $service = $this->getDataverseService();
-        $service->setSubmission($submission, $submissionUser);
-        $service->releaseStudy();
-    }
+        if (is_null($study)) {
+            return;
+        }
 
-    private function getCurrentUser(): User
-    {
-        $request = Application::get()->getRequest();
-        $currentUser = $request->getUser();
-        return $currentUser;
+        $datasetService = new DatasetService();
+        $datasetService->publish($study);
     }
 
     public function setupDataverseAPIHandlers(string $hookname, Request $request): void

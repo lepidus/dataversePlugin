@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataverse.classes.dataverseAPI.packagers.SWORDAPIDatasetPackager');
+import('plugins.generic.dataverse.dataverseAPI.packagers.SWORDAPIDatasetPackager');
 
 class SWORDAPIDatasetPackagerTest extends PKPTestCase
 {

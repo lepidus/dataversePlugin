@@ -68,7 +68,7 @@ class DraftDatasetFileGridHandler extends GridHandler
 
     protected function loadData($request, $filter)
     {
-        import('plugins.generic.dataverse.classes.file.DraftDatasetFileDAO');
+        import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
         $draftDatasetFileDAO = new DraftDatasetFileDAO();
         $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($this->getSubmission()->getId());
 
@@ -158,7 +158,7 @@ class DraftDatasetFileGridHandler extends GridHandler
         $context = $request->getContext();
 
         if ($request->checkCSRF() && $fileId) {
-            import('plugins.generic.dataverse.classes.file.DraftDatasetFileDAO');
+            import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
             $draftDatasetFileDAO = new DraftDatasetFileDAO();
             $draftDatasetFileDAO->deleteById($fileId);
 
