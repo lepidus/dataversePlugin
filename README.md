@@ -16,11 +16,7 @@ Using PHP between 7.3 and 8.1.
 
 To download the plugin, go to the [Releases page](https://github.com/lepidus/dataversePlugin/releases) and download the tar.gz package of the latest release compatible with your website.
 
-## Installation 
-
-### Dependencies 
-* [php-zip](https://www.php.net/manual/en/zip.installation.php)
-* [php-curl](https://www.php.net/manual/en/book.curl.php)
+## Installation
 
 ### Instructions
 
@@ -34,7 +30,7 @@ To download the plugin, go to the [Releases page](https://github.com/lepidus/dat
 ### Configuration
 After installation, it is necessary to enable the plugin. This is done in `Website Settings` > `Plugins` > `Installed Plugins`.
 
-With the plugin enabled, you should expand its options by clicking the arrow next to its name and then accessing its `Settings`. 
+With the plugin enabled, you should expand its options by clicking the arrow next to its name and then accessing its `Settings`.
 
 In the new window, the  _Dataverse_ (Dataverse URL), _API Token_ and _Terms of Use_ will be displayed. You have to indicate the full Dataverse URL, for example: https://demo.dataverse.org/dataverse/anotherdemo
 
@@ -53,14 +49,8 @@ Authors, moderators, editors or managers can also edit the dataset, before publi
 ## Development Instructions:
 
 1. Clone the Dataverse plugin repository
-2. Open a terminal inside the repository directory and run the following commands:
-     * git submodule init
-     * git submodule update
-
-To clone [SWORD v2 PHP API library](https://github.com/swordapp/swordappv2-php-library/) submodule.
-
-3. To use the plugin into the PKP Application, copy it's folder to the /plugins/generic directory and make sure the folder is called "dataverse".
-4. And from the root of the PKP Appplication directory, execute this command to update the database, creating the tables used by the plugin:
+2. To use the plugin into the PKP Application, copy it's folder to the /plugins/generic directory and make sure the folder is called "dataverse".
+3. And from the root of the PKP Appplication directory, execute this command to update the database, creating the tables used by the plugin:
     * php tools/upgrade.php upgrade
 
 ## Running Tests
