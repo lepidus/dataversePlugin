@@ -2,6 +2,7 @@
 
 import('lib.pkp.classes.log.SubmissionLog');
 import('classes.log.SubmissionEventLogEntry');
+import('lib.pkp.classes.log.SubmissionFileEventLogEntry');
 
 abstract class DataverseService
 {
@@ -22,7 +23,7 @@ abstract class DataverseService
         );
     }
 
-    protected function registerAndNotifyError(Submission $submission, string $message, string $error): void
+    protected function registerAndNotifyError(Submission $submission, string $message, array $params): void
     {
         $request = Application::get()->getRequest();
         $userId = $request->getUser()->getId();
@@ -32,11 +33,11 @@ abstract class DataverseService
         $notificationMgr->createTrivialNotification(
             $userId,
             NOTIFICATION_TYPE_ERROR,
-            ['contents' => __($message, ['error' => $error])]
+            ['contents' => __($message, $params)]
         );
 
-        $this->registerEventLog($submission, $message, ['error' => $error]);
+        $this->registerEventLog($submission, $message, $params);
 
-        error_log('Dataverse API error: ' . $error);
+        error_log('Dataverse API error: ' . $params['error']);
     }
 }

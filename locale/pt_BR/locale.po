@@ -89,6 +89,12 @@ msgstr "Erro ao excluir dados de pesquisa no Dataverse: {$error}"
 msgid "plugins.generic.dataverse.error.publishFailed"
 msgstr "Erro ao publicar dados de pesquisa no Dataverse: {$error}"
 
+msgid  "plugins.generic.dataverse.error.addFileFailed"
+msgstr "Erro ao adicionar o arquivo de dados de pesquisa \"{$filename}\": {$error}"
+
+msgid  "plugins.generic.dataverse.error.deleteFileFailed"
+msgstr "Erro ao excluir o arquivo de dados de pesquisa \"{$filename}\": {$error}"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar arquivo de dados de pesquisa"
 

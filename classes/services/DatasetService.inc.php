@@ -31,7 +31,7 @@ class DatasetService extends DataverseService
             $this->registerAndNotifyError(
                 $submission,
                 'plugins.generic.dataverse.error.depositFailed',
-                $e->getMessage()
+                ['error' => $e->getMessage()]
             );
             return;
         }
@@ -74,7 +74,7 @@ class DatasetService extends DataverseService
             $this->registerAndNotifyError(
                 $submission,
                 'plugins.generic.dataverse.error.updateFailed',
-                $e->getMessage()
+                ['error' => $e->getMessage()]
             );
             return;
         }
@@ -96,7 +96,7 @@ class DatasetService extends DataverseService
             $this->registerAndNotifyError(
                 $submission,
                 'plugins.generic.dataverse.error.deleteFailed',
-                $e->getMessage()
+                ['error' => $e->getMessage()]
             );
             return;
         }
@@ -120,7 +120,7 @@ class DatasetService extends DataverseService
             $this->registerAndNotifyError(
                 $submission,
                 'plugins.generic.dataverse.error.publishFailed',
-                $e->getMessage()
+                ['error' => $e->getMessage()]
             );
             return;
         }

@@ -86,6 +86,12 @@ msgstr "Error deleting research data in Dataverse: {$error}"
 msgid "plugins.generic.dataverse.error.publishFailed"
 msgstr "Error publishing research data in Dataverse: {$error}"
 
+msgid  "plugins.generic.dataverse.error.addFileFailed"
+msgstr "Error adding the research data file \"{$filename}\": {$error}"
+
+msgid  "plugins.generic.dataverse.error.deleteFileFailed"
+msgstr "Error deleting the research data file \"{$filename}\": {$error}"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Upload research data file"
 
