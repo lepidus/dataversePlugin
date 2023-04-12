@@ -119,6 +119,9 @@ msgstr "¿Realmente desea eliminar de forma permanente los datos de investigaci�
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "No se encontró el borrador del archivo del conjunto de datos solicitado."
 
+msgid "api.error.researchDataCitationNotFound"
+msgstr "No fue posible obtener la citación de los datos de la investigación."
+
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "<strong>No se transfieren datos de investigación.</strong><br>"
 
@@ -190,6 +193,9 @@ msgstr "Ciencias sociales"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Otra"
+
+msgid "plugins.generic.dataverse.notice.cannotPublish"
+msgstr "No se pueden publicar datos de pesquisa en Dataverse: {$error}"
 
 msgid "plugin.generic.dataverse.notification.submission.researchData"
 msgstr "Este preprint ha depositado datos de investigación: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"

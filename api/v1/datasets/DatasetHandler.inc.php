@@ -167,8 +167,13 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $dataverseClient = new DataverseClient();
-        $citation = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId());
+        try {
+            $dataverseClient = new DataverseClient();
+            $citation = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId());
+        } catch (DataverseException $e) {
+            error_log('Error getting citation: ' . $e->getMessage());
+            return $response->withStatus($e->getCode())->withJsonError('api.error.researchDataCitationNotFound');
+        }
 
         return $response->withJson(['citation' => $citation], 200);
     }

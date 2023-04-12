@@ -119,6 +119,9 @@ msgstr "Deseja realmente excluir permanentemente os dados de pesquisa relacionad
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
 
+msgid "api.error.researchDataCitationNotFound"
+msgstr "Não foi possível obter a citação dos dados de pesquisa."
+
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "<strong>Não foram transferidos dados de pesquisa</strong>.<br>"
 
@@ -192,7 +195,7 @@ msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Outros"
 
 msgid "plugins.generic.dataverse.notice.cannotPublish"
-msgstr "Não é possivel publicar os dados de pesquisa no Dataverse: {$error}"
+msgstr "Não é possível publicar os dados de pesquisa no Dataverse: {$error}"
 
 msgid "plugin.generic.dataverse.notification.submission.researchData"
 msgstr "Este preprint possui dados de pesquisa depositados: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
