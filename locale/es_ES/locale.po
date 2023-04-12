@@ -59,11 +59,41 @@ msgstr "Datos de investigación"
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Anãdir datos de investigación"
 
-msgid "plugins.generic.dataverse.notification.error.depositFailed"
+msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
+msgstr "Archivo \"{$filename}\" añadido como datos de investigación."
+
+msgid  "plugins.generic.dataverse.log.researchDataFileDeleted"
+msgstr "Archivo \"{$filename}\" excluido de los datos de investigación."
+
+msgid  "plugins.generic.dataverse.log.researchDataDeposited"
+msgstr "Datos de investigación depositados: {$persistentId}"
+
+msgid  "plugins.generic.dataverse.log.researchDataUpdated"
+msgstr "Metadatos de datos de investigación actualizados"
+
+msgid  "plugins.generic.dataverse.log.researchDataPublished"
+msgstr "Datos de investigación publicados"
+
+msgid  "plugins.generic.dataverse.log.researchDataDeleted"
+msgstr "Datos de investigación eliminados"
+
+msgid "plugins.generic.dataverse.error.depositFailed"
 msgstr "Erro al depositar datos de investigación en Dataverse: {$error}"
 
-msgid "plugins.generic.dataverse.notification.metadataUpdated"
-msgstr "Los metadatos del conjunto de datos se actualizaron correctamente."
+msgid "plugins.generic.dataverse.error.updateFailed"
+msgstr "Erro al actualizar datos de investigación en Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.deleteFailed"
+msgstr "Erro al excluir datos de investigación en Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.publishFailed"
+msgstr "Erro al publicar datos de investigación en Dataverse: {$error}"
+
+msgid  "plugins.generic.dataverse.error.addFileFailed"
+msgstr "Erro al añadir el archivo de datos de investigación \"{$filename}\": {$error}"
+
+msgid  "plugins.generic.dataverse.error.deleteFileFailed"
+msgstr "Erro al excluír el archivo de datos de investigación \"{$filename}\": {$error}"
 
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar archivo de datos de investigación"
@@ -94,6 +124,9 @@ msgstr "¿Realmente desea eliminar de forma permanente los datos de investigaci�
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "No se encontró el borrador del archivo del conjunto de datos solicitado."
+
+msgid "api.error.researchDataCitationNotFound"
+msgstr "No fue posible obtener la citación de los datos de la investigación."
 
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "<strong>No se transfieren datos de investigación.</strong><br>"
@@ -167,23 +200,8 @@ msgstr "Ciencias sociales"
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Otra"
 
-msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
-msgstr "Archivo \"{$filename}\" añadido como datos de investigación."
-
-msgid  "plugins.generic.dataverse.log.researchDataFileDeleted"
-msgstr "Archivo \"{$filename}\" excluido de los datos de investigación."
-
-msgid  "plugins.generic.dataverse.log.researchDataDeposited"
-msgstr "Datos de investigación depositados: {$persistentId}"
-
-msgid  "plugins.generic.dataverse.log.researchDataUpdated"
-msgstr "Metadatos de datos de investigación actualizados"
-
-msgid  "plugins.generic.dataverse.log.researchDataPublished"
-msgstr "Datos de investigación publicados"
-
-msgid  "plugins.generic.dataverse.log.researchDataDeleted"
-msgstr "Datos de investigación eliminados"
+msgid "plugins.generic.dataverse.notice.cannotPublish"
+msgstr "No se pueden publicar datos de pesquisa en Dataverse: {$error}"
 
 msgid "plugin.generic.dataverse.notification.submission.researchData"
 msgstr "Este preprint ha depositado datos de investigación: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"

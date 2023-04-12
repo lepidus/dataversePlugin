@@ -29,7 +29,7 @@ class DatasetCitationDispatcher extends DataverseDispatcher
                 $templateMgr->assign('datasetCitation', $citation);
                 $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
             } catch (DataverseException $e) {
-                error_log('Dataverse API error: ' . $e->getMessage());
+                error_log('Error getting citation: ' . $e->getMessage());
             }
         }
 

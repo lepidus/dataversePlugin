@@ -59,8 +59,41 @@ msgstr "Dados de pesquisa"
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Adicione dados de pesquisa"
 
-msgid "plugins.generic.dataverse.notification.error.depositFailed"
+msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
+msgstr "Arquivo \"{$filename}\" adicionado como dados de pesquisa."
+
+msgid  "plugins.generic.dataverse.log.researchDataFileDeleted"
+msgstr "Arquivo \"{$filename}\" excluído dos dados de pesquisa."
+
+msgid  "plugins.generic.dataverse.log.researchDataDeposited"
+msgstr "Dados de pesquisa depositados: {$persistentId}"
+
+msgid  "plugins.generic.dataverse.log.researchDataUpdated"
+msgstr "Metadados dos dados de pesquisa atualizados"
+
+msgid  "plugins.generic.dataverse.log.researchDataPublished"
+msgstr "Dados de pesquisa publicados"
+
+msgid  "plugins.generic.dataverse.log.researchDataDeleted"
+msgstr "Dados de pesquisa excluídos"
+
+msgid "plugins.generic.dataverse.error.depositFailed"
 msgstr "Erro ao depositar dados de pesquisa no Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.updateFailed"
+msgstr "Erro ao atualizar dados de pesquisa no Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.deleteFailed"
+msgstr "Erro ao excluir dados de pesquisa no Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.publishFailed"
+msgstr "Erro ao publicar dados de pesquisa no Dataverse: {$error}"
+
+msgid  "plugins.generic.dataverse.error.addFileFailed"
+msgstr "Erro ao adicionar o arquivo de dados de pesquisa \"{$filename}\": {$error}"
+
+msgid  "plugins.generic.dataverse.error.deleteFileFailed"
+msgstr "Erro ao excluir o arquivo de dados de pesquisa \"{$filename}\": {$error}"
 
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar arquivo de dados de pesquisa"
@@ -91,6 +124,9 @@ msgstr "Deseja realmente excluir permanentemente os dados de pesquisa relacionad
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
+
+msgid "api.error.researchDataCitationNotFound"
+msgstr "Não foi possível obter a citação dos dados de pesquisa."
 
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "<strong>Não foram transferidos dados de pesquisa</strong>.<br>"
@@ -164,23 +200,8 @@ msgstr "Ciências Sociais"
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Outros"
 
-msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
-msgstr "Arquivo \"{$filename}\" adicionado como dados de pesquisa."
-
-msgid  "plugins.generic.dataverse.log.researchDataFileDeleted"
-msgstr "Arquivo \"{$filename}\" excluído dos dados de pesquisa."
-
-msgid  "plugins.generic.dataverse.log.researchDataDeposited"
-msgstr "Dados de pesquisa depositados: {$persistentId}"
-
-msgid  "plugins.generic.dataverse.log.researchDataUpdated"
-msgstr "Metadados dos dados de pesquisa atualizados"
-
-msgid  "plugins.generic.dataverse.log.researchDataPublished"
-msgstr "Dados de pesquisa publicados"
-
-msgid  "plugins.generic.dataverse.log.researchDataDeleted"
-msgstr "Dados de pesquisa excluídos"
+msgid "plugins.generic.dataverse.notice.cannotPublish"
+msgstr "Não é possível publicar os dados de pesquisa no Dataverse: {$error}"
 
 msgid "plugin.generic.dataverse.notification.submission.researchData"
 msgstr "Este preprint possui dados de pesquisa depositados: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"

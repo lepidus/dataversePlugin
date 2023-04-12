@@ -90,7 +90,15 @@ abstract class DataverseActions
         try {
             $reponse = $this->client->request($method, $uri, $options);
         } catch (RequestException $e) {
-            throw new DataverseException($e->getMessage(), $e->getCode(), $e);
+            $message = $e->getMessage();
+            $code = $e->getCode();
+
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+                $code = $response->getStatusCode();
+                $message = $response->getReasonPhrase();
+            }
+            throw new DataverseException($message, $code, $e);
         }
 
         return new DataverseResponse(
