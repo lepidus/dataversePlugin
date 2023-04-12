@@ -59,14 +59,35 @@ msgstr "Datos de investigación"
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Anãdir datos de investigación"
 
+msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
+msgstr "Archivo \"{$filename}\" añadido como datos de investigación."
+
+msgid  "plugins.generic.dataverse.log.researchDataFileDeleted"
+msgstr "Archivo \"{$filename}\" excluido de los datos de investigación."
+
+msgid  "plugins.generic.dataverse.log.researchDataDeposited"
+msgstr "Datos de investigación depositados: {$persistentId}"
+
+msgid  "plugins.generic.dataverse.log.researchDataUpdated"
+msgstr "Metadatos de datos de investigación actualizados"
+
+msgid  "plugins.generic.dataverse.log.researchDataPublished"
+msgstr "Datos de investigación publicados"
+
+msgid  "plugins.generic.dataverse.log.researchDataDeleted"
+msgstr "Datos de investigación eliminados"
+
 msgid "plugins.generic.dataverse.error.depositFailed"
 msgstr "Erro al depositar datos de investigación en Dataverse: {$error}"
 
 msgid "plugins.generic.dataverse.error.updateFailed"
 msgstr "Erro al actualizar datos de investigación en Dataverse: {$error}"
 
-msgid "plugins.generic.dataverse.notification.metadataUpdated"
-msgstr "Los metadatos del conjunto de datos se actualizaron correctamente."
+msgid "plugins.generic.dataverse.error.deleteFailed"
+msgstr "Erro al excluir datos de investigación en Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.publishFailed"
+msgstr "Erro al publicar datos de investigación en Dataverse: {$error}"
 
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar archivo de datos de investigación"
@@ -169,24 +190,6 @@ msgstr "Ciencias sociales"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Otra"
-
-msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
-msgstr "Archivo \"{$filename}\" añadido como datos de investigación."
-
-msgid  "plugins.generic.dataverse.log.researchDataFileDeleted"
-msgstr "Archivo \"{$filename}\" excluido de los datos de investigación."
-
-msgid  "plugins.generic.dataverse.log.researchDataDeposited"
-msgstr "Datos de investigación depositados: {$persistentId}"
-
-msgid  "plugins.generic.dataverse.log.researchDataUpdated"
-msgstr "Metadatos de datos de investigación actualizados"
-
-msgid  "plugins.generic.dataverse.log.researchDataPublished"
-msgstr "Datos de investigación publicados"
-
-msgid  "plugins.generic.dataverse.log.researchDataDeleted"
-msgstr "Datos de investigación eliminados"
 
 msgid "plugin.generic.dataverse.notification.submission.researchData"
 msgstr "Este preprint ha depositado datos de investigación: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"

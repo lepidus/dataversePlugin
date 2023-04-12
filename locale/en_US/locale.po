@@ -56,11 +56,35 @@ msgstr "Research data"
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Add research data"
 
+msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
+msgstr "File \"{$filename}\" added as research data."
+
+msgid  "plugins.generic.dataverse.log.researchDataFileDeleted"
+msgstr "File \"{$filename}\" deleted from research data."
+
+msgid  "plugins.generic.dataverse.log.researchDataDeposited"
+msgstr "Research data deposited: {$persistentId}"
+
+msgid  "plugins.generic.dataverse.log.researchDataUpdated"
+msgstr "Research data metadata updated"
+
+msgid  "plugins.generic.dataverse.log.researchDataPublished"
+msgstr "Research data published"
+
+msgid  "plugins.generic.dataverse.log.researchDataDeleted"
+msgstr "Research data deleted"
+
 msgid "plugins.generic.dataverse.error.depositFailed"
 msgstr "Error depositing research data to Dataverse: {$error}"
 
 msgid "plugins.generic.dataverse.error.updateFailed"
-msgstr "Error updating research data to Dataverse: {$error}"
+msgstr "Error updating research data in Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.deleteFailed"
+msgstr "Error deleting research data in Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.publishFailed"
+msgstr "Error publishing research data in Dataverse: {$error}"
 
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Upload research data file"
@@ -163,24 +187,6 @@ msgstr "Social Sciences"
 
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Other"
-
-msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
-msgstr "File \"{$filename}\" added as research data."
-
-msgid  "plugins.generic.dataverse.log.researchDataFileDeleted"
-msgstr "File \"{$filename}\" deleted from research data."
-
-msgid  "plugins.generic.dataverse.log.researchDataDeposited"
-msgstr "Research data deposited: {$persistentId}"
-
-msgid  "plugins.generic.dataverse.log.researchDataUpdated"
-msgstr "Research data metadata updated"
-
-msgid  "plugins.generic.dataverse.log.researchDataPublished"
-msgstr "Research data published"
-
-msgid  "plugins.generic.dataverse.log.researchDataDeleted"
-msgstr "Research data deleted"
 
 msgid "plugin.generic.dataverse.notification.submission.researchData"
 msgstr "This preprint has deposited research data: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"

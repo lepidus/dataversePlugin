@@ -81,29 +81,30 @@ class DatasetService extends DataverseService
 
         $this->registerEventLog(
             $submission,
-            'plugins.generic.dataverse.log.researchDataUpdated',
-            ['persistentId' =>  $dataset->getPersistentId()]
+            'plugins.generic.dataverse.log.researchDataUpdated'
         );
     }
 
     public function delete(DataverseStudy $study): void
     {
+        $submission = Services::get('submission')->get($study->getSubmissionId());
+
         try {
             $dataverseClient = new DataverseClient();
             $dataverseClient->getDatasetActions()->delete($study->getPersistentId());
         } catch (DataverseException $e) {
-            error_log('Dataverse API error: ' . $e->getMessage());
+            $this->registerAndNotifyError(
+                $submission,
+                'plugins.generic.dataverse.error.deleteFailed',
+                $e->getMessage()
+            );
             return;
         }
 
         DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
 
-        $request = Application::get()->getRequest();
-        $submission = Services::get('submission')->get($study->getSubmissionId());
-        SubmissionLog::logEvent(
-            $request,
+        $this->registerEventLog(
             $submission,
-            SUBMISSION_LOG_METADATA_UPDATE,
             'plugins.generic.dataverse.log.researchDataDeleted'
         );
     }
