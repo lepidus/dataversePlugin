@@ -30,7 +30,7 @@ class DatasetService extends DataverseService
         } catch (DataverseException $e) {
             $this->registerAndNotifyError(
                 $submission,
-                'plugins.generic.dataverse.notification.error.depositFailed',
+                'plugins.generic.dataverse.error.depositFailed',
                 $e->getMessage()
             );
             return;
@@ -64,17 +64,20 @@ class DatasetService extends DataverseService
         $dataset = new Dataset();
         $dataset->setAllData($data);
 
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getByPersistentId($dataset->getPersistentId());
+        $submission = Services::get('submission')->get($study->getSubmissionId());
+
         try {
             $dataverseClient = new DataverseClient();
             $dataverseClient->getDatasetActions()->update($dataset);
         } catch (DataverseException $e) {
-            error_log('Dataverse API error: ' . $e->getMessage());
+            $this->registerAndNotifyError(
+                $submission,
+                'plugins.generic.dataverse.error.updateFailed',
+                $e->getMessage()
+            );
             return;
         }
-
-        $request = Application::get()->getRequest();
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getByPersistentId($dataset->getPersistentId());
-        $submission = Services::get('submission')->get($study->getSubmissionId());
 
         $this->registerEventLog(
             $submission,

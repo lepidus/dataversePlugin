@@ -59,8 +59,11 @@ msgstr "Datos de investigación"
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Anãdir datos de investigación"
 
-msgid "plugins.generic.dataverse.notification.error.depositFailed"
+msgid "plugins.generic.dataverse.error.depositFailed"
 msgstr "Erro al depositar datos de investigación en Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.updateFailed"
+msgstr "Erro al actualizar datos de investigación en Dataverse: {$error}"
 
 msgid "plugins.generic.dataverse.notification.metadataUpdated"
 msgstr "Los metadatos del conjunto de datos se actualizaron correctamente."

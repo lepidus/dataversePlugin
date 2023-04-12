@@ -59,8 +59,11 @@ msgstr "Dados de pesquisa"
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Adicione dados de pesquisa"
 
-msgid "plugins.generic.dataverse.notification.error.depositFailed"
+msgid "plugins.generic.dataverse.error.depositFailed"
 msgstr "Erro ao depositar dados de pesquisa no Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.updateFailed"
+msgstr "Erro ao atualizar dados de pesquisa no Dataverse: {$error}"
 
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar arquivo de dados de pesquisa"
