@@ -37,6 +37,6 @@ abstract class DataverseService
 
         $this->registerEventLog($submission, $message, ['error' => $error]);
 
-        error_log('Dataverse API error: ' . $message);
+        error_log('Dataverse API error: ' . $error);
     }
 }

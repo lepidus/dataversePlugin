@@ -111,21 +111,25 @@ class DatasetService extends DataverseService
 
     public function publish(DataverseStudy $study): void
     {
+        $submission = Services::get('submission')->get($study->getSubmissionId());
+
         try {
             $dataverseClient = new DataverseClient();
             $dataverseClient->getDatasetActions()->publish($study->getPersistentId());
         } catch (DataverseException $e) {
-            error_log('Dataverse API error: ' . $e->getMessage());
+            $this->registerAndNotifyError(
+                $submission,
+                'plugins.generic.dataverse.error.publishFailed',
+                $e->getMessage()
+            );
             return;
         }
 
-        $request = Application::get()->getRequest();
-        $submission = Services::get('submission')->get($study->getSubmissionId());
-        SubmissionLog::logEvent(
-            $request,
+        $this->registerEventLog(
             $submission,
-            SUBMISSION_LOG_ARTICLE_PUBLISH,
-            'plugins.generic.dataverse.log.researchDataPublished'
+            'plugins.generic.dataverse.log.researchDataPublished',
+            [],
+            SUBMISSION_LOG_ARTICLE_PUBLISH
         );
     }
 }

@@ -191,6 +191,9 @@ msgstr "Ciências Sociais"
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Outros"
 
+msgid "plugins.generic.dataverse.notice.cannotPublish"
+msgstr "Não é possivel publicar os dados de pesquisa no Dataverse: {$error}"
+
 msgid "plugin.generic.dataverse.notification.submission.researchData"
 msgstr "Este preprint possui dados de pesquisa depositados: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
 "Ao efetuar a postagem deste preprint, os dados também serão publicados no Dataverse.<br>"

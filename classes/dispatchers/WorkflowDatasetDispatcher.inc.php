@@ -257,20 +257,31 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
             return;
         }
 
-        $dataverseClient = new DataverseClient();
-        $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
+        try {
+            $dataverseClient = new DataverseClient();
+            $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
 
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($form->submissionContext->getId());
+            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($form->submissionContext->getId());
 
-        $params = [
-            'persistentUri' => $study->getPersistentUri(),
-            'serverName' => $rootDataverseCollection->getName(),
-            'serverUrl' => $configuration->getDataverseServerUrl(),
-        ];
+            $params = [
+                'persistentUri' => $study->getPersistentUri(),
+                'serverName' => $rootDataverseCollection->getName(),
+                'serverUrl' => $configuration->getDataverseServerUrl(),
+            ];
 
-        $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
-            'description' => __("plugin.generic.dataverse.notification.submission.researchData", $params),
-            'groupId' => 'default',
-        ]));
+            $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
+                'description' => __("plugin.generic.dataverse.notification.submission.researchData", $params),
+                'groupId' => 'default',
+            ]));
+        } catch (DataverseException $e) {
+            $warningIconHtml = '<span class="fa fa-exclamation-triangle pkpIcon--inline"></span>';
+            $noticeMsg = __('plugins.generic.dataverse.notice.cannotPublish', ['error' => $e->getMessage()]);
+            $msg = '<div class="pkpNotification pkpNotification--warning">' . $warningIconHtml . $noticeMsg . '</div>';
+
+            $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
+                'description' => $msg,
+                'groupId' => 'default',
+            ]));
+        }
     }
 }
