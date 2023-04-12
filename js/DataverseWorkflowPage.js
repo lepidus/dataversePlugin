@@ -119,11 +119,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         },
                         error: self.ajaxErrorCallback,
                         success: function (r) {
-                            self.setItems(
-                                self.components.datasetFiles.items.filter(
-                                    (i) => i.id !== id
-                                )
-                            );
+                            self.refreshItems();
                             self.$modal.hide('delete');
                             self.setFocusIn(self.$el);
                         },

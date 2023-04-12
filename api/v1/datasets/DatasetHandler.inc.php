@@ -146,8 +146,13 @@ class DatasetHandler extends APIHandler
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        $dataverseClient = new DataverseClient();
-        $datasetFiles = $dataverseClient->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
+        try {
+            $dataverseClient = new DataverseClient();
+            $datasetFiles = $dataverseClient->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
+        } catch (DataverseException $e) {
+            error_log('Error getting dataset files: ' . $e->getMessage());
+            return $response->withStatus($e->getCode())->withJson(['error' => $e->getMessage()]);
+        }
 
         $items = array_map(function (DatasetFile $file) {
             return $file->getVars();
