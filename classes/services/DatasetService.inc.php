@@ -1,17 +1,20 @@
 <?php
 
+import('plugins.generic.dataverse.classes.services.DataverseService');
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 import('plugins.generic.dataverse.classes.entities.Dataset');
-import('lib.pkp.classes.log.SubmissionLog');
-import('classes.log.SubmissionEventLogEntry');
 
-class DatasetService
+class DatasetService extends DataverseService
 {
     public function deposit(int $submissionId, Dataset $dataset): void
     {
         if (empty($dataset->getFiles())) {
             return;
         }
+
+        $request = Application::get()->getRequest();
+        $contextId = $request->getContext()->getId();
+        $submission = Services::get('submission')->get($submissionId);
 
         try {
             $dataverseClient = new DataverseClient();
@@ -25,28 +28,13 @@ class DatasetService
                 );
             }
         } catch (DataverseException $e) {
-            $userId = $request->getUser()->getId();
-            $notificationContents = [
-                'contents' => __(
-                    'plugins.generic.dataverse.notification.error.depositFailed',
-                    ['error' => $e->getMessage()]
-                ),
-            ];
-
-            import('classes.notification.NotificationManager');
-            $notificationMgr = new NotificationManager();
-            $notificationMgr->createTrivialNotification(
-                $userId,
-                NOTIFICATION_TYPE_ERROR,
-                $notificationContents
+            $this->registerAndNotifyError(
+                $submission,
+                'plugins.generic.dataverse.notification.error.depositFailed',
+                $e->getMessage()
             );
-            error_log('Dataverse API error: ' . $e->getMessage());
             return;
         }
-
-        $request = Application::get()->getRequest();
-        $contextId = $request->getContext()->getId();
-        $submission = Services::get('submission')->get($submissionId);
 
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
         $swordAPIBaseUrl = $configuration->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
@@ -61,12 +49,11 @@ class DatasetService
         $study->setPersistentUri('https://doi.org/' . str_replace('doi:', '', $datasetIdentifier->getPersistentId()));
         $dataverseStudyDAO->insertStudy($study);
 
-        SubmissionLog::logEvent(
-            $request,
+        $this->registerEventLog(
             $submission,
-            SUBMISSION_LOG_SUBMISSION_SUBMIT,
             'plugins.generic.dataverse.log.researchDataDeposited',
-            ['persistentId' => $study->getPersistentId()]
+            ['persistentId' => $datasetIdentifier->getPersistentId()],
+            SUBMISSION_LOG_SUBMISSION_SUBMIT
         );
 
         DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submission->getId());
@@ -88,11 +75,11 @@ class DatasetService
         $request = Application::get()->getRequest();
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getByPersistentId($dataset->getPersistentId());
         $submission = Services::get('submission')->get($study->getSubmissionId());
-        SubmissionLog::logEvent(
-            $request,
+
+        $this->registerEventLog(
             $submission,
-            SUBMISSION_LOG_METADATA_UPDATE,
-            'plugins.generic.dataverse.log.researchDataUpdated'
+            'plugins.generic.dataverse.log.researchDataUpdated',
+            ['persistentId' =>  $dataset->getPersistentId()]
         );
     }
 
