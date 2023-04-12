@@ -44,22 +44,28 @@ class DatasetFileService extends DataverseService
 
     public function delete(DataverseStudy $study, string $fileId, string $filename): void
     {
+        $submission = Services::get('submission')->get($study->getSubmissionId());
+
         try {
             $dataverseClient = new DataverseClient();
             $dataverseClient->getDatasetFileActions()->delete($fileId);
         } catch (DataverseException $e) {
-            error_log('Dataverse API error: ' . $e->getMessage());
+            $this->registerAndNotifyError(
+                $submission,
+                'plugins.generic.dataverse.error.deleteFileFailed',
+                [
+                    'filename' => $filename,
+                    'error' => $e->getMessage()
+                ]
+            );
             return;
         }
 
-        $request = Application::get()->getRequest();
-        $submission = Services::get('submission')->get($study->getSubmissionId());
-        SubmissionLog::logEvent(
-            $request,
+        $this->registerEventLog(
             $submission,
-            SUBMISSION_LOG_FILE_UPLOAD,
             'plugins.generic.dataverse.log.researchDataFileDeleted',
-            ['filename' => $filename]
+            ['filename' => $filename],
+            SUBMISSION_LOG_FILE_UPLOAD
         );
     }
 }
