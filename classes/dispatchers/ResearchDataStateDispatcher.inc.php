@@ -70,7 +70,7 @@ class ResearchDataStateDispatcher extends DataverseDispatcher
         $form->addCheck(new FormValidatorUrl(
             $form,
             'researchDataUrl',
-            'required',
+            'optional',
             'plugins.generic.dataverse.researchDataState.repoAvailable.url.required'
         ));
 
