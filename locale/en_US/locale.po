@@ -227,6 +227,9 @@ msgstr "They are already available in a data repository"
 msgid "plugins.generic.dataverse.researchDataState.repoAvailable.url"
 msgstr "Link to research data"
 
+msgid "plugins.generic.dataverse.researchDataState.repoAvailable.url.required"
+msgstr "The link to the search data is required."
+
 msgid "plugins.generic.dataverse.researchDataState.repoAvailable.description"
 msgstr "Research data available at <a href=\"{$researchDataUrl}\" target=\"_new\">{$researchDataUrl}</a>"
 
