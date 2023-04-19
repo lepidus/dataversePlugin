@@ -23,9 +23,19 @@
     padding: 2rem;
 }
 
-#draftDatasetFileGridContainer,
-#datasetTab .noResearchData {
+#draftDatasetFileGridContainer {
     padding: 2rem 0;
+}
+
+#datasetTab .noResearchData {
+    margin: 0 -2rem 0 calc(-2rem - 1px);
+    padding: 2rem;
+    border-bottom: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+}
+
+#datasetTab .noResearchData button {
+    margin-top: 1rem;
 }
 
 div:not(:last-child) > .pkp_controllers_grid {

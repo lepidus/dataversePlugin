@@ -129,7 +129,7 @@ msgid "api.error.researchDataCitationNotFound"
 msgstr "No fue posible obtener la citación de los datos de la investigación."
 
 msgid "plugins.generic.dataverse.researchData.noResearchData"
-msgstr "<strong>No se transfieren datos de investigación.</strong><br>"
+msgstr "No se transfieren datos de investigación."
 
 msgid "plugins.generic.dataverse.researchData.uploadResearchData"
 msgstr "Cargar dados de pesquisa"

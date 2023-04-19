@@ -4,7 +4,7 @@ import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 import('lib.pkp.classes.submission.SubmissionFile');
 
-class WorkflowDatasetDispatcher extends DataverseDispatcher
+class DatasetTabDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
@@ -108,6 +108,24 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
         $user = $request->getUser();
+
+        import('plugins.generic.dataverse.classes.dispatchers.ResearchDataStateDispatcher');
+        $researchDataStateDispatcher = new ResearchDataStateDispatcher($this->plugin);
+        $researchDataStates = $researchDataStateDispatcher->getResearchDataStates();
+
+        $researchDataState = $submission->getData('researchDataState');
+        $researchDataStateLabel = $researchDataStates[$researchDataState];
+
+        if (
+            is_null($researchDataState)
+            || $researchDataState == RESEARCH_DATA_SUBMISSION_DEPOSIT
+        ) {
+            $researchDataStateLabel = __('plugins.generic.dataverse.researchData.noResearchData');
+        }
+
+        $templateMgr->setState([
+            'researchDataStateLabel' => $researchDataStateLabel,
+        ]);
 
         $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
 

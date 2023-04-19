@@ -1,9 +1,16 @@
-<section class="noResearchData">
-    <span>{translate key="plugins.generic.dataverse.researchData.noResearchData"}</span>
+<section class="noResearchData -pkpClearfix">
+    <div class="pkpFormField pkpFormField--html" inputtype="text">
+        <div class="pkpFormField__heading">
+            <span class="pkpFormFieldLabel">Situação</span>
+        </div>
+        <div class="pkpFormField__control pkpFormField__control--html">
+            <p v-html="researchDataStateLabel"></p>
+        </div>
+    </div>
+    <pkp-button @click="$modal.show('uploadResearchData')">
+        {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
+    </pkp-button>
 </section>
-<pkp-button @click="$modal.show('uploadResearchData')">
-    {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
-</pkp-button>
 
 <modal 
     v-bind="MODAL_PROPS" 
