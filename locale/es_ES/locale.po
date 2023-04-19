@@ -207,3 +207,44 @@ msgid "plugin.generic.dataverse.notification.submission.researchData"
 msgstr "Este preprint ha depositado datos de investigación: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
 "Al publicar esta preprint, los datos también se publicarán en Dataverse.<br>"
 "Asegúrese de que los datos de la investigación sean adecuados para su publicación en <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
+
+msgid "plugins.generic.dataverse.researchDataState.title"
+msgstr "Datos de investigación"
+
+msgid "plugins.generic.dataverse.researchDataState.description"
+msgstr ""
+"Alentamos la disponibilidad de todo el contenido (datos, códigos de programa y otros materiales) subyacentes "
+"al texto del manuscrito previamente o en el momento de la presentación. Se permiten excepciones en casos "
+"de cuestiones legales y éticas. El objetivo es facilitar la moderación del manuscrito, la evaluación por parte de la "
+"comunidad científica, así como contribuir a la preservación y reutilización de los contenidos y la reproducibilidad de "
+"las investigaciones.<br> Por favor, indique la situación de los datos de investigación de este manuscrito:"
+
+msgid "plugins.generic.dataverse.researchDataState.required"
+msgstr "Es obligatorio informar la situación de los datos de investigación."
+
+msgid "plugins.generic.dataverse.researchDataState.inManuscript"
+msgstr "Están incluidos en el propio manuscrito"
+
+msgid "plugins.generic.dataverse.researchDataState.repoAvailable"
+msgstr "Ya están disponibles en un repositorio de datos"
+
+msgid "plugins.generic.dataverse.researchDataState.repoAvailable.url"
+msgstr "Enlace a los datos de investigación"
+
+msgid "plugins.generic.dataverse.researchDataState.repoAvailable.description"
+msgstr "Datos de investigación disponibles en <a href=\"{$researchDataUrl}\" target=\"_new\">{$researchDataUrl}</a>"
+
+msgid "plugins.generic.dataverse.researchDataState.submissionDeposit"
+msgstr "Se enviarán al repositorio {$dataverseName} en las siguientes etapas de esta presentación"
+
+msgid "plugins.generic.dataverse.researchDataState.onDemand"
+msgstr "Están disponibles a petición, condición justificada en el manuscrito"
+
+msgid "plugins.generic.dataverse.researchDataState.private"
+msgstr "No se pueden disponibilizar públicamente"
+
+msgid "plugins.generic.dataverse.researchDataState.private.reason"
+msgstr "Indique la justificación"
+
+msgid "plugins.generic.dataverse.researchDataState.private.description"
+msgstr "Los datos de investigación no pueden ser disponibilizados públicamente.<br> Justificación: {$researchDataReason}"

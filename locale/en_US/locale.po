@@ -204,3 +204,45 @@ msgid "plugin.generic.dataverse.notification.submission.researchData"
 msgstr "This preprint has deposited research data: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
 "When posting this preprint, the data will also be published in Dataverse.<br>"
 "Please make sure the research data is suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
+
+msgid "plugins.generic.dataverse.researchDataState.title"
+msgstr "Research Data"
+
+msgid "plugins.generic.dataverse.researchDataState.description"
+msgstr "We encourage the availability of all underlying contents (data, program codes and other materials) "
+"to the manuscript text previously or at the time of submission. Exceptions are allowed in cases of legal and ethical "
+"issues. The goal is to facilitate the moderation of the manuscript, the evaluation by the scientific community, "
+"in addition to contributing to the preservation and reuse of content and reproducibility of research.<br>"
+"Please inform the status of the research data for this manuscript:"
+
+msgid "plugins.generic.dataverse.researchDataState.required"
+msgstr "It is required to inform the status of the research data."
+
+msgid "plugins.generic.dataverse.researchDataState.inManuscript"
+msgstr "They are included in the manuscript itself"
+
+msgid "plugins.generic.dataverse.researchDataState.repoAvailable"
+msgstr "They are already available in a data repository"
+
+msgid "plugins.generic.dataverse.researchDataState.repoAvailable.url"
+msgstr "Link to research data"
+
+msgid "plugins.generic.dataverse.researchDataState.repoAvailable.description"
+msgstr "Research data available at <a href=\"{$researchDataUrl}\" target=\"_new\">{$researchDataUrl}</a>"
+
+msgid "plugins.generic.dataverse.researchDataState.submissionDeposit"
+msgstr "They will be submitted to the {$dataverseName} repository in the subsequent stages of this submission"
+
+msgid "plugins.generic.dataverse.researchDataState.onDemand"
+msgstr "They are available on demand, condition justified in the manuscript"
+
+msgid "plugins.generic.dataverse.researchDataState.private"
+msgstr "They cannot be made publicly available"
+
+msgid "plugins.generic.dataverse.researchDataState.private.reason"
+msgstr "Provide the justification"
+
+msgid "plugins.generic.dataverse.researchDataState.private.description"
+msgstr "The research data cannot be made publicly available.<br>"
+"Justification: {$researchDataReason}"
+
