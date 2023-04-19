@@ -22,10 +22,24 @@ class ResearchDataStateDispatcher extends DataverseDispatcher
 
     public function getResearchDataStates(): array
     {
+        try {
+            import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+            $dataverseClient = new DataverseClient();
+            $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
+            $params = [
+                'dataverseName' => $dataverseCollection->getName(),
+            ];
+        } catch (DataverseException $e) {
+            error_log($e->getMessage());
+        }
+
         return [
             RESEARCH_DATA_IN_MANUSCRIPT => __('plugins.generic.dataverse.researchDataState.inManuscript'),
             RESEARCH_DATA_REPO_AVAILABLE => __('plugins.generic.dataverse.researchDataState.repoAvailable'),
-            RESEARCH_DATA_SUBMISSION_DEPOSIT => __('plugins.generic.dataverse.researchDataState.submissionDeposit'),
+            RESEARCH_DATA_SUBMISSION_DEPOSIT => __(
+                'plugins.generic.dataverse.researchDataState.submissionDeposit',
+                $params
+            ),
             RESEARCH_DATA_ON_DEMAND => __('plugins.generic.dataverse.researchDataState.onDemand'),
             RESEARCH_DATA_PRIVATE => __('plugins.generic.dataverse.researchDataState.private')
         ];

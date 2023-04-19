@@ -237,7 +237,7 @@ msgid "plugins.generic.dataverse.researchDataState.repoAvailable.description"
 msgstr "Dados de pesquisa disponíveis em <a href=\"{$researchDataUrl}\" target=\"_new\">{$researchDataUrl}</a>"
 
 msgid "plugins.generic.dataverse.researchDataState.submissionDeposit"
-msgstr "Serão submetidos ao repositório {$dataverseName} nas etapas seguintes desta submissão"
+msgstr "Serão submetidos ao repositório \"{$dataverseName}\" nas etapas seguintes desta submissão"
 
 msgid "plugins.generic.dataverse.researchDataState.onDemand"
 msgstr "Estão disponíveis sob demanda, condição justificada no manuscrito"
