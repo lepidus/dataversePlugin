@@ -109,33 +109,9 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $context = $request->getContext();
         $user = $request->getUser();
 
-        import('plugins.generic.dataverse.classes.dispatchers.ResearchDataStateDispatcher');
-        $researchDataStateDispatcher = new ResearchDataStateDispatcher($this->plugin);
-        $researchDataStates = $researchDataStateDispatcher->getResearchDataStates();
-
-        $researchDataState = $submission->getData('researchDataState');
-        $researchDataStateLabel = $researchDataStates[$researchDataState];
-
-        if (
-            is_null($researchDataState)
-            || $researchDataState == RESEARCH_DATA_SUBMISSION_DEPOSIT
-        ) {
-            $researchDataStateLabel = __('plugins.generic.dataverse.researchData.noResearchData');
-        }
-
-        if ($researchDataState == RESEARCH_DATA_REPO_AVAILABLE) {
-            $researchDataStateLabel = __(
-                'plugins.generic.dataverse.researchDataState.repoAvailable.description',
-                ['researchDataUrl' => $submission->getData('researchDataUrl')]
-            );
-        }
-
-        if ($researchDataState == RESEARCH_DATA_PRIVATE) {
-            $researchDataStateLabel = __(
-                'plugins.generic.dataverse.researchDataState.private.description',
-                ['researchDataReason' => $submission->getData('researchDataReason')]
-            );
-        }
+        import('plugins.generic.dataverse.classes.services.ResearchDataStateService');
+        $researchDataStateService = new ResearchDataStateService();
+        $researchDataStateLabel = $researchDataStateService->getSubmissionResearchDataStateDescription($submission);
 
         $templateMgr->setState([
             'researchDataStateLabel' => $researchDataStateLabel,

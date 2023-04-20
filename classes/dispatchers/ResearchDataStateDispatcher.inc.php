@@ -1,12 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-
-define('RESEARCH_DATA_IN_MANUSCRIPT', 'inManuscript');
-define('RESEARCH_DATA_REPO_AVAILABLE', 'repoAvailable');
-define('RESEARCH_DATA_SUBMISSION_DEPOSIT', 'submissionDeposit');
-define('RESEARCH_DATA_ON_DEMAND', 'onDemand');
-define('RESEARCH_DATA_PRIVATE', 'private');
+import('plugins.generic.dataverse.classes.services.ResearchDataStateService');
 
 class ResearchDataStateDispatcher extends DataverseDispatcher
 {
@@ -17,32 +12,6 @@ class ResearchDataStateDispatcher extends DataverseDispatcher
         HookRegistry::register('submissionsubmitstep1form::display', [$this, 'addResearchDataStateField']);
         HookRegistry::register('Schema::get::submission', [$this, 'addResearchDataStatePropsToSubmissionSchema']);
         HookRegistry::register('SubmissionHandler::saveSubmit', [$this, 'saveResearchDataState']);
-        HookRegistry::register('Template::Workflow::Publication', [$this, 'displayResearchDataState']);
-    }
-
-    public function getResearchDataStates(): array
-    {
-        try {
-            import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
-            $dataverseClient = new DataverseClient();
-            $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
-            $params = [
-                'dataverseName' => $dataverseCollection->getName(),
-            ];
-        } catch (DataverseException $e) {
-            error_log($e->getMessage());
-        }
-
-        return [
-            RESEARCH_DATA_IN_MANUSCRIPT => __('plugins.generic.dataverse.researchDataState.inManuscript'),
-            RESEARCH_DATA_REPO_AVAILABLE => __('plugins.generic.dataverse.researchDataState.repoAvailable'),
-            RESEARCH_DATA_SUBMISSION_DEPOSIT => __(
-                'plugins.generic.dataverse.researchDataState.submissionDeposit',
-                $params
-            ),
-            RESEARCH_DATA_ON_DEMAND => __('plugins.generic.dataverse.researchDataState.onDemand'),
-            RESEARCH_DATA_PRIVATE => __('plugins.generic.dataverse.researchDataState.private')
-        ];
     }
 
     public function addResearchDataStateStyles(string $hookName, array $args): bool
@@ -82,7 +51,9 @@ class ResearchDataStateDispatcher extends DataverseDispatcher
         $request = PKPApplication::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
 
-        $templateMgr->assign('researchDataStates', $this->getResearchDataStates());
+        $researchDataStateService = new ResearchDataStateService();
+
+        $templateMgr->assign('researchDataStates', $researchDataStateService->getResearchDataStates());
 
         $templateMgr->registerFilter("output", array($this, 'researchDataStateFilter'));
         return false;
