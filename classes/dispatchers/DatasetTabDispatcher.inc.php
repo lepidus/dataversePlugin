@@ -4,7 +4,7 @@ import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 import('lib.pkp.classes.submission.SubmissionFile');
 
-class WorkflowDatasetDispatcher extends DataverseDispatcher
+class DatasetTabDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
@@ -108,6 +108,38 @@ class WorkflowDatasetDispatcher extends DataverseDispatcher
         $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
         $user = $request->getUser();
+
+        import('plugins.generic.dataverse.classes.dispatchers.ResearchDataStateDispatcher');
+        $researchDataStateDispatcher = new ResearchDataStateDispatcher($this->plugin);
+        $researchDataStates = $researchDataStateDispatcher->getResearchDataStates();
+
+        $researchDataState = $submission->getData('researchDataState');
+        $researchDataStateLabel = $researchDataStates[$researchDataState];
+
+        if (
+            is_null($researchDataState)
+            || $researchDataState == RESEARCH_DATA_SUBMISSION_DEPOSIT
+        ) {
+            $researchDataStateLabel = __('plugins.generic.dataverse.researchData.noResearchData');
+        }
+
+        if ($researchDataState == RESEARCH_DATA_REPO_AVAILABLE) {
+            $researchDataStateLabel = __(
+                'plugins.generic.dataverse.researchDataState.repoAvailable.description',
+                ['researchDataUrl' => $submission->getData('researchDataUrl')]
+            );
+        }
+
+        if ($researchDataState == RESEARCH_DATA_PRIVATE) {
+            $researchDataStateLabel = __(
+                'plugins.generic.dataverse.researchDataState.private.description',
+                ['researchDataReason' => $submission->getData('researchDataReason')]
+            );
+        }
+
+        $templateMgr->setState([
+            'researchDataStateLabel' => $researchDataStateLabel,
+        ]);
 
         $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
 

@@ -32,9 +32,10 @@ class DataversePlugin extends GenericPlugin
         $dispatcherClasses = [
             'DatasetCitationDispatcher',
             'DatasetSubjectDispatcher',
+            'DatasetTabDispatcher',
             'DataverseEventsDispatcher',
             'DraftDatasetFilesDispatcher',
-            'WorkflowDatasetDispatcher'
+            'ResearchDataStateDispatcher'
         ];
 
         foreach ($dispatcherClasses as $dispatcherClass) {

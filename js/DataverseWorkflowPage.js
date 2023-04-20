@@ -2,12 +2,13 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
     name: 'DataverseWorkflowPage',
     data() {
         return {
+            dataset: null,
             datasetCitation: '',
             datasetCitationUrl: null,
             fileFormErrors: [],
             isLoading: false,
             latestGetRequest: '',
-            dataset: null,
+            researchDataStateLabel: null,
         };
     },
     computed: {

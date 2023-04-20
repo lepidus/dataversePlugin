@@ -1,183 +1,214 @@
 import '../../../../../lib/pkp/cypress/support/commands';
 
 Cypress.on('uncaught:exception', (err, runnable) => {
-	// returning false here prevents Cypress from failing the test
-	return false;
+    // returning false here prevents Cypress from failing the test
+    return false;
 });
 
 Cypress.Commands.add('configureDataversePlugin', () => {
-	cy.get('.app__nav a').contains('Website').click();
-	cy.get('button[id="plugins-button"]').click();
-	cy.get('#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin').then($pluginRow => {
-		if (!$pluginRow.find('input[id^="select-cell-dataverseplugin-enable"]:checked').length) {
-			cy.get('input[id^="select-cell-dataverseplugin-enable"]').check();
-			cy.get('div').contains('The plugin "Dataverse Plugin" has been enabled');
-		}
-		cy.wrap($pluginRow).contains('Settings').click();
-		cy.get('a[id*="dataverseplugin-settings-button"]').click();
-		cy.get('input[name="dataverseUrl"]').invoke('val', Cypress.env('dataverseURI'));
-		cy.get('input[name="apiToken"]').invoke('val', Cypress.env('dataverseAPIToken'));
-		cy.get('input[name^="termsOfUse"]').first().invoke('val', Cypress.env('dataverseTermsOfUse'));
-		cy.get('form[id="dataverseConfigurationForm"] button[name="submitFormButton"]').click();
-		cy.get("div:contains('Your changes have been saved.')");
-	});
+    cy.get('.app__nav a')
+        .contains('Website')
+        .click();
+    cy.get('button[id="plugins-button"]').click();
+    cy.get(
+        '#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin'
+    ).then(($pluginRow) => {
+        if (
+            !$pluginRow.find(
+                'input[id^="select-cell-dataverseplugin-enable"]:checked'
+            ).length
+        ) {
+            cy.get('input[id^="select-cell-dataverseplugin-enable"]').check();
+            cy.get('div').contains(
+                'The plugin "Dataverse Plugin" has been enabled'
+            );
+        }
+        cy.wrap($pluginRow)
+            .contains('Settings')
+            .click();
+        cy.get('a[id*="dataverseplugin-settings-button"]').click();
+        cy.get('input[name="dataverseUrl"]').invoke(
+            'val',
+            Cypress.env('dataverseURI')
+        );
+        cy.get('input[name="apiToken"]').invoke(
+            'val',
+            Cypress.env('dataverseAPIToken')
+        );
+        cy.get('input[name^="termsOfUse"]')
+            .first()
+            .invoke('val', Cypress.env('dataverseTermsOfUse'));
+        cy.get(
+            'form[id="dataverseConfigurationForm"] button[name="submitFormButton"]'
+        ).click();
+        cy.get("div:contains('Your changes have been saved.')");
+    });
 });
 
 Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
-	// Initialize some data defaults before starting
-	if (!('files' in data))
-		data.files = [
-			{
-				file: 'dummy.pdf',
-				fileName: data.title + '.pdf',
-				fileTitle: data.title,
-				genre: Cypress.env('defaultGenre')
-			}
-		];
-	else
-		data.files.forEach(file => {
-			if (!('publishData' in file)) file.publishData = false;
-			if (!('galleyLabel' in file)) file.galleyLabel = 'PDF';
-		});
+    // Initialize some data defaults before starting
+    if (!('files' in data))
+        data.files = [
+            {
+                file: 'dummy.pdf',
+                fileName: data.title + '.pdf',
+                fileTitle: data.title,
+                genre: Cypress.env('defaultGenre'),
+            },
+        ];
+    else
+        data.files.forEach((file) => {
+            if (!('publishData' in file)) file.publishData = false;
+            if (!('galleyLabel' in file)) file.galleyLabel = 'PDF';
+        });
 
-	if (!('keywords' in data)) data.keywords = [];
-	if (!('additionalAuthors' in data)) data.additionalAuthors = [];
-	if ('series' in data) data.section = data.series; // OMP compatible
-	// If 'additionalFiles' is specified, it's to be used to augment the default
-	// set, rather than overriding it (as using 'files' would do). Add the arrays.
-	cy.get(
-		'a:contains("Make a New Submission"), div#myQueue a:contains("New Submission")'
-	).click();
+    if (!('keywords' in data)) data.keywords = [];
+    if (!('additionalAuthors' in data)) data.additionalAuthors = [];
+    if ('series' in data) data.section = data.series; // OMP compatible
+    // If 'additionalFiles' is specified, it's to be used to augment the default
+    // set, rather than overriding it (as using 'files' would do). Add the arrays.
+    cy.get(
+        'a:contains("Make a New Submission"), div#myQueue a:contains("New Submission")'
+    ).click();
 
-	// === Submission Step 1 ===
-	if ('section' in data)
-		cy.get('select[id="sectionId"],select[id="seriesId"]').select(data.section);
-	cy.get('input[id^="checklist-"]').click({multiple: true});
-	switch (
-		data.type // Only relevant to OMP
-	) {
-		case 'monograph':
-			cy.get('input[id="isEditedVolume-0"]').click();
-			break;
-		case 'editedVolume':
-			cy.get('input[id="isEditedVolume-1"]').click();
-			break;
-	}
-	cy.get('input[id=privacyConsent]').click();
-	if ('submitterRole' in data) {
-		cy.get('input[name=userGroupId]')
-			.parent()
-			.contains(data.submitterRole)
-			.click();
-	} else cy.get('input[id=userGroupId]').click();
-	cy.get('button.submitFormButton').click();
+    // === Submission Step 1 ===
+    if ('section' in data)
+        cy.get('select[id="sectionId"],select[id="seriesId"]').select(
+            data.section
+        );
+    cy.get('input[id^="checklist-"]').click({ multiple: true });
+    switch (
+        data.type // Only relevant to OMP
+    ) {
+        case 'monograph':
+            cy.get('input[id="isEditedVolume-0"]').click();
+            break;
+        case 'editedVolume':
+            cy.get('input[id="isEditedVolume-1"]').click();
+            break;
+    }
+    cy.get('input[id^="researchData-submissionDeposit"]').click();
+    cy.get('input[id=privacyConsent]').click();
+    if ('submitterRole' in data) {
+        cy.get('input[name=userGroupId]')
+            .parent()
+            .contains(data.submitterRole)
+            .click();
+    } else cy.get('input[id=userGroupId]').click();
+    cy.get('button.submitFormButton').click();
 
-	// === Submission Step 2 ===
+    // === Submission Step 2 ===
 
-	// OPS uses the galley grid
-	if (
-		Cypress.env('contextTitles').en_US == 'Public Knowledge Preprint Server'
-	) {
-		data.files.forEach(file => {
-			cy.contains('Add research data').click();
-			cy.wait(1000);
-			cy.fixture(file.file, { encoding: 'base64' }).then(fileContent => {
-				cy.get('input[type=file]').upload({
-					fileContent,
-					'fileName': file.fileName,
-					'mimeType': 'application/pdf',
-					'encoding': 'base64'
-				});
-			});
-			cy.wait(200);
-			cy.get('input[name="termsOfUse"').check();
-			cy.get('#uploadForm button').contains('OK').click();
-			cy.wait(200);
-		});
-		// Other applications use the submission files list panel
-	}
+    // OPS uses the galley grid
+    if (
+        Cypress.env('contextTitles').en_US == 'Public Knowledge Preprint Server'
+    ) {
+        data.files.forEach((file) => {
+            cy.contains('Add research data').click();
+            cy.wait(5000);
+            cy.fixture(file.file, { encoding: 'base64' }).then(
+                (fileContent) => {
+                    cy.get('input[type=file]').upload({
+                        fileContent,
+                        fileName: file.fileName,
+                        mimeType: 'application/pdf',
+                        encoding: 'base64',
+                    });
+                }
+            );
+            cy.wait(500);
+            cy.get('input[name="termsOfUse"').check();
+            cy.get('#uploadForm button')
+                .contains('OK')
+                .click();
+            cy.wait(500);
+        });
+        // Other applications use the submission files list panel
+    }
 
-	// Save the ID to the data object
-	cy.location('search').then(search => {
-		// this.submission.id = parseInt(search.split('=')[1], 10);
-		data.id = parseInt(search.split('=')[1], 10);
-	});
+    // Save the ID to the data object
+    cy.location('search').then((search) => {
+        // this.submission.id = parseInt(search.split('=')[1], 10);
+        data.id = parseInt(search.split('=')[1], 10);
+    });
 
-	cy.waitJQuery();
-	cy.get('#submitStep2Form button.submitFormButton').click();
+    cy.waitJQuery();
+    cy.get('#submitStep2Form button.submitFormButton').click();
 
-	// === Submission Step 3 ===
-	// Metadata fields
-	cy.get('input[id^="title-en_US-"').type(data.title, {delay: 0});
-	cy.get('label')
-		.contains('Title')
-		.click(); // Close multilingual popover
-	cy.get('textarea[id^="abstract-en_US-"').then(node => {
-		cy.setTinyMceContent(node.attr('id'), data.abstract);
-	});
-	cy.get('ul[id^="en_US-keywords-"]').then(node => {
-		data.keywords.forEach(keyword => {
-			node.tagit('createTag', keyword);
-		});
-	});
+    // === Submission Step 3 ===
+    // Metadata fields
+    cy.get('input[id^="title-en_US-"').type(data.title, { delay: 0 });
+    cy.get('label')
+        .contains('Title')
+        .click(); // Close multilingual popover
+    cy.get('textarea[id^="abstract-en_US-"').then((node) => {
+        cy.setTinyMceContent(node.attr('id'), data.abstract);
+    });
+    cy.get('ul[id^="en_US-keywords-"]').then((node) => {
+        data.keywords.forEach((keyword) => {
+            node.tagit('createTag', keyword);
+        });
+    });
 
-	if (data.files.length > 0) {
-		if (!('datasetSubject' in data)) data.datasetSubject = 'Other';
-		cy.get('select[id^="datasetSubject"').select(data.datasetSubject);
-	}
+    if (data.files.length > 0) {
+        if (!('datasetSubject' in data)) data.datasetSubject = 'Other';
+        cy.get('select[id^="datasetSubject"').select(data.datasetSubject);
+    }
 
-	if (data.additionalAuthors.length > 0) {
-		cy.get('#authorsGridContainer .first_column > .show_extras').click();
-		cy.get('#authorsGridContainer td a:contains("Delete")').click();
-		cy.wait(250);
-		cy.get('button').contains('OK').click();
-	}
+    if (data.additionalAuthors.length > 0) {
+        cy.get('#authorsGridContainer .first_column > .show_extras').click();
+        cy.get('#authorsGridContainer td a:contains("Delete")').click();
+        cy.wait(250);
+        cy.get('button')
+            .contains('OK')
+            .click();
+    }
 
-	data.additionalAuthors.forEach(author => {
-		if (!('role' in author)) author.role = 'Author';
-		cy.get(
-			'a[id^="component-grid-users-author-authorgrid-addAuthor-button-"]'
-		).click();
-		cy.wait(250);
-		cy.get('input[id^="givenName-en_US-"]').type(author.givenName, {
-			delay: 0
-		});
-		cy.get('input[id^="familyName-en_US-"]').type(author.familyName, {
-			delay: 0
-		});
-		cy.get('select[id=country]').select(author.country);
-		cy.get('input[id^="email"]').type(author.email, {delay: 0});
-		if ('affiliation' in author)
-			cy.get('input[id^="affiliation-en_US-"]').type(author.affiliation, {
-				delay: 0
-			});
-		cy.get('label')
-			.contains(author.role)
-			.click();
-		cy.get('form#editAuthor')
-			.find('button:contains("Save")')
-			.click();
-		cy.wait(250);
-		cy.get(
-			'div[id^="component-grid-users-author-authorgrid-"] span.label:contains("' +
-				Cypress.$.escapeSelector(author.givenName + ' ' + author.familyName) +
-				'")'
-		);
-	});
-	cy.waitJQuery();
-	cy.get(
-		'form[id=submitStep3Form] button:contains("Save and continue"):visible'
-	).click();
+    data.additionalAuthors.forEach((author) => {
+        if (!('role' in author)) author.role = 'Author';
+        cy.get(
+            'a[id^="component-grid-users-author-authorgrid-addAuthor-button-"]'
+        ).click();
+        cy.wait(250);
+        cy.get('input[id^="givenName-en_US-"]').type(author.givenName, {
+            delay: 0,
+        });
+        cy.get('input[id^="familyName-en_US-"]').type(author.familyName, {
+            delay: 0,
+        });
+        cy.get('select[id=country]').select(author.country);
+        cy.get('input[id^="email"]').type(author.email, { delay: 0 });
+        if ('affiliation' in author)
+            cy.get('input[id^="affiliation-en_US-"]').type(author.affiliation, {
+                delay: 0,
+            });
+        cy.get('label')
+            .contains(author.role)
+            .click();
+        cy.get('form#editAuthor')
+            .find('button:contains("Save")')
+            .click();
+        cy.wait(250);
+        cy.get(
+            'div[id^="component-grid-users-author-authorgrid-"] span.label:contains("' +
+                Cypress.$.escapeSelector(
+                    author.givenName + ' ' + author.familyName
+                ) +
+                '")'
+        );
+    });
+    cy.waitJQuery();
+    cy.get(
+        'form[id=submitStep3Form] button:contains("Save and continue"):visible'
+    ).click();
 
-	// === Submission Step 4 ===
-	cy.wait(3000);
-	cy.get('form[id=submitStep4Form]')
-		.find('button')
-		.contains('Finish Submission')
-		.click();
-	cy.get('button.pkpModalConfirmButton').click();
-	cy.waitJQuery();
-	cy.get('h2:contains("Submission complete")');
+    // === Submission Step 4 ===
+    cy.wait(3000);
+    cy.get('form[id=submitStep4Form]')
+        .find('button')
+        .contains('Finish Submission')
+        .click();
+    cy.get('button.pkpModalConfirmButton').click();
+    cy.waitJQuery();
+    cy.get('h2:contains("Submission complete")');
 });
-
-
