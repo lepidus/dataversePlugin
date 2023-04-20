@@ -225,6 +225,9 @@ msgstr "Es obligatorio informar la situación de los datos de investigación."
 msgid "plugins.generic.dataverse.researchDataState.inManuscript"
 msgstr "Están incluidos en el propio manuscrito"
 
+msgid "plugins.generic.dataverse.researchDataState.inManuscript.description"
+msgstr "Los dadtos de investigación están incluidos en el propio manuscrito"
+
 msgid "plugins.generic.dataverse.researchDataState.repoAvailable"
 msgstr "Ya están disponibles en un repositorio de datos"
 
@@ -243,6 +246,9 @@ msgstr "Se enviarán al repositorio \"{$dataverseName}\" en las siguientes etapa
 msgid "plugins.generic.dataverse.researchDataState.onDemand"
 msgstr "Están disponibles a petición, condición justificada en el manuscrito"
 
+msgid "plugins.generic.dataverse.researchDataState.onDemand.description"
+msgstr "Lss datos de investigación están disponibles bajo demanda. La condición está justificada en el manuscrito."
+
 msgid "plugins.generic.dataverse.researchDataState.private"
 msgstr "No se pueden disponibilizar públicamente"
 
@@ -250,4 +256,4 @@ msgid "plugins.generic.dataverse.researchDataState.private.reason"
 msgstr "Indique la justificación"
 
 msgid "plugins.generic.dataverse.researchDataState.private.description"
-msgstr "Los datos de investigación no pueden ser disponibilizados públicamente.<br> Justificación: {$researchDataReason}"
+msgstr "Los datos de investigación no pueden ser disponibilizados públicamente. Justificación: {$researchDataReason}"

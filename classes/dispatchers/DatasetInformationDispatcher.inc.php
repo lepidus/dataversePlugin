@@ -33,7 +33,12 @@ class DatasetInformationDispatcher extends DataverseDispatcher
                 error_log('Error getting citation: ' . $e->getMessage());
             }
         } elseif (isset($researchDataState) && $researchDataState != RESEARCH_DATA_SUBMISSION_DEPOSIT) {
-            $templateMgr->assign('datasetInfo', true);
+            import('plugins.generic.dataverse.classes.services.ResearchDataStateService');
+            $researchDataStateService = new ResearchDataStateService();
+            $templateMgr->assign(
+                'datasetInfo',
+                $researchDataStateService->getSubmissionResearchDataStateDescription($submission)
+            );
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
         }
 
