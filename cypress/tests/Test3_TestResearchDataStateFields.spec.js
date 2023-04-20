@@ -96,7 +96,32 @@ describe('Test research data state features', function() {
         cy.contains('Review this submission').click();
 
         cy.get('button[aria-controls="datasetTab"]').click();
-        cy.contains('The research data cannot be made publicly available.');
-        cy.contains('Justification: Sensitive data');
+        cy.contains(
+            'The research data cannot be made publicly available, with the justification: Sensitive data'
+        );
+    });
+
+    it('Check research data state is displayed in preprint page', function() {
+        cy.findSubmissionAsEditor(
+            'admin',
+            'admin',
+            'Corino',
+            'publicknowledge'
+        );
+
+        cy.get('#publication-button').click();
+        cy.get(
+            '.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton'
+        ).click();
+        cy.get('.pkp_modal_panel button:contains("Post")').click();
+        cy.get('.pkpPublication__versionPublished').should(
+            'contain',
+            'This version has been posted and can not be edited.'
+        );
+        cy.contains('View').click();
+
+        cy.get('.data_citation .value').contains(
+            'The research data cannot be made publicly available, with the justification: Sensitive data'
+        );
     });
 });
