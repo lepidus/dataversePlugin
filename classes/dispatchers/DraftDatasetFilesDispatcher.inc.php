@@ -38,14 +38,24 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     public function addStep2Validation(string $hookName, array $params): void
     {
         $form =& $params[0];
+
+        $this->validateResearchDataFileRequired($form);
+        $this->validateGalleyContainsResearchData($form);
+    }
+
+    private function validateResearchDataFileRequired(SubmissionSubmitStep2Form $form): void
+    {
         $submission = $form->submission;
 
-        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
-        if (empty($draftDatasetFileDAO->getBySubmissionId($submission->getId()))) {
+        if ($submission->getData('researchDataState') != RESEARCH_DATA_SUBMISSION_DEPOSIT) {
             return;
         }
 
-        $this->validateGalleyContainsResearchData($form);
+        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+        if (empty($draftDatasetFileDAO->getBySubmissionId($form->submission->getId()))) {
+            $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.researchDataFile.error"));
+            $form->addErrorField('dataverseStep2ValidationError');
+        }
     }
 
     private function validateGalleyContainsResearchData(SubmissionSubmitStep2Form $form): void
