@@ -270,7 +270,7 @@ describe('Create Submission without research data files', function() {
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button .pkpBadge').contains('0');
         cy.get('#datasetTab-button').click();
-        cy.get('.noResearchData span').contains(
+        cy.get('div[inputtype="text"]').contains(
             'No research data transferred.'
         );
     });
