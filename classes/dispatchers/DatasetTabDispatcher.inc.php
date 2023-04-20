@@ -123,6 +123,20 @@ class DatasetTabDispatcher extends DataverseDispatcher
             $researchDataStateLabel = __('plugins.generic.dataverse.researchData.noResearchData');
         }
 
+        if ($researchDataState == RESEARCH_DATA_REPO_AVAILABLE) {
+            $researchDataStateLabel = __(
+                'plugins.generic.dataverse.researchDataState.repoAvailable.description',
+                ['researchDataUrl' => $submission->getData('researchDataUrl')]
+            );
+        }
+
+        if ($researchDataState == RESEARCH_DATA_PRIVATE) {
+            $researchDataStateLabel = __(
+                'plugins.generic.dataverse.researchDataState.private.description',
+                ['researchDataReason' => $submission->getData('researchDataReason')]
+            );
+        }
+
         $templateMgr->setState([
             'researchDataStateLabel' => $researchDataStateLabel,
         ]);
