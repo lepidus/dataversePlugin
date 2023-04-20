@@ -61,6 +61,35 @@ describe('Test research data upload features', function() {
         );
     });
 
+    it('Check research data file is required', function() {
+        cy.login(adminUser, adminPassword);
+        cy.get('a')
+            .contains(adminUser)
+            .click();
+        cy.get('a')
+            .contains('Dashboard')
+            .click();
+        cy.get(
+            'a:contains("Make a New Submission"), div#myQueue a:contains("New Submission")'
+        ).click();
+
+        cy.get('input[id^="researchData-submissionDeposit"]').click();
+        cy.get('input[id^="checklist-"]').click({ multiple: true });
+        cy.get('input[id=privacyConsent]').click();
+        cy.get('input[name=userGroupId]')
+            .parent()
+            .contains('Preprint Server manager')
+            .click();
+        cy.get('button.submitFormButton').click();
+
+        cy.get('#submitStep2Form button.submitFormButton').click();
+
+        cy.get('#submitStep2FormNotification').should(
+            'contain',
+            'Research data is required. Please ensure that you have chosen and uploaded research data.'
+        );
+    });
+
     it('Check galley contains research data', function() {
         cy.login(adminUser, adminPassword);
         cy.get('a')
