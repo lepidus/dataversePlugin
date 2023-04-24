@@ -13,8 +13,8 @@
 <version>
 	<application>dataverse</application>
 	<type>plugins.generic</type>
-	<release>1.10.1.0</release>
-	<date>2023-04-20</date>
+	<release>1.10.2.0</release>
+	<date>2023-04-24</date>
 	<lazy-load>1</lazy-load>
 	<class>DataversePlugin</class>
 </version>
