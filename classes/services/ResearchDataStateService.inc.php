@@ -37,32 +37,25 @@ class ResearchDataStateService
     {
         $researchDataState = $submission->getData('researchDataState');
 
-        switch ($researchDataState) {
-            case RESEARCH_DATA_IN_MANUSCRIPT:
-                $researchDataStateDescription = __(
-                    'plugins.generic.dataverse.researchDataState.inManuscript.description'
-                );
-                break;
-            case RESEARCH_DATA_REPO_AVAILABLE:
-                $researchDataStateDescription = __(
-                    'plugins.generic.dataverse.researchDataState.repoAvailable.description',
-                    ['researchDataUrl' => $submission->getData('researchDataUrl')]
-                );
-                break;
-            case RESEARCH_DATA_ON_DEMAND:
-                $researchDataStateDescription = __('plugins.generic.dataverse.researchDataState.onDemand.description');
-                break;
-            case RESEARCH_DATA_PRIVATE:
-                $researchDataStateDescription = __(
-                    'plugins.generic.dataverse.researchDataState.private.description',
-                    ['researchDataReason' => $submission->getData('researchDataReason')]
-                );
-                break;
-            case RESEARCH_DATA_SUBMISSION_DEPOSIT:
-            default:
-                $researchDataStateDescription = __('plugins.generic.dataverse.researchData.noResearchData');
-                break;
-        }
+        $statesDescriptions = [
+            RESEARCH_DATA_IN_MANUSCRIPT => __(
+                'plugins.generic.dataverse.researchDataState.inManuscript.description'
+            ),
+            RESEARCH_DATA_REPO_AVAILABLE => __(
+                'plugins.generic.dataverse.researchDataState.repoAvailable.description',
+                ['researchDataUrl' => $submission->getData('researchDataUrl')]
+            ),
+            RESEARCH_DATA_ON_DEMAND => __(
+                'plugins.generic.dataverse.researchDataState.onDemand.description'
+            ),
+            RESEARCH_DATA_PRIVATE => __(
+                'plugins.generic.dataverse.researchDataState.private.description',
+                ['researchDataReason' => $submission->getData('researchDataReason')]
+            ),
+            RESEARCH_DATA_SUBMISSION_DEPOSIT => __('plugins.generic.dataverse.researchData.noResearchData')
+        ];
+
+        $researchDataStateDescription = $statesDescriptions[$researchDataState] ?? __('plugins.generic.dataverse.researchData.noResearchData');
 
         return $researchDataStateDescription;
     }
