@@ -215,6 +215,9 @@ msgstr "We encourage the availability of all underlying contents (data, program 
 "in addition to contributing to the preservation and reuse of content and reproducibility of research.<br>"
 "Please inform the status of the research data for this manuscript:"
 
+msgid "plugins.generic.dataverse.researchDataState.state"
+msgstr "State"
+
 msgid "plugins.generic.dataverse.researchDataState.required"
 msgstr "It is required to inform the status of the research data."
 

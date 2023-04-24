@@ -10,6 +10,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addResearchDataTab'));
         HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
+        HookRegistry::register('TemplateManager::setupBackendPage', array($this, 'setupPluginResources'));
         HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNotice'));
     }
 
@@ -27,7 +28,9 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $submission = $templateMgr->get_template_vars('submission');
 
-        $content = $this->getDatasetTabContent($submission);
+        // $content = $this->getDatasetTabContent($submission);
+
+        $content = $this->plugin->getTemplateResource('datasetTab/researchDataEdit.tpl');
 
         $output .= sprintf(
             '<tab id="datasetTab" label="%s" :badge="researchDataCount">%s</tab>',
@@ -62,6 +65,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         $templateMgr = $params[0];
         $template = $params[1];
+        $output =& $params[2];
 
         if (
             $template != 'workflow/workflow.tpl'
@@ -102,6 +106,20 @@ class DatasetTabDispatcher extends DataverseDispatcher
         return false;
     }
 
+    public function setupPluginResources(string $hookName): bool
+    {
+        $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->setLocaleKeys([
+            'plugins.generic.dataverse.researchDataState.inManuscript.description',
+            'plugins.generic.dataverse.researchDataState.repoAvailable.description',
+            'plugins.generic.dataverse.researchDataState.onDemand.description',
+            'plugins.generic.dataverse.researchDataState.private.description',
+            'plugins.generic.dataverse.researchData.noResearchData'
+        ]);
+        return false;
+    }
+
     private function setupResearchDataDeposit(Submission $submission): void
     {
         $request = Application::get()->getRequest();
@@ -127,7 +145,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
 
-        $items = array_map(function ($draftDatasetFile) use ($props) {
+        $items = array_map(function ($draftDatasetFile) {
             return $draftDatasetFile->getAllData();
         }, $draftDatasetFiles);
 
@@ -143,6 +161,26 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
         $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
         $this->initDatasetFileForm($templateMgr, $fileFormAction);
+
+        $this->initResearchDataStateForm($templateMgr, $submission);
+    }
+
+    private function initResearchDataStateForm(TemplateManager $templateMgr, Submission $submission): void
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $action = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'submissions/' . $submission->getId());
+
+        $supportedFormLocales = $context->getSupportedFormLocales();
+        $localeNames = AppLocale::getAllLocales();
+        $locales = array_map(function ($localeKey) use ($localeNames) {
+            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+        }, $supportedFormLocales);
+
+        import('plugins.generic.dataverse.classes.form.ResearchDataStateForm');
+        $researchDataStateForm = new ResearchDataStateForm($action, $locales, $submission);
+
+        $this->addComponent($templateMgr, $researchDataStateForm);
     }
 
     private function setupResearchDataUpdate(DataverseStudy $study): void
