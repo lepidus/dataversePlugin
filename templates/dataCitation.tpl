@@ -14,6 +14,6 @@
 		{translate key="plugins.generic.dataverse.researchData"}
 	</h2>
 	<div class="value">
-		{$datasetCitation}
+		{$datasetInfo}
 	</div>
 </section>

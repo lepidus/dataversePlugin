@@ -2,19 +2,20 @@
 
 Import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 
-class DatasetCitationDispatcher extends DataverseDispatcher
+class DatasetInformationDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('Templates::Preprint::Details', array($this, 'addDatasetCitation'));
+        HookRegistry::register('Templates::Preprint::Details', array($this, 'addDatasetInformation'));
     }
 
-    public function addDatasetCitation(string $hookName, array $params): bool
+    public function addDatasetInformation(string $hookName, array $params): bool
     {
         $templateMgr =& $params[1];
         $output =& $params[2];
 
         $submission = $templateMgr->getTemplateVars('preprint');
+        $researchDataState = $submission->getData('researchDataState');
         $contextId = $submission->getContextId();
 
         $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
@@ -26,11 +27,19 @@ class DatasetCitationDispatcher extends DataverseDispatcher
 
             try {
                 $citation = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId());
-                $templateMgr->assign('datasetCitation', $citation);
+                $templateMgr->assign('datasetInfo', $citation);
                 $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
             } catch (DataverseException $e) {
                 error_log('Error getting citation: ' . $e->getMessage());
             }
+        } elseif (isset($researchDataState) && $researchDataState != RESEARCH_DATA_SUBMISSION_DEPOSIT) {
+            import('plugins.generic.dataverse.classes.services.ResearchDataStateService');
+            $researchDataStateService = new ResearchDataStateService();
+            $templateMgr->assign(
+                'datasetInfo',
+                $researchDataStateService->getSubmissionResearchDataStateDescription($submission)
+            );
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
         }
 
         return false;

@@ -30,7 +30,7 @@ class DataversePlugin extends GenericPlugin
     private function loadDispatcherClasses(): void
     {
         $dispatcherClasses = [
-            'DatasetCitationDispatcher',
+            'DatasetInformationDispatcher',
             'DatasetSubjectDispatcher',
             'DatasetTabDispatcher',
             'DataverseEventsDispatcher',
