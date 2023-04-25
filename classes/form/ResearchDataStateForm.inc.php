@@ -30,18 +30,21 @@ class ResearchDataStateForm extends FormComponent
                     'type' => 'radio',
                     'value' => $submission->getData('researchDataState'),
                     'options' => $researchDataStateOptions,
+                    'isRequired' => true,
                 ]))
                 ->addField(new FieldText('researchDataUrl', [
                     'label' => __('plugins.generic.dataverse.researchDataState.repoAvailable.url'),
                     'value' => $submission->getData('researchDataUrl'),
                     'size' => 'large',
                     'showWhen' => ['researchDataState', RESEARCH_DATA_REPO_AVAILABLE],
+                    'isRequired' => true,
                 ]))
                 ->addField(new FieldText('researchDataReason', [
                     'label' => __('plugins.generic.dataverse.researchDataState.private.reason'),
                     'value' => $submission->getData('researchDataReason'),
                     'size' => 'large',
                     'showWhen' => ['researchDataState', RESEARCH_DATA_PRIVATE],
+                    'isRequired' => true,
                 ]));
     }
 }
