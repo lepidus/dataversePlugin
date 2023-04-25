@@ -28,9 +28,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $submission = $templateMgr->get_template_vars('submission');
 
-        // $content = $this->getDatasetTabContent($submission);
-
-        $content = $this->plugin->getTemplateResource('datasetTab/researchDataEdit.tpl');
+        $content = $this->getDatasetTabContent($submission);
 
         $output .= sprintf(
             '<tab id="datasetTab" label="%s" :badge="researchDataCount">%s</tab>',

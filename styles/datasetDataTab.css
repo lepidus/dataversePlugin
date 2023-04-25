@@ -42,8 +42,13 @@ div:not(:last-child) > .pkp_controllers_grid {
     margin-bottom: 0;
 }
 
-.researchDataHeader {
-    margin: 0 -2rem 0;
+.researchData {
+    margin: 0 -2rem 0 calc(-2rem - 1px);
+    border-bottom: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+}
+
+.researchData__header {
     padding: 1rem;
     border-bottom: 1px solid #ddd;
 

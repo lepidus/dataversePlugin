@@ -1,15 +1,23 @@
-<section class="noResearchData -pkpClearfix">
-    <div class="pkpFormField pkpFormField--html" inputtype="text">
-        <div class="pkpFormField__heading">
-            <span class="pkpFormFieldLabel">Situação</span>
+<section class="researchData -pkpClearfix">
+    <div class="researchData__header">
+        <div class="researchData__state">
+            <strong>{translate key="plugins.generic.dataverse.researchDataState.state"}:</strong>
+            <span v-html="researchDataState">   </span>
         </div>
-        <div class="pkpFormField__control pkpFormField__control--html">
-            <p v-html="researchDataStateLabel"></p>
+        <div class="researchData__stateButton">
+            <dropdown label="{translate key="common.edit"}">
+                <pkp-form
+                    class="researchData__stateForm"
+                    v-bind="components.researchDataState"
+                    @set="set"
+                    @success="refreshSubmission"
+                >
+            </dropdown>
+            <pkp-button @click="$modal.show('uploadResearchData')">
+                {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
+            </pkp-button>
         </div>
     </div>
-    <pkp-button @click="$modal.show('uploadResearchData')">
-        {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
-    </pkp-button>
 </section>
 
 <modal 
