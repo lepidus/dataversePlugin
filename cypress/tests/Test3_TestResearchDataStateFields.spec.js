@@ -124,4 +124,21 @@ describe('Test research data state features', function() {
             'The research data cannot be made publicly available, with the justification: Sensitive data'
         );
     });
+
+	it('Update research data state in dataset tab', function() {
+        cy.findSubmissionAsEditor(
+            'admin',
+            'admin',
+            'Corino',
+            'publicknowledge'
+        );
+
+        cy.get('#publication-button').click();
+        cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('.researchData__header button:contains("Edit")').click();
+		cy.get('input[name^="researchDataState"][value="inManuscript"').click();
+		cy.get('.researchData__stateForm button:contains("Save")').click();
+
+		cy.contains('Research data is contained in the manuscript');
+    });
 });

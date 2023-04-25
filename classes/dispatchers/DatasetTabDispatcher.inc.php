@@ -10,7 +10,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addResearchDataTab'));
         HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
-        HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNotice'));
+        HookRegistry::register('TemplateManager::setupBackendPage', array($this, 'setupPluginResources'));
     }
 
     private function getSubmissionStudy(int $submissionId): ?DataverseStudy
@@ -62,6 +62,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         $templateMgr = $params[0];
         $template = $params[1];
+        $output =& $params[2];
 
         if (
             $template != 'workflow/workflow.tpl'
@@ -102,6 +103,20 @@ class DatasetTabDispatcher extends DataverseDispatcher
         return false;
     }
 
+    public function setupPluginResources(string $hookName): bool
+    {
+        $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->setLocaleKeys([
+            'plugins.generic.dataverse.researchDataState.inManuscript.description',
+            'plugins.generic.dataverse.researchDataState.repoAvailable.description',
+            'plugins.generic.dataverse.researchDataState.onDemand.description',
+            'plugins.generic.dataverse.researchDataState.private.description',
+            'plugins.generic.dataverse.researchData.noResearchData'
+        ]);
+        return false;
+    }
+
     private function setupResearchDataDeposit(Submission $submission): void
     {
         $request = Application::get()->getRequest();
@@ -127,7 +142,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
 
-        $items = array_map(function ($draftDatasetFile) use ($props) {
+        $items = array_map(function ($draftDatasetFile) {
             return $draftDatasetFile->getAllData();
         }, $draftDatasetFiles);
 
@@ -143,6 +158,26 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
         $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
         $this->initDatasetFileForm($templateMgr, $fileFormAction);
+
+        $this->initResearchDataStateForm($templateMgr, $submission);
+    }
+
+    private function initResearchDataStateForm(TemplateManager $templateMgr, Submission $submission): void
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $action = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'submissions/' . $submission->getId());
+
+        $supportedFormLocales = $context->getSupportedFormLocales();
+        $localeNames = AppLocale::getAllLocales();
+        $locales = array_map(function ($localeKey) use ($localeNames) {
+            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+        }, $supportedFormLocales);
+
+        import('plugins.generic.dataverse.classes.form.ResearchDataStateForm');
+        $researchDataStateForm = new ResearchDataStateForm($action, $locales, $submission);
+
+        $this->addComponent($templateMgr, $researchDataStateForm);
     }
 
     private function setupResearchDataUpdate(DataverseStudy $study): void
@@ -251,45 +286,5 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $templateMgr->setState([
             'components' => $workflowComponents
         ]);
-    }
-
-    public function addDatasetPublishNotice(string $hookName, \PKP\components\forms\FormComponent $form): void
-    {
-        if ($form->id !== 'publish' || !empty($form->errors)) {
-            return;
-        }
-
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($form->publication->getData('submissionId'));
-
-        if (empty($study)) {
-            return;
-        }
-
-        try {
-            $dataverseClient = new DataverseClient();
-            $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
-
-            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($form->submissionContext->getId());
-
-            $params = [
-                'persistentUri' => $study->getPersistentUri(),
-                'serverName' => $rootDataverseCollection->getName(),
-                'serverUrl' => $configuration->getDataverseServerUrl(),
-            ];
-
-            $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
-                'description' => __("plugin.generic.dataverse.notification.submission.researchData", $params),
-                'groupId' => 'default',
-            ]));
-        } catch (DataverseException $e) {
-            $warningIconHtml = '<span class="fa fa-exclamation-triangle pkpIcon--inline"></span>';
-            $noticeMsg = __('plugins.generic.dataverse.notice.cannotPublish', ['error' => $e->getMessage()]);
-            $msg = '<div class="pkpNotification pkpNotification--warning">' . $warningIconHtml . $noticeMsg . '</div>';
-
-            $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
-                'description' => $msg,
-                'groupId' => 'default',
-            ]));
-        }
     }
 }

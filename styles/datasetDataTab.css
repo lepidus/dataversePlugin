@@ -40,4 +40,44 @@
 
 div:not(:last-child) > .pkp_controllers_grid {
     margin-bottom: 0;
-  }
+}
+
+.researchData {
+    margin: 0 -2rem 0 calc(-2rem - 1px);
+    border-bottom: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+}
+
+.researchData__header {
+    padding: 1rem;
+    border-bottom: 1px solid #ddd;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.researchData__state {
+    flex: 1;
+}   
+
+.researchData__state strong,
+.researchData__state span {
+    font-size: .875rem;
+}
+
+.researchData__stateButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.researchData__stateButton .pkpDropdown__content {
+    min-width: 25rem;
+    max-width: 25rem;
+}
+.pkpPublication__tabs.pkpTabs--side .pkpTab .pkpForm.researchData__stateForm {
+    margin: 0;
+    border: none;
+}

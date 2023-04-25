@@ -15,6 +15,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDataverseAPIHandlers'));
         HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
+        HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNotice'));
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -56,6 +57,46 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
         $datasetService = new DatasetService();
         $datasetService->publish($study);
+    }
+
+    public function addDatasetPublishNotice(string $hookName, \PKP\components\forms\FormComponent $form): void
+    {
+        if ($form->id !== 'publish' || !empty($form->errors)) {
+            return;
+        }
+
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($form->publication->getData('submissionId'));
+
+        if (empty($study)) {
+            return;
+        }
+
+        try {
+            $dataverseClient = new DataverseClient();
+            $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
+
+            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($form->submissionContext->getId());
+
+            $params = [
+                'persistentUri' => $study->getPersistentUri(),
+                'serverName' => $rootDataverseCollection->getName(),
+                'serverUrl' => $configuration->getDataverseServerUrl(),
+            ];
+
+            $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
+                'description' => __("plugin.generic.dataverse.notification.submission.researchData", $params),
+                'groupId' => 'default',
+            ]));
+        } catch (DataverseException $e) {
+            $warningIconHtml = '<span class="fa fa-exclamation-triangle pkpIcon--inline"></span>';
+            $noticeMsg = __('plugins.generic.dataverse.notice.cannotPublish', ['error' => $e->getMessage()]);
+            $msg = '<div class="pkpNotification pkpNotification--warning">' . $warningIconHtml . $noticeMsg . '</div>';
+
+            $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
+                'description' => $msg,
+                'groupId' => 'default',
+            ]));
+        }
     }
 
     public function setupDataverseAPIHandlers(string $hookname, Request $request): void

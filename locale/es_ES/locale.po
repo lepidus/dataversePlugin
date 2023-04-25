@@ -219,6 +219,9 @@ msgstr ""
 "comunidad científica, así como contribuir a la preservación y reutilización de los contenidos y la reproducibilidad de "
 "las investigaciones.<br> Por favor, indique la situación de los datos de investigación de este manuscrito:"
 
+msgid "plugins.generic.dataverse.researchDataState.state"
+msgstr "Situación"
+
 msgid "plugins.generic.dataverse.researchDataState.required"
 msgstr "Es obligatorio informar la situación de los datos de investigación."
 

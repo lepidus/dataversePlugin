@@ -88,7 +88,7 @@ class ResearchDataStateDispatcher extends DataverseDispatcher
         $schema->properties->{'researchDataUrl'} = (object) [
             'type' => 'string',
             'apiSummary' => true,
-            'validation' => ['nullable'],
+            'validation' => ['nullable', 'url'],
         ];
 
         $schema->properties->{'researchDataReason'} = (object) [

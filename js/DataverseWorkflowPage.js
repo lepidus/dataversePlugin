@@ -28,6 +28,25 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }
             return '0';
         },
+
+        researchDataState: function () {
+            const states = {
+                'inManuscript': this.__('plugins.generic.dataverse.researchDataState.inManuscript.description'),
+                'repoAvailable' : this.__(
+                    'plugins.generic.dataverse.researchDataState.repoAvailable.description',
+                    {'researchDataUrl': this.submission.researchDataUrl}
+                ).replace('{$researchDataUrl}', this.submission.researchDataUrl),
+                'onDemand': this.__(
+                    'plugins.generic.dataverse.researchDataState.onDemand.description'
+                ),
+                'private': this.__(
+                    'plugins.generic.dataverse.researchDataState.private.description',
+                    {'researchDataReason': this.submission.researchDataReason}
+                )
+            };
+
+            return states[this.submission.researchDataState] || this.__('plugins.generic.dataverse.researchData.noResearchData');
+        }
     },
     methods: {
         checkTermsOfUse() {

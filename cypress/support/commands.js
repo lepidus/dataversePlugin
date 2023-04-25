@@ -47,6 +47,7 @@ Cypress.Commands.add('configureDataversePlugin', () => {
 
 Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
     // Initialize some data defaults before starting
+	if(!('state' in data)) data.state = 'submissionDeposit'
     if (!('files' in data))
         data.files = [
             {
@@ -87,7 +88,7 @@ Cypress.Commands.add('DataverseCreateSubmission', (data, context) => {
             cy.get('input[id="isEditedVolume-1"]').click();
             break;
     }
-    cy.get('input[id^="researchData-submissionDeposit"]').click();
+    cy.get('input[id^="researchData-"][value="' + data.state + '"]').click();
     cy.get('input[id=privacyConsent]').click();
     if ('submitterRole' in data) {
         cy.get('input[name=userGroupId]')
