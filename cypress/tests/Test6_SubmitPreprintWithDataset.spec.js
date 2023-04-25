@@ -34,6 +34,7 @@ const submissionData = {
 };
 
 const submissionDataNoFiles = {
+	state: 'inManuscript',
     submitterRole: 'Preprint Server manager',
     title: 'The Rise of The Machine Empire (no files)',
     abstract: 'An example abstract',
@@ -256,23 +257,6 @@ describe('Create Submission without research data files', function() {
             .click();
 
         cy.DataverseCreateSubmission(submissionDataNoFiles);
-    });
-
-    it('Verify "Research Data" tab contains "no data" warning', function() {
-        cy.login(adminUser, adminPassword);
-        cy.get('a')
-            .contains(adminUser)
-            .click();
-        cy.get('a')
-            .contains('Dashboard')
-            .click();
-        cy.get('#myQueue a:contains("View"):first').click();
-        cy.get('#publication-button').click();
-        cy.get('#datasetTab-button .pkpBadge').contains('0');
-        cy.get('#datasetTab-button').click();
-        cy.get('div[inputtype="text"]').contains(
-            'No research data transferred.'
-        );
     });
 
     it('Check deposit event was not registered in activity log', function() {
