@@ -115,6 +115,13 @@ class DatasetService extends DataverseService
 
         try {
             $dataverseClient = new DataverseClient();
+
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+
+            if ($dataset->getVersionState() == 'RELEASED') {
+                return;
+            }
+
             $dataverseClient->getDatasetActions()->publish($study->getPersistentId());
         } catch (DataverseException $e) {
             $this->registerAndNotifyError(

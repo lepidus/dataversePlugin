@@ -101,4 +101,14 @@ class Dataset extends DataObject
     {
         $this->setData('files', $files);
     }
+
+    public function getVersionState(): ?string
+    {
+        return $this->getData('versionState');
+    }
+
+    public function setVersionState(string $versionState): void
+    {
+        $this->setData('versionState', $versionState);
+    }
 }

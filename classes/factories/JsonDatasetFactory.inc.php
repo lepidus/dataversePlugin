@@ -22,6 +22,7 @@ class JsonDatasetFactory extends DatasetFactory
 
         $props = [];
         $props['persistentId'] = $datasetVersion->datasetPersistentId;
+        $props['versionState'] = $datasetVersion->versionState;
         foreach ($datasetData as $metadata) {
             if ($metadata->typeClass == 'primitive') {
                 $props[$metadata->typeName] = $metadata->value;
