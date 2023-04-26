@@ -5,7 +5,7 @@
             <span v-html="researchDataState">   </span>
         </div>
         <div class="researchData__stateButton">
-            <dropdown label="{translate key="common.edit"}">
+            <dropdown v-if="!isPosted" label="{translate key="common.edit"}">
                 <pkp-form
                     class="researchData__stateForm"
                     v-bind="components.researchDataState"
@@ -13,7 +13,7 @@
                     @success="refreshSubmission"
                 >
             </dropdown>
-            <pkp-button @click="$modal.show('uploadResearchData')">
+            <pkp-button @click="$modal.show('uploadResearchData')" v-if="!isPosted">
                 {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
             </pkp-button>
         </div>
