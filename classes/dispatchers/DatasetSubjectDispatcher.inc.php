@@ -45,6 +45,10 @@ class DatasetSubjectDispatcher extends DataverseDispatcher
         $form->readUserVars(array('datasetSubject'));
         $subject = $form->getData('datasetSubject');
 
+        if(empty($subject)) {
+            return false;
+        }
+
         import('plugins.generic.dataverse.classes.DataverseMetadata');
         $dataverseSubjectVocab = DataverseMetadata::getDataverseSubjects();
         $datasetSubjectValues = array_column($dataverseSubjectVocab, 'value');
