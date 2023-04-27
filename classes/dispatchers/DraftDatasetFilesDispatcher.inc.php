@@ -14,12 +14,12 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     {
         $form = $params[0];
         $output =& $params[1];
-        $submission = $form->submission;
+        $publication = $form->submission->getCurrentPublication();
 
         $request = PKPApplication::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
 
-        if ($submission->getData('researchDataState') != RESEARCH_DATA_SUBMISSION_DEPOSIT) {
+        if ($publication->getData('researchDataState') != RESEARCH_DATA_SUBMISSION_DEPOSIT) {
             return $output;
         }
 
@@ -45,9 +45,9 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
     private function validateResearchDataFileRequired(SubmissionSubmitStep2Form $form): void
     {
-        $submission = $form->submission;
+        $publication = $form->submission->getCurrentPublication();
 
-        if ($submission->getData('researchDataState') != RESEARCH_DATA_SUBMISSION_DEPOSIT) {
+        if ($publication->getData('researchDataState') != RESEARCH_DATA_SUBMISSION_DEPOSIT) {
             return;
         }
 
