@@ -24,6 +24,10 @@ class ResearchDataStateService
         return [
             RESEARCH_DATA_IN_MANUSCRIPT => __('plugins.generic.dataverse.researchDataState.inManuscript'),
             RESEARCH_DATA_REPO_AVAILABLE => __('plugins.generic.dataverse.researchDataState.repoAvailable'),
+            RESEARCH_DATA_SUBMISSION_DEPOSIT => __(
+                'plugins.generic.dataverse.researchDataState.submissionDeposit',
+                $params
+                ),
             RESEARCH_DATA_ON_DEMAND => __('plugins.generic.dataverse.researchDataState.onDemand'),
             RESEARCH_DATA_PRIVATE => __('plugins.generic.dataverse.researchDataState.private')
         ];

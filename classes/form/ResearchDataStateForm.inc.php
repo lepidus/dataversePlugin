@@ -18,6 +18,8 @@ class ResearchDataStateForm extends FormComponent
         import('plugins.generic.dataverse.classes.services.ResearchDataStateService');
         $researchDataStateService = new ResearchDataStateService();
         $researchDataStates = $researchDataStateService->getResearchDataStates();
+        unset($researchDataStates[RESEARCH_DATA_SUBMISSION_DEPOSIT]);
+
         $researchDataStateOptions = array_map(function ($value, $label) {
             return [
                 'value' => $value,
