@@ -239,9 +239,6 @@ msgstr "The link to the search data is required."
 msgid "plugins.generic.dataverse.researchDataState.repoAvailable.description"
 msgstr "Research data available at <a href=\"{$researchDataUrl}\" target=\"_new\">{$researchDataUrl}</a>"
 
-msgid "plugins.generic.dataverse.researchDataState.submissionDeposit"
-msgstr "They will be submitted to the \"{$dataverseName}\" repository in the subsequent stages of this submission"
-
 msgid "plugins.generic.dataverse.researchDataState.onDemand"
 msgstr "They are available on demand, condition justified in the manuscript"
 

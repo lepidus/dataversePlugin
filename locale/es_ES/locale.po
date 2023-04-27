@@ -243,9 +243,6 @@ msgstr "Se requiere un enlace a los datos de la investigación."
 msgid "plugins.generic.dataverse.researchDataState.repoAvailable.description"
 msgstr "Datos de investigación disponibles en <a href=\"{$researchDataUrl}\" target=\"_new\">{$researchDataUrl}</a>"
 
-msgid "plugins.generic.dataverse.researchDataState.submissionDeposit"
-msgstr "Se enviarán al repositorio \"{$dataverseName}\" en las siguientes etapas de esta presentación"
-
 msgid "plugins.generic.dataverse.researchDataState.onDemand"
 msgstr "Están disponibles a petición, condición justificada en el manuscrito"
 
