@@ -8,7 +8,6 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             fileFormErrors: [],
             isLoading: false,
             latestGetRequest: '',
-            researchDataStateLabel: null,
         };
     },
     computed: {
@@ -34,18 +33,18 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 'inManuscript': this.__('plugins.generic.dataverse.researchDataState.inManuscript.description'),
                 'repoAvailable' : this.__(
                     'plugins.generic.dataverse.researchDataState.repoAvailable.description',
-                    {'researchDataUrl': this.submission.researchDataUrl}
-                ).replace('{$researchDataUrl}', this.submission.researchDataUrl),
+                    {'researchDataUrl': this.workingPublication.researchDataUrl}
+                ).replace('{$researchDataUrl}', this.workingPublication.researchDataUrl),
                 'onDemand': this.__(
                     'plugins.generic.dataverse.researchDataState.onDemand.description'
                 ),
                 'private': this.__(
                     'plugins.generic.dataverse.researchDataState.private.description',
-                    {'researchDataReason': this.submission.researchDataReason}
+                    {'researchDataReason': this.workingPublication.researchDataReason}
                 )
             };
 
-            return states[this.submission.researchDataState] || this.__('plugins.generic.dataverse.researchData.noResearchData');
+            return states[this.workingPublication.researchDataState] || this.__('plugins.generic.dataverse.researchData.noResearchData');
         }
     },
     methods: {
@@ -225,9 +224,13 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
     },
     created() {
-        pkp.eventBus.$on('form-success', (formId) => {
+        pkp.eventBus.$on('form-success', (formId, newPublication) => {
             if (formId === 'datasetMetadata') {
                 this.setDatasetCitation();
+            }
+            if (formId === 'researchDataState') {
+                this.workingPublication = {};
+				this.workingPublication = newPublication;
             }
         });
 

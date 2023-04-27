@@ -10,7 +10,7 @@ class ResearchDataStateDispatcher extends DataverseDispatcher
         HookRegistry::register('TemplateManager::display', [$this, 'addResearchDataStateStyles']);
         HookRegistry::register('submissionsubmitstep1form::Constructor', [$this, 'addResearchDataStateValidate']);
         HookRegistry::register('submissionsubmitstep1form::display', [$this, 'addResearchDataStateField']);
-        HookRegistry::register('Schema::get::submission', [$this, 'addResearchDataStatePropsToSubmissionSchema']);
+        HookRegistry::register('Schema::get::publication', [$this, 'addResearchDataStatePropsToPublicationSchema']);
         HookRegistry::register('SubmissionHandler::saveSubmit', [$this, 'saveResearchDataState']);
     }
 
@@ -75,7 +75,7 @@ class ResearchDataStateDispatcher extends DataverseDispatcher
         return $output;
     }
 
-    public function addResearchDataStatePropsToSubmissionSchema(string $hookName, array $args): bool
+    public function addResearchDataStatePropsToPublicationSchema(string $hookName, array $args): bool
     {
         $schema =& $args[0];
 
@@ -103,17 +103,31 @@ class ResearchDataStateDispatcher extends DataverseDispatcher
     public function saveResearchDataState(string $hookName, array $args): bool
     {
         $step = $args[0];
-        $submissionDao = DAORegistry::getDAO('SubmissionDAO');
         $stepForm = $args[2];
 
-        if ($step != 1 || !$stepForm->validate()) {
+        if (!$this->isValidStepForm($step, $stepForm)) {
             return false;
         }
 
         $submissionId = $stepForm->execute();
-        $submission = $submissionDao->getById($submissionId);
+        $submission = Services::get('submission')->get($submissionId);
+        $publication = $submission->getCurrentPublication();
 
-        $stepForm->readUserVars(['researchDataState']);
+        $params = $this->createPublicationParams($stepForm);
+
+        $newPublication = Services::get('publication')->edit($publication, $params, \Application::get()->getRequest());
+        $stepForm->submission = Services::get('submission')->get($newPublication->getData('submissionId'));
+
+        return false;
+    }
+
+    private function isValidStepForm(int $step, SubmissionSubmitForm &$stepForm): bool
+    {
+        if ($step !== 1 || !$stepForm->validate()) {
+            return false;
+        }
+
+        $stepForm->readUserVars(['researchDataState', 'researchDataUrl', 'researchDataReason']);
         $researchDataState = $stepForm->getData('researchDataState');
 
         if (empty($researchDataState)) {
@@ -124,27 +138,27 @@ class ResearchDataStateDispatcher extends DataverseDispatcher
             return false;
         }
 
-        $submission->setData('researchDataState', $researchDataState);
+        return true;
+    }
 
-        $researchData = $stepForm->getData('researchDataState');
+    private function createPublicationParams(SubmissionSubmitForm $stepForm): array
+    {
+        $researchDataState = $stepForm->getData('researchDataState');
 
-        if ($researchData == RESEARCH_DATA_REPO_AVAILABLE) {
-            $stepForm->readUserVars(['researchDataUrl']);
-            $submission->setData('researchDataUrl', $stepForm->getData('researchDataUrl'));
-        } else {
-            $submission->setData('researchDataUrl', null);
+        $params = [
+            'researchDataState' => $researchDataState,
+            'researchDataUrl' => null,
+            'researchDataReason' => null,
+        ];
+
+        if ($researchDataState === RESEARCH_DATA_REPO_AVAILABLE) {
+            $params['researchDataUrl'] = $stepForm->getData('researchDataUrl');
         }
 
-        if ($researchData == RESEARCH_DATA_PRIVATE) {
-            $stepForm->readUserVars(['researchDataReason']);
-            $submission->setData('researchDataReason', $stepForm->getData('researchDataReason'));
-        } else {
-            $submission->setData('researchDataReason', null);
+        if ($researchDataState === RESEARCH_DATA_PRIVATE) {
+            $params['researchDataReason'] = $stepForm->getData('researchDataReason');
         }
 
-        $submissionDao->updateObject($submission);
-        $stepForm->submission = $submission;
-
-        return false;
+        return $params;
     }
 }

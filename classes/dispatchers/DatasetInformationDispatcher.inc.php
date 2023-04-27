@@ -15,7 +15,8 @@ class DatasetInformationDispatcher extends DataverseDispatcher
         $output =& $params[2];
 
         $submission = $templateMgr->getTemplateVars('preprint');
-        $researchDataState = $submission->getData('researchDataState');
+        $publication = $submission->getCurrentPublication();
+        $researchDataState = $publication->getData('researchDataState');
         $contextId = $submission->getContextId();
 
         $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
@@ -37,7 +38,7 @@ class DatasetInformationDispatcher extends DataverseDispatcher
             $researchDataStateService = new ResearchDataStateService();
             $templateMgr->assign(
                 'datasetInfo',
-                $researchDataStateService->getSubmissionResearchDataStateDescription($submission)
+                $researchDataStateService->getResearchDataStateDescription($publication)
             );
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
         }

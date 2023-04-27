@@ -10,7 +10,7 @@ class ResearchDataStateForm extends FormComponent
 
     public $method = 'PUT';
 
-    public function __construct($action, $locales, $submission)
+    public function __construct($action, $locales, $publication)
     {
         $this->action = $action;
         $this->locales = $locales;
@@ -28,19 +28,19 @@ class ResearchDataStateForm extends FormComponent
         $this->addField(new FieldOptions('researchDataState', [
                     'label' => __('plugins.generic.dataverse.researchDataState.state'),
                     'type' => 'radio',
-                    'value' => $submission->getData('researchDataState'),
+                    'value' => $publication->getData('researchDataState'),
                     'options' => $researchDataStateOptions,
                     'isRequired' => true,
                 ]))
                 ->addField(new FieldText('researchDataUrl', [
                     'label' => __('plugins.generic.dataverse.researchDataState.repoAvailable.url'),
-                    'value' => $submission->getData('researchDataUrl'),
+                    'value' => $publication->getData('researchDataUrl'),
                     'size' => 'large',
                     'showWhen' => ['researchDataState', RESEARCH_DATA_REPO_AVAILABLE],
                 ]))
                 ->addField(new FieldText('researchDataReason', [
                     'label' => __('plugins.generic.dataverse.researchDataState.private.reason'),
-                    'value' => $submission->getData('researchDataReason'),
+                    'value' => $publication->getData('researchDataReason'),
                     'size' => 'large',
                     'showWhen' => ['researchDataState', RESEARCH_DATA_PRIVATE],
                 ]));
