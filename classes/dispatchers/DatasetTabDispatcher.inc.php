@@ -124,14 +124,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $context = $request->getContext();
         $user = $request->getUser();
 
-        import('plugins.generic.dataverse.classes.services.ResearchDataStateService');
-        $researchDataStateService = new ResearchDataStateService();
-        $researchDataStateLabel = $researchDataStateService->getSubmissionResearchDataStateDescription($submission);
-
-        $templateMgr->setState([
-            'researchDataStateLabel' => $researchDataStateLabel,
-        ]);
-
         $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
 
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
@@ -166,7 +158,14 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         $request = Application::get()->getRequest();
         $context = $request->getContext();
-        $action = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'submissions/' . $submission->getId());
+
+        $latestPublication = $submission->getLatestPublication();
+        $latestPublicationApiUrl = $request->getDispatcher()->url(
+            $request,
+            ROUTE_API,
+            $context->getPath(),
+            'submissions/' . $submission->getId() . '/publications/' . $latestPublication->getId()
+        );
 
         $supportedFormLocales = $context->getSupportedFormLocales();
         $localeNames = AppLocale::getAllLocales();
@@ -175,7 +174,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         }, $supportedFormLocales);
 
         import('plugins.generic.dataverse.classes.form.ResearchDataStateForm');
-        $researchDataStateForm = new ResearchDataStateForm($action, $locales, $submission);
+        $researchDataStateForm = new ResearchDataStateForm($latestPublicationApiUrl, $locales, $latestPublication);
 
         $this->addComponent($templateMgr, $researchDataStateForm);
     }

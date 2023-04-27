@@ -33,9 +33,10 @@ class ResearchDataStateService
         ];
     }
 
-    public function getSubmissionResearchDataStateDescription(Submission $submission): string
+    public function getResearchDataStateDescription(Publication $publication): string
     {
-        $researchDataState = $submission->getData('researchDataState');
+
+        $researchDataState = $publication->getData('researchDataState');
 
         $statesDescriptions = [
             RESEARCH_DATA_IN_MANUSCRIPT => __(
@@ -43,14 +44,14 @@ class ResearchDataStateService
             ),
             RESEARCH_DATA_REPO_AVAILABLE => __(
                 'plugins.generic.dataverse.researchDataState.repoAvailable.description',
-                ['researchDataUrl' => $submission->getData('researchDataUrl')]
+                ['researchDataUrl' => $publication->getData('researchDataUrl')]
             ),
             RESEARCH_DATA_ON_DEMAND => __(
                 'plugins.generic.dataverse.researchDataState.onDemand.description'
             ),
             RESEARCH_DATA_PRIVATE => __(
                 'plugins.generic.dataverse.researchDataState.private.description',
-                ['researchDataReason' => $submission->getData('researchDataReason')]
+                ['researchDataReason' => $publication->getData('researchDataReason')]
             ),
             RESEARCH_DATA_SUBMISSION_DEPOSIT => __('plugins.generic.dataverse.researchData.noResearchData')
         ];

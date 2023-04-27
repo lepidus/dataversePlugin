@@ -49,6 +49,9 @@ class DatasetService extends DataverseService
         $study->setPersistentUri('https://doi.org/' . str_replace('doi:', '', $datasetIdentifier->getPersistentId()));
         $dataverseStudyDAO->insertStudy($study);
 
+        $publication = $submission->getCurrentPublication();
+        $newPublication = Services::get('publication')->edit($publication, ['researchDataState'=>RESEARCH_DATA_SUBMISSION_DEPOSIT], $request);
+
         $this->registerEventLog(
             $submission,
             'plugins.generic.dataverse.log.researchDataDeposited',
