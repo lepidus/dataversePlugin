@@ -35,6 +35,9 @@ class ResearchDataStateService
 
     public function getResearchDataStateDescription(Publication $publication): string
     {
+
+		$researchDataState = $publication->getData('researchDataState');
+
         $statesDescriptions = [
             RESEARCH_DATA_IN_MANUSCRIPT => __(
                 'plugins.generic.dataverse.researchDataState.inManuscript.description'
