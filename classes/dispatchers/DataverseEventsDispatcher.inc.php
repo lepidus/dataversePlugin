@@ -141,10 +141,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     public function setupDataverseHandlers($hookName, $params): bool
     {
         $component =& $params[0];
-        switch ($component) {
-            case 'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler':
-                return true;
-                break;
+        if ($component == 'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler') {
+            import($component);
+            return true;
         }
         return false;
     }
