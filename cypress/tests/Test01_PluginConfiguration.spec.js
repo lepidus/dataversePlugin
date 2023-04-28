@@ -1,8 +1,10 @@
 
 describe('Plugin configuration tests', function () {
 
-    it('Check Configuration', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
+	it('Check Configuration', function () {
+		const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
+
+		cy.login('dbarnes', null, 'publicknowledge');
 
 		cy.get('a:contains("Website")').click();
 
@@ -12,8 +14,8 @@ describe('Plugin configuration tests', function () {
 		cy.get('input[id^=select-cell-dataverseplugin]').check();
 		cy.get('input[id^=select-cell-dataverseplugin]').should('be.checked');
 
-		cy.get('tr#component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin a.show_extras').click();
-		cy.get('a[id^=component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin-settings-button]').click();
+		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
+		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
 
 		cy.get('input[name=dataverseUrl]').focus().clear();
 		cy.get('input[name=apiToken]').focus().clear();
@@ -29,6 +31,11 @@ describe('Plugin configuration tests', function () {
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('label[for^=dataverseUrl].error').should('contain', 'Please enter a valid URL.');
 
+		cy.get('input[name="termsOfUse[en_US]"]').focus().clear().type('invalidTermsOfUse');
+
+		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
+		cy.get('label[for^=termsOfUse].error').should('contain', 'Please enter a valid URL.');
+
 		cy.get('input[name=dataverseUrl]').focus().clear().type(Cypress.env('dataverseUrl'));
 		cy.get('input[name=apiToken]').focus().clear().type('invalidToken');
 		cy.get('input[name="termsOfUse[en_US]"]').focus().clear().type(Cypress.env('termsOfUse'));
@@ -40,5 +47,5 @@ describe('Plugin configuration tests', function () {
 
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('div:contains("Your changes have been saved.")');
-    });
+	});
 });
