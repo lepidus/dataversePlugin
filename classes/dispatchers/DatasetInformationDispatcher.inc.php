@@ -7,6 +7,7 @@ class DatasetInformationDispatcher extends DataverseDispatcher
     protected function registerHooks(): void
     {
         HookRegistry::register('Templates::Preprint::Details', array($this, 'addDatasetInformation'));
+        HookRegistry::register('Templates::Article::Details', array($this, 'addDatasetInformation'));
     }
 
     public function addDatasetInformation(string $hookName, array $params): bool
@@ -14,7 +15,7 @@ class DatasetInformationDispatcher extends DataverseDispatcher
         $templateMgr =& $params[1];
         $output =& $params[2];
 
-        $submission = $templateMgr->getTemplateVars('preprint');
+        $submission = $templateMgr->getTemplateVars('preprint') ?? $templateMgr->getTemplateVars('article');
         $publication = $submission->getCurrentPublication();
         $researchDataState = $publication->getData('researchDataState');
         $contextId = $submission->getContextId();
