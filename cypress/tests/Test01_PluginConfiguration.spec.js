@@ -1,5 +1,5 @@
 
-describe('Plugin configuration tests', function () {
+describe('Plugin configuration', function () {
 
 	it('Check Configuration', function () {
 		const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
@@ -27,12 +27,10 @@ describe('Plugin configuration tests', function () {
 		cy.get('label[for^=termsOfUse].error').should('contain', 'This field is required.');
 
 		cy.get('input[name=dataverseUrl]').focus().clear().type('dataverseUrl');
-
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('label[for^=dataverseUrl].error').should('contain', 'Please enter a valid URL.');
 
 		cy.get('input[name="termsOfUse[en_US]"]').focus().clear().type('invalidTermsOfUse');
-
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('label[for^=termsOfUse].error').should('contain', 'Please enter a valid URL.');
 
