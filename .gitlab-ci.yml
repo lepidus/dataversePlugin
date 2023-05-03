@@ -1,5 +1,7 @@
 variables:
     PLUGIN_NAME: 'dataverse'
+    CYPRESS_dataverseUrl: 'https://demo.dataverse.org/dataverse/dataverseDeExemplo'
+    CYPRESS_dataverseTermsOfUse: 'https://dataverse.org/best-practices/harvard-dataverse-general-terms-use'
 
 include:
   - project: 'documentacao-e-tarefas/modelosparaintegracaocontinua'
