@@ -74,7 +74,7 @@ describe('Research data state', function () {
 		cy.get('h2:contains("Submission complete")');
 	});
 
-	it('Check reseach data state research data tab', function () {
+	it('Check reseach data state in research data tab', function () {
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
 			cy.allowAuthorToEditPublication('dbarnes', null, 'Elinor Ostrom');
 		}

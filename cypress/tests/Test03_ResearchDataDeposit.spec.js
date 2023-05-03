@@ -41,7 +41,7 @@ describe('Research data deposit', function () {
                     encoding: 'base64',
                 });
         });
-        cy.wait(200);
+        cy.wait(1000);
 		cy.get('label a:contains(Terms of Use)').should('have.attr', 'href', Cypress.env('dataverseTermsOfUse'));
 		cy.get('label:contains(Terms of Use) strong').then($strong => {
 			dataverseName = $strong.text();
@@ -179,10 +179,10 @@ describe('Research data deposit', function () {
                 encoding: 'base64',
             });
         });
-        cy.wait(200);
+        cy.wait(1000);
         cy.get('input[name="termsOfUse"').check();
         cy.get('[data-modal="fileForm"] form button').contains('Save').click();
-        cy.wait(200);
+        cy.wait(1000);
         cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
         cy.get('#datasetTab form button').contains('Save').click();
 		cy.get('#datasetTab [role="status"]').contains('Saved');
@@ -267,10 +267,10 @@ describe('Research data deposit', function () {
                 encoding: 'base64',
             });
         });
-        cy.wait(200);
+        cy.wait(1000);
         cy.get('input[name="termsOfUse"').check();
         cy.get('[data-modal="fileForm"] form button').contains('Save').click();
-        cy.wait(200);
+        cy.wait(1000);
         cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
         cy.get('#datasetTab form button').contains('Save').click();
 		cy.get('#datasetTab [role="status"]').contains('Saved');
@@ -321,7 +321,7 @@ describe('Research data deposit', function () {
         cy.get('.data_citation .value').contains(`${dataverseServerName}, V1`);
 	});
 
-	it('Check author actions was registered in activity log', function () {
+	it('Check editor actions was registered in activity log', function () {
 		cy.login('dbarnes');
 		cy.visit('/index.php/publicknowledge/workflow/access/' + submission.id);
 
