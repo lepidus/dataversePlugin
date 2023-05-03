@@ -36,12 +36,12 @@ describe('Plugin configuration', function () {
 
 		cy.get('input[name=dataverseUrl]').focus().clear().type(Cypress.env('dataverseUrl'));
 		cy.get('input[name=apiToken]').focus().clear().type('invalidToken');
-		cy.get('input[name="termsOfUse[en_US]"]').focus().clear().type(Cypress.env('termsOfUse'));
+		cy.get('input[name="termsOfUse[en_US]"]').focus().clear().type(Cypress.env('dataverseTermsOfUse'));
 
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.contains("Can't connect to Dataverse");
 
-		cy.get('input[name=apiToken]').focus().clear().type(Cypress.env('apiToken'));
+		cy.get('input[name=apiToken]').focus().clear().type(Cypress.env('dataverseApiToken'));
 
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('div:contains("Your changes have been saved.")');

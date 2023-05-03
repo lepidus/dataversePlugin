@@ -1,3 +1,4 @@
+import '../support/commands.js';
 
 describe('Research data state', function () {
 	let submission;
@@ -61,11 +62,12 @@ describe('Research data state', function () {
 				node.tagit('createTag', keyword);
 			});
 		});
+		cy.get('select[id^="datasetSubject"').should('not.be.visible');
 
 		cy.waitJQuery();
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
-		cy.wait(3000);
+		cy.waitJQuery();
 		cy.get('form[id=submitStep4Form]').find('button').contains('Finish Submission').click();
 		cy.get('button.pkpModalConfirmButton').click();
 		cy.waitJQuery();
@@ -74,17 +76,7 @@ describe('Research data state', function () {
 
 	it('Check reseach data state research data tab', function () {
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
-			cy.login('dbarnes');
-			cy.visit('/index.php/publicknowledge/workflow/access/' + submission.id);
-			cy.get('#stageParticipantGridContainer- .label').contains('Elinor Ostrom')
-				.parent().parent().find('.show_extras').click()
-				.parent().parent().siblings().find('a').contains('Edit').click();
-			cy.get('[name="canChangeMetadata"]').check();
-			cy.get('[id^="submitFormButton"]').contains('OK').click();
-			cy.contains('The stage assignment has been changed.');
-			cy.wait(1000);
-			cy.logout();
-			cy.wait(1000);
+			cy.allowAuthorToEditPublication('dbarnes', null, 'Elinor Ostrom');
 		}
 
 		cy.login('eostrom', null, 'publicknowledge');
