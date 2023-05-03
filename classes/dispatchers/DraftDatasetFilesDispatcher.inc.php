@@ -19,6 +19,15 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $request = PKPApplication::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
 
+        $requestArgs = $templateMgr->get_template_vars('requestArgs');
+        if (empty($requestArgs)) {
+            $requestArgs = [
+                'submissionId' => $form->submission->getId(),
+                'publicationId' => $publication->getId(),
+            ];
+            $templateMgr->assign('requestArgs', $requestArgs);
+        }
+
         if ($publication->getData('researchDataState') != RESEARCH_DATA_SUBMISSION_DEPOSIT) {
             return $output;
         }
