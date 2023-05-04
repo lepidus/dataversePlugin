@@ -11,5 +11,6 @@ include:
 
 integration_tests:
   before_script:
-    - apt update && apt install google-chrome-stable -yqq
+    - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - apt install ./google-chrome-stable_current_amd64.deb
 
