@@ -11,5 +11,5 @@ include:
 
 integration_tests:
   before_script:
-    - apt update && apt install chrome -yqq
+    - apt update && apt install google-chrome-stable -yqq
 
