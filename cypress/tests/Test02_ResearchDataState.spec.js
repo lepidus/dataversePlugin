@@ -22,7 +22,10 @@ describe('Research data state', function () {
 
 		cy.get('div#myQueue a:contains("New Submission")').click();
 
-		cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
+		if (Cypress.env('contextTitles').en_US != 'Public Knowledge Preprint Server') {
+			cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
+		}
+
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[id=privacyConsent]').click();
 
@@ -109,6 +112,8 @@ describe('Research data state', function () {
 	});
 
 	it('Check submission landing page displays research data state', function () {
+		const media = Cypress.env('contextTitles').en_US === 'Public Knowledge Preprint Server' ? 'preprint' : 'article';
+
 		cy.login('dbarnes');
 		cy.visit('/index.php/publicknowledge/workflow/access/' + submission.id);
 
@@ -129,7 +134,7 @@ describe('Research data state', function () {
 		cy.get('.researchData__header button:contains("Edit")').should('not.exist');
 		cy.get('.researchData__header button:contains("Upload research data")').should('not.exist');
 
-		cy.visit('/index.php/publicknowledge/article/view/' + submission.id);
+		cy.visit(`/index.php/publicknowledge/${media}/view/${submission.id}`);
 		cy.contains('Research data is available on demand.The condition is justified in the manuscript');
 	});
 });
