@@ -112,57 +112,57 @@ describe('Research data deposit', function () {
 		cy.get('#datasetData .value').contains('The Power of Computer Vision: Advances, Applications and Challenges');
 	});
 
-	// it('Check author can edit research data files', function () {
-	// 	cy.login('ckwantes', null, 'publicknowledge');
-	// 	cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
+	it('Check author can edit research data files', function () {
+		cy.login('ckwantes', null, 'publicknowledge');
+		cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
 
-	// 	cy.get('button[aria-controls="publication"]').click();
-	// 	cy.get('button[aria-controls="datasetTab"]').click();
-	// 	cy.get('button[aria-controls="dataset_files"]').click();
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('button[aria-controls="dataset_files"]').click();
 
-	// 	cy.get('button').contains('Add research data').click();
-	// 	cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
-	// 		cy.get('#datasetFileForm-datasetFile-hiddenFileId').upload({
-	// 			fileContent,
-	// 			fileName: 'samples.pdf',
-	// 			mimeType: 'application/pdf',
-	// 			encoding: 'base64',
-	// 		});
-	// 	});
-	// 	cy.get('input[name="termsOfUse"').check();
-	// 	cy.get('[data-modal="fileForm"] button:contains("Save")').click();
-	// 	cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
-	// 	cy.get('#datasetTab-button .pkpBadge').contains('2');
+		cy.get('button').contains('Add research data').click();
+		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').upload({
+				fileContent,
+				fileName: 'samples.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('[data-modal="fileForm"] button:contains("Save")').click();
+		cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
+		cy.get('#datasetTab-button .pkpBadge').contains('2');
 
-	// 	cy.get('.listPanel__item:contains(samples.pdf) button:contains(Delete)').click();
-	// 	cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
-	// 	cy.get('[data-modal="delete"] button:contains(Yes)').click();
-	// 	cy.waitJQuery();
-	// 	cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'samples.pdf');
-	// 	cy.get('#datasetTab-button .pkpBadge').contains('1');
-	// });
+		cy.get('.listPanel__item:contains(samples.pdf) button:contains(Delete)').click();
+		cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
+		cy.get('[data-modal="delete"] button:contains(Yes)').click();
+		cy.waitJQuery();
+		cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'samples.pdf');
+		cy.get('#datasetTab-button .pkpBadge').contains('1');
+	});
 
-	// it('Check author can delete research data', function () {
-	// 	cy.login('ckwantes', null, 'publicknowledge');
-	// 	cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
+	it('Check author can delete research data', function () {
+		cy.login('ckwantes', null, 'publicknowledge');
+		cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
 
-	// 	cy.get('button[aria-controls="publication"]').click();
-	// 	cy.get('button[aria-controls="datasetTab"]').click();
-	// 	cy.contains('Delete research data').click();
-	// 	cy.get('[data-modal="delete"] button').contains('Yes').click();
-	// 	cy.contains('No research data transferred.');
-	// });
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.contains('Delete research data').click();
+		cy.get('[data-modal="delete"] button').contains('Yes').click();
+		cy.contains('No research data transferred.');
+	});
 
-	// it('Check author actions was registered in activity log', function () {
-	// 	cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
+	it('Check author actions was registered in activity log', function () {
+		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
-	// 	cy.contains('Activity Log').click();
-	// 	cy.get('#submissionHistoryGridContainer tr:contains(Research data deposited) td').should('contain', 'Catherine Kwantes');
-	// 	cy.get('#submissionHistoryGridContainer tr:contains(Research data metadata updated) td').should('contain', 'Catherine Kwantes');
-	// 	cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" added as research data.) td').should('contain', 'Catherine Kwantes');
-	// 	cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" deleted from research data.) td').should('contain', 'Catherine Kwantes');
-	// 	cy.get('#submissionHistoryGridContainer tr:contains(Research data deleted) td').should('contain', 'Catherine Kwantes');
-	// });
+		cy.contains('Activity Log').click();
+		cy.get('#submissionHistoryGridContainer tr:contains(Research data deposited) td').should('contain', 'Catherine Kwantes');
+		cy.get('#submissionHistoryGridContainer tr:contains(Research data metadata updated) td').should('contain', 'Catherine Kwantes');
+		cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" added as research data.) td').should('contain', 'Catherine Kwantes');
+		cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" deleted from research data.) td').should('contain', 'Catherine Kwantes');
+		cy.get('#submissionHistoryGridContainer tr:contains(Research data deleted) td').should('contain', 'Catherine Kwantes');
+	});
 
 	// it('Check research data can be deposit in research data tab', function () {
 	// 	cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
