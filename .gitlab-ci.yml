@@ -8,9 +8,3 @@ include:
       - 'templates/groups/pkp_plugin.yml'
       - 'templates/groups/ops_plugins_unit_tests_model.yml'
       - 'templates/groups/ops_plugins_cypress_tests_model.yml'
-
-integration_tests:
-  before_script:
-    - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    - apt update && apt install fonts-liberation libu2f-udev ./google-chrome-stable_current_amd64.deb -yqq
-
