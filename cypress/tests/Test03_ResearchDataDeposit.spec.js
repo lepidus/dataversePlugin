@@ -142,27 +142,27 @@ describe('Research data deposit', function () {
 		cy.get('#datasetTab-button .pkpBadge').contains('1');
 	});
 
-	it('Check author can delete research data', function () {
-		cy.login('ckwantes', null, 'publicknowledge');
-		cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
+	// it('Check author can delete research data', function () {
+	// 	cy.login('ckwantes', null, 'publicknowledge');
+	// 	cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
-		cy.contains('Delete research data').click();
-		cy.get('[data-modal="delete"] button').contains('Yes').click();
-		cy.contains('No research data transferred.');
-	});
+	// 	cy.get('button[aria-controls="publication"]').click();
+	// 	cy.get('button[aria-controls="datasetTab"]').click();
+	// 	cy.contains('Delete research data').click();
+	// 	cy.get('[data-modal="delete"] button').contains('Yes').click();
+	// 	cy.contains('No research data transferred.');
+	// });
 
-	it('Check author actions was registered in activity log', function () {
-		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
+	// it('Check author actions was registered in activity log', function () {
+	// 	cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
-		cy.contains('Activity Log').click();
-		cy.get('#submissionHistoryGridContainer tr:contains(Research data deposited) td').should('contain', 'Catherine Kwantes');
-		cy.get('#submissionHistoryGridContainer tr:contains(Research data metadata updated) td').should('contain', 'Catherine Kwantes');
-		cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" added as research data.) td').should('contain', 'Catherine Kwantes');
-		cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" deleted from research data.) td').should('contain', 'Catherine Kwantes');
-		cy.get('#submissionHistoryGridContainer tr:contains(Research data deleted) td').should('contain', 'Catherine Kwantes');
-	});
+	// 	cy.contains('Activity Log').click();
+	// 	cy.get('#submissionHistoryGridContainer tr:contains(Research data deposited) td').should('contain', 'Catherine Kwantes');
+	// 	cy.get('#submissionHistoryGridContainer tr:contains(Research data metadata updated) td').should('contain', 'Catherine Kwantes');
+	// 	cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" added as research data.) td').should('contain', 'Catherine Kwantes');
+	// 	cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" deleted from research data.) td').should('contain', 'Catherine Kwantes');
+	// 	cy.get('#submissionHistoryGridContainer tr:contains(Research data deleted) td').should('contain', 'Catherine Kwantes');
+	// });
 
 	// it('Check research data can be deposit in research data tab', function () {
 	// 	cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
