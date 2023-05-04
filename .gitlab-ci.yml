@@ -4,7 +4,7 @@ variables:
     CYPRESS_dataverseTermsOfUse: 'https://dataverse.org/best-practices/harvard-dataverse-general-terms-use'
 
 include:
-  - project: 'documentacao-e-tarefas/modelosparaintegracaocontinua'
+  - project: 'thiago/modelos-para-integracao-continua-test'
     ref: main
     file:
       - 'templates/groups/pkp_plugin.yml'
