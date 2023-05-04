@@ -3,7 +3,7 @@ import '../support/commands.js';
 describe('Research data state', function () {
 	let submission;
 
-	before(function() {
+	before(function () {
 		submission = {
 			id: 0,
 			section: 'Articles',
@@ -23,7 +23,7 @@ describe('Research data state', function () {
 		cy.get('div#myQueue a:contains("New Submission")').click();
 
 		cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
-		cy.get('input[id^="checklist-"]').click({multiple: true});
+		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[id=privacyConsent]').click();
 
 		cy.get('button.submitFormButton').click();
@@ -31,17 +31,17 @@ describe('Research data state', function () {
 
 		cy.get('input[id^="researchData-repoAvailable"]').click();
 		cy.get('button.submitFormButton').click();
-        cy.get('label[for^="researchDataUrl"].error').should('contain','This field is required');
+		cy.get('label[for^="researchDataUrl"].error').should('contain', 'This field is required');
 
 		cy.get('input[name=researchDataUrl]').focus().clear().type('invalidUrl');
-        cy.get('label[for^="researchDataUrl"].error').should('contain','Please enter a valid URL.');
+		cy.get('label[for^="researchDataUrl"].error').should('contain', 'Please enter a valid URL.');
 		cy.get('input[name=researchDataUrl]').focus().clear()
 
 		cy.get('input[id^="researchData-private"]').click();
 		cy.get('button.submitFormButton').click();
-        cy.get('label[for^="researchDataReason"].error').should('contain','This field is required');
+		cy.get('label[for^="researchDataReason"].error').should('contain', 'This field is required');
 
-		cy.get('input[id^="checklist-"]').click({multiple: true});
+		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[name=researchDataReason]').focus().clear().type('Has sensitive data');
 
 		cy.get('button.submitFormButton').click();
@@ -53,7 +53,7 @@ describe('Research data state', function () {
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
-    	cy.get('label').contains('Title').click();
+		cy.get('label').contains('Title').click();
 		cy.get('textarea[id^="abstract-en_US-"').then((node) => {
 			cy.setTinyMceContent(node.attr('id'), submission.abstract);
 		});
@@ -96,7 +96,7 @@ describe('Research data state', function () {
 
 		cy.get('.researchData__header button:contains("Edit")').click();
 		cy.get('input[name="researchDataState"][value="repoAvailable"]').click();
-		cy.get('input[name="researchDataUrl"]').type('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM', {delay: 0});
+		cy.get('input[name="researchDataUrl"]').type('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM', { delay: 0 });
 		cy.get('.researchData__stateForm button:contains("Save")').click();
 		cy.get('.researchData__state').contains('Research data available at https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
 		cy.get('.researchData__state a').should('have.attr', 'href', 'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
