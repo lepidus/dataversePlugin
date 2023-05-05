@@ -80,7 +80,7 @@ class ResearchDataStateDispatcher extends DataverseDispatcher
         $schema =& $args[0];
 
         $schema->properties->{'researchDataState'} = (object) [
-            'type' => 'string',
+            'type' => 'integer',
             'apiSummary' => true,
             'validation' => ['nullable'],
         ];

@@ -1,10 +1,10 @@
 <?php
 
-define('RESEARCH_DATA_IN_MANUSCRIPT', 'inManuscript');
-define('RESEARCH_DATA_REPO_AVAILABLE', 'repoAvailable');
-define('RESEARCH_DATA_SUBMISSION_DEPOSIT', 'submissionDeposit');
-define('RESEARCH_DATA_ON_DEMAND', 'onDemand');
-define('RESEARCH_DATA_PRIVATE', 'private');
+define('RESEARCH_DATA_IN_MANUSCRIPT', 0x000000001);
+define('RESEARCH_DATA_REPO_AVAILABLE', 0x000000002);
+define('RESEARCH_DATA_SUBMISSION_DEPOSIT', 0x000000003);
+define('RESEARCH_DATA_ON_DEMAND', 0x000000004);
+define('RESEARCH_DATA_PRIVATE', 0x000000005);
 
 class ResearchDataStateService
 {
