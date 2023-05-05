@@ -1,6 +1,5 @@
 variables:
     PLUGIN_NAME: 'dataverse'
-    CYPRESS_numTestsKeptInMemory: 1
 
 include:
   - project: 'thiago/modelos-para-integracao-continua-test'
