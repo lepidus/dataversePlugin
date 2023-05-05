@@ -2,7 +2,7 @@
 	{translate key="plugins.generic.dataverse.researchDataState.description"}
 	{foreach from=$researchDataStates key="stateValue" item="stateLabel"}
 		{if $stateValue == 'inManuscript'}{assign var="checked" value=true}{else}{assign var="checked" value=false}{/if}
-		{fbvElement type="radio" id="researchData-"|concat:$stateValue name="researchDataState" value=$stateValue checked=false label=$stateLabel translate=false}
+		{fbvElement type="checkbox" id="researchDataState[]" value=$stateValue checked=false label=$stateLabel translate=false}
 	{/foreach}
 
 	{fbvFormSection id="researchDataUrlSection" class="research_data_states" size=$fbvStyles.size.MEDIUM}
