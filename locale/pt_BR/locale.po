@@ -216,13 +216,13 @@ msgstr "Encorajamos a disponibilidade de todos os conteúdos (dados, códigos de
 "subjacentes ao texto do manuscrito previamente ou no momento da submissão. Exceções são permitidas em casos de "
 "questões legais e éticas. O objetivo é facilitar a moderação do manuscrito, a avaliação pela comunidade científica, "
 "além de contribuir para a preservação e reuso dos conteúdos e a reprodutibilidade das pesquisas.<br>"
-"Por favor, informe a situação dos dados de pesquisa deste manuscrito:"
+"Por favor, informe a declaração de dados de pesquisa deste manuscrito:"
 
 msgid "plugins.generic.dataverse.researchDataState.state"
 msgstr "Situação"
 
 msgid "plugins.generic.dataverse.researchDataState.required"
-msgstr "É obrigatório informar a situação dos dados de pesquisa."
+msgstr "É obrigatório informar a declaração de dados de pesquisa."
 
 msgid "plugins.generic.dataverse.researchDataState.inManuscript"
 msgstr "Estão contidos no próprio manuscrito"

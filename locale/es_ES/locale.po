@@ -217,13 +217,13 @@ msgstr ""
 "al texto del manuscrito previamente o en el momento de la presentación. Se permiten excepciones en casos "
 "de cuestiones legales y éticas. El objetivo es facilitar la moderación del manuscrito, la evaluación por parte de la "
 "comunidad científica, así como contribuir a la preservación y reutilización de los contenidos y la reproducibilidad de "
-"las investigaciones.<br> Por favor, indique la situación de los datos de investigación de este manuscrito:"
+"las investigaciones.<br> Por favor, indique la declaración de los datos de investigación de este manuscrito:"
 
 msgid "plugins.generic.dataverse.researchDataState.state"
 msgstr "Situación"
 
 msgid "plugins.generic.dataverse.researchDataState.required"
-msgstr "Es obligatorio informar la situación de los datos de investigación."
+msgstr "Es obligatorio informar la declaración de los datos de investigación."
 
 msgid "plugins.generic.dataverse.researchDataState.inManuscript"
 msgstr "Están incluidos en el propio manuscrito"

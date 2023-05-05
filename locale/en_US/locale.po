@@ -213,13 +213,13 @@ msgstr "We encourage the availability of all underlying contents (data, program 
 "to the manuscript text previously or at the time of submission. Exceptions are allowed in cases of legal and ethical "
 "issues. The goal is to facilitate the moderation of the manuscript, the evaluation by the scientific community, "
 "in addition to contributing to the preservation and reuse of content and reproducibility of research.<br>"
-"Please inform the status of the research data for this manuscript:"
+"Please inform the research data statement for this manuscript:"
 
 msgid "plugins.generic.dataverse.researchDataState.state"
 msgstr "State"
 
 msgid "plugins.generic.dataverse.researchDataState.required"
-msgstr "It is required to inform the status of the research data."
+msgstr "It is required to inform the declaration of the research data."
 
 msgid "plugins.generic.dataverse.researchDataState.inManuscript"
 msgstr "They are included in the manuscript itself"
