@@ -23,7 +23,7 @@ describe('Plugin configuration', function () {
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('label[for^=dataverseUrl].error').should('contain', 'This field is required.');
 		cy.get('label[for^=apiToken].error').should('contain', 'This field is required.');
-		cy.get('label[for^=termsOfUse].error').should('contain', 'This field is notsfewsfsef shrf required.');
+		cy.get('label[for^=termsOfUse].error').should('contain', 'This field is required.');
 
 		cy.get('input[name=dataverseUrl]').focus().clear().type('dataverseUrl');
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
