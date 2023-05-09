@@ -205,55 +205,34 @@ msgstr "This preprint has deposited research data: <a href=\"{$persistentUri}\">
 "When posting this preprint, the data will also be published in Dataverse.<br>"
 "Please make sure the research data is suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
 
-msgid "plugins.generic.dataverse.researchDataState.title"
-msgstr "Research Data"
+msgid "plugins.generic.dataverse.dataStatement.title"
+msgstr "Data statement"
 
-msgid "plugins.generic.dataverse.researchDataState.description"
+msgid "plugins.generic.dataverse.dataStatement.description"
 msgstr "We encourage the availability of all underlying contents (data, program codes and other materials) "
 "to the manuscript text previously or at the time of submission. Exceptions are allowed in cases of legal and ethical "
 "issues. The goal is to facilitate the moderation of the manuscript, the evaluation by the scientific community, "
-"in addition to contributing to the preservation and reuse of content and reproducibility of research.<br>"
-"Please inform the research data statement for this manuscript:"
+"increase the visibility and impact of research, improve the quality of articles, in addition to contributing to the "
+"preservation and reuse of content and reproducibility of research.<br>"
+"Please inform the data statement for this manuscript:"
 
-msgid "plugins.generic.dataverse.researchDataState.state"
-msgstr "State"
+msgid "plugins.generic.dataverse.dataStatement.required"
+msgstr "It is required to inform the declaration of the data statement."
 
-msgid "plugins.generic.dataverse.researchDataState.required"
-msgstr "It is required to inform the declaration of the research data."
+msgid "plugins.generic.dataverse.dataStatement.inManuscript"
+msgstr "data statement is contained in the manuscript"
 
-msgid "plugins.generic.dataverse.researchDataState.inManuscript"
-msgstr "They are included in the manuscript itself"
+msgid "plugins.generic.dataverse.dataStatement.repoAvailable"
+msgstr "They are available in one or more data repository(ies)"
 
-msgid "plugins.generic.dataverse.researchDataState.inManuscript.description"
-msgstr "Research data is contained in the manuscript"
-
-msgid "plugins.generic.dataverse.researchDataState.repoAvailable"
-msgstr "They are already available in a data repository"
-
-msgid "plugins.generic.dataverse.researchDataState.repoAvailable.url"
-msgstr "Link to research data"
-
-msgid "plugins.generic.dataverse.researchDataState.repoAvailable.url.required"
-msgstr "The link to the search data is required."
-
-msgid "plugins.generic.dataverse.researchDataState.repoAvailable.description"
-msgstr "Research data available at <a href=\"{$researchDataUrl}\" target=\"_new\">{$researchDataUrl}</a>"
-
-msgid "plugins.generic.dataverse.researchDataState.submissionDeposit"
+msgid "plugins.generic.dataverse.dataStatement.submissionDeposit"
 msgstr "They will be submitted to the \"{$dataverseName}\" repository in the subsequent stages of this submission"
 
-msgid "plugins.generic.dataverse.researchDataState.onDemand"
+msgid "plugins.generic.dataverse.dataStatement.onDemand"
 msgstr "They are available on demand, condition justified in the manuscript"
 
-msgid "plugins.generic.dataverse.researchDataState.onDemand.description"
-msgstr "Research data is available on demand.The condition is justified in the manuscript"
-
-msgid "plugins.generic.dataverse.researchDataState.private"
+msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable"
 msgstr "They cannot be made publicly available"
 
-msgid "plugins.generic.dataverse.researchDataState.private.reason"
+msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason"
 msgstr "Provide the justification"
-
-msgid "plugins.generic.dataverse.researchDataState.private.description"
-msgstr "The research data cannot be made publicly available, with the justification: {$researchDataReason}"
-

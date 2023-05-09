@@ -12,14 +12,14 @@ class DataStatement extends DataObject
         $this->setData('type', $type);
     }
 
-    public function getUrl(): string
+    public function getLinks(): array
     {
-        return $this->getData('url');
+        return $this->getData('links');
     }
 
-    public function setUrl(string $url): void
+    public function setLinks(array $links): void
     {
-        $this->setData('url', $url);
+        $this->setData('links', $links);
     }
 
     public function getDatasetId(): int

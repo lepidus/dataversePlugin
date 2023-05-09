@@ -8,7 +8,18 @@ define('DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE', 0x000000005);
 
 class DataStatementService
 {
-    public function getResearchDataStates(): array
+    public function getDataStatementTypes(): array
+    {
+        return [
+            DATA_STATEMENT_TYPE_IN_MANUSCRIPT => __('plugins.generic.dataverse.dataStatement.inManuscript'),
+            DATA_STATEMENT_TYPE_REPO_AVAILABLE => __('plugins.generic.dataverse.dataStatement.repoAvailable'),
+            DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED => $this->getDataverseSubmittedLabel(),
+            DATA_STATEMENT_TYPE_ON_DEMAND => __('plugins.generic.dataverse.dataStatement.onDemand'),
+            DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE => __('plugins.generic.dataverse.dataStatement.publiclyUnavailable')
+        ];
+    }
+
+    private function getDataverseSubmittedLabel(): string
     {
         try {
             import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
@@ -21,16 +32,7 @@ class DataStatementService
             error_log($e->getMessage());
         }
 
-        return [
-            DATA_STATEMENT_TYPE_IN_MANUSCRIPT => __('plugins.generic.dataverse.researchDataState.inManuscript'),
-            DATA_STATEMENT_TYPE_REPO_AVAILABLE => __('plugins.generic.dataverse.researchDataState.repoAvailable'),
-            DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED => __(
-                'plugins.generic.dataverse.researchDataState.submissionDeposit',
-                $params
-            ),
-            DATA_STATEMENT_TYPE_ON_DEMAND => __('plugins.generic.dataverse.researchDataState.onDemand'),
-            DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE => __('plugins.generic.dataverse.researchDataState.private')
-        ];
+        return __('plugins.generic.dataverse.dataStatement.submissionDeposit', $params);
     }
 
     public function getResearchDataStateDescription(Publication $publication): string

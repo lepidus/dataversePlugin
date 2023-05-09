@@ -50,11 +50,11 @@ class DataStatementDAOTest extends DatabaseTestCase
     public function testInsertRepoAvailableDataStatement(): void
     {
         $type = DATA_STATEMENT_TYPE_REPO_AVAILABLE;
-        $url = 'https://link.to.data';
+        $links = ['https://link.to.data'];
 
         $dataStatement = new DataStatement();
         $dataStatement->setType($type);
-        $dataStatement->setUrl($url);
+        $dataStatement->setLinks($links);
 
         $dataStatementDAO = new DataStatementDAO();
         $dataStatementId = $dataStatementDAO->insertObject($dataStatement);
@@ -62,7 +62,7 @@ class DataStatementDAOTest extends DatabaseTestCase
         $insertedDataStatement = $dataStatementDAO->getById($dataStatementId);
 
         $this->assertEquals($type, $insertedDataStatement->getType());
-        $this->assertEquals($url, $insertedDataStatement->getUrl());
+        $this->assertEquals($links, $insertedDataStatement->getLinks());
     }
 
     public function testInsertDataverseSubmittedDataStatement(): void

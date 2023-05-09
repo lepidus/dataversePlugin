@@ -10,7 +10,7 @@ class DataStatementTest extends PKPTestCase
     {
         $id = 100;
         $type = DATA_STATEMENT_TYPE_IN_MANUSCRIPT;
-        $url = 'http://link.to/data';
+        $links = ['http://link.to/data'];
         $datasetId = 1;
         $reason = 'Has sensitive data';
         $locale = 'en_US';
@@ -18,13 +18,13 @@ class DataStatementTest extends PKPTestCase
         $dataStatement = new DataStatement();
         $dataStatement->setId($id);
         $dataStatement->setType($type);
-        $dataStatement->setUrl($url);
+        $dataStatement->setLinks($links);
         $dataStatement->setDatasetId($datasetId);
         $dataStatement->setReason($reason, $locale);
 
         $this->assertEquals($id, $dataStatement->getId());
         $this->assertEquals($type, $dataStatement->getType());
-        $this->assertEquals($url, $dataStatement->getUrl());
+        $this->assertEquals($links, $dataStatement->getLinks());
         $this->assertEquals($datasetId, $dataStatement->getDatasetId());
         $this->assertEquals($reason, $dataStatement->getReason($locale));
     }

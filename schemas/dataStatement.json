@@ -11,10 +11,14 @@
             "type": "integer",
             "apiSummary": true
         },
-        "url": {
-            "type": "string",
-            "apiSummary": true,
-            "format": "uri"
+        "links": {
+            "type": "array",
+			"items": {
+				"type": "string",
+				"validation": [
+					"url"
+				]
+			}
         },
         "datasetId": {
             "type": "integer",
