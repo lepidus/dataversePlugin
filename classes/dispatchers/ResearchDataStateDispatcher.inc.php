@@ -1,7 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.classes.services.ResearchDataStateService');
+import('plugins.generic.dataverse.classes.services.DataStatementService');
 
 class ResearchDataStateDispatcher extends DataverseDispatcher
 {
@@ -51,7 +51,7 @@ class ResearchDataStateDispatcher extends DataverseDispatcher
         $request = PKPApplication::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
 
-        $researchDataStateService = new ResearchDataStateService();
+        $researchDataStateService = new DataStatementService();
 
         $templateMgr->assign('researchDataStates', $researchDataStateService->getResearchDataStates());
 

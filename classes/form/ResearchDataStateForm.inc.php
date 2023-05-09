@@ -15,8 +15,8 @@ class ResearchDataStateForm extends FormComponent
         $this->action = $action;
         $this->locales = $locales;
 
-        import('plugins.generic.dataverse.classes.services.ResearchDataStateService');
-        $researchDataStateService = new ResearchDataStateService();
+        import('plugins.generic.dataverse.classes.services.DataStatementService');
+        $researchDataStateService = new DataStatementService();
         $researchDataStates = $researchDataStateService->getResearchDataStates();
         unset($researchDataStates[RESEARCH_DATA_SUBMISSION_DEPOSIT]);
 
