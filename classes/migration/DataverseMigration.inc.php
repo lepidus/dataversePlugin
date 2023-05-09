@@ -31,11 +31,21 @@ class DataverseMigration extends Migration
                 $table->unique(['file_id'], 'temporary_files_id');
             });
         }
-    }
 
-    public function down(): void
-    {
-        Capsule::schema()->drop('dataverse_studies');
-        Capsule::schema()->drop('draft_dataset_files');
+        Capsule::schema()->create('data_statements', function (Blueprint $table) {
+            $table->bigInteger('data_statement_id')->autoIncrement();
+            $table->bigInteger('type');
+        });
+
+        Capsule::schema()->create('data_statement_settings', function (Blueprint $table) {
+            $table->bigIncrements('data_statement_setting_id');
+            $table->bigInteger('data_statement_id');
+            $table->string('locale', 14)->default('');
+            $table->string('setting_name', 255);
+            $table->longText('setting_value')->nullable();
+            $table->string('setting_type', 6)->nullable();
+            $table->index(['data_statement_id_id'], 'data_statement_id_settings_id');
+            $table->unique(['data_statement_id', 'locale', 'setting_name'], 'data_statement_settings_pkey');
+        });
     }
 }
