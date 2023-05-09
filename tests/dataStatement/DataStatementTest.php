@@ -13,18 +13,19 @@ class DataStatementTest extends PKPTestCase
         $url = 'http://link.to/data';
         $datasetId = 1;
         $reason = 'Has sensitive data';
+        $locale = 'en_US';
 
         $dataStatement = new DataStatement();
         $dataStatement->setId($id);
         $dataStatement->setType($type);
         $dataStatement->setUrl($url);
         $dataStatement->setDatasetId($datasetId);
-        $dataStatement->setReason($reason);
+        $dataStatement->setReason($reason, $locale);
 
         $this->assertEquals($id, $dataStatement->getId());
         $this->assertEquals($type, $dataStatement->getType());
         $this->assertEquals($url, $dataStatement->getUrl());
         $this->assertEquals($datasetId, $dataStatement->getDatasetId());
-        $this->assertEquals($reason, $dataStatement->getReason());
+        $this->assertEquals($reason, $dataStatement->getReason($locale));
     }
 }

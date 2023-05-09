@@ -32,13 +32,18 @@ class DataStatement extends DataObject
         $this->setData('datasetId', $datasetId);
     }
 
-    public function getReason(): string
+    public function getLocalizedReason()
     {
-        return $this->getData('reason');
+        return $this->getLocalizedData('reason');
     }
 
-    public function setReason(string $reason): void
+    public function getReason(string $locale): string
     {
-        $this->setData('reason', $reason);
+        return $this->getData('reason', $locale);
+    }
+
+    public function setReason(string $reason, string $locale): void
+    {
+        $this->setData('reason', $reason, $locale);
     }
 }
