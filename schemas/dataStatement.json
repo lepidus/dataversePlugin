@@ -1,0 +1,29 @@
+{
+	"title": "Data Statement",
+	"description": "A statement of research data.",
+	"properties": {
+		"id": {
+			"type": "integer",
+			"readOnly": true,
+			"apiSummary": true
+		},
+        "type": {
+            "type": "integer",
+            "apiSummary": true
+        },
+        "url": {
+            "type": "string",
+            "apiSummary": true,
+            "format": "uri"
+        },
+        "datasetId": {
+            "type": "integer",
+            "apiSummary": true
+        },
+        "reason": {
+            "type": "string",
+            "multilingual": true,
+            "apiSummary": true
+        }
+	}
+}
