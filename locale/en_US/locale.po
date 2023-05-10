@@ -225,6 +225,12 @@ msgstr "data statement is contained in the manuscript"
 msgid "plugins.generic.dataverse.dataStatement.repoAvailable"
 msgstr "They are available in one or more data repository(ies)"
 
+msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls"
+msgstr "URLs"
+
+msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls.description"
+msgstr "Insert the URLs to the data. Press 'Enter' after each URL."
+
 msgid "plugins.generic.dataverse.dataStatement.submissionDeposit"
 msgstr "They will be submitted to the \"{$dataverseName}\" repository in the subsequent stages of this submission"
 
@@ -235,4 +241,7 @@ msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable"
 msgstr "They cannot be made publicly available"
 
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason"
-msgstr "Provide the justification"
+msgstr "Justification"
+
+msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description"
+msgstr "Provide the justification for the unavailability of the data."

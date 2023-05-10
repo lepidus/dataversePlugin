@@ -4,11 +4,36 @@
 		{fbvElement type="checkbox" id="dataStatement[]" value=$typeValue checked=false label=$typeLabel translate=false}
 	{/foreach}
 
-	{fbvFormSection id="dataStatementUrlsSection" class="data_statement" size=$fbvStyles.size.MEDIUM}
-		{fbvElement type="keyword" label="plugins.generic.dataverse.dataStatement.repoAvailable.url" id="dataStatementUrls" required="true" value=$dataStatementUrls maxlength="255"}
+	{fbvFormSection id="dataStatementUrlsSection" description="plugins.generic.dataverse.dataStatement.repoAvailable.urls.description" label="plugins.generic.dataverse.dataStatement.repoAvailable.urls" required=true}
+		{fbvElement type="keyword" id="dataStatementUrls" current=$dataStatementUrls required=true}
 	{/fbvFormSection}
 
-	{fbvFormSection id="dataStatementReasonSection" class="data_statement" size=$fbvStyles.size.MEDIUM}
-		{fbvElement type="text" label="plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason" id="dataStatementReason" required="true" value=$dataStatementReason maxlength="255"}
+	{fbvFormSection id="dataStatementReasonSection" label="plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason"}
+		{fbvElement type="text" label="plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description" id="dataStatementReason" required="true" value=$dataStatementReason maxlength="255"}
 	{/fbvFormSection}
+
+	
 {/fbvFormSection}
+
+<script type="text/javascript">
+	$(function() {ldelim}
+		$('input[id^="dataStatement"]').on( "click", function() {ldelim}
+			if($(this).val() == {$smarty.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE}) {ldelim}
+				if($(this).is(':checked')) {ldelim}
+					$('#dataStatementUrlsSection').show();
+				{rdelim} else {ldelim}
+					$('#dataStatementUrlsSection').hide();
+				{rdelim}
+			{rdelim} 
+		{rdelim});
+		$('input[id^="dataStatement"]').on( "click", function() {ldelim}
+			if($(this).val() == {$smarty.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE}) {ldelim}
+				if($(this).is(':checked')) {ldelim}
+					$('#dataStatementReasonSection').show();
+				{rdelim} else {ldelim}
+					$('#dataStatementReasonSection').hide();
+				{rdelim}
+			{rdelim} 
+		{rdelim});
+	{rdelim});
+</script>

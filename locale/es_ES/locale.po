@@ -232,6 +232,12 @@ msgstr "Están incluidos en el propio manuscrito"
 msgid "plugins.generic.dataverse.dataStatement.repoAvailable"
 msgstr "Ya están disponibles en uno o más repositorio de datos"
 
+msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls"
+msgstr "URLs"
+
+msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls.description"
+msgstr "Introduzca las direcciones URL de los datos. Presione 'Enter' después de cada URL."
+
 msgid "plugins.generic.dataverse.dataStatement.submissionDeposit"
 msgstr "Se enviarán al repositorio \"{$dataverseName}\" en las siguientes etapas de esta presentación"
 
@@ -242,4 +248,7 @@ msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable"
 msgstr "No se pueden disponibilizar públicamente"
 
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason"
-msgstr "Indique la justificación"
+msgstr "Justificación"
+
+msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description"
+msgstr "Introduzca el motivo de la no disponibilidad de los datos."

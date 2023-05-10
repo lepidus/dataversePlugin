@@ -7,12 +7,12 @@ class DataStatementDispatcher extends DataverseDispatcher
 {
     public function registerHooks(): void
     {
-        HookRegistry::register('TemplateManager::display', [$this, 'addDataStatementFieldStyles']);
+        HookRegistry::register('TemplateManager::display', [$this, 'addDataStatementFieldResource']);
         HookRegistry::register('submissionsubmitstep1form::Constructor', [$this, 'addDataStatementValidation']);
         HookRegistry::register('submissionsubmitstep1form::display', [$this, 'addDataStatementField']);
     }
 
-    public function addDataStatementFieldStyles(string $hookName, array $args): bool
+    public function addDataStatementFieldResource(string $hookName, array $args): bool
     {
         $templateMgr = $args[0];
         $template = $args[1];
@@ -26,6 +26,14 @@ class DataStatementDispatcher extends DataverseDispatcher
             $this->plugin->getPluginFullPath() . '/styles/dataStatement.css',
             ['contexts' => ['backend']]
         );
+
+        $templateMgr->setConstants([
+            'DATA_STATEMENT_TYPE_IN_MANUSCRIPT',
+            'DATA_STATEMENT_TYPE_REPO_AVAILABLE',
+            'DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED',
+            'DATA_STATEMENT_TYPE_ON_DEMAND',
+            'DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE',
+        ]);
 
         return false;
     }
