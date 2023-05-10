@@ -2,14 +2,17 @@
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.services.DataStatementService');
+import('plugins.generic.dataverse.classes.dataStatement.DataStatement');
 
 class DataStatementDispatcher extends DataverseDispatcher
 {
     public function registerHooks(): void
     {
         HookRegistry::register('TemplateManager::display', [$this, 'addDataStatementFieldResource']);
-        HookRegistry::register('submissionsubmitstep1form::Constructor', [$this, 'addDataStatementValidation']);
         HookRegistry::register('submissionsubmitstep1form::display', [$this, 'addDataStatementField']);
+        HookRegistry::register('SubmissionHandler::saveSubmit', [$this, 'saveDataStatement']);
+        HookRegistry::register('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
+        HookRegistry::register('Schema::get::dataStatement', array($this, 'loadDataStatementSchema'));
     }
 
     public function addDataStatementFieldResource(string $hookName, array $args): bool
@@ -34,20 +37,6 @@ class DataStatementDispatcher extends DataverseDispatcher
             'DATA_STATEMENT_TYPE_ON_DEMAND',
             'DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE',
         ]);
-
-        return false;
-    }
-
-    public function addDataStatementValidation(string $hookName, array $args): bool
-    {
-        $form =& $args[0];
-
-        $form->addCheck(new FormValidatorUrl(
-            $form,
-            'dataStatementUrl',
-            'optional',
-            'plugins.generic.dataverse.dataStatement.repoAvailable.url.required'
-        ));
 
         return false;
     }
@@ -79,5 +68,92 @@ class DataStatementDispatcher extends DataverseDispatcher
             $templateMgr->unregisterFilter('output', array($this, 'dataStatementFilter'));
         }
         return $output;
+    }
+
+    public function addDataStatementToPublicationSchema(string $hookName, array $args): bool
+    {
+        $schema =& $args[0];
+
+        $schema->properties->{'dataStatements'} = (object) [
+            'type' => 'array',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+            "items" => (object) [
+                "\$ref" => "#/definitions/DataStatement",
+            ]
+        ];
+
+        return false;
+    }
+
+    public function loadDataStatementSchema(string $hookname, array $params): bool
+    {
+        $schema = &$params[0];
+        $dataStatementSchema = BASE_SYS_DIR . '/plugins/generic/dataverse/schemas/dataStatement.json';
+
+        if (file_exists($dataStatementSchema)) {
+            $schema = json_decode(file_get_contents($dataStatementSchema));
+            if (!$schema) {
+                fatalError(printf(
+                    'Schema failed to decode. This usually means it is invalid JSON. Requested: %s. Last JSON error: %s',
+                    $dataStatementSchema,
+                    json_last_error()
+                ));
+            }
+        }
+
+        return false;
+    }
+
+    public function saveDataStatement(string $hookname, array $args): bool
+    {
+        $step = $args[0];
+        $stepForm = $args[2];
+
+        if (!$this->isValidStepForm($step, $stepForm)) {
+            return false;
+        }
+
+        $submissionId = $stepForm->execute();
+        $submission = Services::get('submission')->get($submissionId);
+        $publication = $submission->getCurrentPublication();
+
+        $params = $this->createDataStatementParams($stepForm);
+
+        $newPublication = Services::get('publication')->edit($publication, $params, \Application::get()->getRequest());
+        $stepForm->submission = Services::get('submission')->get($newPublication->getData('submissionId'));
+
+        return false;
+    }
+
+    private function isValidStepForm(int $step, SubmissionSubmitForm &$stepForm): bool
+    {
+        if ($step !== 1 || !$stepForm->validate()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function createDataStatementParams(SubmissionSubmitForm $stepForm): array
+    {
+        $stepForm->readUserVars(['dataStatement']);
+
+        $dataStatements = array_map(function ($dataStatementTypes) {
+            $dataStatement = new DataStatement();
+            $dataStatement->setType($dataStatementTypes);
+
+            if ($dataStatementTypes === DATA_STATEMENT_TYPE_REPO_AVAILABLE) {
+                $stepForm->readUserVars(['dataStatementUrls']);
+                $dataStatement->setUrls($stepForm->getData('dataStatementUrls'));
+            }
+
+            if ($dataStatementTypes === DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE) {
+                $stepForm->readUserVars(['dataStatementReason']);
+                $dataStatement->setReason($stepForm->getData('dataStatementReason'));
+            }
+        }, $stepForm->getData('dataStatement'));
+
+        return $dataStatements;
     }
 }
