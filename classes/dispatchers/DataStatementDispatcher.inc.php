@@ -2,7 +2,6 @@
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.services.DataStatementService');
-import('plugins.generic.dataverse.classes.dataStatement.DataStatement');
 
 class DataStatementDispatcher extends DataverseDispatcher
 {
@@ -74,33 +73,27 @@ class DataStatementDispatcher extends DataverseDispatcher
     {
         $schema =& $args[0];
 
-        $schema->properties->{'dataStatements'} = (object) [
+        $schema->properties->dataStatementTypes = (object) [
             'type' => 'array',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-            "items" => (object) [
-                "\$ref" => "#/definitions/DataStatement",
+            'items' => (object) [
+                'type' => 'integer',
             ]
         ];
 
-        return false;
-    }
+        $schema->properties->dataStatementUrls = (object) [
+            'type' => 'array',
+            'items' => (object) [
+                'type' => 'string',
+                'validation' => [
+                    'url'
+                ]
+            ]
+        ];
 
-    public function loadDataStatementSchema(string $hookname, array $params): bool
-    {
-        $schema = &$params[0];
-        $dataStatementSchema = BASE_SYS_DIR . '/plugins/generic/dataverse/schemas/dataStatement.json';
-
-        if (file_exists($dataStatementSchema)) {
-            $schema = json_decode(file_get_contents($dataStatementSchema));
-            if (!$schema) {
-                fatalError(printf(
-                    'Schema failed to decode. This usually means it is invalid JSON. Requested: %s. Last JSON error: %s',
-                    $dataStatementSchema,
-                    json_last_error()
-                ));
-            }
-        }
+        $schema->properties->dataStatementReason = (object) [
+            'type' => 'string',
+            'multilingual' => true
+        ];
 
         return false;
     }
@@ -137,23 +130,23 @@ class DataStatementDispatcher extends DataverseDispatcher
 
     private function createDataStatementParams(SubmissionSubmitForm $stepForm): array
     {
-        $stepForm->readUserVars(['dataStatement']);
+        $stepForm->readUserVars(['dataStatementTypes', 'dataStatementUrls', 'dataStatementReason']);
+        $dataStatementTypes = $stepForm->getData('dataStatementTypes');
+        $dataStatementUrls = null;
+        $dataStatementReason = null;
 
-        $dataStatements = array_map(function ($dataStatementTypes) {
-            $dataStatement = new DataStatement();
-            $dataStatement->setType($dataStatementTypes);
+        if (in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)) {
+            $dataStatementUrls = $stepForm->getData('dataStatementUrls');
+        }
 
-            if ($dataStatementTypes === DATA_STATEMENT_TYPE_REPO_AVAILABLE) {
-                $stepForm->readUserVars(['dataStatementUrls']);
-                $dataStatement->setUrls($stepForm->getData('dataStatementUrls'));
-            }
+        if (in_array(DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE, $dataStatementTypes)) {
+            $dataStatementUrls = $stepForm->getData('dataStatementReason');
+        }
 
-            if ($dataStatementTypes === DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE) {
-                $stepForm->readUserVars(['dataStatementReason']);
-                $dataStatement->setReason($stepForm->getData('dataStatementReason'));
-            }
-        }, $stepForm->getData('dataStatement'));
-
-        return $dataStatements;
+        return [
+            'dataStatementTypes' => $dataStatementTypes,
+            'dataStatementUrls' => $dataStatementUrls,
+            'dataStatementReason' => $dataStatementReason
+        ];
     }
 }
