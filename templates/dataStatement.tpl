@@ -5,18 +5,17 @@
 	{/foreach}
 
 	{fbvFormSection id="dataStatementUrlsSection" description="plugins.generic.dataverse.dataStatement.repoAvailable.urls.description" label="plugins.generic.dataverse.dataStatement.repoAvailable.urls" required=true}
-		{fbvElement type="keyword" id="dataStatementUrls" current=$dataStatementUrls required=true}
+		{fbvElement type="keyword" id="dataStatementUrls" required=true current=$dataStatementUrls}
 	{/fbvFormSection}
 
-	{fbvFormSection id="dataStatementReasonSection" label="plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason" required="true"}
-		{fbvElement type="text" label="plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description" multilingual="true" id="dataStatementReason" required="true" value=$dataStatementReason maxlength="255"}
+	{fbvFormSection id="dataStatementReasonSection" label="plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason"}
+		{fbvElement type="text" label="plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description" multilingual=true id="dataStatementReason" required="true" value=$dataStatementReason maxlength="255"}
 	{/fbvFormSection}
-
-	
 {/fbvFormSection}
 
 <script type="text/javascript">
 	$(function() {ldelim}
+		
 		$('input[id^="dataStatement"]').on( "click", function() {ldelim}
 			if($(this).val() == {$smarty.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE}) {ldelim}
 				if($(this).is(':checked')) {ldelim}
@@ -35,5 +34,6 @@
 				{rdelim}
 			{rdelim} 
 		{rdelim});
+		
 	{rdelim});
 </script>

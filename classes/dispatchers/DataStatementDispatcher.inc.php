@@ -84,9 +84,6 @@ class DataStatementDispatcher extends DataverseDispatcher
             'type' => 'array',
             'items' => (object) [
                 'type' => 'string',
-                'validation' => [
-                    'url'
-                ]
             ]
         ];
 
@@ -130,17 +127,17 @@ class DataStatementDispatcher extends DataverseDispatcher
 
     private function createDataStatementParams(SubmissionSubmitForm $stepForm): array
     {
-        $stepForm->readUserVars(['dataStatementTypes', 'dataStatementUrls', 'dataStatementReason']);
+        $stepForm->readUserVars(['dataStatementTypes', 'keywords', 'dataStatementReason']);
         $dataStatementTypes = $stepForm->getData('dataStatementTypes');
         $dataStatementUrls = null;
         $dataStatementReason = null;
 
         if (in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)) {
-            $dataStatementUrls = $stepForm->getData('dataStatementUrls');
+            $dataStatementUrls = $stepForm->getData('keywords')['dataStatementUrls'];
         }
 
         if (in_array(DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE, $dataStatementTypes)) {
-            $dataStatementUrls = $stepForm->getData('dataStatementReason');
+            $dataStatementReason = $stepForm->getData('dataStatementReason');
         }
 
         return [
