@@ -234,6 +234,9 @@ msgstr "URLs"
 msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls.description"
 msgstr "Informe as URLs para os dados. Pressione 'Enter' depois de cada URL."
 
+msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls.required"
+msgstr "É obrigatório informar as URLs para os dados em repositórios."
+
 msgid "plugins.generic.dataverse.dataStatement.submissionDeposit"
 msgstr "Serão submetidos ao repositório \"{$dataverseName}\" nas etapas seguintes desta submissão"
 

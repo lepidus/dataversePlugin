@@ -9,6 +9,7 @@ class DataStatementDispatcher extends DataverseDispatcher
     {
         HookRegistry::register('TemplateManager::display', [$this, 'addDataStatementFieldResource']);
         HookRegistry::register('submissionsubmitstep1form::display', [$this, 'addDataStatementField']);
+        HookRegistry::register('submissionsubmitstep1form::readuservars', [$this, 'readDataStatementVars']);
         HookRegistry::register('SubmissionHandler::saveSubmit', [$this, 'saveDataStatement']);
         HookRegistry::register('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
         HookRegistry::register('Schema::get::dataStatement', array($this, 'loadDataStatementSchema'));
@@ -47,7 +48,7 @@ class DataStatementDispatcher extends DataverseDispatcher
 
         $dataStatementService = new DataStatementService();
 
-        $templateMgr->assign('dataStatementTypes', $dataStatementService->getDataStatementTypes());
+        $templateMgr->assign('allDataStatementsTypes', $dataStatementService->getDataStatementTypes());
 
         $templateMgr->registerFilter("output", array($this, 'dataStatementFilter'));
         return false;
@@ -95,6 +96,15 @@ class DataStatementDispatcher extends DataverseDispatcher
         return false;
     }
 
+    public function readDataStatementVars(string $hookName, array $args): bool
+    {
+        $vars = &$args[1];
+
+        array_push($vars, 'dataStatementTypes', 'keywords', 'dataStatementReason');
+
+        return false;
+    }
+
     public function saveDataStatement(string $hookname, array $args): bool
     {
         $step = $args[0];
@@ -122,12 +132,32 @@ class DataStatementDispatcher extends DataverseDispatcher
             return false;
         }
 
+        if (empty($stepForm->getData('dataStatementTypes'))) {
+            $stepForm->addError(
+                'dataStatementTypes',
+                __('plugins.generic.dataverse.dataStatement.required')
+            );
+            $stepForm->addErrorField('dataStatementTypes');
+            return false;
+        }
+
+        if (
+            in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $stepForm->getData('dataStatementTypes'))
+            && empty($stepForm->getData('keywords')['dataStatementUrls'])
+        ) {
+            $stepForm->addError(
+                'dataStatementUrls',
+                __('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')
+            );
+            $stepForm->addErrorField('dataStatementUrls');
+            return false;
+        }
+
         return true;
     }
 
     private function createDataStatementParams(SubmissionSubmitForm $stepForm): array
     {
-        $stepForm->readUserVars(['dataStatementTypes', 'keywords', 'dataStatementReason']);
         $dataStatementTypes = $stepForm->getData('dataStatementTypes');
         $dataStatementUrls = null;
         $dataStatementReason = null;
