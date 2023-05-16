@@ -211,6 +211,9 @@ msgstr "Este preprint possui dados de pesquisa depositados: <a href=\"{$persiste
 msgid "plugins.generic.dataverse.dataStatement.title"
 msgstr "Declaração de dados"
 
+msgid "plugins.generic.dataverse.dataStatement.edit"
+msgstr "Editar declaração de dados"
+
 msgid "plugins.generic.dataverse.dataStatement.description"
 msgstr "Encorajamos a disponibilidade de todos os conteúdos (dados, códigos de programa e outros materiais) "
 "subjacentes ao texto do manuscrito previamente ou no momento da submissão. Exceções são permitidas em casos de "

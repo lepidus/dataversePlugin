@@ -208,6 +208,9 @@ msgstr "This preprint has deposited research data: <a href=\"{$persistentUri}\">
 msgid "plugins.generic.dataverse.dataStatement.title"
 msgstr "Data statement"
 
+msgid "plugins.generic.dataverse.dataStatement.edit"
+msgstr "Edit data statement"
+
 msgid "plugins.generic.dataverse.dataStatement.description"
 msgstr "We encourage the availability of all underlying contents (data, program codes and other materials) "
 "to the manuscript text previously or at the time of submission. Exceptions are allowed in cases of legal and ethical "

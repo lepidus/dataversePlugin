@@ -211,6 +211,9 @@ msgstr "Este preprint ha depositado datos de investigación: <a href=\"{$persist
 msgid "plugins.generic.dataverse.dataStatement.title"
 msgstr "Declaración de datos"
 
+msgid "plugins.generic.dataverse.dataStatement.edit"
+msgstr "Editar declaración de datos"
+
 msgid "plugins.generic.dataverse.dataStatement.description"
 msgstr ""
 "Alentamos la disponibilidad de todo el contenido (datos, códigos de programa y otros materiales) subyacentes "
