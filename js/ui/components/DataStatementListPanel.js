@@ -113,12 +113,33 @@ pkp.Vue.component('data-statement-list-panel', {
 		},
 		openEditModal() {
 			this.resetFocusTo = document.activeElement;
-			let activeForm = JSON.parse(JSON.stringify(this.form));
+			let activeForm = {...this.form};
 			activeForm.action = this.apiUrl;
 			activeForm.method = 'PUT';
 			this.activeForm = activeForm;
+			this.activeForm.fields = this.form.fields.filter(
+				field => this.shouldShowField(field)
+			);
 			this.activeFormTitle = this.editDataStatementLabel;
 			this.$modal.show('form');
+		},
+		shouldShowField(field) {
+			const dataStatementTypesField = this.form.fields.find(
+				(field) => field.name === 'dataStatementTypes'
+			)
+			if (
+				field.name === 'dataStatementUrls'
+				&& !dataStatementTypesField.value.includes(pkp.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE)
+			) {
+				return false;
+			}
+			if (
+				field.name === 'dataStatementReason'
+				&& !dataStatementTypesField.value.includes(pkp.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE)
+			) {
+				return false;
+			}
+			return true;
 		},
 		updateForm(formId, data) {
 			let activeForm = {...this.activeForm};
@@ -126,6 +147,9 @@ pkp.Vue.component('data-statement-list-panel', {
 				activeForm[key] = data[key];
 			});
 			this.activeForm = activeForm;
+			this.activeForm.fields = this.form.fields.filter(
+				field => this.shouldShowField(field)
+			);
 		}
 	},
     render: function(h) {
