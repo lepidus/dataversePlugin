@@ -12,7 +12,7 @@ class DataStatementDispatcher extends DataverseDispatcher
         HookRegistry::register('submissionsubmitstep1form::readuservars', [$this, 'readDataStatementVars']);
         HookRegistry::register('SubmissionHandler::saveSubmit', [$this, 'saveDataStatement']);
         HookRegistry::register('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
-        HookRegistry::register('Schema::get::dataStatement', array($this, 'loadDataStatementSchema'));
+        HookRegistry::register('Publication::validate', [$this, 'validateDataStatementProps']);
     }
 
     public function addDataStatementFieldResource(string $hookName, array $args): bool
@@ -175,5 +175,29 @@ class DataStatementDispatcher extends DataverseDispatcher
             'dataStatementUrls' => $dataStatementUrls,
             'dataStatementReason' => $dataStatementReason
         ];
+    }
+
+    public function validateDataStatementProps(string $hookName, array $args): bool
+    {
+        $errors = &$args[0];
+        $props = $args[2];
+
+        if (empty($errors)) {
+            $errors = [];
+        }
+
+        if (empty($props['dataStatementTypes'])) {
+            $errors['dataStatementTypes'] = [__('plugins.generic.dataverse.dataStatement.required')];
+        }
+
+        if (
+            in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $props['dataStatementTypes'])
+            && empty($props['dataStatementUrls'])
+        ) {
+            error_log(print_r($errors, true));
+            $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')];
+        }
+
+        return false;
     }
 }
