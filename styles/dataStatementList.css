@@ -1,0 +1,15 @@
+.data_statement_list {
+    padding-left: 1rem;
+}
+
+.data_statement_list p {
+    margin: 1rem 0;
+}
+
+.data_statement_list ul {
+    padding-left: 1rem;
+}
+
+.data_statement_list ul li {
+    margin: .5rem 0;
+}

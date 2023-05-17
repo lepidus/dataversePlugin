@@ -7,18 +7,33 @@ class DataStatementDispatcher extends DataverseDispatcher
 {
     public function registerHooks(): void
     {
-        HookRegistry::register('TemplateManager::display', [$this, 'addDataStatementFieldResource']);
+        HookRegistry::register('TemplateManager::display', [$this, 'addDataStatementResources']);
         HookRegistry::register('submissionsubmitstep1form::display', [$this, 'addDataStatementField']);
         HookRegistry::register('submissionsubmitstep1form::readuservars', [$this, 'readDataStatementVars']);
         HookRegistry::register('SubmissionHandler::saveSubmit', [$this, 'saveDataStatement']);
         HookRegistry::register('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
         HookRegistry::register('Publication::validate', [$this, 'validateDataStatementProps']);
+        HookRegistry::register('Templates::Preprint::Details', [$this, 'viewDataStatement']);
+        HookRegistry::register('Templates::Article::Details', [$this, 'viewDataStatement']);
     }
 
-    public function addDataStatementFieldResource(string $hookName, array $args): bool
+    public function addDataStatementResources(string $hookName, array $args): bool
     {
         $templateMgr = $args[0];
         $template = $args[1];
+
+        if (
+            $template !== 'frontend/pages/preprint.tpl'
+            || $template !== 'frontend/pages/article.tpl'
+        ) {
+            $templateMgr->addStyleSheet(
+                'dataStatementlist',
+                $this->plugin->getPluginFullPath() . '/styles/dataStatementList.css',
+                ['contexts' => ['frontend']]
+            );
+
+            return false;
+        }
 
         if ($template !== 'submission/form/index.tpl') {
             return false;
@@ -197,6 +212,22 @@ class DataStatementDispatcher extends DataverseDispatcher
             error_log(print_r($errors, true));
             $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')];
         }
+
+        return false;
+    }
+
+    public function viewDataStatement(string $hookName, array $params): bool
+    {
+        $templateMgr =& $params[1];
+        $output =& $params[2];
+
+        $dataStatementService = new DataStatementService();
+        $allDataStatementTypes = $dataStatementService->getDataStatementTypes();
+        unset($allDataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+
+        $templateMgr->assign('allDataStatementTypes', $allDataStatementTypes);
+
+        $output .= $templateMgr->fetch($this->plugin->getTemplateResource('listDataStatement.tpl'));
 
         return false;
     }
