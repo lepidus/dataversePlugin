@@ -1,26 +1,9 @@
-<section class="researchData -pkpClearfix">
-    <div class="researchData__header">
-        <div class="researchData__state">
-            <strong>{translate key="plugins.generic.dataverse.researchDataState.state"}:</strong>
-            <span v-html="researchDataState">   </span>
-        </div>
-        <div class="researchData__stateButton">
-            <dropdown v-if="!isPosted" label="{translate key="common.edit"}">
-                <pkp-form
-                    class="researchData__stateForm"
-                    v-bind="components.researchDataState"
-                    @set="set"
-                    @success="refreshSubmission"
-                >
-            </dropdown>
-            <pkp-button @click="$modal.show('uploadResearchData')" v-if="!isPosted">
-                {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
-            </pkp-button>
-        </div>
-    </div>
-</section>
-
-<modal 
+<section class="noResearchData -pkpClearfix">
+    <p>{translate key="plugins.generic.dataverse.researchData.noResearchData"}</p>
+    <pkp-button @click="$modal.show('uploadResearchData')">
+        {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
+    </pkp-button>
+    <modal 
     v-bind="MODAL_PROPS" 
     name="uploadResearchData"
 >
@@ -82,4 +65,5 @@
             <pkp-form style="margin: -1rem" v-bind="components.datasetMetadata" @set="set" @success="location.reload()"></pkp-form>
         </div>
     </modal-content>
+</section>
 </modal>
