@@ -34,32 +34,4 @@ class DataStatementService
 
         return __('plugins.generic.dataverse.dataStatement.submissionDeposit', $params);
     }
-
-    public function getResearchDataStateDescription(Publication $publication): string
-    {
-
-        $researchDataState = $publication->getData('researchDataState');
-
-        $statesDescriptions = [
-            DATA_STATEMENT_TYPE_IN_MANUSCRIPT => __(
-                'plugins.generic.dataverse.researchDataState.inManuscript.description'
-            ),
-            DATA_STATEMENT_TYPE_REPO_AVAILABLE => __(
-                'plugins.generic.dataverse.researchDataState.repoAvailable.description',
-                ['researchDataUrl' => $publication->getData('researchDataUrl')]
-            ),
-            DATA_STATEMENT_TYPE_ON_DEMAND => __(
-                'plugins.generic.dataverse.researchDataState.onDemand.description'
-            ),
-            DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE => __(
-                'plugins.generic.dataverse.researchDataState.private.description',
-                ['researchDataReason' => $publication->getData('researchDataReason')]
-            ),
-            DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED => __('plugins.generic.dataverse.researchData.noResearchData')
-        ];
-
-        $researchDataStateDescription = $statesDescriptions[$researchDataState] ?? __('plugins.generic.dataverse.researchData.noResearchData');
-
-        return $researchDataStateDescription;
-    }
 }
