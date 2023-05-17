@@ -29,8 +29,6 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             $templateMgr->assign('requestArgs', $requestArgs);
         }
 
-        error_log(print_r($publication->getData('dataStatementTypes'), true));
-
         if (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $publication->getData('dataStatementTypes'))) {
             return $output;
         }

@@ -10,7 +10,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addResearchDataTab'));
         HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
-        HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNotice'));
     }
 
     private function getSubmissionStudy(int $submissionId): ?DataverseStudy

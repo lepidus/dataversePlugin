@@ -23,11 +23,11 @@ class DataStatementDispatcher extends DataverseDispatcher
         $template = $args[1];
 
         if (
-            $template !== 'frontend/pages/preprint.tpl'
-            || $template !== 'frontend/pages/article.tpl'
+            $template === 'frontend/pages/preprint.tpl'
+            || $template === 'frontend/pages/article.tpl'
         ) {
             $templateMgr->addStyleSheet(
-                'dataStatementlist',
+                'dataStatementList',
                 $this->plugin->getPluginFullPath() . '/styles/dataStatementList.css',
                 ['contexts' => ['frontend']]
             );
@@ -209,7 +209,6 @@ class DataStatementDispatcher extends DataverseDispatcher
             in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $props['dataStatementTypes'])
             && empty($props['dataStatementUrls'])
         ) {
-            error_log(print_r($errors, true));
             $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')];
         }
 
