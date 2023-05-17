@@ -22,8 +22,10 @@ describe('Research data deposit', function () {
 
 		cy.get('div#myQueue a:contains("New Submission")').click();
 
-		cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
-		cy.get('input[id^="researchData-submissionDeposit"]').click();
+		if (Cypress.env('contextTitles').en_US == 'Journal of Public Knowledge') {
+			cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
+		}
+		cy.get('input[id^="dataStatementTypes"][value=3]').click();
 		cy.get('input[id^="checklist-"]').click({multiple: true});
 		cy.get('input[id=privacyConsent]').click();
 		cy.get('button.submitFormButton').click();
@@ -251,6 +253,7 @@ describe('Research data deposit', function () {
 	});
 
 	it('Check editor can publish research data', function () {
+		let representation = (Cypress.env('contextTitles').en_US === 'Public Knowledge Preprint Server') ? 'preprint' : 'article';
 		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
 		cy.get('button[aria-controls="publication"]').click();
@@ -314,7 +317,7 @@ describe('Research data deposit', function () {
         cy.get('.data_citation .value').contains(`${dataverseServerName}, V1`);
 		cy.logout();
 
-		cy.visit(`index.php/publicknowledge/article/view/${submission.id}`);
+		cy.visit(`index.php/publicknowledge/${representation}/view/${submission.id}`);
 		cy.get('.label').contains('Research data');
         cy.get('.data_citation .value').contains(`Kwantes, Catherine, ${currentYear}, "The Rise of the Machine Empire"`);
         cy.get('.data_citation .value a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
