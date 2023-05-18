@@ -5,6 +5,9 @@
 	<div class="value">
         <ul class="data_statement_list">
             {foreach from=$publication->getData('dataStatementTypes') item=type}
+				{if $type === $smarty.const.DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED}
+					{continue}
+				{/if}
                 <li>
                     <p>{$allDataStatementTypes[$type]}
                         {if $type === $smarty.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE}
