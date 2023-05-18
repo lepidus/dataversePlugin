@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
+import('plugins.generic.dataverse.classes.services.DataStatementService');
 
 class DraftDatasetFilesDispatcher extends DataverseDispatcher
 {
@@ -28,7 +29,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             $templateMgr->assign('requestArgs', $requestArgs);
         }
 
-        if ($publication->getData('researchDataState') != RESEARCH_DATA_SUBMISSION_DEPOSIT) {
+        if (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $publication->getData('dataStatementTypes'))) {
             return $output;
         }
 
@@ -56,7 +57,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     {
         $publication = $form->submission->getCurrentPublication();
 
-        if ($publication->getData('researchDataState') != RESEARCH_DATA_SUBMISSION_DEPOSIT) {
+        if (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $publication->getData('dataStatementTypes'))) {
             return;
         }
 

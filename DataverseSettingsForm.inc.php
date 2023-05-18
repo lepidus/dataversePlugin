@@ -4,7 +4,7 @@ import('lib.pkp.classes.form.Form');
 import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
 import('plugins.generic.dataverse.dataverseAPI.actions.DataverseCollectionActions');
 
-class DataverseConfigurationForm extends Form
+class DataverseSettingsForm extends Form
 {
     private $plugin;
     private $contextId;

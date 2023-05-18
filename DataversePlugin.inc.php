@@ -32,10 +32,11 @@ class DataversePlugin extends GenericPlugin
         $dispatcherClasses = [
             'DatasetInformationDispatcher',
             'DatasetSubjectDispatcher',
+            'DataStatementDispatcher',
+            'DataStatementTabDispatcher',
             'DatasetTabDispatcher',
             'DataverseEventsDispatcher',
-            'DraftDatasetFilesDispatcher',
-            'ResearchDataStateDispatcher'
+            'DraftDatasetFilesDispatcher'
         ];
 
         foreach ($dispatcherClasses as $dispatcherClass) {
@@ -102,8 +103,8 @@ class DataversePlugin extends GenericPlugin
                 $context = $request->getContext();
                 $contextId = ($context == null) ? 0 : $context->getId();
 
-                $this->import('classes.form.DataverseConfigurationForm');
-                $form = new DataverseConfigurationForm($this, $contextId);
+                $this->import('DataverseSettingsForm');
+                $form = new DataverseSettingsForm($this, $contextId);
                 if ($request->getUserVar('save')) {
                     $form->readInputData();
                     if ($form->validate()) {

@@ -50,7 +50,19 @@ class DatasetService extends DataverseService
         $dataverseStudyDAO->insertStudy($study);
 
         $publication = $submission->getCurrentPublication();
-        $newPublication = Services::get('publication')->edit($publication, ['researchDataState'=>RESEARCH_DATA_SUBMISSION_DEPOSIT], $request);
+        $dataStatementTypes = $publication->getData('dataStatementTypes');
+        if (empty($dataStatementTypes)) {
+            $dataStatementTypes = [DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED];
+        }
+        if (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
+            $dataStatementTypes[] = DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED;
+        }
+
+        $newPublication = Services::get('publication')->edit(
+            $publication,
+            ['dataStatementTypes' => $dataStatementTypes],
+            $request
+        );
 
         $this->registerEventLog(
             $submission,
@@ -105,6 +117,19 @@ class DatasetService extends DataverseService
         }
 
         DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
+
+        $publication = $submission->getCurrentPublication();
+        $dataStatementTypes = $publication->getData('dataStatementTypes');
+        if (in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
+            $dataStatementTypes = array_diff($dataStatementTypes, [DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+        }
+
+        $request = \Application::get()->getRequest();
+        $newPublication = Services::get('publication')->edit(
+            $publication,
+            ['dataStatementTypes' => $dataStatementTypes],
+            $request
+        );
 
         $this->registerEventLog(
             $submission,

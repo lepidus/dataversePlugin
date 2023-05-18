@@ -32,10 +32,4 @@ class DataverseMigration extends Migration
             });
         }
     }
-
-    public function down(): void
-    {
-        Capsule::schema()->drop('dataverse_studies');
-        Capsule::schema()->drop('draft_dataset_files');
-    }
 }

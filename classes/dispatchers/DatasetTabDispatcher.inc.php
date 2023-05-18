@@ -10,7 +10,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addResearchDataTab'));
         HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
-        HookRegistry::register('TemplateManager::setupBackendPage', array($this, 'setupPluginResources'));
     }
 
     private function getSubmissionStudy(int $submissionId): ?DataverseStudy
@@ -62,7 +61,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         $templateMgr = $params[0];
         $template = $params[1];
-        $output =& $params[2];
 
         if (
             $template != 'workflow/workflow.tpl'
@@ -103,20 +101,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
         return false;
     }
 
-    public function setupPluginResources(string $hookName): bool
-    {
-        $request = Application::get()->getRequest();
-        $templateMgr = TemplateManager::getManager($request);
-        $templateMgr->setLocaleKeys([
-            'plugins.generic.dataverse.researchDataState.inManuscript.description',
-            'plugins.generic.dataverse.researchDataState.repoAvailable.description',
-            'plugins.generic.dataverse.researchDataState.onDemand.description',
-            'plugins.generic.dataverse.researchDataState.private.description',
-            'plugins.generic.dataverse.researchData.noResearchData'
-        ]);
-        return false;
-    }
-
     private function setupResearchDataDeposit(Submission $submission): void
     {
         $request = Application::get()->getRequest();
@@ -134,7 +118,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
 
-        $items = array_map(function ($draftDatasetFile) {
+        $items = array_map(function ($draftDatasetFile) use ($props) {
             return $draftDatasetFile->getAllData();
         }, $draftDatasetFiles);
 
@@ -150,33 +134,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
         $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
         $this->initDatasetFileForm($templateMgr, $fileFormAction);
-
-        $this->initResearchDataStateForm($templateMgr, $submission);
-    }
-
-    private function initResearchDataStateForm(TemplateManager $templateMgr, Submission $submission): void
-    {
-        $request = Application::get()->getRequest();
-        $context = $request->getContext();
-
-        $latestPublication = $submission->getLatestPublication();
-        $latestPublicationApiUrl = $request->getDispatcher()->url(
-            $request,
-            ROUTE_API,
-            $context->getPath(),
-            'submissions/' . $submission->getId() . '/publications/' . $latestPublication->getId()
-        );
-
-        $supportedFormLocales = $context->getSupportedFormLocales();
-        $localeNames = AppLocale::getAllLocales();
-        $locales = array_map(function ($localeKey) use ($localeNames) {
-            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-        }, $supportedFormLocales);
-
-        import('plugins.generic.dataverse.classes.form.ResearchDataStateForm');
-        $researchDataStateForm = new ResearchDataStateForm($latestPublicationApiUrl, $locales, $latestPublication);
-
-        $this->addComponent($templateMgr, $researchDataStateForm);
     }
 
     private function setupResearchDataUpdate(DataverseStudy $study): void
@@ -221,7 +178,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
         }, $supportedFormLocales);
 
-        $this->plugin->import('classes.form.DatasetMetadataForm');
+        $this->plugin->import('classes.components.forms.DatasetMetadataForm');
         $datasetMetadataForm = new DatasetMetadataForm($action, $method, $locales, $dataset);
 
         $this->addComponent($templateMgr, $datasetMetadataForm);
@@ -229,7 +186,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
     private function initDatasetFilesList($templateMgr, $apiUrl, $items): void
     {
-        import('plugins.generic.dataverse.classes.listPanel.DatasetFilesListPanel');
+        $this->plugin->import('classes.components.listPanel.DatasetFilesListPanel');
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
             __('plugins.generic.dataverse.researchData.files'),
@@ -255,7 +212,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $request = Application::get()->getRequest();
         $context = $request->getContext();
 
-        import('plugins.generic.dataverse.classes.form.DraftDatasetFileForm');
+        $this->plugin->import('classes.components.forms.DraftDatasetFileForm');
         $draftDatasetFileForm = new DraftDatasetFileForm($apiUrl, $context);
 
         $this->addComponent(
