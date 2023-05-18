@@ -1,4 +1,4 @@
-{if $publication->getData('dataStatementTypes')}
+{if $publication->getData('dataStatementTypes') && $publication->getData('dataStatementTypes') != [$smarty.const.DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]}
 	<div class="item dataStatement">
 		<h2 class="label">
 			{translate key="plugins.generic.dataverse.dataStatement.title"}
