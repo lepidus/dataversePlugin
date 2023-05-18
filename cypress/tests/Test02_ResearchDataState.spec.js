@@ -3,7 +3,7 @@ import '../support/commands.js';
 describe('Research data state', function () {
 	let submission;
 
-	before(function() {
+	before(function () {
 		submission = {
 			id: 0,
 			section: 'Articles',
@@ -17,32 +17,41 @@ describe('Research data state', function () {
 		}
 	});
 
-	it('Check reseach data state in submission wizard', function () {
+	it('Check data statement in submission wizard', function () {
 		cy.login('eostrom', null, 'publicknowledge');
 
 		cy.get('div#myQueue a:contains("New Submission")').click();
 
-		cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
-		cy.get('input[id^="checklist-"]').click({multiple: true});
+		if (Cypress.env('contextTitles').en_US == 'Journal of Public Knowledge') {
+			cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
+		}
+		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[id=privacyConsent]').click();
 
+		cy.get('input[id^="dataStatementReason-en_US-"]').should('not.be.visible');
+		cy.get('ul[id^="dataStatementUrls"]').should('not.be.visible');
+
 		cy.get('button.submitFormButton').click();
-		cy.get('div:contains("It is required to inform the status of the research data.")');
+		cy.get('div:contains("It is required to inform the declaration of the data statement.")');
 
-		cy.get('input[id^="researchData-repoAvailable"]').click();
+		cy.get('input[id^="checklist-"]').click({ multiple: true });
+		cy.get('input[id^="dataStatementTypes"][value=2]').click();
+		cy.get('ul[id^="dataStatementUrls"]').should('be.visible');
 		cy.get('button.submitFormButton').click();
-        cy.get('label[for^="researchDataUrl"].error').should('contain','This field is required');
+		cy.get('div:contains("It is required to inform the URLs to the data in repositories.")');
 
-		cy.get('input[name=researchDataUrl]').focus().clear().type('invalidUrl');
-        cy.get('label[for^="researchDataUrl"].error').should('contain','Please enter a valid URL.');
-		cy.get('input[name=researchDataUrl]').focus().clear()
+		cy.get('input[id^="dataStatementTypes"][value=2]').click();
+		cy.get('ul[id^="dataStatementUrls"]').then((node) => {
+			node.tagit('createTag', 'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
+		});
 
-		cy.get('input[id^="researchData-private"]').click();
+		cy.get('input[id^="dataStatementTypes"][value=5]').click();
+		cy.get('input[id^="dataStatementReason-en_US-"]').should('be.visible');
 		cy.get('button.submitFormButton').click();
-        cy.get('label[for^="researchDataReason"].error').should('contain','This field is required');
+		cy.get('label[for^="dataStatementReason"].error').should('contain', 'This field is required');
 
-		cy.get('input[id^="checklist-"]').click({multiple: true});
-		cy.get('input[name=researchDataReason]').focus().clear().type('Has sensitive data');
+		cy.get('input[id^="checklist-"]').click({ multiple: true });
+		cy.get('input[id^="dataStatementReason-en_US-"]').focus().clear().type('Has sensitive data');
 
 		cy.get('button.submitFormButton').click();
 
@@ -53,7 +62,7 @@ describe('Research data state', function () {
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
-    	cy.get('label').contains('Title').click();
+		cy.get('label').contains('Title').click();
 		cy.get('textarea[id^="abstract-en_US-"').then((node) => {
 			cy.setTinyMceContent(node.attr('id'), submission.abstract);
 		});
@@ -74,7 +83,7 @@ describe('Research data state', function () {
 		cy.get('h2:contains("Submission complete")');
 	});
 
-	it('Check reseach data state research data tab', function () {
+	it('Check data statement edit in data statement tab', function () {
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
 			cy.allowAuthorToEditPublication('dbarnes', null, 'Elinor Ostrom');
 		}
@@ -84,31 +93,29 @@ describe('Research data state', function () {
 		cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
 
 		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('button[aria-controls="dataStatement"]').click();
 
-		cy.get('.researchData__state').contains('The research data cannot be made publicly available, with the justification: Has sensitive data');
+		cy.get('input[name="dataStatementTypes"][value="2"]').should('be.checked');
+		cy.get('input[name="dataStatementTypes"][value="5"]').should('be.checked');
 
-		cy.get('.researchData__header > .researchData__stateButton button:contains("Edit")').click();
-		cy.get('input[name="researchDataState"][value="inManuscript"]').click();
-		cy.get('.researchData__stateForm button:contains("Save")').click();
-		cy.get('.researchData__state').contains('Research data is contained in the manuscript');
-		cy.wait(1000);
+		cy.get('#dataStatement-dataStatementUrls-selected span').contains('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
+		cy.get('input[id="dataStatement-dataStatementReason-control-en_US"').should('have.value', 'Has sensitive data');
 
-		cy.get('.researchData__header button:contains("Edit")').click();
-		cy.get('input[name="researchDataState"][value="repoAvailable"]').click();
-		cy.get('input[name="researchDataUrl"]').type('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM', {delay: 0});
-		cy.get('.researchData__stateForm button:contains("Save")').click();
-		cy.get('.researchData__state').contains('Research data available at https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
-		cy.get('.researchData__state a').should('have.attr', 'href', 'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
-		cy.wait(1000);
+		cy.get('input[name="dataStatementTypes"][value="2"]').click();
+		cy.get('input[id="dataStatement-dataStatementUrls-control"').should('not.be.visible');
+		cy.get('input[name="dataStatementTypes"][value="5"]').click();
+		cy.get('input[id="dataStatement-dataStatementReason-control-en_US"').should('not.be.visible');
 
-		cy.get('.researchData__header button:contains("Edit")').click();
-		cy.get('input[name="researchDataState"][value="onDemand"]').click();
-		cy.get('.researchData__stateForm button:contains("Save")').click();
-		cy.get('.researchData__state').contains('Research data is available on demand.The condition is justified in the manuscript');
+		cy.get('input[name="dataStatementTypes"]').check({ multiple: true });
+		cy.get('#dataStatement button').contains('Français (Canada)').click();
+		cy.get('input[id="dataStatement-dataStatementReason-control-fr_CA"').clear();
+		cy.get('input[id="dataStatement-dataStatementReason-control-fr_CA"').type('Contient des données sensibles');
+		cy.get('#dataStatement button').contains('Save').click();
+		cy.get('#dataStatement [role="status"]').contains('Saved');
 	});
 
-	it('Check submission landing page displays research data state', function () {
+	it('Check submission landing page displays data statement state', function () {
+		const representation = (Cypress.env('contextTitles').en_US === 'Public Knowledge Preprint Server') ? 'preprint' : 'article';
 		cy.login('dbarnes');
 		cy.visit('/index.php/publicknowledge/workflow/access/' + submission.id);
 
@@ -126,10 +133,13 @@ describe('Research data state', function () {
 			cy.contains('This version has been posted and can not be edited.');
 		}
 
-		cy.get('.researchData__header button:contains("Edit")').should('not.exist');
-		cy.get('.researchData__header button:contains("Upload research data")').should('not.exist');
+		cy.get('#dataStatement button').contains('Save').should('be.disabled');
 
-		cy.visit('/index.php/publicknowledge/article/view/' + submission.id);
-		cy.contains('Research data is available on demand.The condition is justified in the manuscript');
+		cy.visit(`/index.php/publicknowledge/${representation}/view/${submission.id}`);
+
+		cy.get('.data_statement_list').contains('Data statement is contained in the manuscript');
+		cy.get('.data_statement_list').contains('They are available in one or more data repository(ies)').next().contains('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
+		cy.get('.data_statement_list').contains('They are available on demand, condition justified in the manuscript');
+		cy.get('.data_statement_list').contains('They cannot be made publicly available').next().contains('Has sensitive data');
 	});
 });

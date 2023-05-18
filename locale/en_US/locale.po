@@ -223,7 +223,7 @@ msgid "plugins.generic.dataverse.dataStatement.required"
 msgstr "It is required to inform the declaration of the data statement."
 
 msgid "plugins.generic.dataverse.dataStatement.inManuscript"
-msgstr "data statement is contained in the manuscript"
+msgstr "Data statement is contained in the manuscript"
 
 msgid "plugins.generic.dataverse.dataStatement.repoAvailable"
 msgstr "They are available in one or more data repository(ies)"

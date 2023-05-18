@@ -1,5 +1,5 @@
 pkp.Vue.component('data-statement-form', {
-    name: 'DataStatementForm',
+	name: 'DataStatementForm',
 	extends: pkp.controllers.Container.components.PkpForm,
 	data() {
 		return {
@@ -30,7 +30,7 @@ pkp.Vue.component('data-statement-form', {
 			}
 			return true;
 		},
-		fieldChanged: function(name, prop, value, localeKey) {
+		fieldChanged: function (name, prop, value, localeKey) {
 			const newFields = this.allFields.map(field => {
 				if (field.name === name) {
 					if (localeKey) {
@@ -41,13 +41,13 @@ pkp.Vue.component('data-statement-form', {
 				}
 				return field;
 			});
-			this.$emit('set', this.id, {fields: newFields.filter(this.shouldShowField)});
+			this.$emit('set', this.id, { fields: newFields.filter(this.shouldShowField) });
 			this.removeError(name, localeKey);
 		},
 	},
 	mounted() {
 		this.allFields = this.fields;
 		const newFields = this.allFields.filter(this.shouldShowField);
-		this.$emit('set', this.id, {fields: newFields});
+		this.$emit('set', this.id, { fields: newFields });
 	},
 });
