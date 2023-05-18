@@ -44,7 +44,7 @@ class DataStatementForm extends FormComponent
             'label' => __('plugins.generic.dataverse.dataStatement.repoAvailable.urls'),
             'description' => __('plugins.generic.dataverse.dataStatement.repoAvailable.urls.description'),
             'apiUrl' => $vocabApiUrl,
-            'selected' => $publication->getData('dataStatementUrls'),
+            'selected' => $publication->getData('dataStatementUrls') ?? [],
         ]))
         ->addField(new FieldText('dataStatementReason', [
             'label' => __('plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason'),

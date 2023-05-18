@@ -11,6 +11,9 @@ pkp.Vue.component('data-statement-form', {
 			const dataStatementTypesField = this.fields.find(
 				(field) => field.name === 'dataStatementTypes'
 			)
+			if (dataStatementTypesField.value === null) {
+				dataStatementTypesField.value = [];
+			}
 			if (
 				field.name === 'dataStatementUrls'
 				&& !dataStatementTypesField.value.includes(pkp.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE)
