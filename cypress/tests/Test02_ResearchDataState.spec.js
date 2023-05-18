@@ -116,8 +116,32 @@ describe('Research data state', function () {
 
 	it('Check submission landing page displays data statement state', function () {
 		const representation = (Cypress.env('contextTitles').en_US === 'Public Knowledge Preprint Server') ? 'preprint' : 'article';
+		const currentYear = new Date().getFullYear();
+
 		cy.login('dbarnes');
 		cy.visit('/index.php/publicknowledge/workflow/access/' + submission.id);
+
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+
+		cy.get('button').contains('Upload research data').click();
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
+			cy.get('[data-modal="fileForm"] input[type=file]').upload({
+				fileContent,
+				fileName: 'Data Table.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
+		cy.wait(200);
+		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
+		cy.get('#datasetTab form button').contains('Save').click();
+		cy.get('#datasetTab [role="status"]').contains('Saved');
 
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
 			cy.sendToReview();
@@ -137,9 +161,14 @@ describe('Research data state', function () {
 
 		cy.visit(`/index.php/publicknowledge/${representation}/view/${submission.id}`);
 
+		cy.get('.dataStatement .label').contains('Data statement');
 		cy.get('.data_statement_list').contains('Data statement is contained in the manuscript');
 		cy.get('.data_statement_list').contains('They are available in one or more data repository(ies)').next().contains('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
 		cy.get('.data_statement_list').contains('They are available on demand, condition justified in the manuscript');
 		cy.get('.data_statement_list').contains('They cannot be made publicly available').next().contains('Has sensitive data');
+
+		cy.get('.label').contains('Research data');
+		cy.get('.data_citation .value').contains(`Ostrom, Elinor, ${currentYear}, "${submission.title}"`);
+		cy.get('.data_citation .value a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
 	});
 });
