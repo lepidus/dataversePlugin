@@ -197,6 +197,10 @@ class DataStatementDispatcher extends DataverseDispatcher
         $errors = &$args[0];
         $props = $args[2];
 
+        if (!isset($props['dataStatementTypes'])) {
+            return false;
+        }
+
         if (empty($errors)) {
             $errors = [];
         }

@@ -144,6 +144,7 @@ describe('Research data state', function () {
 		cy.get('#datasetTab [role="status"]').contains('Saved');
 
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
+			cy.get('#workflow-button').click();
 			cy.sendToReview();
 			cy.assignReviewer('Julie Janssen');
 			cy.recordEditorialDecision('Accept Submission');
