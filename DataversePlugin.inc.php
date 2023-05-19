@@ -35,6 +35,7 @@ class DataversePlugin extends GenericPlugin
             'DataStatementDispatcher',
             'DataStatementTabDispatcher',
             'DatasetTabDispatcher',
+            'DatasetReviewDispatcher',
             'DataverseEventsDispatcher',
             'DraftDatasetFilesDispatcher'
         ];
