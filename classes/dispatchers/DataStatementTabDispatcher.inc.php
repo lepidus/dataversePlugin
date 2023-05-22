@@ -7,12 +7,12 @@ class DataStatementTabDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('TemplateManager::setupBackendPage', [$this, 'addDataStatementConstants']);
+        HookRegistry::register('TemplateManager::setupBackendPage', [$this, 'addDataStatementResourcesToFrontend']);
         HookRegistry::register('TemplateManager::display', [$this, 'addDataStatementTabResources']);
         HookRegistry::register('Template::Workflow::Publication', [$this, 'addDataStatementTab']);
     }
 
-    public function addDataStatementConstants(string $hookName): void
+    public function addDataStatementResourcesToFrontend(string $hookName): void
     {
         import('plugins.generic.dataverse.classes.services.DataStatementService');
         $request = \Application::get()->getRequest();
@@ -23,6 +23,10 @@ class DataStatementTabDispatcher extends DataverseDispatcher
             'DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED',
             'DATA_STATEMENT_TYPE_ON_DEMAND',
             'DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE',
+        ]);
+
+        $templateMgr->setLocaleKeys([
+            'validator.active_url'
         ]);
 
         return;
@@ -49,6 +53,15 @@ class DataStatementTabDispatcher extends DataverseDispatcher
         $templateMgr->addJavaScript(
             'dataStatementForm',
             $this->plugin->getPluginFullPath() . '/js/ui/components/DataStatementForm.js',
+            [
+                'priority' => STYLE_SEQUENCE_LAST,
+                'contexts' => ['backend']
+            ]
+        );
+
+        $templateMgr->addJavaScript(
+            'field-controlled-vocab-url',
+            $this->plugin->getPluginFullPath() . '/js/ui/components/FieldControlledVocabUrl.js',
             [
                 'priority' => STYLE_SEQUENCE_LAST,
                 'contexts' => ['backend']

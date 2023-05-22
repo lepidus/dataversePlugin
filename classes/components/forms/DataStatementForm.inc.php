@@ -1,6 +1,5 @@
 <?php
 
-use PKP\components\forms\FieldControlledVocab;
 use PKP\components\forms\FieldOptions;
 use PKP\components\forms\FieldText;
 use PKP\components\forms\FormComponent;
@@ -34,13 +33,14 @@ class DataStatementForm extends FormComponent
         $contextPath = $request->getContext()->getPath();
         $vocabApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $contextPath, 'vocabs');
 
+        import('plugins.generic.dataverse.classes.components.forms.FieldControlledVocabUrl');
         $this->addField(new FieldOptions('dataStatementTypes', [
             'label' => __('plugins.generic.dataverse.dataStatement.title'),
             'isRequired' => true,
             'value' => $publication->getData('dataStatementTypes') ?? [],
             'options' => $dataStatementOptions,
         ]))
-        ->addField(new FieldControlledVocab('dataStatementUrls', [
+        ->addField(new FieldControlledVocabUrl('dataStatementUrls', [
             'label' => __('plugins.generic.dataverse.dataStatement.repoAvailable.urls'),
             'description' => __('plugins.generic.dataverse.dataStatement.repoAvailable.urls.description'),
             'apiUrl' => $vocabApiUrl,
