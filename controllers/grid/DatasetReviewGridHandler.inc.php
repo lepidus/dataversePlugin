@@ -31,6 +31,7 @@ class DatasetReviewGridHandler extends GridHandler
 
         $this->setTitle('plugins.generic.dataverse.researchData');
         $this->addColumn(new DatasetReviewGridColumn($this->study));
+        $this->setEmptyRowText('plugins.generic.dataverse.noResearchData');
     }
 
     public function authorize($request, &$args, $roleAssignments)

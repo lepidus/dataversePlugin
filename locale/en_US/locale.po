@@ -53,6 +53,9 @@ msgstr "Research data and galley have the same file. Make sure the files are add
 msgid "plugins.generic.dataverse.researchData"
 msgstr "Research data"
 
+msgid "plugins.generic.dataverse.noResearchData"
+msgstr "No research data"
+
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Add research data"
 

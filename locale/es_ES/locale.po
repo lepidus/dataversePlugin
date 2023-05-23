@@ -56,6 +56,9 @@ msgstr "Datos de investigación y galerada tienen el mismo archivo. Asegúrese d
 msgid "plugins.generic.dataverse.researchData"
 msgstr "Datos de investigación"
 
+msgid "plugins.generic.dataverse.noResearchData"
+msgstr "Sin dato de investigación"
+
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Anãdir datos de investigación"
 
