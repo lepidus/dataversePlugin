@@ -1,9 +1,12 @@
 <?php
 
 import('lib.pkp.classes.controllers.grid.GridHandler');
+import('plugins.generic.dataverse.controllers.grid.DatasetDataReviewGridColumn');
 
 class DatasetDataReviewGridHandler extends GridHandler
 {
+    private $study;
+    
     public function __construct()
     {
         parent::__construct();
@@ -11,26 +14,23 @@ class DatasetDataReviewGridHandler extends GridHandler
             array(ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT, ROLE_ID_REVIEWER),
             array('fetchGrid', 'fetchRow')
         );
-
-        $this->setTitle('plugins.generic.dataverse.researchData');
-        $this->addColumn($this->getFileNameColumn());
     }
 
     public function getSubmission(): Submission
     {
         return $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
     }
-    
-    public function getFileNameColumn(): GridColumn
+
+    public function initialize($request, $args = null)
     {
-        import('plugins.generic.dataverse.controllers.grid.DatasetDataReviewGridCellProvider');
-        return new GridColumn(
-            'label',
-            'common.name',
-            null,
-            null,
-            new DatasetDataReviewGridCellProvider()
-        );
+        parent::initialize($request, $args);
+        
+        $submissionId = $this->getSubmission()->getId();
+        $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
+        $this->study = $dataverseStudyDao->getStudyBySubmissionId($submissionId);
+
+        $this->setTitle('plugins.generic.dataverse.researchData');
+        $this->addColumn(new DatasetDataReviewGridColumn($this->study));
     }
 
     public function authorize($request, &$args, $roleAssignments)
@@ -54,21 +54,17 @@ class DatasetDataReviewGridHandler extends GridHandler
 
     protected function loadData($request, $filter)
     {
-        $submissionId = $this->getSubmission()->getId();
-        $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dataverseStudyDao->getStudyBySubmissionId($submissionId);
+        $rowsData = [];
 
-        $researchDataFiles = [];
-
-        if(!is_null($study)) {
+        if(!is_null($this->study)) {
             $dataverseClient = new DataverseClient();
-            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+            $dataset = $dataverseClient->getDatasetActions()->get($this->study->getPersistentId());
 
             foreach ($dataset->getFiles() as $datasetFile) {
-                $researchDataFiles[$datasetFile->getId()] = $datasetFile;
+                $rowsData[$datasetFile->getId()] = $datasetFile;
             }
         }
 
-        return $researchDataFiles;
+        return $rowsData;
     }
 }
