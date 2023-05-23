@@ -4,7 +4,7 @@ import('lib.pkp.classes.controllers.grid.GridColumn');
 import('lib.pkp.classes.controllers.grid.GridCellProvider');
 import('lib.pkp.classes.linkAction.request.RedirectAction');
 
-class DatasetDataReviewGridColumn extends GridColumn
+class DatasetReviewGridColumn extends GridColumn
 {
     private $study;
     

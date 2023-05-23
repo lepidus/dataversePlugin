@@ -1,9 +1,9 @@
 <?php
 
 import('lib.pkp.classes.controllers.grid.GridHandler');
-import('plugins.generic.dataverse.controllers.grid.DatasetDataReviewGridColumn');
+import('plugins.generic.dataverse.controllers.grid.DatasetReviewGridColumn');
 
-class DatasetDataReviewGridHandler extends GridHandler
+class DatasetReviewGridHandler extends GridHandler
 {
     private $study;
     
@@ -30,7 +30,7 @@ class DatasetDataReviewGridHandler extends GridHandler
         $this->study = $dataverseStudyDao->getStudyBySubmissionId($submissionId);
 
         $this->setTitle('plugins.generic.dataverse.researchData');
-        $this->addColumn(new DatasetDataReviewGridColumn($this->study));
+        $this->addColumn(new DatasetReviewGridColumn($this->study));
     }
 
     public function authorize($request, &$args, $roleAssignments)

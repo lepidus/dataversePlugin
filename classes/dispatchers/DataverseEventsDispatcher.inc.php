@@ -143,7 +143,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $component =& $params[0];
         $ourHandlers = [
             'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler',
-            'plugins.generic.dataverse.controllers.grid.DatasetDataReviewGridHandler'
+            'plugins.generic.dataverse.controllers.grid.DatasetReviewGridHandler'
         ];
         if (in_array($component, $ourHandlers)) {
             import($component);

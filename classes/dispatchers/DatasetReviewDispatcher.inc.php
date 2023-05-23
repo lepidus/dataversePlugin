@@ -23,7 +23,7 @@ class DatasetReviewDispatcher extends DataverseDispatcher
         if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
             $offset = $matches[0][1];
             $output = substr($templateOutput, 0, $offset);
-            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetDataReview.tpl'));
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetReview.tpl'));
             $output .= substr($templateOutput, $offset);
         }
 
