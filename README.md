@@ -2,13 +2,14 @@
 
 We are implementing this plugin for OPS and OJS 3.3 (or higher) for SciELO Brasil.
 
-It is a work in progress, the current version is a MVP for OPS only.
+It is a work in progress, the current version is a MVP for OPS and OJS.
 
 ## Compatibility
 
 The latest release of this plugin is compatible with the following PKP applications:
 
-* OPS 3.3 (or higher)
+* OPS 3.3.0
+* OJS 3.3.0
 
 Using PHP between 7.3 and 8.1.
 
@@ -45,6 +46,8 @@ After filling in the fields, just confirm the action by clicking `Save`. The plu
 A "Research Data" deposit dialog is shown in step 2 of the Submission proccess.
 
 Authors, moderators, editors or managers can also edit the dataset, before publication, on the Research Data tab of the submission.
+
+In OJS, reviewers can have access to research data files during the review process. Reviewers access to theses file can be restricted on Workflow Settings, so they can only see them when they agree to review the submission.
 
 ## Development Instructions:
 
