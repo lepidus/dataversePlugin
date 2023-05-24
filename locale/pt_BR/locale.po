@@ -56,6 +56,9 @@ msgstr "Dados de pesquisa e composição final possuem o mesmo arquivo. Certifiq
 msgid "plugins.generic.dataverse.researchData"
 msgstr "Dados de pesquisa"
 
+msgid "plugins.generic.dataverse.noResearchData"
+msgstr "Sem dados de pesquisa"
+
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Adicione dados de pesquisa"
 
