@@ -6,10 +6,25 @@ class DatasetReviewDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('pkpreviewerreviewstep1form::display', array($this, 'addResearchDataToReview'));
+        HookRegistry::register('pkpreviewerreviewstep1form::display', array($this, 'addResearchDataToReviewStep1'));
+        HookRegistry::register('reviewerreviewstep3form::display', array($this, 'addResearchDataToReviewStep3'));
     }
 
-    public function addResearchDataToReview(string $hookName, array $params): ?string
+    public function addResearchDataToReviewStep1(string $hookName, array $params): ?string
+    {
+        $pattern = '/<div[^>]+class="pkp_linkActions[^>]+>/';
+
+        return $this->addResearchDataToReviewStep($params, $pattern);
+    }
+
+    public function addResearchDataToReviewStep3(string $hookName, array $params): ?string
+    {
+        $pattern = '/<div[^>]+class="section[^>]+>/';
+
+        return $this->addResearchDataToReviewStep($params, $pattern);
+    }
+
+    private function addResearchDataToReviewStep($params, $pattern): ?string
     {
         $form = $params[0];
         $output =& $params[1];
@@ -19,7 +34,6 @@ class DatasetReviewDispatcher extends DataverseDispatcher
         $templateMgr = TemplateManager::getManager($request);
 
         $templateOutput = $templateMgr->fetch($form->_template);
-        $pattern = '/<div[^>]+class="pkp_linkActions[^>]+>/';
         if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
             $offset = $matches[0][1];
             $output = substr($templateOutput, 0, $offset);
