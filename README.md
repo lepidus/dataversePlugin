@@ -47,7 +47,7 @@ A "Research Data" deposit dialog is shown in step 2 of the Submission proccess.
 
 Authors, moderators, editors or managers can also edit the dataset, before publication, on the Research Data tab of the submission.
 
-In OJS, reviewers can have access to research data files during the review process. Reviewers access to theses file can be restricted on Workflow Settings, so they can only see them when they agree to review the submission.
+In OJS, reviewers can have access to research data files during the review process. Reviewers access to these files can be restricted on Workflow Settings, so they can only see research data when they agree to review the submission.
 
 ## Development Instructions:
 
@@ -109,6 +109,6 @@ Important: Cypress search for elements with expected strings. The locale of your
 
 __This plugin is licensed under the GNU General Public License v3.0__
 
-__Copyright (c) 2021-2022 Lepidus Tecnologia__
+__Copyright (c) 2021-2023 Lepidus Tecnologia__
 
-__Copyright (c) 2021-2022 SciELO__
+__Copyright (c) 2021-2023 SciELO__
