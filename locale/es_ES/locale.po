@@ -23,6 +23,9 @@ msgstr "Conectar"
 msgid "plugins.generic.dataverse.settings.dataverseUrl"
 msgstr "Dataverse URL"
 
+msgid "plugins.generic.dataverse.settings.dataverseUrl.placeholder"
+msgstr "https://demo.dataverse.org/dataverse/anotherdemo"
+
 msgid "plugins.generic.dataverse.settings.dataverseUrlDescription"
 msgstr "URL del Dataverse"
 

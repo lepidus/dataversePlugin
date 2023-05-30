@@ -16,14 +16,14 @@
 <form class="pkp_form" id="dataverseConfigurationForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" 
 plugin=$pluginName verb="settings" save=true}">
 {csrf}
-	<div id="description">{translate key="plugins.generic.dataverse.description"}</div>
+	<div id="description">{translate key="plugins.generic.dataverse.settings.description" docUrl="https://github.com/lepidus/dataversePlugin#configuration"}</div>
 	{include file="controllers/notification/inPlaceNotification.tpl" notificationId="translationAndGlossarySettingsFormNotification"}
 	{fbvFormArea id="authForm"}
-		<div id="authForm">
+		<div id="authForm" style="margin-top: 1rem">
 			{fbvFormSection list=true}
 				<label class="label">{fieldLabel name="dataverseUrl" required="true" key="plugins.generic.dataverse.settings.dataverseUrl"}</label>
 				{fbvElement type="url" id="dataverseUrl" value=$dataverseUrl|escape size=$fbvStyles.size.MEDIUM}
-				<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dataverseUrlDescription"}</label>
+				<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dataverseUrl.placeholder"}</label>
 				
 				<label class="label">{fieldLabel name="apiToken" required="true" key="plugins.generic.dataverse.settings.token"}</label>
 				{fbvElement type="text" password="true" id="apiToken" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}

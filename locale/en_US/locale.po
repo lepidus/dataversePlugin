@@ -20,6 +20,9 @@ msgstr "Deposit data sets and/or other supplementary files to a Dataverse."
 msgid "plugins.generic.dataverse.settings.dataverseUrl"
 msgstr "Dataverse URL"
 
+msgid "plugins.generic.dataverse.settings.dataverseUrl.placeholder"
+msgstr "https://demo.dataverse.org/dataverse/anotherdemo"
+
 msgid "plugins.generic.dataverse.settings.dataverseUrlDescription"
 msgstr "Dataverse URL"
 

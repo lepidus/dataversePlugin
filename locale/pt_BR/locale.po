@@ -17,17 +17,25 @@ msgstr "Plugin Dataverse"
 msgid "plugins.generic.dataverse.description"
 msgstr "Deposita conjuntos de dados e/ou outros documentos suplementares no Dataverse."
 
+msgid "plugins.generic.dataverse.settings.description"
+msgstr ""
+"Preencha os campos abaixo para depositar conjuntos de dados e/ou outros documentos suplementares no Dataverse. "
+"Para mais informações, consulte a <a href=\"{$docUrl}\" target=\"_new\">documentação do plugin</a>."
+
 msgid "plugins.generic.dataverse.settings.connect"
 msgstr "Conectar"
 
 msgid "plugins.generic.dataverse.settings.dataverseUrl"
 msgstr "Dataverse URL"
 
+msgid "plugins.generic.dataverse.settings.dataverseUrl.placeholder"
+msgstr "Ex.: https://demo.dataverse.org/dataverse/anotherdemo"
+
 msgid "plugins.generic.dataverse.settings.dataverseUrlDescription"
 msgstr "URL do Dataverse"
 
 msgid "plugins.generic.dataverse.settings.tokenDescription"
-msgstr "Token de API"
+msgstr "<a href=\"https://guides.dataverse.org/en/5.13/user/account.html#api-token\" target=\"_new\">Instructions for getting a API token</a>."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
 msgstr "Endereço do Dataverse é obrigatório."
