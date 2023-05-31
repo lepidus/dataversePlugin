@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
+import('plugins.generic.dataverse.classes.services.DataStatementService');
 
 class DatasetReviewDispatcher extends DataverseDispatcher
 {
@@ -32,6 +33,13 @@ class DatasetReviewDispatcher extends DataverseDispatcher
 
         $request = PKPApplication::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
+
+        $dataStatementService = new DataStatementService();
+        $allDataStatementTypes = $dataStatementService->getDataStatementTypes();
+        unset($allDataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+
+        $templateMgr->assign('allDataStatementTypes', $allDataStatementTypes);
+        $templateMgr->assign('publication', $submission->getCurrentPublication());
 
         $templateOutput = $templateMgr->fetch($form->_template);
         if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
