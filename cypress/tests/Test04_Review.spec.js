@@ -15,12 +15,14 @@ describe('Research data on review', function () {
 	});
 
     it('Makes a new submission with research data', function () {
-		cy.login('ckwantes', null, 'publicknowledge');
+		cy.login('dbarnes', null, 'publicknowledge');
+
+		cy.get('div#myQueue a:contains("New Submission")').click();
 
         if (Cypress.env('contextTitles').en_US == 'Journal of Public Knowledge') {
 			cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
 		}
-		cy.get('input[id^="dataStatementTypes"][value=3]').click();
+		cy.get('input[id^="dataStatementTypes"][value=1]').click();
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[id=privacyConsent]').click();
 		cy.get('button.submitFormButton').click();
@@ -55,7 +57,7 @@ describe('Research data on review', function () {
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
         cy.waitJQuery();
-		cy.get('form[id=submitStep4Form]').find('button').contains('Finish Submission').click();
+		cy.get('form[id=submitStep4Form]').contains('Finish Submission').click();
 		cy.get('button.pkpModalConfirmButton').click();
 
 		cy.waitJQuery();
@@ -81,13 +83,13 @@ describe('Research data on review', function () {
         cy.logout();
     });
     it('Check research data on review', function () {
-        cy.login('reviewer_username', null, 'publicknowledge');
+        cy.login('jjanssen', null, 'publicknowledge');
         cy.contains('Submissions').click();
         cy.contains('My Queue').click();
         cy.contains('View').first().click();
         
-        cy.contains('Research data');
         cy.contains('Data statement');
-        cy.contains('They will be submitted to the');
+        cy.contains('Data statement is contained in the manuscript');
+        cy.contains('Research data');
     });
 });
