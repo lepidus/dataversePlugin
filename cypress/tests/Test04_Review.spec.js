@@ -1,6 +1,3 @@
-import '../support/commands.js';
-
-
 describe('Research data on review', function () {
 	let submission;
 
@@ -24,23 +21,10 @@ describe('Research data on review', function () {
 		}
 		cy.get('input[id^="dataStatementTypes"][value=1]').click();
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
+		cy.get('input[name^="userGroupId"][value=3]').click();
 		cy.get('input[id=privacyConsent]').click();
 		cy.get('button.submitFormButton').click();
 
-        cy.contains('Add research data').click();
-		cy.wait(1000);
-		cy.fixture('dummy.pdf', { encoding: 'base64' }).then((fileContent) => {
-			cy.get('#uploadForm input[type=file]')
-				.upload({
-					fileContent,
-					fileName: 'Data Table.pdf',
-					mimeType: 'application/pdf',
-					encoding: 'base64',
-				});
-		});
-		cy.wait(200);
-        cy.get('input[name="termsOfUse"').check();
-        cy.get('#uploadForm button').contains('OK').click();
         cy.get('#submitStep2Form button.submitFormButton').click();
 
         cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
@@ -49,15 +33,12 @@ describe('Research data on review', function () {
 			cy.setTinyMceContent(node.attr('id'), submission.abstract);
 		});
 		cy.get('ul[id^="en_US-keywords-"]').then((node) => {
-			submission.keywords.forEach((keyword) => {
-				node.tagit('createTag', keyword);
-			});
+			node.tagit('createTag', submission.keywords[0]);
 		});
-		cy.get('select[id^="datasetSubject"').select('Other');
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
         cy.waitJQuery();
-		cy.get('form[id=submitStep4Form]').contains('Finish Submission').click();
+		cy.get('#submitStep4Form button.submitFormButton').click();
 		cy.get('button.pkpModalConfirmButton').click();
 
 		cy.waitJQuery();
