@@ -54,15 +54,13 @@ describe('Research data on review', function () {
         cy.get('#initiateReview').contains('Send to Review').click();
 
         cy.contains('Add Reviewer').click();
-        cy.get('.pkp_modal_panel').get('.pkpSearch__input').type('Julie Janssen', { delay: 0 });
-		cy.wait(500);
         cy.get(".listPanel__item").first().contains('Select Reviewer').click();
         cy.get('#advancedSearchReviewerForm').contains('Add Reviewer').click();
 
 		cy.logout();
     });
     it('Check research data on review', function () {
-        cy.login('jjanssen', null, 'publicknowledge');
+        cy.login('agallego', null, 'publicknowledge');
         cy.contains('Submissions').click();
         cy.contains('My Queue').click();
         cy.get(".listPanel__item:visible").first().contains('View').click();
