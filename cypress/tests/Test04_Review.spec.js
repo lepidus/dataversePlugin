@@ -64,9 +64,10 @@ describe('Research data on review', function () {
         cy.login('jjanssen', null, 'publicknowledge');
         cy.contains('Submissions').click();
         cy.contains('My Queue').click();
-        cy.contains('View').first().click();
+        cy.get(".listPanel__item:visible").first().contains('View').click();
         
         cy.contains('Data statement');
+		cy.contains('1. Request');
         cy.contains('Data statement is contained in the manuscript');
         cy.contains('Research data');
     });
