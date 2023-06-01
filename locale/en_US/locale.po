@@ -34,7 +34,7 @@ msgstr "API Token"
 msgid "plugins.generic.dataverse.settings.tokenDescription"
 msgstr "API token for integration with Dataverse.<br>"
 "For more information on how to obtain the API token, please refer to:"
-"<a href=\"https://guides.dataverse.org/en/5.13/user/account.html#api-token\" target=\"_new\">https://guides.dataverse.org/en/5.13/user/account.html#api-token</a>."
+"<a href=\"https://guides.dataverse.org/en/5.13/user/account.html#api-token\" target=\"_new\">Dataverse User Guide</a>."
 
 msgid "plugins.generic.dataverse.settings.termsOfUse"
 msgstr "Terms of Use"
