@@ -12,7 +12,7 @@ describe('Research data on review', function () {
 	});
 
     it('Makes a new submission with research data', function () {
-		cy.login('dbarnes', null, 'publicknowledge');
+		cy.login('ccorino', null, 'publicknowledge');
 
 		cy.get('div#myQueue a:contains("New Submission")').click();
 
@@ -21,7 +21,6 @@ describe('Research data on review', function () {
 		}
 		cy.get('input[id^="dataStatementTypes"][value=1]').click();
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
-		cy.get('input[name^="userGroupId"][value=3]').click();
 		cy.get('input[id=privacyConsent]').click();
 		cy.get('button.submitFormButton').click();
 
@@ -44,20 +43,18 @@ describe('Research data on review', function () {
 		cy.waitJQuery();
 		cy.get('h2:contains("Submission complete")');
 
-		cy.contains('Review this submission').click();
+		cy.logout();
     });
     it('Send submission to revision stage', function () {
-        cy.contains('Assign').click();
-        cy.get('select[name="filterUserGroupId"]').select('3');
-        cy.get('input[name^="namegrid-users-userselect")').type('ckwantes', { delay: 0 });
-        cy.get('td.first_column > input[name="userId"').first().click();
-        cy.contains('OK').click();
+        cy.login('dbarnes', null, 'publicknowledge');
+		
+		cy.get(".listPanel__item:visible").first().contains('View').click();
 
-        cy.contains('Send to Review').click();
+		cy.get('#editorialActions').contains('Send to Review').click();
         cy.get('#initiateReview').contains('Send to Review').click();
 
         cy.contains('Add Reviewer').click();
-        cy.get('.pkp_modal_panel').get('.pkpSearch__input').type('Revisor name', { delay: 0 });
+        cy.get('.pkp_modal_panel').get('.pkpSearch__input').type('Julie Janssen', { delay: 0 });
         cy.contains('Select Reviewer').first().click();
         cy.get('.pkp_modal_panel').contains('Add Reviewer').click();
 

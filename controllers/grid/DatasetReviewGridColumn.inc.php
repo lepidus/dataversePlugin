@@ -8,7 +8,7 @@ class DatasetReviewGridColumn extends GridColumn
 {
     private $study;
     
-    public function __construct(DataverseStudy $study)
+    public function __construct(?DataverseStudy $study)
     {
         $this->study = $study;
         parent::__construct('label', 'common.name', null, null, new GridCellProvider());
@@ -16,19 +16,22 @@ class DatasetReviewGridColumn extends GridColumn
 
     function getCellActions($request, $row, $position = GRID_ACTION_POSITION_DEFAULT) {
         $cellActions = parent::getCellActions($request, $row, $position);
-		$datasetFile = $row->getData();
-
-        $context = $request->getContext();
-        $downloadUrl = $request->getDispatcher()->url(
-            $request, ROUTE_API, $context->getPath(), 'datasets/' . $this->study->getId() . '/file', null, null,
-            ['fileId' => $datasetFile->getId(), 'filename' => $datasetFile->getFileName()]
-        );
-
-		$cellActions[] = new LinkAction(
-            'downloadDatasetFile',
-            new RedirectAction($downloadUrl),
-            $datasetFile->getFileName()
-        );
+		
+        if(!is_null($this->study)) {
+            $datasetFile = $row->getData();
+    
+            $context = $request->getContext();
+            $downloadUrl = $request->getDispatcher()->url(
+                $request, ROUTE_API, $context->getPath(), 'datasets/' . $this->study->getId() . '/file', null, null,
+                ['fileId' => $datasetFile->getId(), 'filename' => $datasetFile->getFileName()]
+            );
+    
+            $cellActions[] = new LinkAction(
+                'downloadDatasetFile',
+                new RedirectAction($downloadUrl),
+                $datasetFile->getFileName()
+            );
+        }
 
 		return $cellActions;
 	}
