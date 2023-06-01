@@ -13,27 +13,27 @@
 		$('#dataverseConfigurationForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
 	{rdelim});
 </script>
-<form class="pkp_form" id="dataverseConfigurationForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" 
-plugin=$pluginName verb="settings" save=true}">
-{csrf}
-	<div id="description">{translate key="plugins.generic.dataverse.description"}</div>
+<form
+	class="pkp_form"
+	id="dataverseConfigurationForm"
+	method="POST"
+	action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" plugin=$pluginName verb="settings" save=true}"
+>
+	{csrf}
+	<div id="description">
+		<p>{translate key="plugins.generic.dataverse.settings.description"}</p>
+	</div>
 	{include file="controllers/notification/inPlaceNotification.tpl" notificationId="translationAndGlossarySettingsFormNotification"}
 	{fbvFormArea id="authForm"}
-		<div id="authForm">
-			{fbvFormSection list=true}
-				<label class="label">{fieldLabel name="dataverseUrl" required="true" key="plugins.generic.dataverse.settings.dataverseUrl"}</label>
-				{fbvElement type="url" id="dataverseUrl" value=$dataverseUrl|escape size=$fbvStyles.size.MEDIUM}
-				<label class="sub_label">{translate key="plugins.generic.dataverse.settings.dataverseUrlDescription"}</label>
-				
-				<label class="label">{fieldLabel name="apiToken" required="true" key="plugins.generic.dataverse.settings.token"}</label>
-				{fbvElement type="text" password="true" id="apiToken" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}
-				<label class="sub_label">{translate key="plugins.generic.dataverse.settings.tokenDescription"}</label>
-
-				<label class="label">{fieldLabel name="termsOfUse" required="true" key="plugins.generic.dataverse.settings.termsOfUse"}</label>
-				{fbvElement type="url" id="termsOfUse" multilingual=true value=$termsOfUse size=$fbvStyles.size.MEDIUM}
-				<label class="sub_label">{translate key="plugins.generic.dataverse.settings.termsOfUseDescription"}</label>
-			{/fbvFormSection}
-			{fbvFormButtons}
-		</div>
+		{fbvFormSection label="plugins.generic.dataverse.settings.dataverseUrl" required=true}
+			{fbvElement type="url" id="dataverseUrl" label="plugins.generic.dataverse.settings.dataverseUrlDescription" value=$dataverseUrl|escape size=$fbvStyles.size.MEDIUM}
+		{/fbvFormSection}
+		{fbvFormSection label="plugins.generic.dataverse.settings.token" required=true}			
+			{fbvElement type="text" password="true" id="apiToken" label="plugins.generic.dataverse.settings.tokenDescription" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}
+		{/fbvFormSection}
+		{fbvFormSection label="plugins.generic.dataverse.settings.termsOfUse" required=true}
+			{fbvElement type="url" id="termsOfUse" label="plugins.generic.dataverse.settings.termsOfUseDescription" multilingual=true value=$termsOfUse size=$fbvStyles.size.MEDIUM}
+		{/fbvFormSection}
+		{fbvFormButtons}
 	{/fbvFormArea}
 </form>

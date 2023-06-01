@@ -33,11 +33,13 @@ After installation, it is necessary to enable the plugin. This is done in `Websi
 
 With the plugin enabled, you should expand its options by clicking the arrow next to its name and then accessing its `Settings`.
 
-In the new window, the  _Dataverse_ (Dataverse URL), _API Token_ and _Terms of Use_ will be displayed. You have to indicate the full Dataverse URL, for example: https://demo.dataverse.org/dataverse/anotherdemo
+In the new window, the  _Dataverse_ (Dataverse URL), _API Token_ and _Terms of Use_ will be displayed.
+
+You have to indicate the full Dataverse URL repository where the research data will be deposited, for example: https://demo.dataverse.org/dataverse/anotherdemo
 
 The Terms of Use can be defined for each languange configurated in your application.
 
-Important: The _API Token_ belongs to a Dataverse account. This account will appear as the Depositor of each dataset submited to Dataverse.
+Important: The _API Token_ belongs to a Dataverse account. For more information on how to obtain the API token, see the [Dataverse User Guide](https://guides.dataverse.org/en/5.13/user/account.html#api-token).
 
 After filling in the fields, just confirm the action by clicking `Save`. The plugin will only work after filling in these data.
 
@@ -69,13 +71,8 @@ find plugins/generic/dataverse -name tests -type d -exec php lib/pkp/lib/vendor/
 
 Creates a `cypress.env.json` file in root of the PKP Application directory, with the following environment variables:
 - baseUrl
-- serverName
-- serverPath
-- adminUser
-- adminPassword
-- dataverseServer
-- dataverseURI
-- dataverseAPIToken
+- dataverseUrl
+- dataverseApiToken
 - dataverseTermsOfUse
 
 **Example**:
@@ -83,13 +80,8 @@ Creates a `cypress.env.json` file in root of the PKP Application directory, with
 ```json
 {
     "baseUrl": "http://localhost:8000",
-    "serverName": "My Preprint Server",
-    "serverPath": "myPreprintServer",
-    "adminUser": "admin",
-    "adminPassword": "admin",
-    "dataverseServerName": "Demo Dataverse",
-    "dataverseURI": "https://demo.dataverse.org/dataverse/myDataverseAlias",
-    "dataverseAPIToken": "abcd-abcd-abcd-abcd-abcdefghijkl",
+    "dataverseUrl": "https://demo.dataverse.org/dataverse/myDataverseAlias",
+    "dataverseApiToken": "abcd-abcd-abcd-abcd-abcdefghijkl",
     "dataverseTermsOfUse": "https://dataverse.org/best-practices/harvard-dataverse-general-terms-use"
 }
 ```

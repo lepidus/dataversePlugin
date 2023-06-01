@@ -17,32 +17,39 @@ msgstr "Plugin Dataverse"
 msgid "plugins.generic.dataverse.description"
 msgstr "Deposita conjuntos de dados e/ou outros documentos suplementares no Dataverse."
 
+msgid "plugins.generic.dataverse.settings.description"
+msgstr ""
+"Configure a API Dataverse para depositar dados de pesquisa em um repositório Dataverse.<br>"
+"Para mais informações, consulte a <a href=\"https://github.com/lepidus/dataversePlugin#configuration\" target=\"_new\">documentação do plugin</a>."
+
 msgid "plugins.generic.dataverse.settings.connect"
 msgstr "Conectar"
 
 msgid "plugins.generic.dataverse.settings.dataverseUrl"
-msgstr "Dataverse URL"
+msgstr "URL Dataverse"
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlDescription"
-msgstr "URL do Dataverse"
+msgstr "URL completa do repositório Dataverse onde serão depositado os dados de pesquisa, por exemplo: https://demo.dataverse.org/dataverse/anotherdemo"
+
+msgid "plugins.generic.dataverse.settings.token"
+msgstr "Token de API"
 
 msgid "plugins.generic.dataverse.settings.tokenDescription"
-msgstr "Token de API"
+msgstr "Token de API para integração com o Dataverse. "
+"Para mais informações sobre como obter o token de API, consulte: "
+"<a href=\"https://guides.dataverse.org/en/5.13/user/account.html#api-token\" target=\"_new\">Guia de Usuário do Dataverse</a>."
+
+msgid "plugins.generic.dataverse.settings.termsOfUse"
+msgstr "Termos de Uso"
+
+msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
+msgstr "URL para os termos de uso que os usuários devem concordar antes de depositar os dados de pesquisa no repositório."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
 msgstr "Endereço do Dataverse é obrigatório."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
 msgstr "Impossível conectar ao Dataverse."
-
-msgid "plugins.generic.dataverse.settings.token"
-msgstr "Token de API"
-
-msgid "plugins.generic.dataverse.settings.termsOfUse"
-msgstr "Termos de Uso"
-
-msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
-msgstr "URL dos Termos de Uso do Dataverse"
 
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Informe uma chave de API para Dataverse."

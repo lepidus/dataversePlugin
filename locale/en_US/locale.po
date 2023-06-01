@@ -17,17 +17,30 @@ msgstr "Dataverse Plugin"
 msgid "plugins.generic.dataverse.description"
 msgstr "Deposit data sets and/or other supplementary files to a Dataverse."
 
+msgid "plugins.generic.dataverse.settings.description"
+msgstr ""
+"Configure the Dataverse API to deposit research data into a Dataverse repository.<br>"
+"For more information, please refer to the <a href=\"https://github.com/lepidus/dataversePlugin#configuration\" target=\"_new\">plugin documentation</a>."
+
 msgid "plugins.generic.dataverse.settings.dataverseUrl"
 msgstr "Dataverse URL"
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlDescription"
-msgstr "Dataverse URL"
-
-msgid "plugins.generic.dataverse.settings.tokenDescription"
-msgstr "API token"
+msgstr "Full URL of the Dataverse repository where the research data will be deposited, for example: https://demo.dataverse.org/dataverse/anotherdemo."
 
 msgid "plugins.generic.dataverse.settings.token"
 msgstr "API Token"
+
+msgid "plugins.generic.dataverse.settings.tokenDescription"
+msgstr "API token for integration with Dataverse.<br>"
+"For more information on how to obtain the API token, please refer to:"
+"<a href=\"https://guides.dataverse.org/en/5.13/user/account.html#api-token\" target=\"_new\">Dataverse User Guide</a>."
+
+msgid "plugins.generic.dataverse.settings.termsOfUse"
+msgstr "Terms of Use"
+
+msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
+msgstr "URL for the terms of use that users must agree to before depositing research data into the repository."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
 msgstr "Dataverse URL is required."
@@ -37,12 +50,6 @@ msgstr "Can't connect to Dataverse."
 
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Please enter a API token."
-
-msgid "plugins.generic.dataverse.settings.termsOfUse"
-msgstr "Terms of Use"
-
-msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
-msgstr "Dataverse Terms of Use URL"
 
 msgid "plugins.generic.dataverse.researchDataDescription"
 msgstr "Use this field only for submitting research data. To send the manuscript, use “{$addGalleyLabel}”"
