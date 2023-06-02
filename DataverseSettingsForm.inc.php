@@ -11,10 +11,11 @@ class DataverseSettingsForm extends Form
 
     public function __construct(Plugin $plugin, int $contextId)
     {
+        parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
+
         $this->plugin = $plugin;
         $this->contextId = $contextId;
 
-        parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
         $this->addCheck(new FormValidatorUrl(
             $this,
             'dataverseUrl',
@@ -33,6 +34,12 @@ class DataverseSettingsForm extends Form
             FORM_VALIDATOR_REQUIRED_VALUE,
             'plugins.generic.dataverse.settings.dataverseUrlNotValid',
             array($this, 'validateConfiguration')
+        ));
+        $this->addCheck(new FormValidator(
+            $this,
+            'datasetPublish',
+            FORM_VALIDATOR_REQUIRED_VALUE,
+            'plugins.generic.dataverse.settings.datasetPublishRequired'
         ));
         $this->addCheck(new FormValidatorPost($this));
     }

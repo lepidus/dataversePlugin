@@ -54,6 +54,9 @@ msgstr "Editor accepts submission"
 msgid "plugins.generic.dataverse.settings.ddatasetPublish.submissionPublished"
 msgstr "Submission is published"
 
+msgid "plugins.generic.dataverse.settings.datasetPublishRequired"
+msgstr "It is required to select the event to publish the research data."
+
 msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
 msgstr "Dataverse URL is required."
 
