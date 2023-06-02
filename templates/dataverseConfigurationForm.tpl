@@ -25,6 +25,7 @@
 	</div>
 	{include file="controllers/notification/inPlaceNotification.tpl" notificationId="translationAndGlossarySettingsFormNotification"}
 	{fbvFormArea id="authForm"}
+
 		{fbvFormSection label="plugins.generic.dataverse.settings.dataverseUrl" required=true}
 			{fbvElement type="url" id="dataverseUrl" label="plugins.generic.dataverse.settings.dataverseUrlDescription" value=$dataverseUrl|escape size=$fbvStyles.size.MEDIUM}
 		{/fbvFormSection}
@@ -34,6 +35,20 @@
 		{fbvFormSection label="plugins.generic.dataverse.settings.termsOfUse" required=true}
 			{fbvElement type="url" id="termsOfUse" label="plugins.generic.dataverse.settings.termsOfUseDescription" multilingual=true value=$termsOfUse size=$fbvStyles.size.MEDIUM}
 		{/fbvFormSection}
+
+		{if $application === 'ojs2'}
+			{fbvFormSection
+				id="datasetPublish"
+				label="plugins.generic.dataverse.settings.datasetPublish"
+				description="plugins.generic.dataverse.settings.datasetPublishDescription"
+				list=true
+				required=true
+			}
+				{fbvElement type="radio" id="submissionAccepted" name="datasetPublish" value=1 checked={$checked} label="plugins.generic.dataverse.settings.datasetPublish.submissionAccepted"}
+				{fbvElement type="radio" id="submissionPublished" name="datasetPublish" value=1 checked={$checked} label="plugins.generic.dataverse.settings.datasetPublish.submissionPublished"}
+			{/fbvFormSection}
+		{/if}
+
 		{fbvFormButtons}
 	{/fbvFormArea}
 </form>

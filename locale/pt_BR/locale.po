@@ -45,6 +45,18 @@ msgstr "Termos de Uso"
 msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
 msgstr "URL para os termos de uso que os usuários devem concordar antes de depositar os dados de pesquisa no repositório."
 
+msgid "plugins.generic.dataverse.settings.datasetPublish"
+msgstr "Publicar dados de pesquisa"
+
+msgid "plugins.generic.dataverse.settings.datasetPublishDescription"
+msgstr "Escolha o evento para disponibilizar publicamente os dados de pesquisa no repositório Dataverse."
+
+msgid "plugins.generic.dataverse.settings.datasetPublish.submissionAccepted"
+msgstr "Editor aceita a submissão"
+
+msgid "plugins.generic.dataverse.settings.datasetPublish.submissionPublished"
+msgstr "Submissão é publicada"
+
 msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
 msgstr "Endereço do Dataverse é obrigatório."
 

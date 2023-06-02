@@ -15,9 +15,25 @@ class DataverseSettingsForm extends Form
         $this->contextId = $contextId;
 
         parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
-        $this->addCheck(new FormValidatorUrl($this, 'dataverseUrl', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlRequired'));
-        $this->addCheck(new FormValidator($this, 'apiToken', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.tokenRequired'));
-        $this->addCheck(new FormValidatorCustom($this, 'termsOfUse', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlNotValid', array($this, 'validateConfiguration')));
+        $this->addCheck(new FormValidatorUrl(
+            $this,
+            'dataverseUrl',
+            FORM_VALIDATOR_REQUIRED_VALUE,
+            'plugins.generic.dataverse.settings.dataverseUrlRequired'
+        ));
+        $this->addCheck(new FormValidator(
+            $this,
+            'apiToken',
+            FORM_VALIDATOR_REQUIRED_VALUE,
+            'plugins.generic.dataverse.settings.tokenRequired'
+        ));
+        $this->addCheck(new FormValidatorCustom(
+            $this,
+            'termsOfUse',
+            FORM_VALIDATOR_REQUIRED_VALUE,
+            'plugins.generic.dataverse.settings.dataverseUrlNotValid',
+            array($this, 'validateConfiguration')
+        ));
         $this->addCheck(new FormValidatorPost($this));
     }
 
@@ -46,6 +62,7 @@ class DataverseSettingsForm extends Form
     {
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('pluginName', $this->plugin->getName());
+        $templateMgr->assign('application', Application::get()->getName());
         return parent::fetch($request);
     }
 

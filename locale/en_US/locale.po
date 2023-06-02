@@ -42,6 +42,18 @@ msgstr "Terms of Use"
 msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
 msgstr "URL for the terms of use that users must agree to before depositing research data into the repository."
 
+msgid "plugins.generic.dataverse.settings.datasetPublish"
+msgstr "Research data publish"
+
+msgid "plugins.generic.dataverse.settings.ddatasetPublishDescription"
+msgstr "Select the event where research data will be published to the Dataverse."
+
+msgid "plugins.generic.dataverse.settings.ddatasetPublish.submissionAccepted"
+msgstr "Editor accepts submission"
+
+msgid "plugins.generic.dataverse.settings.ddatasetPublish.submissionPublished"
+msgstr "Submission is published"
+
 msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
 msgstr "Dataverse URL is required."
 
