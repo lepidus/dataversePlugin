@@ -60,9 +60,11 @@ class DataverseSettingsForm extends Form
 
     public function fetch($request, $template = null, $display = false)
     {
+        $configuration = new DataverseConfiguration();
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('pluginName', $this->plugin->getName());
         $templateMgr->assign('application', Application::get()->getName());
+        $templateMgr->assign('datasetPublishOptions', $configuration->getDatasetPublishOptions());
         return parent::fetch($request);
     }
 

@@ -44,8 +44,10 @@
 				list=true
 				required=true
 			}
-				{fbvElement type="radio" id="submissionAccepted" name="datasetPublish" value=1 checked={$checked} label="plugins.generic.dataverse.settings.datasetPublish.submissionAccepted"}
-				{fbvElement type="radio" id="submissionPublished" name="datasetPublish" value=1 checked={$checked} label="plugins.generic.dataverse.settings.datasetPublish.submissionPublished"}
+				{foreach from=$datasetPublishOptions item="label" key="value"}
+					{if $value == $datasetPublish}{assign var="checked" value=true}{else}{assign var="checked" value=false}{/if}
+					{fbvElement type="radio" id="datasetPublish"|concat:$value name="datasetPublish" value=$value checked=$checked label=$label}
+				{/foreach}
 			{/fbvFormSection}
 		{/if}
 
