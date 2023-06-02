@@ -35,6 +35,16 @@ class DataverseConfiguration extends DataObject
         return $this->getData('termsOfUse');
     }
 
+    public function setDatasetPublish(int $datasetPublish): void
+    {
+        $this->setData('datasetPublish', $datasetPublish);
+    }
+
+    public function getDatasetPublish(): int
+    {
+        return $this->getData('datasetPublish');
+    }
+
     public function getDataverseServerUrl(): string
     {
         preg_match(

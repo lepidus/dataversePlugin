@@ -49,7 +49,7 @@ class DataverseSettingsForm extends Form
 
     public function readInputData(): void
     {
-        $this->readUserVars(array('dataverseUrl', 'apiToken', 'termsOfUse'));
+        $this->readUserVars(array('dataverseUrl', 'apiToken', 'termsOfUse', 'datasetPublish'));
         $this->setData('dataverseUrl', $this->normalizeURI($this->getData('dataverseUrl')));
     }
 
@@ -73,6 +73,7 @@ class DataverseSettingsForm extends Form
         $this->plugin->updateSetting($this->contextId, 'dataverseUrl', $this->getData('dataverseUrl'), 'string');
         $this->plugin->updateSetting($this->contextId, 'apiToken', $this->getData('apiToken'), 'string');
         $this->plugin->updateSetting($this->contextId, 'termsOfUse', $this->getData('termsOfUse'));
+        $this->plugin->updateSetting($this->contextId, 'datasetPublish', (int) $this->getData('datasetPublish'));
         parent::execute(...$functionArgs);
     }
 
