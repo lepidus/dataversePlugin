@@ -15,7 +15,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDataverseAPIHandlers'));
         HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
-        HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNotice'));
+        HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
+        HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
+        HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -64,28 +66,56 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $datasetService->publish($study);
     }
 
-    public function addDatasetPublishNotice(string $hookName, \PKP\components\forms\FormComponent $form): void
+    public function publishInEditorAction(string $hookName, array $params): void
+    {
+        $submission = $params[0];
+        $decision = $params[1];
+
+        if ($decision['decision'] !== SUBMISSION_EDITOR_DECISION_ACCEPT) {
+            return;
+        }
+
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
+        if ($configuration->getDatasetPublish() !== DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
+            return;
+        }
+
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
+        if (is_null($study)) {
+            return;
+        }
+
+        $datasetService = new DatasetService();
+        $datasetService->publish($study);
+    }
+
+    public function addDatasetPublishNoticeInPost(string $hookName, \PKP\components\forms\FormComponent $form): void
     {
         if ($form->id !== 'publish' || !empty($form->errors)) {
             return;
         }
 
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($form->submissionContext->getId());
+        $contextId = $form->submissionContext->getId();
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
         if ($configuration->getDatasetPublish() === DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
             return;
         }
 
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($form->publication->getData('submissionId'));
+        $submissionId = $form->publication->getData('submissionId');
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submissionId);
         if (empty($study)) {
             return;
         }
 
         try {
             $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+
+            if ($dataset->getVersionState() == 'RELEASED') {
+                return;
+            }
+
             $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
-
-            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($form->submissionContext->getId());
-
             $params = [
                 'persistentUri' => $study->getPersistentUri(),
                 'serverName' => $rootDataverseCollection->getName(),
@@ -93,7 +123,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             ];
 
             $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
-                'description' => __("plugin.generic.dataverse.notification.submission.researchData", $params),
+                'description' => __("plugin.generic.dataverse.researchData.publishNotice.submissionPublished", $params),
                 'groupId' => 'default',
             ]));
         } catch (DataverseException $e) {
@@ -106,6 +136,86 @@ class DataverseEventsDispatcher extends DataverseDispatcher
                 'groupId' => 'default',
             ]));
         }
+    }
+
+    public function addDatasetPublishNoticeInEditorAction(string $hookName, array $params): ?string
+    {
+        $form = &$params[0];
+        $output =& $params[1];
+
+        $request = PKPApplication::get()->getRequest();
+        $context = $request->getContext();
+        $templateMgr = TemplateManager::getManager($request);
+
+        $submissionId = $templateMgr->get_template_vars('submissionId');
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submissionId);
+        if (empty($study)) {
+            return null;
+        }
+
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($context->getId());
+        if ($configuration->getDatasetPublish() !== DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
+            return null;
+        }
+
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+
+            if ($dataset->getVersionState() == 'RELEASED') {
+                return null;
+            }
+
+            $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
+            $params = [
+                'persistentUri' => $study->getPersistentUri(),
+                'serverName' => $rootDataverseCollection->getName(),
+                'serverUrl' => $configuration->getDataverseServerUrl(),
+            ];
+            $templateMgr->assign(
+                'notice',
+                __('plugin.generic.dataverse.researchData.publishNotice.submissionAccepted', $params)
+            );
+        } catch (DataverseException $e) {
+            $templateMgr->assign(
+                'notice',
+                'Dataverse Error: ' . $e->getMessage()
+            );
+        }
+
+        $templateMgr->setCacheability(CACHEABILITY_NO_STORE);
+
+        $fbv = $templateMgr->getFBV();
+        $fbv->setForm($form);
+
+        $templateMgr->assign(array_merge($form->_data, [
+            'isError' => !$form->isValid(),
+            'errors' => $form->getErrorsArray(),
+            'formLocales' => $form->supportedLocales,
+            'formLocale' => $form->getDefaultFormLocale(),
+        ]));
+
+        if (!$templateMgr->getTemplateVars('primaryLocale')) {
+            $templateMgr->assign([
+                'primaryLocale' => $context
+                    ? $context->getPrimaryLocale()
+                    : (Config::getVar('general', 'installed') ? $request->getSite()->getPrimaryLocale() : null),
+            ]);
+        }
+
+        $templateOutput = $templateMgr->fetch($form->_template);
+        $pattern = '/<div[^>]+id="promoteForm-step2[^>]+>/';
+        if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
+            $match = $matches[0][0];
+            $offset = $matches[0][1];
+            $output = substr($templateOutput, 0, $offset + strlen($match));
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('editorActionPublishNotice.tpl'));
+            $output .= substr($templateOutput, $offset + strlen($match));
+        }
+
+        $fbv->setForm(null);
+
+        return $output;
     }
 
     public function setupDataverseAPIHandlers(string $hookname, Request $request): void
