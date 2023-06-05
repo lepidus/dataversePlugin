@@ -100,6 +100,6 @@ describe('Research data publishing in editor decision', function () {
 
 		cy.get('button[id="publication-button"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
-		cy.get('#datasetData .value').contains('V1');
+		cy.get('#datasetData .value p:contains(V1)');
 	});
 });
