@@ -228,9 +228,14 @@ msgstr "Outros"
 msgid "plugins.generic.dataverse.notice.cannotPublish"
 msgstr "Não é possível publicar os dados de pesquisa no Dataverse: {$error}"
 
-msgid "plugin.generic.dataverse.notification.submission.researchData"
-msgstr "Este preprint possui dados de pesquisa depositados: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
-"Ao efetuar a postagem deste preprint, os dados também serão publicados no Dataverse.<br>"
+msgid "plugin.generic.dataverse.researchData.publishNotice.submissionPublished"
+msgstr "Esta submissão possui dados de pesquisa depositados que ainda não estão públicos: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
+"Ao efetuar a postagem desta submissão, os dados também serão publicados no repositório Dataverse.<br>"
+"Por favor, certifique-se que os dados de pesquisa são adequados para publicação em <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
+
+msgid "plugin.generic.dataverse.researchData.publishNotice.submissionAccepted"
+msgstr "Esta submissão possui dados de pesquisa depositados que ainda não estão públicos: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
+"Ao aceitar a submissão, os dados serão publicados no repositório Dataverse.<br>"
 "Por favor, certifique-se que os dados de pesquisa são adequados para publicação em <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
 
 msgid "plugins.generic.dataverse.dataStatement.title"
