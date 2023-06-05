@@ -2,6 +2,10 @@ describe('Research data on review', function () {
 	let submission;
 
 	before(function () {
+		if (Cypress.env('contextTitles').en_US !== 'Journal of Public Knowledge') {
+			this.skip();
+		}
+
 		submission = {
 			id: 0,
 			section: 'Articles',
@@ -46,9 +50,7 @@ describe('Research data on review', function () {
 		cy.logout();
     });
     it('Send submission to revision stage', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
-		
-		cy.get(".listPanel__item:visible").first().contains('View').click();
+        cy.findSubmissionAsEditor('dbarnes', null, 'Corino');
 
 		cy.get('#editorialActions').contains('Send to Review').click();
         cy.get('#initiateReview').contains('Send to Review').click();
@@ -64,7 +66,7 @@ describe('Research data on review', function () {
         cy.contains('Submissions').click();
         cy.contains('My Queue').click();
         cy.get(".listPanel__item:visible").first().contains('View').click();
-        
+
         cy.contains('Data statement');
 		cy.contains('1. Request');
         cy.contains('Data statement is contained in the manuscript');
