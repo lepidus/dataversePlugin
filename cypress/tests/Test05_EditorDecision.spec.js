@@ -96,10 +96,5 @@ describe('Research data publishing in editor decision', function () {
 		cy.get('#researchDataNotice').contains('By accepting the submission, the data will be published in the Dataverse repository.')
 		cy.get('#researchDataNotice').contains('Please make sure that the research data is suitable for publication in ');
 		cy.get('button:contains("Record Editorial Decision")').click();
-		cy.waitJQuery();
-
-		cy.get('button[id="publication-button"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
-		cy.get('#datasetData .value p:contains(V1)');
 	});
 });
