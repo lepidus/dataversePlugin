@@ -40,7 +40,7 @@ class DataverseConfiguration extends DataObject
         $this->setData('datasetPublish', $datasetPublish);
     }
 
-    public function getDatasetPublish(): int
+    public function getDatasetPublish(): ?int
     {
         return $this->getData('datasetPublish');
     }
