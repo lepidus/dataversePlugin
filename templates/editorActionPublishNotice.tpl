@@ -1,4 +1,4 @@
-{fbvFormSection title="plugins.generic.dataverse.researchData"}
+{fbvFormSection id="researchDataNotice" title="plugins.generic.dataverse.researchData"}
     <div>
         <p>{$notice}</p>
     </div>
