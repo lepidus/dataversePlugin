@@ -15,12 +15,12 @@ describe('Research data on review', function () {
 		}
 	});
 
-    it('Makes a new submission with research data', function () {
+	it('Makes a new submission with research data', function () {
 		cy.login('ccorino', null, 'publicknowledge');
 
 		cy.get('div#myQueue a:contains("New Submission")').click();
 
-        if (Cypress.env('contextTitles').en_US == 'Journal of Public Knowledge') {
+		if (Cypress.env('contextTitles').en_US == 'Journal of Public Knowledge') {
 			cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
 		}
 		cy.get('input[id^="dataStatementTypes"][value=1]').click();
@@ -28,9 +28,9 @@ describe('Research data on review', function () {
 		cy.get('input[id=privacyConsent]').click();
 		cy.get('button.submitFormButton').click();
 
-        cy.get('#submitStep2Form button.submitFormButton').click();
+		cy.get('#submitStep2Form button.submitFormButton').click();
 
-        cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
+		cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
 		cy.get('label').contains('Title').click();
 		cy.get('textarea[id^="abstract-en_US-"').then((node) => {
 			cy.setTinyMceContent(node.attr('id'), submission.abstract);
@@ -40,7 +40,7 @@ describe('Research data on review', function () {
 		});
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
-        cy.waitJQuery();
+		cy.waitJQuery();
 		cy.get('#submitStep4Form button.submitFormButton').click();
 		cy.get('button.pkpModalConfirmButton').click();
 
@@ -48,28 +48,28 @@ describe('Research data on review', function () {
 		cy.get('h2:contains("Submission complete")');
 
 		cy.logout();
-    });
-    it('Send submission to revision stage', function () {
-        cy.findSubmissionAsEditor('dbarnes', null, 'Corino');
+	});
+	it('Send submission to revision stage', function () {
+		cy.findSubmissionAsEditor('dbarnes', null, 'Corino');
 
 		cy.get('#editorialActions').contains('Send to Review').click();
-        cy.get('#initiateReview').contains('Send to Review').click();
+		cy.get('#initiateReview').contains('Send to Review').click();
 
-        cy.contains('Add Reviewer').click();
-        cy.get(".listPanel__item").first().contains('Select Reviewer').click();
-        cy.get('#advancedSearchReviewerForm').contains('Add Reviewer').click();
+		cy.contains('Add Reviewer').click();
+		cy.get(".listPanel__item").first().contains('Select Reviewer').click();
+		cy.get('#advancedSearchReviewerForm').contains('Add Reviewer').click();
 
 		cy.logout();
-    });
-    it('Check research data on review', function () {
-        cy.login('agallego', null, 'publicknowledge');
-        cy.contains('Submissions').click();
-        cy.contains('My Queue').click();
-        cy.get(".listPanel__item:visible").first().contains('View').click();
+	});
+	it('Check research data on review', function () {
+		cy.login('agallego', null, 'publicknowledge');
+		cy.contains('Submissions').click();
+		cy.contains('My Queue').click();
+		cy.get(".listPanel__item:visible").first().contains('View').click();
 
-        cy.contains('Data statement');
+		cy.contains('Data statement');
 		cy.contains('1. Request');
-        cy.contains('Data statement is contained in the manuscript');
-        cy.contains('Research data');
-    });
+		cy.contains('Data statement is contained in the manuscript');
+		cy.contains('Research data');
+	});
 });

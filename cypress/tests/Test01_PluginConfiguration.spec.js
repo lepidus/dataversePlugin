@@ -43,6 +43,11 @@ describe('Plugin configuration', function () {
 
 		cy.get('input[name=apiToken]').focus().clear().type(Cypress.env('dataverseApiToken'));
 
+		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
+			cy.contains("It is required to select the event to publish the research data.");
+			cy.get('input[name="datasetPublish"][value=2]').check();
+		}
+
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('div:contains("Your changes have been saved.")');
 	});
