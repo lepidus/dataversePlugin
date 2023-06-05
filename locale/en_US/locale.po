@@ -45,13 +45,13 @@ msgstr "URL for the terms of use that users must agree to before depositing rese
 msgid "plugins.generic.dataverse.settings.datasetPublish"
 msgstr "Research data publish"
 
-msgid "plugins.generic.dataverse.settings.ddatasetPublishDescription"
+msgid "plugins.generic.dataverse.settings.datasetPublishDescription"
 msgstr "Select the event where research data will be published to the Dataverse."
 
-msgid "plugins.generic.dataverse.settings.ddatasetPublish.submissionAccepted"
+msgid "plugins.generic.dataverse.settings.datasetPublish.submissionAccepted"
 msgstr "Editor accepts submission"
 
-msgid "plugins.generic.dataverse.settings.ddatasetPublish.submissionPublished"
+msgid "plugins.generic.dataverse.settings.datasetPublish.submissionPublished"
 msgstr "Submission is published"
 
 msgid "plugins.generic.dataverse.settings.datasetPublishRequired"
