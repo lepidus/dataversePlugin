@@ -1,5 +1,8 @@
 <?php
 
+define('DATASET_PUBLISH_SUBMISSION_ACCEPTED', 1);
+define('DATASET_PUBLISH_SUBMISSION_PUBLISHED', 2);
+
 class DataverseConfiguration extends DataObject
 {
     public function setDataverseUrl(string $url): void
@@ -32,6 +35,16 @@ class DataverseConfiguration extends DataObject
         return $this->getData('termsOfUse');
     }
 
+    public function setDatasetPublish(int $datasetPublish): void
+    {
+        $this->setData('datasetPublish', $datasetPublish);
+    }
+
+    public function getDatasetPublish(): ?int
+    {
+        return $this->getData('datasetPublish');
+    }
+
     public function getDataverseServerUrl(): string
     {
         preg_match(
@@ -46,5 +59,13 @@ class DataverseConfiguration extends DataObject
     {
         $explodedUrl = explode('/', $this->getDataverseUrl());
         return end($explodedUrl);
+    }
+
+    public function getDatasetPublishOptions(): array
+    {
+        return [
+            DATASET_PUBLISH_SUBMISSION_ACCEPTED => 'plugins.generic.dataverse.settings.datasetPublish.submissionAccepted',
+            DATASET_PUBLISH_SUBMISSION_PUBLISHED => 'plugins.generic.dataverse.settings.datasetPublish.submissionPublished'
+        ];
     }
 }

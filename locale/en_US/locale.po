@@ -42,6 +42,21 @@ msgstr "Terms of Use"
 msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
 msgstr "URL for the terms of use that users must agree to before depositing research data into the repository."
 
+msgid "plugins.generic.dataverse.settings.datasetPublish"
+msgstr "Research data publish"
+
+msgid "plugins.generic.dataverse.settings.datasetPublishDescription"
+msgstr "Select the event where research data will be published to the Dataverse."
+
+msgid "plugins.generic.dataverse.settings.datasetPublish.submissionAccepted"
+msgstr "Editor accepts submission"
+
+msgid "plugins.generic.dataverse.settings.datasetPublish.submissionPublished"
+msgstr "Submission is published"
+
+msgid "plugins.generic.dataverse.settings.datasetPublishRequired"
+msgstr "It is required to select the event to publish the research data."
+
 msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
 msgstr "Dataverse URL is required."
 
@@ -210,10 +225,15 @@ msgstr "Other"
 msgid "plugins.generic.dataverse.notice.cannotPublish"
 msgstr "Unable to publish research data in Dataverse: {$error}"
 
-msgid "plugin.generic.dataverse.notification.submission.researchData"
-msgstr "This preprint has deposited research data: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
-"When posting this preprint, the data will also be published in Dataverse.<br>"
-"Please make sure the research data is suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
+msgid "plugin.generic.dataverse.researchData.publishNotice.submissionPublished"
+msgstr "This submission contains deposited research data that is not yet public: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
+"By publishing the submission, the data will be published in the Dataverse repository.<br>"
+"Please make sure that the research data is suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
+
+msgid "plugin.generic.dataverse.researchData.publishNotice.submissionAccepted"
+msgstr "This submission contains deposited research data that is not yet public: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
+"By accepting the submission, the data will be published in the Dataverse repository.<br>"
+"Please make sure that the research data is suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
 
 msgid "plugins.generic.dataverse.dataStatement.title"
 msgstr "Data statement"

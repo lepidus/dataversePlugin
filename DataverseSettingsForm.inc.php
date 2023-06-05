@@ -11,14 +11,40 @@ class DataverseSettingsForm extends Form
 
     public function __construct(Plugin $plugin, int $contextId)
     {
+        parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
+
         $this->plugin = $plugin;
         $this->contextId = $contextId;
 
-        parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
-        $this->addCheck(new FormValidatorUrl($this, 'dataverseUrl', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlRequired'));
-        $this->addCheck(new FormValidator($this, 'apiToken', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.tokenRequired'));
-        $this->addCheck(new FormValidatorCustom($this, 'termsOfUse', FORM_VALIDATOR_REQUIRED_VALUE, 'plugins.generic.dataverse.settings.dataverseUrlNotValid', array($this, 'validateConfiguration')));
+        $this->addCheck(new FormValidatorUrl(
+            $this,
+            'dataverseUrl',
+            FORM_VALIDATOR_REQUIRED_VALUE,
+            'plugins.generic.dataverse.settings.dataverseUrlRequired'
+        ));
+        $this->addCheck(new FormValidator(
+            $this,
+            'apiToken',
+            FORM_VALIDATOR_REQUIRED_VALUE,
+            'plugins.generic.dataverse.settings.tokenRequired'
+        ));
+        $this->addCheck(new FormValidatorCustom(
+            $this,
+            'termsOfUse',
+            FORM_VALIDATOR_REQUIRED_VALUE,
+            'plugins.generic.dataverse.settings.dataverseUrlNotValid',
+            array($this, 'validateConfiguration')
+        ));
         $this->addCheck(new FormValidatorPost($this));
+
+        if (Application::get()->getName() === 'ojs2') {
+            $this->addCheck(new FormValidator(
+                $this,
+                'datasetPublish',
+                FORM_VALIDATOR_REQUIRED_VALUE,
+                'plugins.generic.dataverse.settings.datasetPublishRequired'
+            ));
+        }
     }
 
     public function initData(): void
@@ -33,7 +59,7 @@ class DataverseSettingsForm extends Form
 
     public function readInputData(): void
     {
-        $this->readUserVars(array('dataverseUrl', 'apiToken', 'termsOfUse'));
+        $this->readUserVars(array('dataverseUrl', 'apiToken', 'termsOfUse', 'datasetPublish'));
         $this->setData('dataverseUrl', $this->normalizeURI($this->getData('dataverseUrl')));
     }
 
@@ -44,8 +70,11 @@ class DataverseSettingsForm extends Form
 
     public function fetch($request, $template = null, $display = false)
     {
+        $configuration = new DataverseConfiguration();
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('pluginName', $this->plugin->getName());
+        $templateMgr->assign('application', Application::get()->getName());
+        $templateMgr->assign('datasetPublishOptions', $configuration->getDatasetPublishOptions());
         return parent::fetch($request);
     }
 
@@ -54,6 +83,7 @@ class DataverseSettingsForm extends Form
         $this->plugin->updateSetting($this->contextId, 'dataverseUrl', $this->getData('dataverseUrl'), 'string');
         $this->plugin->updateSetting($this->contextId, 'apiToken', $this->getData('apiToken'), 'string');
         $this->plugin->updateSetting($this->contextId, 'termsOfUse', $this->getData('termsOfUse'));
+        $this->plugin->updateSetting($this->contextId, 'datasetPublish', (int) $this->getData('datasetPublish'));
         parent::execute(...$functionArgs);
     }
 
