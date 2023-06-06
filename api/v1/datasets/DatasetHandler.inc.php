@@ -121,8 +121,18 @@ class DatasetHandler extends APIHandler
         $dataset->setKeywords((array) $requestParams['datasetKeywords']);
         $dataset->setSubject($requestParams['datasetSubject']);
 
-        $datasetService = new DatasetService();
-        $datasetService->deposit($submission->getId(), $dataset);
+        if (!empty($dataset->getFiles())) {
+            try {
+                $datasetService = new DatasetService();
+                $datasetService->deposit($submission, $dataset);
+            } catch (DataverseException $e) {
+                return $response->withStatus(403)
+                    ->withJsonError(
+                        'plugins.generic.dataverse.error.depositFailed',
+                        ['error' => $e->getMessage()]
+                    );
+            }
+        }
 
         return $response->withJson(['message' => 'ok'], 200);
     }
