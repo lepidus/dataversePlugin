@@ -9,7 +9,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'datasetDepositOnSubmission'));
+        HookRegistry::register('SubmissionHandler::saveSubmit', array($this, 'datasetDepositOnSubmission'));
         HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
         HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
@@ -34,16 +34,37 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
     public function datasetDepositOnSubmission(string $hookName, array $params): bool
     {
-        $form =& $params[0];
-        $submission = $form->submission;
-        $request = Application::get()->getRequest();
+        $step = $params[0];
+        $submission = $params[1];
+        $stepForm = $params[2];
+
+        if ($step !== 4 || !$stepForm->validate()) {
+            return false;
+        }
+
+        $publication = $submission->getCurrentPublication();
+        if (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $publication->getData('dataStatementTypes'))) {
+            return false;
+        }
 
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $datasetFactory = new SubmissionDatasetFactory($submission);
         $dataset = $datasetFactory->getDataset();
 
+        if (empty($dataset->getFiles())) {
+            return false;
+        }
+
         $datasetService = new DatasetService();
-        $datasetService->deposit($submission->getId(), $dataset);
+        try {
+            $datasetService->deposit($submission, $dataset);
+        } catch (DataverseException $e) {
+            $stepForm->addError(
+                'depositError',
+                __('plugins.generic.dataverse.error.depositFailedOnSubmission', ['error' => $e->getMessage()])
+            );
+            $stepForm->addErrorField('depositError');
+        }
 
         return false;
     }
