@@ -118,7 +118,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
 
-        $items = array_map(function ($draftDatasetFile) use ($props) {
+        $items = array_map(function ($draftDatasetFile) {
             return $draftDatasetFile->getAllData();
         }, $draftDatasetFiles);
 
