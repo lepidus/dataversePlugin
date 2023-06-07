@@ -102,6 +102,10 @@ msgstr "Datos de investigación publicados"
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Datos de investigación eliminados"
 
+msgid "plugins.generic.dataverse.error.depositFailedOnSubmission"
+msgstr "Error al depositar los datos de investigación en Dataverse: {$error}<br>"
+"Por favor, elija otra opción de declaración de datos o intente nuevamente más tarde."
+
 msgid "plugins.generic.dataverse.error.depositFailed"
 msgstr "Erro al depositar datos de investigación en Dataverse: {$error}"
 

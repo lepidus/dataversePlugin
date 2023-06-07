@@ -6,15 +6,10 @@ import('plugins.generic.dataverse.classes.entities.Dataset');
 
 class DatasetService extends DataverseService
 {
-    public function deposit(int $submissionId, Dataset $dataset): void
+    public function deposit(Submission $submission, Dataset $dataset): void
     {
-        if (empty($dataset->getFiles())) {
-            return;
-        }
-
         $request = Application::get()->getRequest();
         $contextId = $request->getContext()->getId();
-        $submission = Services::get('submission')->get($submissionId);
 
         try {
             $dataverseClient = new DataverseClient();
@@ -28,12 +23,13 @@ class DatasetService extends DataverseService
                 );
             }
         } catch (DataverseException $e) {
-            $this->registerAndNotifyError(
+            $this->registerEventLog(
                 $submission,
                 'plugins.generic.dataverse.error.depositFailed',
                 ['error' => $e->getMessage()]
             );
-            return;
+            error_log('Dataverse API error: ' . $e->getMessage());
+            throw $e;
         }
 
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
