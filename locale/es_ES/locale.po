@@ -232,15 +232,17 @@ msgstr "Otra"
 msgid "plugins.generic.dataverse.notice.cannotPublish"
 msgstr "No se pueden publicar datos de pesquisa en Dataverse: {$error}"
 
-msgid "plugin.generic.dataverse.researchData.publishNotice.submissionPublished"
-msgstr "Esta submisión contiene datos de investigación depositados que aún no son públicos: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
-"Al realizar la publicación de esta submissão, los datos también se publicarán en el repositorio de Dataverse.<br>"
-"Por favor, asegúrese de que los datos de investigación sean adecuados para su publicación en <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
+msgid "plugins.generic.dataverse.researchData.publishNotice"
+msgstr "Esta submisión contiene datos de investigación depositados que aún no son públicos: <a href=\"{$persistentUri}\">{$persistentUri}</a>. "
+"Si elige publicarlos, asegúrese de que sean adecuados para su publicación en <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
 
 msgid "plugin.generic.dataverse.researchData.publishNotice.submissionAccepted"
 msgstr "Esta submisión contiene datos de investigación depositados que aún no son públicos: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
 "Al aceptar la submisión, los datos serán publicados en el repositorio de Dataverse.<br>"
 "Por favor, asegúrese de que los datos de investigación sean adecuados para su publicación en <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
+
+msgid "plugins.generic.dataverse.researchData.wouldLikeToPublish"
+msgstr "¿Le gustaría publicar los datos de la investigación?"
 
 msgid "plugins.generic.dataverse.dataStatement.title"
 msgstr "Declaración de datos"
