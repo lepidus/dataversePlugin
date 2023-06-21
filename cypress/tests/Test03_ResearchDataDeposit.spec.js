@@ -298,8 +298,15 @@ describe('Research data deposit', function () {
 		}
 
 		cy.get('div[id^=publish').contains(/This submission contains deposited research data that is not yet public: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
-		cy.get('div[id^=publish').contains('By publishing the submission, the data will be published in the Dataverse repository.')
-		cy.get('div[id^=publish').contains('Please make sure that the research data is suitable for publication in ' + dataverseServerName);
+		cy.get('div[id^=publish').contains('In case you choose to publish them, make sure they are suitable for publication in ' + dataverseServerName);
+		cy.get('div[id^=publish').contains('Would you like to publish the research data?');
+		
+		cy.get('#checkboxPublishResearchData').parent().contains("Yes");
+		cy.get('#checkboxDontPublishResearchData').parent().contains("No");
+		cy.get('#checkboxPublishResearchData').should('not.be.checked');
+		cy.get('#checkboxDontPublishResearchData').should('not.be.checked');
+		
+		cy.get('#checkboxPublishResearchData').click();
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
 
 		cy.get('button[aria-controls="publication"]').click();
