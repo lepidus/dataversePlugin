@@ -154,6 +154,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
                     ['value' => 1, 'label' => __('common.yes')],
                     ['value' => 0, 'label' => __('common.no')]
                 ],
+                'isRequired' => true,
                 'groupId' => 'default'
             ]));
         } catch (DataverseException $e) {
