@@ -154,6 +154,9 @@ msgstr "The draft dataset file you requested was not found."
 msgid "api.error.researchDataCitationNotFound"
 msgstr "It was not possible to get the citation of the research data."
 
+msgid "api.dataset.403.alreadyPublished"
+msgstr "The research data you want to publish is already published."
+
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "No research data transferred."
 

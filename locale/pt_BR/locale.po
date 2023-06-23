@@ -157,6 +157,9 @@ msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
 msgid "api.error.researchDataCitationNotFound"
 msgstr "Não foi possível obter a citação dos dados de pesquisa."
 
+msgid "api.dataset.403.alreadyPublished"
+msgstr "Os dados de pesquisa que você deseja publicar já estão publicados."
+
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "Não foram transferidos dados de pesquisa."
 
