@@ -150,10 +150,17 @@ describe('Research data state', function () {
 			cy.recordEditorialDecision('Accept Submission');
 			cy.recordEditorialDecision('Send To Production');
 			cy.get('li.ui-state-active a:contains("Production")');
-			cy.publish('1', 'Vol. 1 No. 2 (2014)');
+			cy.get('button[id="publication-button"]').click();
+			cy.get('div#publication button:contains("Schedule For Publication")').click();
+			cy.wait(1000);
+			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
+			cy.get('div[id^="assign-"] button:contains("Save")').click();
+			cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
+			cy.get('div.pkpWorkflow__publishModal button:contains("Publish")').click();
 		} else {
 			cy.get('#publication-button').click();
 			cy.get('.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton').click();
+			cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
 			cy.get('.pkp_modal_panel button:contains("Post")').click();
 			cy.contains('This version has been posted and can not be edited.');
 		}
