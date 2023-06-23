@@ -158,7 +158,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             $this->initDatasetFileForm($templateMgr, $fileFormAction);
 
             $templateMgr->setState([
-                'dataset' => $dataset,
+                'dataset' => $dataset->getAllData(),
                 'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
                 'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
                 'datasetCitationUrl' => $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),

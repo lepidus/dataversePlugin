@@ -172,6 +172,9 @@ msgstr "Archivos"
 msgid "plugins.generic.dataverse.researchData.delete"
 msgstr "Eliminar datos de investigación"
 
+msgid "plugins.generic.dataverse.researchData.publish"
+msgstr "Publicar datos de investigación"
+
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Título"
 
