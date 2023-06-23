@@ -72,6 +72,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     public function publishDeposit(string $hookName, array $params): void
     {
         $submission = $params[2];
+        $request = Application::get()->getRequest();
 
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
         if ($configuration->getDatasetPublish() === DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
@@ -80,6 +81,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
         if (is_null($study)) {
+            return;
+        }
+
+        $shouldPublish = $request->getUserVar('shouldPublishResearchData');
+        if (!is_null($shouldPublish) && $shouldPublish == 0) {
             return;
         }
 
@@ -150,6 +156,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             ]))
             ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
                 'label' => __('plugins.generic.dataverse.researchData.wouldLikeToPublish'),
+                'name' => 'shouldPublishResearchData',
                 'options' => [
                     ['value' => 1, 'label' => __('common.yes')],
                     ['value' => 0, 'label' => __('common.no')]
