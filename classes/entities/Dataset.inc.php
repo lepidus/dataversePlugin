@@ -2,6 +2,9 @@
 
 class Dataset extends DataObject
 {
+    public const VERSION_STATE_DRAFT = 'DRAFT';
+    public const VERSION_STATE_RELEASED = 'RELEASED';
+
     public function getPersistentId(): ?string
     {
         return $this->getData('persistentId');
@@ -110,5 +113,10 @@ class Dataset extends DataObject
     public function setVersionState(string $versionState): void
     {
         $this->setData('versionState', $versionState);
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->getVersionState() === self::VERSION_STATE_RELEASED;
     }
 }

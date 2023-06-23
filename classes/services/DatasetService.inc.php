@@ -142,7 +142,7 @@ class DatasetService extends DataverseService
 
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
 
-            if ($dataset->getVersionState() == 'RELEASED') {
+            if ($dataset->isPublished()) {
                 return;
             }
 
