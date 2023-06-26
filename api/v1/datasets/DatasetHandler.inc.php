@@ -137,7 +137,7 @@ class DatasetHandler extends APIHandler
         $datasetService = new DatasetService();
         $datasetService->update($data);
 
-        return $response->withJson(['message' => 'ok'], 200);
+        return $this->get($slimRequest, $response, $args);
     }
 
     public function publishDataset($slimRequest, $response, $args)
