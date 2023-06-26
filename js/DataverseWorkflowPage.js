@@ -164,7 +164,6 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         },
                         error: this.ajaxErrorCallback,
                         success: function (r) {
-                            console.log(r);
                             self.dataset = r;
                             self.$modal.hide('publish');
                         },
@@ -172,6 +171,20 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 },
             });
         },
+
+		refreshDataset() {
+			const self = this;
+			$.ajax({
+				url: this.components.datasetMetadata.action,
+				type: 'GET',
+				success(r) {
+					self.dataset = r;
+				},
+				error(r) {
+					self.ajaxErrorCallback(r);
+				}
+			});
+		},
 
         refreshItems() {
             var self = this;
@@ -217,17 +230,16 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             if (!this.datasetCitationUrl) {
                 return;
             }
-            this.datasetCitation = 'loading...';
-            setTimeout(() => {
-                $.ajax({
-                    url: this.datasetCitationUrl,
-                    type: 'GET',
-                    error: this.ajaxErrorCallback,
-                    success: (r) => {
-                        this.datasetCitation = r.citation;
-                    },
-                });            
-            }, 2500);
+			var self = this;
+			this.datasetCitation = 'loading...';
+            $.ajax({
+				url: self.datasetCitationUrl,
+				type: 'GET',
+				error: self.ajaxErrorCallback,
+				success: (r) => {
+					self.datasetCitation = r.citation;
+				},
+			});
         },
 
         setItems(items) {
@@ -252,14 +264,23 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
     },
     created() {
-        pkp.eventBus.$on('form-success', (formId, newPublication) => {
+        pkp.eventBus.$on('form-success', (formId, data) => {
             if (formId === 'datasetMetadata') {
-                this.setDatasetCitation();
+				this.dataset = {};
+				this.dataset = data;
             }
             if (formId === 'researchDataState') {
                 this.workingPublication = {};
-				this.workingPublication = newPublication;
+				this.workingPublication = data;
             }
+			if (formId === pkp.const.FORM_PUBLISH) {
+				if (this.dataset === undefined) {
+					return;
+				}
+				setTimeout(() => {
+					this.refreshDataset();
+				}, 2500);
+			}
         });
 
         this.setDatasetCitation();
@@ -269,7 +290,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
     watch: {
         dataset(newVal, oldVal) {
             this.setDatasetForms(newVal);
-            this.setDatasetCitation();
+			this.setDatasetCitation();
         }
     },
 });
