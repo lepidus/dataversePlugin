@@ -103,6 +103,9 @@ msgid "plugins.generic.dataverse.error.depositFailedOnSubmission"
 msgstr "Error depositing research data to Dataverse: {$error}<br>"
 "Please choose another data statement option or try again later."
 
+msgid "plugins.generic.dataverse.error.getFailed"
+msgstr "Error getting research data to Dataverse: {$error}"
+
 msgid "plugins.generic.dataverse.error.depositFailed"
 msgstr "Error depositing research data to Dataverse: {$error}"
 

@@ -16,6 +16,11 @@ class DatasetHandler extends APIHandler
         $this->_endpoints = array(
             'GET' => array(
                 array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}',
+                    'handler' => array($this, 'get'),
+                    'roles' => $roles
+                ),
+                array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/files',
                     'handler' => array($this, 'getFiles'),
                     'roles' => $roles
@@ -83,6 +88,34 @@ class DatasetHandler extends APIHandler
         $this->addPolicy($rolePolicy);
 
         return parent::authorize($request, $args, $roleAssignments);
+    }
+
+    public function get($slimRequest, $response, $args)
+    {
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudy($args['studyId']);
+
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+        } catch (DataverseException $e) {
+            $request = $this->getRequest();
+            $submission = Services::get('submission')->get($study->getSubmissionId());
+            $error = $e->getMessage();
+            $message = 'plugins.generic.dataverse.error.getFailed';
+
+            error_log('Dataverse API error: ' . $error);
+
+            return $response->withStatus(403)->withJsonError(
+                $message,
+                ['error' => $error]
+            );
+        }
+
+        return $response->withJson($dataset->getAllData(), 200);
     }
 
     public function edit($slimRequest, $response, $args)
