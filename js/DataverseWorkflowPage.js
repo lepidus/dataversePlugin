@@ -15,9 +15,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             return this.components.datasetFiles.items.length === 0;
         },
 
-        isPosted: function () {
+        isPublished: function () {
             return (
-                this.workingPublication.status === pkp.const.STATUS_PUBLISHED
+                this.dataset.versionState === 'RELEASED'
             );
         },
 
@@ -147,6 +147,32 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             });
         },
 
+        openPublishDatasetModal() {
+            self = this;
+            this.openDialog({
+                cancelLabel: this.__('common.no'),
+                modalName: 'publish',
+                title: this.publishDatasetLabel,
+                message: this.confirmPublishDatasetMessage,
+                callback: () => {
+                    $.ajax({
+                        url: this.components.datasetMetadata.action + '/publish',
+                        type: 'POST',
+                        headers: {
+                            'X-Csrf-Token': pkp.currentUser.csrfToken,
+                            'X-Http-Method-Override': 'PUT',
+                        },
+                        error: this.ajaxErrorCallback,
+                        success: function (r) {
+                            console.log(r);
+                            self.dataset = r;
+                            self.$modal.hide('publish');
+                        },
+                    });
+                },
+            });
+        },
+
         refreshItems() {
             var self = this;
             this.isLoading = true;
@@ -177,11 +203,11 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             });
         },
 
-        setDatasetForms(publication) {
+        setDatasetForms(dataset) {
             let form = { ...this.components.datasetMetadata };
             form.canSubmit =
                 this.canEditPublication &&
-                publication.status !== pkp.const.STATUS_PUBLISHED;
+                dataset.versionState !== 'RELEASED'
 
             this.components.datasetMetadata = {};
             this.components.datasetMetadata = form;
@@ -192,14 +218,16 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 return;
             }
             this.datasetCitation = 'loading...';
-            $.ajax({
-                url: this.datasetCitationUrl,
-                type: 'GET',
-                error: this.ajaxErrorCallback,
-                success: (r) => {
-                    this.datasetCitation = r.citation;
-                },
-            });
+            setTimeout(() => {
+                $.ajax({
+                    url: this.datasetCitationUrl,
+                    type: 'GET',
+                    error: this.ajaxErrorCallback,
+                    success: (r) => {
+                        this.datasetCitation = r.citation;
+                    },
+                });            
+            }, 2500);
         },
 
         setItems(items) {
@@ -235,14 +263,14 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         });
 
         this.setDatasetCitation();
-        this.setDatasetForms(this.workingPublication);
+        this.setDatasetForms(this.dataset);
         this.fileFormErrors = this.components.datasetFileForm.errors;
     },
     watch: {
-        workingPublication(newVal, oldVal) {
-            this.setDatasetCitation();
+        dataset(newVal, oldVal) {
             this.setDatasetForms(newVal);
-        },
+            this.setDatasetCitation();
+        }
     },
 });
 
