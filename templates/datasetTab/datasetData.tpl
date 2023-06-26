@@ -7,16 +7,17 @@
             <pkp-button
                 @click="openDeleteDatasetModal"
                 :is-warnable="true"
-                :disabled="isPosted"
+                :disabled="isPublished"
             >
                 {translate key="plugins.generic.dataverse.researchData.delete"}
             </pkp-button>
             {if $canPublish}
                 <pkp-button
-                    @click=""
-                    :disabled="isPosted"
+                    v-if="!isPublished"
+                    @click="openPublishDatasetModal"
+                    :disabled="isPublished"
                 >
-                {translate key="plugins.generic.dataverse.researchData.publish"}
+                    {translate key="plugins.generic.dataverse.researchData.publish"}
                 </pkp-button>
             {/if}
         </template>
@@ -44,7 +45,7 @@
                             <pkp-button 
                                 ref="fileModalButton"
                                 @click="openAddFileModal"
-                                :disabled="isPosted"
+                                :disabled="isPublished"
                             >
                                 {{ components.datasetFiles.addFileLabel }}
                             </pkp-button>
@@ -63,7 +64,7 @@
                                 <pkp-button 
                                     @click="openDeleteFileModal(item.item.id)"
                                     class="pkpButton--isWarnable"
-                                    :disabled="isPosted"
+                                    :disabled="isPublished"
                                 >
                                     {{ __('common.delete') }}
                                 </pkp-button>
