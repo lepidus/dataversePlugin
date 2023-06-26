@@ -3,6 +3,7 @@
 import('lib.pkp.classes.handler.APIHandler');
 import('lib.pkp.classes.log.SubmissionLog');
 import('classes.log.SubmissionEventLogEntry');
+import('plugins.generic.dataverse.classes.entities.Dataset');
 import('plugins.generic.dataverse.classes.services.DatasetService');
 import('plugins.generic.dataverse.classes.services.DatasetFileService');
 
@@ -123,7 +124,7 @@ class DatasetHandler extends APIHandler
             }
 
             $dataverseClient->getDatasetActions()->publish($study->getPersistentId());
-            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+            $dataset->setVersionState(Dataset::VERSION_STATE_RELEASED);
         } catch (DataverseException $e) {
             $request = $this->getRequest();
             $submission = Services::get('submission')->get($study->getSubmissionId());
