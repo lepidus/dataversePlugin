@@ -148,6 +148,11 @@ msgstr "Are you sure you want to permanently delete the research data file <stro
 msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
 msgstr "Are you sure you want to permanently delete the research data related to this preprint?"
 
+msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
+msgstr ""
+"Do you really want to publish the research data related to this preprint? This action cannot be undone.<br>"
+"Before proceeding, make sure they are suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>.<br>"
+
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "The draft dataset file you requested was not found."
 

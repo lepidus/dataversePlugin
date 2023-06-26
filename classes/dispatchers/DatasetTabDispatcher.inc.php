@@ -141,10 +141,12 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $request = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($context->getId());
 
         try {
             $dataverseClient = new DataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+            $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
 
             $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId());
             $fileListApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/files', null, null, ['persistentId' => $study->getPersistentId()]);
@@ -161,6 +163,11 @@ class DatasetTabDispatcher extends DataverseDispatcher
                 'dataset' => $dataset->getAllData(),
                 'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
                 'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
+                'publishDatasetLabel' => __('plugins.generic.dataverse.researchData.publish'),
+                'confirmPublishDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetPublish', [
+                    'serverName' => $rootDataverseCollection->getName(),
+                    'serverUrl' => $configuration->getDataverseServerUrl(),
+                ]),
                 'datasetCitationUrl' => $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
             ]);
         } catch (DataverseException $e) {

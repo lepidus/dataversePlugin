@@ -151,6 +151,11 @@ msgstr "¿Realmente desea eliminar permanentemente el archivo de datos de invest
 msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
 msgstr "¿Realmente desea eliminar de forma permanente los datos de investigación relacionados con esta versión preliminar?"
 
+msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
+msgstr ""
+"¿Realmente deseas publicar los datos de investigación relacionados con este preprint? Esta acción no se puede deshacer.<br>"
+"Antes de continuar, asegúrate de que sean adecuados para su publicación en <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>.<br>"
+
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "No se encontró el borrador del archivo del conjunto de datos solicitado."
 

@@ -151,6 +151,11 @@ msgstr "Deseja realmente excluir permanentemente o arquivo de dados de pesquisa 
 msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
 msgstr "Deseja realmente excluir permanentemente os dados de pesquisa relacionados a esse preprint?"
 
+msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
+msgstr ""
+"Deseja realmente publicar os dados de pesquisa relacionados a esse preprint? Esta ação não poderá ser desfeita.<br>"
+"Antes de continuar, certifique-se que são adequados para publicação em <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>.<br>"
+
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "O arquivo rascunho do dataset solicitado não foi encontrado."
 
