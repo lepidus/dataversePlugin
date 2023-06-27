@@ -103,6 +103,9 @@ msgid "plugins.generic.dataverse.error.depositFailedOnSubmission"
 msgstr "Error depositing research data to Dataverse: {$error}<br>"
 "Please choose another data statement option or try again later."
 
+msgid "plugins.generic.dataverse.error.getFailed"
+msgstr "Error getting research data to Dataverse: {$error}"
+
 msgid "plugins.generic.dataverse.error.depositFailed"
 msgstr "Error depositing research data to Dataverse: {$error}"
 
@@ -148,11 +151,19 @@ msgstr "Are you sure you want to permanently delete the research data file <stro
 msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
 msgstr "Are you sure you want to permanently delete the research data related to this preprint?"
 
+msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
+msgstr ""
+"Do you really want to publish the research data related to this submission? This action cannot be undone.<br>"
+"Before proceeding, make sure they are suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>.<br>"
+
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "The draft dataset file you requested was not found."
 
 msgid "api.error.researchDataCitationNotFound"
 msgstr "It was not possible to get the citation of the research data."
+
+msgid "api.dataset.403.alreadyPublished"
+msgstr "The research data you want to publish is already published."
 
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "No research data transferred."
@@ -168,6 +179,9 @@ msgstr "Files"
 
 msgid "plugins.generic.dataverse.researchData.delete"
 msgstr "Delete research data"
+
+msgid "plugins.generic.dataverse.researchData.publish"
+msgstr "Publish research data"
 
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Title"

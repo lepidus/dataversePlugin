@@ -106,6 +106,9 @@ msgid "plugins.generic.dataverse.error.depositFailedOnSubmission"
 msgstr "Error al depositar los datos de investigación en Dataverse: {$error}<br>"
 "Por favor, elija otra opción de declaración de datos o intente nuevamente más tarde."
 
+msgid "plugins.generic.dataverse.error.getFailed"
+msgstr "Erro al obtener datos de investigación en Dataverse: {$error}"
+
 msgid "plugins.generic.dataverse.error.depositFailed"
 msgstr "Erro al depositar datos de investigación en Dataverse: {$error}"
 
@@ -151,11 +154,19 @@ msgstr "¿Realmente desea eliminar permanentemente el archivo de datos de invest
 msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
 msgstr "¿Realmente desea eliminar de forma permanente los datos de investigación relacionados con esta versión preliminar?"
 
+msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
+msgstr ""
+"¿Realmente deseas publicar los datos de investigación relacionados con este envío? Esta acción no se puede deshacer.<br>"
+"Antes de continuar, asegúrate de que sean adecuados para su publicación en <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>.<br>"
+
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "No se encontró el borrador del archivo del conjunto de datos solicitado."
 
 msgid "api.error.researchDataCitationNotFound"
 msgstr "No fue posible obtener la citación de los datos de la investigación."
+
+msgid "api.dataset.403.alreadyPublished"
+msgstr "Los datos de la investigación quiere publicar ya están publicados."
 
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "No se transfieren datos de investigación."
@@ -171,6 +182,9 @@ msgstr "Archivos"
 
 msgid "plugins.generic.dataverse.researchData.delete"
 msgstr "Eliminar datos de investigación"
+
+msgid "plugins.generic.dataverse.researchData.publish"
+msgstr "Publicar datos de investigación"
 
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Título"

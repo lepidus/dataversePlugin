@@ -15,9 +15,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             return this.components.datasetFiles.items.length === 0;
         },
 
-        isPosted: function () {
+        isPublished: function () {
             return (
-                this.workingPublication.status === pkp.const.STATUS_PUBLISHED
+                this.dataset.versionState === 'RELEASED'
             );
         },
 
@@ -147,6 +147,47 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             });
         },
 
+        openPublishDatasetModal() {
+            self = this;
+            this.openDialog({
+                cancelLabel: this.__('common.no'),
+                modalName: 'publish',
+                title: this.publishDatasetLabel,
+                message: this.confirmPublishDatasetMessage,
+                callback: () => {
+                    $.ajax({
+                        url: this.components.datasetMetadata.action + '/publish',
+                        type: 'POST',
+                        headers: {
+                            'X-Csrf-Token': pkp.currentUser.csrfToken,
+                            'X-Http-Method-Override': 'PUT',
+                        },
+                        error: this.ajaxErrorCallback,
+                        success: function (r) {
+							setTimeout(() => {
+								self.dataset = r;
+							}, 2500);
+                            self.$modal.hide('publish');
+                        },
+                    });
+                },
+            });
+        },
+
+		refreshDataset() {
+			const self = this;
+			$.ajax({
+				url: this.components.datasetMetadata.action,
+				type: 'GET',
+				success(r) {
+					self.dataset = r;
+				},
+				error(r) {
+					self.ajaxErrorCallback(r);
+				}
+			});
+		},
+
         refreshItems() {
             var self = this;
             this.isLoading = true;
@@ -177,11 +218,11 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             });
         },
 
-        setDatasetForms(publication) {
+        setDatasetForms(dataset) {
             let form = { ...this.components.datasetMetadata };
             form.canSubmit =
                 this.canEditPublication &&
-                publication.status !== pkp.const.STATUS_PUBLISHED;
+                dataset.versionState !== 'RELEASED'
 
             this.components.datasetMetadata = {};
             this.components.datasetMetadata = form;
@@ -191,15 +232,16 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             if (!this.datasetCitationUrl) {
                 return;
             }
-            this.datasetCitation = 'loading...';
+			var self = this;
+			this.datasetCitation = 'loading...';
             $.ajax({
-                url: this.datasetCitationUrl,
-                type: 'GET',
-                error: this.ajaxErrorCallback,
-                success: (r) => {
-                    this.datasetCitation = r.citation;
-                },
-            });
+				url: self.datasetCitationUrl,
+				type: 'GET',
+				error: self.ajaxErrorCallback,
+				success: (r) => {
+					self.datasetCitation = r.citation;
+				},
+			});
         },
 
         setItems(items) {
@@ -224,25 +266,35 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
     },
     created() {
-        pkp.eventBus.$on('form-success', (formId, newPublication) => {
+        pkp.eventBus.$on('form-success', (formId, data) => {
             if (formId === 'datasetMetadata') {
-                this.setDatasetCitation();
+				this.dataset = {};
+				this.dataset = data;
             }
             if (formId === 'researchDataState') {
                 this.workingPublication = {};
-				this.workingPublication = newPublication;
+				this.workingPublication = data;
             }
+			if (formId === pkp.const.FORM_PUBLISH) {
+				if (this.dataset === undefined) {
+					return;
+				}
+				setTimeout(() => {
+					console.log('ok');
+					this.refreshDataset();
+				}, 2500);
+			}
         });
 
         this.setDatasetCitation();
-        this.setDatasetForms(this.workingPublication);
+        this.setDatasetForms(this.dataset);
         this.fileFormErrors = this.components.datasetFileForm.errors;
     },
     watch: {
-        workingPublication(newVal, oldVal) {
-            this.setDatasetCitation();
+        dataset(newVal, oldVal) {
             this.setDatasetForms(newVal);
-        },
+			this.setDatasetCitation();
+        }
     },
 });
 

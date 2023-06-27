@@ -138,7 +138,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             $dataverseClient = new DataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
 
-            if ($dataset->getVersionState() == 'RELEASED') {
+            if ($dataset->isPublished()) {
                 return;
             }
 
@@ -200,7 +200,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             $dataverseClient = new DataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
 
-            if ($dataset->getVersionState() == 'RELEASED') {
+            if ($dataset->isPublished()) {
                 return null;
             }
 

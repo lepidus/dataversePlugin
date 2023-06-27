@@ -1,6 +1,9 @@
 <?php
 
 import('lib.pkp.classes.handler.APIHandler');
+import('lib.pkp.classes.log.SubmissionLog');
+import('classes.log.SubmissionEventLogEntry');
+import('plugins.generic.dataverse.classes.entities.Dataset');
 import('plugins.generic.dataverse.classes.services.DatasetService');
 import('plugins.generic.dataverse.classes.services.DatasetFileService');
 
@@ -11,10 +14,25 @@ class DatasetHandler extends APIHandler
         $this->_handlerPath = 'datasets';
         $roles = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
         $this->_endpoints = array(
-            'PUT' => array(
+            'GET' => array(
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
-                    'handler' => array($this, 'edit'),
+                    'handler' => array($this, 'get'),
+                    'roles' => $roles
+                ),
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/files',
+                    'handler' => array($this, 'getFiles'),
+                    'roles' => $roles
+                ),
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
+                    'handler' => array($this, 'downloadDatasetFile'),
+                    'roles' => $roles
+                ),
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/citation',
+                    'handler' => array($this, 'getCitation'),
                     'roles' => $roles
                 ),
             ),
@@ -30,20 +48,15 @@ class DatasetHandler extends APIHandler
                     'roles' => $roles
                 ),
             ),
-            'GET' => array(
+            'PUT' => array(
                 array(
-                    'pattern' => $this->getEndpointPattern() . '/{studyId}/files',
-                    'handler' => array($this, 'getFiles'),
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}',
+                    'handler' => array($this, 'edit'),
                     'roles' => $roles
                 ),
                 array(
-                    'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
-                    'handler' => array($this, 'downloadDatasetFile'),
-                    'roles' => $roles
-                ),
-                array(
-                    'pattern' => $this->getEndpointPattern() . '/{studyId}/citation',
-                    'handler' => array($this, 'getCitation'),
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/publish',
+                    'handler' => array($this, 'publishDataset'),
                     'roles' => $roles
                 ),
             ),
@@ -77,6 +90,34 @@ class DatasetHandler extends APIHandler
         return parent::authorize($request, $args, $roleAssignments);
     }
 
+    public function get($slimRequest, $response, $args)
+    {
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudy($args['studyId']);
+
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+        } catch (DataverseException $e) {
+            $request = $this->getRequest();
+            $submission = Services::get('submission')->get($study->getSubmissionId());
+            $error = $e->getMessage();
+            $message = 'plugins.generic.dataverse.error.getFailed';
+
+            error_log('Dataverse API error: ' . $error);
+
+            return $response->withStatus(403)->withJsonError(
+                $message,
+                ['error' => $error]
+            );
+        }
+
+        return $response->withJson($dataset->getAllData(), 200);
+    }
+
     public function edit($slimRequest, $response, $args)
     {
         $requestParams = $slimRequest->getParsedBody();
@@ -96,7 +137,52 @@ class DatasetHandler extends APIHandler
         $datasetService = new DatasetService();
         $datasetService->update($data);
 
-        return $response->withJson(['message' => 'ok'], 200);
+        return $this->get($slimRequest, $response, $args);
+    }
+
+    public function publishDataset($slimRequest, $response, $args)
+    {
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudy($args['studyId']);
+
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $dataverseClient = new DataverseClient();
+        try {
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+
+            if ($dataset->isPublished()) {
+                return $response->withStatus(403)->withJsonError('api.dataset.403.alreadyPublished');
+            }
+
+            $dataverseClient->getDatasetActions()->publish($study->getPersistentId());
+            $dataset->setVersionState(Dataset::VERSION_STATE_RELEASED);
+        } catch (DataverseException $e) {
+            $request = $this->getRequest();
+            $submission = Services::get('submission')->get($study->getSubmissionId());
+            $error = $e->getMessage();
+            $message = 'plugins.generic.dataverse.error.publishFailed';
+
+            error_log('Dataverse API error: ' . $error);
+
+            SubmissionLog::logEvent(
+                $request,
+                $submission,
+                SUBMISSION_LOG_METADATA_UPDATE,
+                $message,
+                ['error' => $error]
+            );
+            return $response->withStatus(403)->withJsonError(
+                $message,
+                ['error' => $error]
+            );
+        }
+
+        return $response->withJson(
+            $dataset->getAllData(),
+            200
+        );
     }
 
     public function addDataset($slimRequest, $response, $args)

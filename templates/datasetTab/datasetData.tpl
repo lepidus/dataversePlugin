@@ -1,20 +1,41 @@
-<section class="item datasetData -pkpClearfix" id="datasetData">
+<section id="datasetData" class="item datasetData -pkpClearfix">
     <pkp-header>
-        <h1>{translate key="plugins.generic.dataverse.researchData"}</h1>
+        <h1>
+            {translate key="plugins.generic.dataverse.researchData"}
+        </h1>
         <template slot="actions">
-            <pkp-button @click="openDeleteDatasetModal" class="pkpButton--isWarnable" :disabled="isPosted">
+            <pkp-button
+                @click="openDeleteDatasetModal"
+                :is-warnable="true"
+                :disabled="isPublished"
+            >
                 {translate key="plugins.generic.dataverse.researchData.delete"}
             </pkp-button>
+            {if $canPublish}
+                <pkp-button
+                    v-if="!isPublished"
+                    @click="openPublishDatasetModal"
+                    :disabled="isPublished"
+                >
+                    {translate key="plugins.generic.dataverse.researchData.publish"}
+                </pkp-button>
+            {/if}
         </template>
     </pkp-header>
-    <span class="value" >
+    <span class="value">
         <p v-html="datasetCitation"></p>
     </span>
     <tabs label="Dataset data">
-        <tab id="dataset_metadata" label={translate key="plugins.generic.dataverse.researchData.metadata"}>
+        <tab
+            id="dataset_metadata"
+            label={translate key="plugins.generic.dataverse.researchData.metadata"}
+        >
             <pkp-form v-bind="components.datasetMetadata" @set="set"></pkp-form>
         </tab>
-        <tab id="dataset_files" label={translate key="plugins.generic.dataverse.researchData.files"}>
+        <tab
+            id="dataset_files"
+            label={translate key="plugins.generic.dataverse.researchData.files"}
+        >
             <div class="filesList -pkpClearfix">
                 <list-panel v-bind="components.datasetFiles" @set="set">
                     <pkp-header slot="header">
@@ -24,7 +45,7 @@
                             <pkp-button 
                                 ref="fileModalButton"
                                 @click="openAddFileModal"
-                                :disabled="isPosted"
+                                :disabled="isPublished"
                             >
                                 {{ components.datasetFiles.addFileLabel }}
                             </pkp-button>
@@ -43,7 +64,7 @@
                                 <pkp-button 
                                     @click="openDeleteFileModal(item.item.id)"
                                     class="pkpButton--isWarnable"
-                                    :disabled="isPosted"
+                                    :disabled="isPublished"
                                 >
                                     {{ __('common.delete') }}
                                 </pkp-button>
