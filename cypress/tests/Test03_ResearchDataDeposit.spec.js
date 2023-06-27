@@ -416,7 +416,7 @@ describe('Research data deposit', function () {
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('button').contains('Publish research data').click();
 
-		const publishMsg = 'Do you really want to publish the research data related to this preprint? This action cannot be undone.'
+		const publishMsg = 'Do you really want to publish the research data related to this submission? This action cannot be undone.'
 			+ 'Before proceeding, make sure they are suitable for publication in '
 			+ dataverseServerName;
 		cy.get('div[data-modal="publish"]').contains(publishMsg);
