@@ -156,7 +156,7 @@ msgstr "Deseja realmente excluir permanentemente os dados de pesquisa relacionad
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
 msgstr ""
-"Deseja realmente publicar os dados de pesquisa relacionados a esse preprint? Esta ação não poderá ser desfeita.<br>"
+"Deseja realmente publicar os dados de pesquisa relacionados a essa submissão? Esta ação não poderá ser desfeita.<br>"
 "Antes de continuar, certifique-se que são adequados para publicação em <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>.<br>"
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"

@@ -153,7 +153,7 @@ msgstr "Are you sure you want to permanently delete the research data related to
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
 msgstr ""
-"Do you really want to publish the research data related to this preprint? This action cannot be undone.<br>"
+"Do you really want to publish the research data related to this submission? This action cannot be undone.<br>"
 "Before proceeding, make sure they are suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>.<br>"
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
