@@ -300,12 +300,12 @@ describe('Research data deposit', function () {
 		cy.get('div[id^=publish').contains(/This submission contains deposited research data that is not yet public: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
 		cy.get('div[id^=publish').contains('In case you choose to publish them, make sure they are suitable for publication in ' + dataverseServerName);
 		cy.get('div[id^=publish').contains('Would you like to publish the research data?');
-		
+
 		cy.get('input[name="shouldPublishResearchData"][value="1"]').parent().contains("Yes");
 		cy.get('input[name="shouldPublishResearchData"][value="0"]').parent().contains("No");
 		cy.get('input[name="shouldPublishResearchData"][value="1"]').should('not.be.checked');
 		cy.get('input[name="shouldPublishResearchData"][value="0"]').should('not.be.checked');
-		
+
 		cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
 
@@ -331,7 +331,7 @@ describe('Research data deposit', function () {
 		cy.get('.data_citation .value').contains(`${dataverseServerName}, V1`);
 	});
 
-	it('Check author actions was registered in activity log', function () {
+	it('Check editor actions was registered in activity log', function () {
 		cy.login('dbarnes');
 		cy.visit('/index.php/publicknowledge/workflow/access/' + submission.id);
 
@@ -342,5 +342,90 @@ describe('Research data deposit', function () {
 		cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" deleted from research data.) td').should('contain', 'Daniel Barnes');
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data deleted) td').should('contain', 'Daniel Barnes');
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data published) td').should('contain', 'Daniel Barnes');
+	});
+
+	it('Publish research data after submission published', function () {
+		cy.login('cmontgomerie', null, 'publicknowledge');
+
+		cy.get('div#myQueue a:contains("New Submission")').click();
+
+		if (Cypress.env('contextTitles').en_US == 'Journal of Public Knowledge') {
+			cy.get('select[id="sectionId"],select[id="seriesId"]').select('Articles');
+		}
+		cy.get('input[id^="dataStatementTypes"][value=3]').click();
+		cy.get('input[id^="checklist-"]').click({ multiple: true });
+		cy.get('input[id=privacyConsent]').click();
+		cy.get('button.submitFormButton').click();
+
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('dummy.pdf', { encoding: 'base64' }).then((fileContent) => {
+			cy.get('#uploadForm input[type=file]')
+				.upload({
+					fileContent,
+					fileName: 'Data.pdf',
+					mimeType: 'application/pdf',
+					encoding: 'base64',
+				});
+		});
+		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('#uploadForm button').contains('OK').click();
+		cy.get('#submitStep2Form button.submitFormButton').click();
+
+		cy.get('input[id^="title-en_US-"').type('Submission with research data', { delay: 0 });
+		cy.get('label').contains('Title').click();
+		cy.get('textarea[id^="abstract-en_US-"').then((node) => {
+			cy.setTinyMceContent(node.attr('id'), 'A test submission with research data deposited.');
+		});
+		cy.get('select[id^="datasetSubject"').select('Other');
+		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
+
+		cy.waitJQuery();
+		cy.get('#submitStep4Form button.submitFormButton').click();
+		cy.get('button.pkpModalConfirmButton').click();
+
+		cy.waitJQuery();
+		cy.get('h2:contains("Submission complete")');
+
+		cy.logout();
+
+		cy.findSubmissionAsEditor('dbarnes', null, 'Montgomerie');
+		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
+			cy.get('button[aria-controls="workflow"]').click();
+			cy.sendToReview();
+			cy.assignReviewer('Julie Janssen');
+			cy.recordEditorialDecision('Accept Submission');
+			cy.recordEditorialDecision('Send To Production');
+			cy.get('li.ui-state-active a:contains("Production")');
+			cy.get('button[id="publication-button"]').click();
+			cy.get('div#publication button:contains("Schedule For Publication")').click();
+			cy.wait(1000);
+			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
+			cy.get('div[id^="assign-"] button:contains("Save")').click();
+			cy.get('div:contains("All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?")');
+
+		} else {
+			cy.get('#publication-button').click();
+			cy.get('.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton').click();
+		}
+		cy.get('input[name="shouldPublishResearchData"][value="0"]').click();
+		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
+
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('button').contains('Publish research data').click();
+
+		const publishMsg = 'Do you really want to publish the research data related to this preprint? This action cannot be undone.'
+			+ 'Before proceeding, make sure they are suitable for publication in '
+			+ dataverseServerName;
+		cy.get('div[data-modal="publish"]').contains(publishMsg);
+		cy.get('div[data-modal="publish"] button').contains('Yes').click();
+
+		cy.get('.value > p').contains('V1');
+		cy.get('button').contains('Publish research data').should('not.exist');
+		cy.get('button').contains('Delete research data').should('be.disabled');
+		cy.get('button').contains('Add research data').should('be.disabled');
+		cy.get('#dataset_metadata button').contains('Save').should('be.disabled');
 	});
 });
