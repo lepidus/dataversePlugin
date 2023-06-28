@@ -2,7 +2,10 @@
     <p>
 		{translate key="plugins.generic.dataverse.researchData.noResearchData"}
 	</p>
-    <pkp-button @click="$modal.show('uploadResearchData')">
+    <pkp-button
+		v-if="!isPublished"
+		@click="$modal.show('uploadResearchData')"
+	>
         {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
     </pkp-button>
     <modal

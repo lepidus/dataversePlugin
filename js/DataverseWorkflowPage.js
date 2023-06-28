@@ -16,9 +16,11 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
 
         isPublished: function () {
-            return (
-                this.dataset.versionState === 'RELEASED'
-            );
+            return this.submission.status === pkp.const.STATUS_PUBLISHED;
+        },
+
+        datasetIsPublished: function () {
+            return this.dataset.versionState === 'RELEASED';
         },
 
         researchDataCount: function () {
