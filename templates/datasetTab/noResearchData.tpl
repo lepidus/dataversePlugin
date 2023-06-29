@@ -8,6 +8,11 @@
 	>
         {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
     </pkp-button>
+	{if !$canPublish}
+		<p v-else>
+			{translate key="plugins.generic.dataverse.researchData.uploadDisabled"}
+		</p>
+	{/if}
     <modal
 		v-bind="MODAL_PROPS"
 		name="uploadResearchData"

@@ -171,6 +171,10 @@ msgstr "Os dados de pesquisa que você deseja publicar já estão publicados."
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "Não foram transferidos dados de pesquisa."
 
+msgid "plugins.generic.dataverse.researchData.uploadDisabled"
+msgstr "Não é possível enviar dados de pesquisa em uma submissão publicada. "
+"Caso deseje enviar dados de pesquisa, por favor, entre em contato com o administrador do sistema."
+
 msgid "plugins.generic.dataverse.researchData.uploadResearchData"
 msgstr "Enviar dados de pesquisa"
 

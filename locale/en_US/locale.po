@@ -168,6 +168,10 @@ msgstr "The research data you want to publish is already published."
 msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "No research data transferred."
 
+msgid "plugins.generic.dataverse.researchData.uploadDisabled"
+msgstr "It is not possible to send research data in a published submission. "
+"If you wish to send research data, please contact the system administrator."
+
 msgid "plugins.generic.dataverse.researchData.uploadResearchData"
 msgstr "Upload research data"
 
