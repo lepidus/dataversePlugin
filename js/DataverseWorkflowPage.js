@@ -16,9 +16,11 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
 
         isPublished: function () {
-            return (
-                this.dataset.versionState === 'RELEASED'
-            );
+            return this.submission.status === pkp.const.STATUS_PUBLISHED;
+        },
+
+        datasetIsPublished: function () {
+            return this.dataset.versionState === 'RELEASED';
         },
 
         researchDataCount: function () {
@@ -31,16 +33,16 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         researchDataState: function () {
             const states = {
                 'inManuscript': this.__('plugins.generic.dataverse.researchDataState.inManuscript.description'),
-                'repoAvailable' : this.__(
+                'repoAvailable': this.__(
                     'plugins.generic.dataverse.researchDataState.repoAvailable.description',
-                    {'researchDataUrl': this.workingPublication.researchDataUrl}
+                    { 'researchDataUrl': this.workingPublication.researchDataUrl }
                 ).replace('{$researchDataUrl}', this.workingPublication.researchDataUrl),
                 'onDemand': this.__(
                     'plugins.generic.dataverse.researchDataState.onDemand.description'
                 ),
                 'private': this.__(
                     'plugins.generic.dataverse.researchDataState.private.description',
-                    {'researchDataReason': this.workingPublication.researchDataReason}
+                    { 'researchDataReason': this.workingPublication.researchDataReason }
                 )
             };
 
@@ -164,9 +166,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         },
                         error: this.ajaxErrorCallback,
                         success: function (r) {
-							setTimeout(() => {
-								self.dataset = r;
-							}, 2500);
+                            setTimeout(() => {
+                                self.dataset = r;
+                            }, 2500);
                             self.$modal.hide('publish');
                         },
                     });
@@ -174,19 +176,19 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             });
         },
 
-		refreshDataset() {
-			const self = this;
-			$.ajax({
-				url: this.components.datasetMetadata.action,
-				type: 'GET',
-				success(r) {
-					self.dataset = r;
-				},
-				error(r) {
-					self.ajaxErrorCallback(r);
-				}
-			});
-		},
+        refreshDataset() {
+            const self = this;
+            $.ajax({
+                url: this.components.datasetMetadata.action,
+                type: 'GET',
+                success(r) {
+                    self.dataset = r;
+                },
+                error(r) {
+                    self.ajaxErrorCallback(r);
+                }
+            });
+        },
 
         refreshItems() {
             var self = this;
@@ -232,16 +234,16 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             if (!this.datasetCitationUrl) {
                 return;
             }
-			var self = this;
-			this.datasetCitation = 'loading...';
+            var self = this;
+            this.datasetCitation = 'loading...';
             $.ajax({
-				url: self.datasetCitationUrl,
-				type: 'GET',
-				error: self.ajaxErrorCallback,
-				success: (r) => {
-					self.datasetCitation = r.citation;
-				},
-			});
+                url: self.datasetCitationUrl,
+                type: 'GET',
+                error: self.ajaxErrorCallback,
+                success: (r) => {
+                    self.datasetCitation = r.citation;
+                },
+            });
         },
 
         setItems(items) {
@@ -268,32 +270,33 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
     created() {
         pkp.eventBus.$on('form-success', (formId, data) => {
             if (formId === 'datasetMetadata') {
-				this.dataset = {};
-				this.dataset = data;
+                this.dataset = {};
+                this.dataset = data;
             }
             if (formId === 'researchDataState') {
                 this.workingPublication = {};
-				this.workingPublication = data;
+                this.workingPublication = data;
             }
-			if (formId === pkp.const.FORM_PUBLISH) {
-				if (this.dataset === undefined) {
-					return;
-				}
-				setTimeout(() => {
-					console.log('ok');
-					this.refreshDataset();
-				}, 2500);
-			}
+            if (formId === pkp.const.FORM_PUBLISH) {
+                if (!this.dataset) {
+                    return;
+                }
+                setTimeout(() => {
+                    this.refreshDataset();
+                }, 2500);
+            }
         });
 
         this.setDatasetCitation();
-        this.setDatasetForms(this.dataset);
+        if (this.dataset) {
+            this.setDatasetForms(this.dataset);
+        }
         this.fileFormErrors = this.components.datasetFileForm.errors;
     },
     watch: {
         dataset(newVal, oldVal) {
             this.setDatasetForms(newVal);
-			this.setDatasetCitation();
+            this.setDatasetCitation();
         }
     },
 });

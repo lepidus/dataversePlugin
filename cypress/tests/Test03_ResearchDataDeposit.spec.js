@@ -167,8 +167,33 @@ describe('Research data deposit', function () {
 	it('Check research data can be deposit in research data tab', function () {
 		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
+		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
+			cy.get('button[aria-controls="workflow"]').click();
+			cy.sendToReview();
+			cy.assignReviewer('Julie Janssen');
+			cy.recordEditorialDecision('Accept Submission');
+			cy.recordEditorialDecision('Send To Production');
+			cy.get('li.ui-state-active a:contains("Production")');
+			cy.get('button[id="publication-button"]').click();
+			cy.get('div#publication button:contains("Schedule For Publication")').click();
+			cy.wait(1000);
+			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
+			cy.get('div[id^="assign-"] button:contains("Save")').click();
+			cy.get('div:contains("All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?")');
+
+		} else {
+			cy.get('#publication-button').click();
+			cy.get('.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton').click();
+		}
+
+		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
+
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('button').contains('Upload research data').should('not.exist');
+		cy.get('button:contains("Unpublish"), button:contains("Unpost")').click();
+		cy.get('div[data-modal="confirmUnpublish"] button:contains("Unpublish"), div[data-modal="confirmUnpublish"] button:contains("Unpost")').click();
+		cy.wait(1000);
 
 		cy.get('button').contains('Upload research data').click();
 		cy.contains('Add research data').click();
@@ -278,25 +303,8 @@ describe('Research data deposit', function () {
 		cy.get('#datasetTab form button').contains('Save').click();
 		cy.get('#datasetTab [role="status"]').contains('Saved');
 
-		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
-			cy.get('button[aria-controls="workflow"]').click();
-			cy.sendToReview();
-			cy.assignReviewer('Julie Janssen');
-			cy.recordEditorialDecision('Accept Submission');
-			cy.recordEditorialDecision('Send To Production');
-			cy.get('li.ui-state-active a:contains("Production")');
-			cy.get('button[id="publication-button"]').click();
-			cy.get('div#publication button:contains("Schedule For Publication")').click();
-			cy.wait(1000);
-			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
-			cy.get('div[id^="assign-"] button:contains("Save")').click();
-			cy.get('div:contains("All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?")');
-
-		} else {
-			cy.get('#publication-button').click();
-			cy.get('.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton').click();
-		}
-
+		cy.get('div#publication button:contains("Schedule For Publication"), div#publication button:contains("Post")').click();
+		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
 		cy.get('div[id^=publish').contains(/This submission contains deposited research data that is not yet public: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
 		cy.get('div[id^=publish').contains('In case you choose to publish them, make sure they are suitable for publication in ' + dataverseServerName);
 		cy.get('div[id^=publish').contains('Would you like to publish the research data?');
