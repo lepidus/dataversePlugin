@@ -3,7 +3,7 @@
 		{translate key="plugins.generic.dataverse.researchData.noResearchData"}
 	</p>
     <pkp-button
-		v-if="!isPublished"
+		v-if="submission.status !== getConstant('STATUS_PUBLISHED')"
 		@click="$modal.show('uploadResearchData')"
 	>
         {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
