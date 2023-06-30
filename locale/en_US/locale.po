@@ -233,11 +233,6 @@ msgid "plugins.generic.dataverse.researchData.publishNotice"
 msgstr "This submission contains deposited research data that is not yet public: <a href=\"{$persistentUri}\">{$persistentUri}</a>. "
 "In case you choose to publish them, make sure they are suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
 
-msgid "plugin.generic.dataverse.researchData.publishNotice.submissionAccepted"
-msgstr "This submission contains deposited research data that is not yet public: <a href=\"{$persistentUri}\">{$persistentUri}</a>.<br>"
-"By accepting the submission, the data will be published in the Dataverse repository.<br>"
-"Please make sure that the research data is suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>."
-
 msgid "plugins.generic.dataverse.researchData.wouldLikeToPublish"
 msgstr "Would you like to publish the research data?"
 
