@@ -92,9 +92,17 @@ describe('Research data publishing in editor decision', function () {
 
 		cy.get('ul.pkp_workflow_decisions:visible a:contains("Accept and Skip Review")', { timeout: 30000 }).click();
 		cy.get('button:contains("Next:")').click();
+
 		cy.get('#researchDataNotice').contains(/This submission contains deposited research data that is not yet public: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
-		cy.get('#researchDataNotice').contains('By accepting the submission, the data will be published in the Dataverse repository.')
-		cy.get('#researchDataNotice').contains('Please make sure that the research data is suitable for publication in ');
+		cy.get('#researchDataNotice').contains('In case you choose to publish them, make sure they are suitable for publication in');
+		cy.get('#researchDataPublishChoice').contains('Would you like to publish the research data?');
+		
+		cy.get('input[name="shouldPublishResearchData"][value="1"]').parent().contains("Yes");
+		cy.get('input[name="shouldPublishResearchData"][value="0"]').parent().contains("No");
+		cy.get('input[name="shouldPublishResearchData"][value="1"]').should('not.be.checked');
+		cy.get('input[name="shouldPublishResearchData"][value="0"]').should('not.be.checked');
+		
+		cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
 		cy.get('button:contains("Record Editorial Decision")').click();
 	});
 });

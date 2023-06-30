@@ -97,6 +97,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     {
         $submission = $params[0];
         $decision = $params[1];
+        $request = Application::get()->getRequest();
 
         if ($decision['decision'] !== SUBMISSION_EDITOR_DECISION_ACCEPT) {
             return;
@@ -109,6 +110,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
         if (is_null($study)) {
+            return;
+        }
+
+        $shouldPublish = $request->getUserVar('shouldPublishResearchData');
+        if (!is_null($shouldPublish) && $shouldPublish == 0) {
             return;
         }
 
@@ -169,7 +175,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             $noticeMsg = __('plugins.generic.dataverse.notice.cannotPublish', ['error' => $e->getMessage()]);
             $msg = '<div class="pkpNotification pkpNotification--warning">' . $warningIconHtml . $noticeMsg . '</div>';
 
-            $form->addField(new \PKP\components\forms\FieldHTML('researchData', [
+            $form->addField(new \PKP\components\forms\FieldHTML('researchDataNotice', [
                 'description' => $msg,
                 'groupId' => 'default',
             ]));
@@ -210,15 +216,15 @@ class DataverseEventsDispatcher extends DataverseDispatcher
                 'serverName' => $rootDataverseCollection->getName(),
                 'serverUrl' => $configuration->getDataverseServerUrl(),
             ];
-            $templateMgr->assign(
-                'notice',
-                __('plugin.generic.dataverse.researchData.publishNotice.submissionAccepted', $params)
-            );
+            $templateMgr->assign([
+                'researchDataNotice' => __('plugins.generic.dataverse.researchData.publishNotice', $params),
+                'canPublishResearchData' => true
+            ]);
         } catch (DataverseException $e) {
-            $templateMgr->assign(
-                'notice',
-                'Dataverse Error: ' . $e->getMessage()
-            );
+            $templateMgr->assign([
+                'researchDataNotice' => 'Dataverse Error: ' . $e->getMessage(),
+                'canPublishResearchData' => false
+            ]);
         }
 
         $templateMgr->setCacheability(CACHEABILITY_NO_STORE);
@@ -247,7 +253,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             $match = $matches[0][0];
             $offset = $matches[0][1];
             $output = substr($templateOutput, 0, $offset + strlen($match));
-            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('editorActionPublishNotice.tpl'));
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('editorActionPublish.tpl'));
             $output .= substr($templateOutput, $offset + strlen($match));
         }
 
