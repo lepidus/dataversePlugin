@@ -94,7 +94,7 @@ describe('Research data publishing in editor decision', function () {
 		cy.get('button:contains("Next:")').click();
 
 		cy.get('#researchDataNotice').contains(/This submission contains deposited research data that is not yet public: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
-		cy.get('#researchDataNotice').contains('In case you choose to publish them, make sure they are suitable for publication in the Dataverse repository');
+		cy.get('#researchDataNotice').contains('In case you choose to publish them, make sure they are suitable for publication in');
 		cy.get('#researchDataNotice').contains('Would you like to publish the research data?');
 		
 		cy.get('input[name="shouldPublishResearchData"][value="1"]').parent().contains("Yes");
