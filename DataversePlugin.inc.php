@@ -23,6 +23,7 @@ class DataversePlugin extends GenericPlugin
 
         $this->loadDispatcherClasses();
         $this->registerDAOClasses();
+        PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
 
         return $success;
     }
@@ -69,6 +70,12 @@ class DataversePlugin extends GenericPlugin
     public function getDescription()
     {
         return __('plugins.generic.dataverse.description');
+    }
+
+    public function getReportPlugin()
+    {
+        $this->import('DataverseReportPlugin');
+        return new DataverseReportPlugin();
     }
 
     public function getPluginFullPath(): string
