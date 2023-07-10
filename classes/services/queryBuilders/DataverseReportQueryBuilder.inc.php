@@ -5,6 +5,8 @@ use Illuminate\Database\Query\Builder;
 
 import('classes.workflow.EditorDecisionActionsManager');
 
+define('SUBMISSION_PROGRESS_COMPLETE', 0);
+
 class DataverseReportQueryBuilder
 {
     protected $contextIds = [];
@@ -45,7 +47,7 @@ class DataverseReportQueryBuilder
 
         $q->leftJoin('publications as pi', 'pi.submission_id', '=', 's.submission_id');
 
-        $q->where('s.submission_progress', '=', 0);
+        $q->where('s.submission_progress', '=', SUBMISSION_PROGRESS_COMPLETE);
 
         return $q;
     }

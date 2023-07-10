@@ -55,7 +55,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         $contextId = $this->createTestContext();
         $submission = $this->createTestSubmission([
             'contextId' => $contextId,
-            'submissionProgress' => 0,
+            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
         $query = $this->getQueryBuilder()
@@ -74,12 +74,12 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
         $acceptedSubmission = $this->createTestSubmission([
             'contextId' => $contextId,
-            'submissionProgress' => 0,
+            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
         $declinedSubmission = $this->createTestSubmission([
             'contextId' => $contextId,
-            'submissionProgress' => 0,
+            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
         DAORegistry::getDAO('EditDecisionDAO')->updateEditorDecision($acceptedSubmission->getId(), [
