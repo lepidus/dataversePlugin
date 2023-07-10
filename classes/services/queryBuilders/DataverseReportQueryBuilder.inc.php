@@ -17,12 +17,23 @@ class DataverseReportQueryBuilder
         return $this;
     }
 
+    public function filterByDecisions($decisions): self
+    {
+        $this->decisions = is_array($decisions) ? $decisions : [$decisions];
+        return $this;
+    }
+
     public function getQuery(): Builder
     {
         $q = Capsule::table('submissions as s');
 
         if (!empty($this->contextIds)) {
             $q->whereIn('s.context_id', $this->contextIds);
+        }
+
+        if (!empty($this->decisions)) {
+            $q->leftJoin('edit_decisions as ed', 's.submission_id', '=', 'ed.submission_id')
+            ->whereIn('ed.decision', $this->decisions);
         }
 
         $declineDecisions = [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE];

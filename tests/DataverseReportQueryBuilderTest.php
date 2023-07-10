@@ -10,7 +10,8 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         return [
             'publications', 'publication_settings',
             'submissions', 'submission_settings',
-            'journals', 'journal_settings'
+            'journals', 'journal_settings',
+            'edit_decisions',
         ];
     }
 
@@ -49,7 +50,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         return $submission;
     }
 
-    public function testFilterSubmissionByContext(): void
+    public function testFilterSubmissionByContexts(): void
     {
         $contextId = $this->createTestContext();
         $submission = $this->createTestSubmission([
@@ -57,8 +58,64 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             'submissionProgress' => 0,
         ]);
 
-        $query = $this->getQueryBuilder()->filterByContexts($contextId)->getQuery();
+        $query = $this->getQueryBuilder()
+            ->filterByContexts($contextId)
+            ->getQuery();
 
-        $this->assertEquals($submission->getId(), $query->get()->first()->submission_id);
+        $this->assertEquals(
+            $submission->getId(),
+            $query->get()->first()->submission_id
+        );
+    }
+
+    public function testFilterSubmissionByDecisions(): void
+    {
+        $contextId = $this->createTestContext();
+
+        $acceptedSubmission = $this->createTestSubmission([
+            'contextId' => $contextId,
+            'submissionProgress' => 0,
+        ]);
+
+        $declinedSubmission = $this->createTestSubmission([
+            'contextId' => $contextId,
+            'submissionProgress' => 0,
+        ]);
+
+        DAORegistry::getDAO('EditDecisionDAO')->updateEditorDecision($acceptedSubmission->getId(), [
+            'editDecisionId' => null,
+            'editorId' => 1,
+            'decision' => SUBMISSION_EDITOR_DECISION_ACCEPT,
+            'dateDecided' => date(Core::getCurrentDate())
+        ]);
+
+        DAORegistry::getDAO('EditDecisionDAO')->updateEditorDecision($declinedSubmission->getId(), [
+            'editDecisionId' => null,
+            'editorId' => 1,
+            'decision' => SUBMISSION_EDITOR_DECISION_DECLINE,
+            'dateDecided' => date(Core::getCurrentDate())
+        ]);
+
+        $declinedSubmission->setStatus(STATUS_DECLINED);
+        DAORegistry::getDAO('SubmissionDAO')->updateObject($declinedSubmission);
+
+        $query = $this->getQueryBuilder()
+            ->filterByContexts($contextId);
+
+        $acceptedQuery = $query->filterByDecisions([SUBMISSION_EDITOR_DECISION_ACCEPT])
+            ->getQuery();
+
+        $declinedQuery = $query->filterByDecisions([SUBMISSION_EDITOR_DECISION_DECLINE])
+            ->getQuery();
+
+        $this->assertEquals(
+            $acceptedSubmission->getId(),
+            $acceptedQuery->get()->first()->submission_id
+        );
+
+        $this->assertEquals(
+            $declinedSubmission->getId(),
+            $declinedQuery->get()->first()->submission_id
+        );
     }
 }
