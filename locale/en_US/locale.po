@@ -306,3 +306,9 @@ msgstr "Dataverse Report"
 
 msgid "plugins.reports.dataverse.description"
 msgstr "Report on data declaration and research data deposition in Dataverse."
+
+msgid "plugins.reports.dataverse.headers.acceptedSubmissions"
+msgstr "Submissions Accepted"
+
+msgid "plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset"
+msgstr "Submissions Accepted with Dataset"

@@ -309,3 +309,9 @@ msgstr "Relatório do Dataverse"
 
 msgid "plugins.reports.dataverse.description"
 msgstr "Relatório de declaração de dados e depósito de dados de pesquisa do Dataverse."
+
+msgid "plugins.reports.dataverse.headers.acceptedSubmissions"
+msgstr "Submissões Aceitas"
+
+msgid "plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset"
+msgstr "Submissões com Dataset Aceitas"
