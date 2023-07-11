@@ -4,6 +4,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Query\Builder;
 
 import('classes.workflow.EditorDecisionActionsManager');
+import('lib.pkp.classes.submission.PKPSubmission');
 
 define('SUBMISSION_PROGRESS_COMPLETE', 0);
 
