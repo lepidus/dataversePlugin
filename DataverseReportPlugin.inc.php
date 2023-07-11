@@ -1,6 +1,7 @@
 <?php
 
 import('lib.pkp.classes.plugins.ReportPlugin');
+import('plugins.generic.dataverse.classes.services.queryBuilders.DataverseReportQueryBuilder');
 
 class DataverseReportPlugin extends ReportPlugin
 {
@@ -30,9 +31,27 @@ class DataverseReportPlugin extends ReportPlugin
 
     public function display($args, $request)
     {
+        $context = $request->getContext();
+
+        import('plugins.generic.dataverse.classes.services.DataverseReportService');
+        $reportService = new DataverseReportService();
+
+        $params = [
+            'acceptedSubmissions' => $reportService->countSubmissions([
+                'contextIds' => [$context->getId()],
+                'decisions' => [SUBMISSION_EDITOR_DECISION_ACCEPT]
+            ]),
+            'acceptedSubmissionsWithDataset' => $reportService->countSubmissionsWithDataset([
+                'contextIds' => [$context->getId()],
+                'decisions' => [SUBMISSION_EDITOR_DECISION_ACCEPT]
+            ]),
+        ];
+
         header('content-type: text/comma-separated-values');
         header('content-disposition: attachment; filename=dataverse-' . date('Ymd') . '.csv');
         $fp = fopen('php://output', 'wt');
+        fputcsv($fp, $reportService->getReportHeaders());
+        fputcsv($fp, $params);
         fclose($fp);
     }
 }
