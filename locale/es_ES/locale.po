@@ -307,3 +307,15 @@ msgstr "Justificación"
 
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description"
 msgstr "Introduzca el motivo de la no disponibilidad de los datos."
+
+msgid "plugins.reports.dataverse.displayName"
+msgstr "Informe de Dataverse"
+
+msgid "plugins.reports.dataverse.description"
+msgstr "Informe sobre la declaración de datos y el depósito de datos de investigación en Dataverse."
+
+msgid "plugins.reports.dataverse.headers.acceptedSubmissions"
+msgstr "Envíos Aceptados"
+
+msgid "plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset"
+msgstr "Envíos aceptados com Dataset"

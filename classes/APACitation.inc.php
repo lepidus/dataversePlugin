@@ -57,8 +57,12 @@ class APACitation
         $familyName = $author->getLocalizedFamilyName($this->locale);
         $givenName = $author->getLocalizedGivenName($this->locale);
 
-        if (is_array($familyName)) $familyName = $familyName[$this->locale];
-        if (is_array($givenName)) $givenName = $givenName[$this->locale];
+        if (is_array($familyName)) {
+            $familyName = $familyName[$this->locale];
+        }
+        if (is_array($givenName)) {
+            $givenName = $givenName[$this->locale];
+        }
 
         return $familyName . ', ' . mb_substr($givenName, 0, 1) . ".";
     }

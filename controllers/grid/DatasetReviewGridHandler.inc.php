@@ -6,7 +6,7 @@ import('plugins.generic.dataverse.controllers.grid.DatasetReviewGridColumn');
 class DatasetReviewGridHandler extends GridHandler
 {
     private $study;
-    
+
     public function __construct()
     {
         parent::__construct();
@@ -24,7 +24,7 @@ class DatasetReviewGridHandler extends GridHandler
     public function initialize($request, $args = null)
     {
         parent::initialize($request, $args);
-        
+
         $submissionId = $this->getSubmission()->getId();
         $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
         $this->study = $dataverseStudyDao->getStudyBySubmissionId($submissionId);
