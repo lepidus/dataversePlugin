@@ -51,4 +51,14 @@ class DataverseReportQueryBuilder
 
         return $q;
     }
+
+    public function getWithDataset(): Builder
+    {
+        $q = $this->getQuery();
+
+        $q->leftJoin('dataverse_studies as ds', 'ds.submission_id', '=', 's.submission_id')
+            ->whereNotNull('ds.study_id');
+
+        return $q;
+    }
 }

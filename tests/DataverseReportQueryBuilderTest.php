@@ -12,6 +12,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             'submissions', 'submission_settings',
             'journals', 'journal_settings',
             'edit_decisions',
+            'dataverse_studies',
         ];
     }
 
@@ -116,6 +117,42 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         $this->assertEquals(
             $declinedSubmission->getId(),
             $declinedQuery->get()->first()->submission_id
+        );
+    }
+
+    public function testGetSubmissionsWithDataset(): void
+    {
+        $contextId = $this->createTestContext();
+
+        $submission = $this->createTestSubmission([
+            'contextId' => $contextId,
+            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
+        ]);
+
+        $datasetSubmission = $this->createTestSubmission([
+            'contextId' => $contextId,
+            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
+        ]);
+
+        $studyDAO = new DataverseStudyDAO();
+        $study = $studyDAO->newDataObject();
+        $study->setAllData([
+            'submissionId' => $datasetSubmission->getId(),
+            'persistentId' => 'testId',
+            'persistentUri' => 'testUri',
+            'editUri' => 'testEditUri',
+            'editMediaUri' => 'testEditMediaUri',
+            'statementUri' => 'testStatementUri',
+        ]);
+        $studyDAO->insertStudy($study);
+
+        $query = $this->getQueryBuilder()
+            ->filterByContexts($contextId)
+            ->getWithDataset();
+
+        $this->assertEquals(
+            $datasetSubmission->getId(),
+            $query->get()->first()->submission_id
         );
     }
 }
