@@ -61,6 +61,8 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $this->assertEquals([
             '##plugins.reports.dataverse.headers.acceptedSubmissions##',
             '##plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset##',
+            '##plugins.reports.dataverse.headers.declinedSubmissions##',
+            '##plugins.reports.dataverse.headers.declinedSubmissionsWithDataset##',
         ], $reportService->getReportHeaders());
     }
 
