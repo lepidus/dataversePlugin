@@ -311,4 +311,10 @@ msgid "plugins.reports.dataverse.headers.acceptedSubmissions"
 msgstr "Submissions Accepted"
 
 msgid "plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset"
-msgstr "Submissions Accepted with Dataset"
+msgstr "Submissions with Dataset Accepted"
+
+msgid "plugins.reports.dataverse.headers.declinedSubmissions"
+msgstr "Submissions Declined"
+
+msgid "plugins.reports.dataverse.headers.declinedSubmissionsWithDataset"
+msgstr "Submissions with Dataset Declined"

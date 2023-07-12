@@ -7,6 +7,8 @@ class DataverseReportService
         return [
             __('plugins.reports.dataverse.headers.acceptedSubmissions'),
             __('plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset'),
+            __('plugins.reports.dataverse.headers.declinedSubmissions'),
+            __('plugins.reports.dataverse.headers.declinedSubmissionsWithDataset'),
         ];
     }
 

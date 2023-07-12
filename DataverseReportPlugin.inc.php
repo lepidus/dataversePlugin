@@ -45,6 +45,14 @@ class DataverseReportPlugin extends ReportPlugin
                 'contextIds' => [$context->getId()],
                 'decisions' => [SUBMISSION_EDITOR_DECISION_ACCEPT]
             ]),
+            'declinedSubmissions' => $reportService->countSubmissions([
+                'contextIds' => [$context->getId()],
+                'decisions' => [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE]
+            ]),
+            'declinedSubmissionsWithDataset' => $reportService->countSubmissionsWithDataset([
+                'contextIds' => [$context->getId()],
+                'decisions' => [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE]
+            ]),
         ];
 
         header('content-type: text/comma-separated-values');

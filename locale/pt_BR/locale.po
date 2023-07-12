@@ -315,3 +315,9 @@ msgstr "Submissões Aceitas"
 
 msgid "plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset"
 msgstr "Submissões com Dataset Aceitas"
+
+msgid "plugins.reports.dataverse.headers.declinedSubmissions"
+msgstr "Submissões Rejeitadas"
+
+msgid "plugins.reports.dataverse.headers.declinedSubmissionsWithDataset"
+msgstr "Submissões com Dataset Rejeitadas"

@@ -318,4 +318,10 @@ msgid "plugins.reports.dataverse.headers.acceptedSubmissions"
 msgstr "Envíos Aceptados"
 
 msgid "plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset"
-msgstr "Envíos aceptados com Dataset"
+msgstr "Envíos con Dataset Aceptados"
+
+msgid "plugins.reports.dataverse.headers.declinedSubmissions"
+msgstr "Envíos Rechazados"
+
+msgid "plugins.reports.dataverse.headers.declinedSubmissionsWithDataset"
+msgstr "Envíos con Dataset Rechazados"
