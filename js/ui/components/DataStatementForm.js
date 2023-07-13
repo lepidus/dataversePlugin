@@ -10,8 +10,8 @@ pkp.Vue.component('data-statement-form', {
 		shouldShowField(field) {
 			const dataStatementTypesField = this.fields.find(
 				(field) => field.name === 'dataStatementTypes'
-			)
-			if (dataStatementTypesField.value === null) {
+			);
+			if (!Array.isArray(dataStatementTypesField.value)) {
 				dataStatementTypesField.value = [];
 			}
 			if (
