@@ -116,8 +116,10 @@ class DatasetService extends DataverseService
 
         $publication = $submission->getCurrentPublication();
         $dataStatementTypes = $publication->getData('dataStatementTypes');
-        if (in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
-            $dataStatementTypes = array_diff($dataStatementTypes, [DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+
+        if (($key = array_search(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) !== false) {
+            unset($dataStatementTypes[$key]);
+            sort($dataStatementTypes);
         }
 
         $request = \Application::get()->getRequest();
