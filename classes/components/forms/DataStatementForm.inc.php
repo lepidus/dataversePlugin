@@ -17,6 +17,8 @@ class DataStatementForm extends FormComponent
         $this->action = $action;
         $this->locales = $locales;
 
+        $publication = $this->fixDataStatementTypesConvertion($publication);
+
         import('plugins.generic.dataverse.classes.services.DataStatementService');
         $dataStatementService = new DataStatementService();
         $dataStatementTypes = $dataStatementService->getDataStatementTypes();
@@ -53,5 +55,22 @@ class DataStatementForm extends FormComponent
             'value' => $publication->getData('dataStatementReason'),
             'size' => 'large',
         ]));
+    }
+
+    private function fixDataStatementTypesConvertion($publication): Publication
+    {
+        $dataStatementTypes = $publication->getData('dataStatementTypes');
+
+        if (is_array($dataStatementTypes)) {
+            sort($dataStatementTypes);
+
+            Services::get('publication')->edit(
+                $publication,
+                ['dataStatementTypes' => $dataStatementTypes],
+                \Application::get()->getRequest()
+            );
+        }
+
+        return Services::get('publication')->get($publication->getId());
     }
 }
