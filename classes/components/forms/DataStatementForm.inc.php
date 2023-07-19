@@ -4,6 +4,8 @@ use PKP\components\forms\FieldOptions;
 use PKP\components\forms\FieldText;
 use PKP\components\forms\FormComponent;
 
+import('plugins.generic.dataverse.classes.services.DataStatementService');
+
 define('FORM_DATA_STATEMENT', 'dataStatement');
 
 class DataStatementForm extends FormComponent
@@ -17,12 +19,8 @@ class DataStatementForm extends FormComponent
         $this->action = $action;
         $this->locales = $locales;
 
-        $publication = $this->fixDataStatementTypesConvertion($publication);
-
-        import('plugins.generic.dataverse.classes.services.DataStatementService');
-        $dataStatementService = new DataStatementService();
-        $dataStatementTypes = $dataStatementService->getDataStatementTypes();
-        unset($dataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+        $publication = $this->fixDataStatementTypesConversion($publication);
+        $dataStatementTypes = $this->getDataStatementTypes();
 
         $dataStatementOptions = array_map(function ($value, $label) {
             return [
@@ -54,10 +52,23 @@ class DataStatementForm extends FormComponent
             'isMultilingual' => true,
             'value' => $publication->getData('dataStatementReason'),
             'size' => 'large',
+        ]))
+        ->addField(new FieldOptions('researchDataSubmitted', [
+            'label' => __('plugins.generic.dataverse.researchData'),
+            'options' => [
+                [
+                    'value' => true,
+                    'label' => __('plugins.generic.dataverse.dataStatement.researchDataSubmitted', [
+                        'dataverseName' => $this->getDataverseName(),
+                    ]),
+                    'disabled' => true,
+                ],
+            ],
+            'value' => in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $publication->getData('dataStatementTypes')),
         ]));
     }
 
-    private function fixDataStatementTypesConvertion($publication): Publication
+    private function fixDataStatementTypesConversion($publication): Publication
     {
         $dataStatementTypes = $publication->getData('dataStatementTypes');
 
@@ -72,5 +83,23 @@ class DataStatementForm extends FormComponent
         }
 
         return Services::get('publication')->get($publication->getId());
+    }
+
+    private function getDataStatementTypes(): array
+    {
+        $dataStatementService = new DataStatementService();
+        $dataStatementTypes = $dataStatementService->getDataStatementTypes();
+        unset($dataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+
+        return $dataStatementTypes;
+    }
+
+    private function getDataverseName(): string
+    {
+        import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+        $dataverseClient = new DataverseClient();
+        $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
+
+        return $dataverseCollection->getName();
     }
 }
