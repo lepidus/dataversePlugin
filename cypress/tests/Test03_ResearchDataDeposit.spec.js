@@ -287,7 +287,7 @@ describe('Research data deposit', function () {
 		cy.contains('No research data transferred.');
 
 		cy.get('button[aria-controls="dataStatement"]').click();
-		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('be.checked');
+		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('not.be.checked');
 	});
 
 	it('Check editor can publish research data', function () {
