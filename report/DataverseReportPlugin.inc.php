@@ -36,30 +36,13 @@ class DataverseReportPlugin extends ReportPlugin
         import('plugins.generic.dataverse.report.services.DataverseReportService');
         $reportService = new DataverseReportService();
 
-        $params = [
-            'acceptedSubmissions' => $reportService->countSubmissions([
-                'contextIds' => [$context->getId()],
-                'decisions' => [SUBMISSION_EDITOR_DECISION_ACCEPT]
-            ]),
-            'acceptedSubmissionsWithDataset' => $reportService->countSubmissionsWithDataset([
-                'contextIds' => [$context->getId()],
-                'decisions' => [SUBMISSION_EDITOR_DECISION_ACCEPT]
-            ]),
-            'declinedSubmissions' => $reportService->countSubmissions([
-                'contextIds' => [$context->getId()],
-                'decisions' => [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE]
-            ]),
-            'declinedSubmissionsWithDataset' => $reportService->countSubmissionsWithDataset([
-                'contextIds' => [$context->getId()],
-                'decisions' => [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE]
-            ]),
-        ];
+        $overview = $reportService->getOverview($context->getId());
 
         header('content-type: text/comma-separated-values');
         header('content-disposition: attachment; filename=dataverse-' . date('Ymd') . '.csv');
         $fp = fopen('php://output', 'wt');
         fputcsv($fp, $reportService->getReportHeaders());
-        fputcsv($fp, $params);
+        fputcsv($fp, $overview);
         fclose($fp);
     }
 }

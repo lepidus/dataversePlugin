@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.tests.DatabaseTestCase');
-import('plugins.generic.dataverse.classes.services.DataverseReportService');
+import('plugins.generic.dataverse.report.services.DataverseReportService');
 
 class DataverseReportServiceTest extends DatabaseTestCase
 {
