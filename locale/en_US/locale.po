@@ -304,20 +304,20 @@ msgstr "Provide the justification for the unavailability of the data."
 msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
 msgstr "Research data has been submitted to the <strong>{$dataverseName}</strong> repository."
 
-msgid "plugins.reports.dataverse.displayName"
+msgid "plugins.generic.dataverse.report.displayName"
 msgstr "Dataverse Report"
 
-msgid "plugins.reports.dataverse.description"
+msgid "plugins.generic.dataverse.report.description"
 msgstr "Report on data declaration and research data deposition in Dataverse."
 
-msgid "plugins.reports.dataverse.headers.acceptedSubmissions"
-msgstr "Submissions Accepted"
+msgid "plugins.generic.dataverse.report.headers.acceptedSubmissions"
+msgstr "Accepted submissions"
 
-msgid "plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset"
-msgstr "Submissions with Dataset Accepted"
+msgid "plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset"
+msgstr "Accepted submissions with dataset"
 
-msgid "plugins.reports.dataverse.headers.declinedSubmissions"
-msgstr "Submissions Declined"
+msgid "plugins.generic.dataverse.report.headers.declinedSubmissions"
+msgstr "Declined submissions"
 
-msgid "plugins.reports.dataverse.headers.declinedSubmissionsWithDataset"
-msgstr "Submissions with Dataset Declined"
+msgid "plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset"
+msgstr "Declined submissions with dataset"

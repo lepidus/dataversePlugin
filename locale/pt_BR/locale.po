@@ -307,20 +307,20 @@ msgstr "Informe a justificativa para a não disponibilidade dos dados."
 msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
 msgstr "Foram submetidos dados de pesquisa para o repositório <strong>{$dataverseName}</strong>."
 
-msgid "plugins.reports.dataverse.displayName"
+msgid "plugins.generic.dataverse.report.displayName"
 msgstr "Relatório do Dataverse"
 
-msgid "plugins.reports.dataverse.description"
+msgid "plugins.generic.dataverse.report.description"
 msgstr "Relatório de declaração de dados e depósito de dados de pesquisa do Dataverse."
 
-msgid "plugins.reports.dataverse.headers.acceptedSubmissions"
-msgstr "Submissões Aceitas"
+msgid "plugins.generic.dataverse.report.headers.acceptedSubmissions"
+msgstr "Submissões aceitas"
 
-msgid "plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset"
-msgstr "Submissões com Dataset Aceitas"
+msgid "plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset"
+msgstr "Submissões aceitas com dataset"
 
-msgid "plugins.reports.dataverse.headers.declinedSubmissions"
-msgstr "Submissões Rejeitadas"
+msgid "plugins.generic.dataverse.report.headers.declinedSubmissions"
+msgstr "Submissões rejeitadas"
 
-msgid "plugins.reports.dataverse.headers.declinedSubmissionsWithDataset"
-msgstr "Submissões com Dataset Rejeitadas"
+msgid "plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset"
+msgstr "Submissões rejeitadas com dataset"

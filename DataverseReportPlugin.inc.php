@@ -21,12 +21,12 @@ class DataverseReportPlugin extends ReportPlugin
 
     public function getDisplayName()
     {
-        return __('plugins.reports.dataverse.displayName');
+        return __('plugins.generic.dataverse.report.displayName');
     }
 
     public function getDescription()
     {
-        return __('plugins.reports.dataverse.description');
+        return __('plugins.generic.dataverse.report.description');
     }
 
     public function display($args, $request)
