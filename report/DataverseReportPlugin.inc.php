@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.classes.plugins.ReportPlugin');
-import('plugins.generic.dataverse.classes.services.queryBuilders.DataverseReportQueryBuilder');
+import('plugins.generic.dataverse.report.services.queryBuilders.DataverseReportQueryBuilder');
 
 class DataverseReportPlugin extends ReportPlugin
 {
@@ -33,7 +33,7 @@ class DataverseReportPlugin extends ReportPlugin
     {
         $context = $request->getContext();
 
-        import('plugins.generic.dataverse.classes.services.DataverseReportService');
+        import('plugins.generic.dataverse.report.services.DataverseReportService');
         $reportService = new DataverseReportService();
 
         $params = [
