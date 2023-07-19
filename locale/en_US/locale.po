@@ -301,6 +301,9 @@ msgstr "Justification"
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description"
 msgstr "Provide the justification for the unavailability of the data."
 
+msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
+msgstr "Research data has been submitted to the <strong>{$dataverseName}</strong> repository."
+
 msgid "plugins.reports.dataverse.displayName"
 msgstr "Dataverse Report"
 

@@ -79,6 +79,10 @@ describe('Research data deposit', function () {
 
 		cy.contains('Review this submission').click();
 		cy.get('button[aria-controls="publication"]').click();
+
+		cy.get('button[aria-controls="dataStatement"]').click();
+		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('be.checked');
+
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('#datasetData .value').should('contain', `Kwantes, Catherine, ${currentYear}, "The Rise of the Machine Empire"`);
 		cy.get('#datasetData .value p').then((citation) => {
@@ -151,6 +155,9 @@ describe('Research data deposit', function () {
 		cy.contains('Delete research data').click();
 		cy.get('[data-modal="delete"] button').contains('Yes').click();
 		cy.contains('No research data transferred.');
+
+		cy.get('button[aria-controls="dataStatement"]').click();
+		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('not.be.checked');
 	});
 
 	it('Check author actions was registered in activity log', function () {
@@ -215,6 +222,9 @@ describe('Research data deposit', function () {
 		cy.get('#datasetTab [role="status"]').contains('Saved');
 
 		cy.get('#datasetData .value').should('contain', `Kwantes, Catherine, ${currentYear}, "The Rise of the Machine Empire"`);
+
+		cy.get('button[aria-controls="dataStatement"]').click();
+		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('be.checked');
 	});
 
 	it('Check editor can edit research data metadata', function () {
@@ -275,6 +285,9 @@ describe('Research data deposit', function () {
 		cy.contains('Delete research data').click();
 		cy.get('[data-modal="delete"] button').contains('Yes').click();
 		cy.contains('No research data transferred.');
+
+		cy.get('button[aria-controls="dataStatement"]').click();
+		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('not.be.checked');
 	});
 
 	it('Check editor can publish research data', function () {
