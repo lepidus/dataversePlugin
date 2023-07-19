@@ -58,12 +58,20 @@ class DataverseReportServiceTest extends DatabaseTestCase
     public function testGetReportHeaders(): void
     {
         $reportService = new DataverseReportService();
-        $this->assertEquals([
-            '##plugins.generic.dataverse.report.headers.acceptedSubmissions##',
-            '##plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset##',
-            '##plugins.generic.dataverse.report.headers.declinedSubmissions##',
-            '##plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset##',
-        ], $reportService->getReportHeaders());
+
+        if (Application::get()->getName() === 'ojs2') {
+            $this->assertEquals([
+                '##plugins.generic.dataverse.report.headers.acceptedSubmissions##',
+                '##plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset##',
+                '##plugins.generic.dataverse.report.headers.declinedSubmissions##',
+                '##plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset##',
+            ], $reportService->getReportHeaders());
+        } else {
+            $this->assertEquals([
+                '##plugins.generic.dataverse.report.headers.declinedSubmissions##',
+                '##plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset##',
+            ], $reportService->getReportHeaders());
+        }
     }
 
     public function testCountSubmissions(): void
