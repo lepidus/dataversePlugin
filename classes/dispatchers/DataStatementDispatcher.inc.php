@@ -156,16 +156,26 @@ class DataStatementDispatcher extends DataverseDispatcher
             return false;
         }
 
-        if (
-            in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $stepForm->getData('dataStatementTypes'))
-            && empty($stepForm->getData('keywords')['dataStatementUrls'])
-        ) {
-            $stepForm->addError(
-                'dataStatementUrls',
-                __('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')
-            );
-            $stepForm->addErrorField('dataStatementUrls');
-            return false;
+        if (in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $stepForm->getData('dataStatementTypes'))) {
+            if(empty($stepForm->getData('keywords')['dataStatementUrls'])) {
+                $stepForm->addError(
+                    'dataStatementUrls',
+                    __('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')
+                );
+                $stepForm->addErrorField('dataStatementUrls');
+                return false;
+            } else {
+                foreach($stepForm->getData('keywords')['dataStatementUrls'] as $dataStatementUrl) {
+                    if(!$this->inputIsURL($dataStatementUrl)) {
+                        $stepForm->addError(
+                            'dataStatementUrls',
+                            'Tem que ser URL'
+                        );
+                        $stepForm->addErrorField('dataStatementUrls');
+                        return false;
+                    }
+                }
+            }
         }
 
         return true;
@@ -190,6 +200,11 @@ class DataStatementDispatcher extends DataverseDispatcher
             'dataStatementUrls' => $dataStatementUrls,
             'dataStatementReason' => $dataStatementReason
         ];
+    }
+
+    private function inputIsURL(string $input): bool
+    {
+        return false;
     }
 
     public function validateDataStatementProps(string $hookName, array $args): bool
