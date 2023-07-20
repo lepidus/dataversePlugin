@@ -27,7 +27,15 @@ class DataverseReportService
             'declinedSubmissionsWithDataset' => $this->countSubmissionsWithDataset([
                 'contextIds' => [$contextId],
                 'decisions' => [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE]
-            ])
+            ]),
+            'DatasetsWithDepositError' => $this->countDatasetsWithError(
+                ['plugins.generic.dataverse.error.depositFailed'],
+                ['contextIds' => [$contextId],]
+            ),
+            'DatasetsWithPublishError' => $this->countDatasetsWithError(
+                ['plugins.generic.dataverse.error.publishFailed'],
+                ['contextIds' => [$contextId],]
+            ),
         ]);
     }
 
@@ -45,6 +53,8 @@ class DataverseReportService
         return array_merge($headers, [
             __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
             __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
+            __('plugins.generic.dataverse.report.headers.DatasetsWithDepositError'),
+            __('plugins.generic.dataverse.report.headers.DatasetsWithPublishError'),
         ]);
     }
 
@@ -56,6 +66,11 @@ class DataverseReportService
     public function countSubmissionsWithDataset(array $args = []): int
     {
         return $this->getQueryBuilder($args)->getWithDataset()->count();
+    }
+
+    public function countDatasetsWithError(array $messages, array $args = []): int
+    {
+        return $this->getQueryBuilder($args)->countDatasetsWithError($messages);
     }
 
     public function getQueryBuilder($args = []): DataverseReportQueryBuilder
