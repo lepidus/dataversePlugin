@@ -327,4 +327,10 @@ msgid "plugins.generic.dataverse.report.headers.declinedSubmissions"
 msgstr "Envíos rechazados"
 
 msgid "plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset"
-msgstr "Envíos con rechazados dataset"
+msgstr "Envíos rechazados con dataset"
+
+msgid "plugins.generic.dataverse.report.headers.DatasetsWithDepositError"
+msgstr "Datasets con error en el depósito"
+
+msgid "plugins.generic.dataverse.report.headers.DatasetsWithPublishError"
+msgstr "Datasets con error en la publicación"
