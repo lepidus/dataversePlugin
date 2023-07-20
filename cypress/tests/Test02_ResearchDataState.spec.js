@@ -42,6 +42,13 @@ describe('Research data state', function () {
 
 		cy.get('input[id^="dataStatementTypes"][value=2]').click();
 		cy.get('ul[id^="dataStatementUrls"]').then((node) => {
+			node.tagit('createTag', 'Example text');
+		});
+		cy.get('button.submitFormButton').click();
+		cy.contains('You must only enter the URLs to the data. Other textual information is not accepted.');
+
+		cy.get('input[id^="dataStatementTypes"][value=2]').click();
+		cy.get('ul[id^="dataStatementUrls"]').then((node) => {
 			node.tagit('createTag', 'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
 		});
 
