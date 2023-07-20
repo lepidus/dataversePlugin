@@ -62,4 +62,16 @@ class DataverseReportQueryBuilder
 
         return $q;
     }
+
+    public function countDatasetsWithError(array $messages): int
+    {
+        $q = $this->getQuery();
+
+        $q->leftJoin('event_log as el', 'el.assoc_id', '=', 's.submission_id')
+            ->whereIn('el.message', $messages);
+
+        $q->select(Capsule::raw('COUNT(DISTINCT s.submission_id) as count'));
+
+        return $q->get()->first()->count;
+    }
 }

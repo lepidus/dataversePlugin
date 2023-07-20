@@ -311,20 +311,26 @@ msgstr "Introduzca el motivo de la no disponibilidad de los datos."
 msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
 msgstr "Se han enviado datos de investigación al repositorio <strong>{$dataverseName}</strong>."
 
-msgid "plugins.reports.dataverse.displayName"
+msgid "plugins.generic.dataverse.report.displayName"
 msgstr "Informe de Dataverse"
 
-msgid "plugins.reports.dataverse.description"
+msgid "plugins.generic.dataverse.report.description"
 msgstr "Informe sobre la declaración de datos y el depósito de datos de investigación en Dataverse."
 
-msgid "plugins.reports.dataverse.headers.acceptedSubmissions"
-msgstr "Envíos Aceptados"
+msgid "plugins.generic.dataverse.report.headers.acceptedSubmissions"
+msgstr "Envíos aceptados"
 
-msgid "plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset"
-msgstr "Envíos con Dataset Aceptados"
+msgid "plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset"
+msgstr "Envíos aceptados con dataset"
 
-msgid "plugins.reports.dataverse.headers.declinedSubmissions"
-msgstr "Envíos Rechazados"
+msgid "plugins.generic.dataverse.report.headers.declinedSubmissions"
+msgstr "Envíos rechazados"
 
-msgid "plugins.reports.dataverse.headers.declinedSubmissionsWithDataset"
-msgstr "Envíos con Dataset Rechazados"
+msgid "plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset"
+msgstr "Envíos rechazados con dataset"
+
+msgid "plugins.generic.dataverse.report.headers.DatasetsWithDepositError"
+msgstr "Datasets con error en el depósito"
+
+msgid "plugins.generic.dataverse.report.headers.DatasetsWithPublishError"
+msgstr "Datasets con error en la publicación"

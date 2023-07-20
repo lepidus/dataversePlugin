@@ -74,7 +74,7 @@ class DataversePlugin extends GenericPlugin
 
     public function getReportPlugin()
     {
-        $this->import('DataverseReportPlugin');
+        $this->import('report.DataverseReportPlugin');
         return new DataverseReportPlugin();
     }
 
