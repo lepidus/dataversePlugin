@@ -40,6 +40,7 @@ describe('Research data state', function () {
 		cy.get('button.submitFormButton').click();
 		cy.get('div:contains("It is required to inform the URLs to the data in repositories.")');
 
+		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[id^="dataStatementTypes"][value=2]').click();
 		cy.get('ul[id^="dataStatementUrls"]').then((node) => {
 			node.tagit('createTag', 'Example text');
