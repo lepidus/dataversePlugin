@@ -169,9 +169,10 @@ class DataStatementDispatcher extends DataverseDispatcher
                     if(!$this->inputIsURL($dataStatementUrl)) {
                         $stepForm->addError(
                             'dataStatementUrls',
-                            'Tem que ser URL'
+                            __('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')
                         );
                         $stepForm->addErrorField('dataStatementUrls');
+                        $stepForm->setData('keywords', null);
                         return false;
                     }
                 }
@@ -204,7 +205,8 @@ class DataStatementDispatcher extends DataverseDispatcher
 
     private function inputIsURL(string $input): bool
     {
-        return false;
+        $urlPattern = '/^(https?:\/\/)?[a-z0-9\-]+(\.[a-z0-9\-]+)+([\/?#].*)?$/i';
+        return preg_match($urlPattern, $input) === 1;
     }
 
     public function validateDataStatementProps(string $hookName, array $args): bool
