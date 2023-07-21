@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.tests.DatabaseTestCase');
-import('plugins.generic.dataverse.classes.services.DataverseReportService');
+import('plugins.generic.dataverse.report.services.DataverseReportService');
 
 class DataverseReportServiceTest extends DatabaseTestCase
 {
@@ -58,12 +58,24 @@ class DataverseReportServiceTest extends DatabaseTestCase
     public function testGetReportHeaders(): void
     {
         $reportService = new DataverseReportService();
-        $this->assertEquals([
-            '##plugins.reports.dataverse.headers.acceptedSubmissions##',
-            '##plugins.reports.dataverse.headers.acceptedSubmissionsWithDataset##',
-            '##plugins.reports.dataverse.headers.declinedSubmissions##',
-            '##plugins.reports.dataverse.headers.declinedSubmissionsWithDataset##',
-        ], $reportService->getReportHeaders());
+
+        $headers = [];
+
+        if (Application::get()->getName() === 'ojs2') {
+            $headers = array_merge($headers, [
+                '##plugins.generic.dataverse.report.headers.acceptedSubmissions##',
+                '##plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset##',
+            ]);
+        }
+
+        $headers = array_merge($headers, [
+            '##plugins.generic.dataverse.report.headers.declinedSubmissions##',
+            '##plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset##',
+            '##plugins.generic.dataverse.report.headers.DatasetsWithDepositError##',
+            '##plugins.generic.dataverse.report.headers.DatasetsWithPublishError##'
+        ]);
+
+        $this->assertEquals($headers, $reportService->getReportHeaders());
     }
 
     public function testCountSubmissions(): void

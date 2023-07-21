@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.tests.DatabaseTestCase');
-import('plugins.generic.dataverse.classes.services.queryBuilders.DataverseReportQueryBuilder');
+import('plugins.generic.dataverse.report.services.queryBuilders.DataverseReportQueryBuilder');
 
 class DataverseReportQueryBuilderTest extends DatabaseTestCase
 {
@@ -13,6 +13,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             'journals', 'journal_settings',
             'edit_decisions',
             'dataverse_studies',
+            'event_log'
         ];
     }
 
@@ -154,5 +155,50 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             $datasetSubmission->getId(),
             $query->get()->first()->submission_id
         );
+    }
+
+    public function testCountDatasetsWithDepositError(): void
+    {
+        $contextId = $this->createTestContext();
+
+        $submission = $this->createTestSubmission([
+            'contextId' => $contextId,
+            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
+        ]);
+
+        import('classes.log.SubmissionEventLogEntry');
+
+        $submissionEventLogDao = DAORegistry::getDAO('SubmissionEventLogDAO');
+        $depositErrorEntry = $submissionEventLogDao->newDataObject();
+        $depositErrorEntry->setDateLogged(Core::getCurrentDate());
+        $depositErrorEntry->setUserId(rand());
+        $depositErrorEntry->setSubmissionId($submission->getId());
+        $depositErrorEntry->setEventType(SUBMISSION_LOG_METADATA_UPDATE);
+        $depositErrorEntry->setMessage('plugins.generic.dataverse.error.depositFailed');
+        $depositErrorEntry->setParams([]);
+        $depositErrorEntry->setIsTranslated(0);
+        $submissionEventLogDao->insertObject($depositErrorEntry);
+
+        $submissionEventLogDao = DAORegistry::getDAO('SubmissionEventLogDAO');
+        $publishErrorEntry = $submissionEventLogDao->newDataObject();
+        $publishErrorEntry->setDateLogged(Core::getCurrentDate());
+        $publishErrorEntry->setUserId(rand());
+        $publishErrorEntry->setSubmissionId($submission->getId());
+        $publishErrorEntry->setEventType(SUBMISSION_LOG_METADATA_UPDATE);
+        $publishErrorEntry->setMessage('plugins.generic.dataverse.error.publishFailed');
+        $publishErrorEntry->setParams([]);
+        $publishErrorEntry->setIsTranslated(0);
+        $submissionEventLogDao->insertObject($publishErrorEntry);
+
+        $depositErrorsCount = $this->getQueryBuilder()
+            ->filterByContexts($contextId)
+            ->countDatasetsWithError(['plugins.generic.dataverse.error.depositFailed']);
+
+        $publishErrorsCount = $this->getQueryBuilder()
+            ->filterByContexts($contextId)
+            ->countDatasetsWithError(['plugins.generic.dataverse.error.publishFailed']);
+
+        $this->assertEquals(1, $depositErrorsCount);
+        $this->assertEquals(1, $publishErrorsCount);
     }
 }
