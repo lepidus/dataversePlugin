@@ -1,5 +1,8 @@
 <?php
 
+import('plugins.generic.dataverse.report.services.queryBuilders.DataverseReportQueryBuilder');
+import('plugins.generic.dataverse.dataverseAPI.search.DataverseSearchBuilder');
+
 class DataverseReportService
 {
     public function getOverview(int $contextId): array
@@ -28,14 +31,15 @@ class DataverseReportService
                 'contextIds' => [$contextId],
                 'decisions' => [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE]
             ]),
-            'DatasetsWithDepositError' => $this->countDatasetsWithError(
+            'datasetsWithDepositError' => $this->countDatasetsWithError(
                 ['plugins.generic.dataverse.error.depositFailed'],
                 ['contextIds' => [$contextId],]
             ),
-            'DatasetsWithPublishError' => $this->countDatasetsWithError(
+            'datasetsWithPublishError' => $this->countDatasetsWithError(
                 ['plugins.generic.dataverse.error.publishFailed'],
                 ['contextIds' => [$contextId],]
             ),
+            'filesInDatasets' => $this->countDatasetFiles($contextId),
         ]);
     }
 
@@ -53,8 +57,9 @@ class DataverseReportService
         return array_merge($headers, [
             __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
             __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
-            __('plugins.generic.dataverse.report.headers.DatasetsWithDepositError'),
-            __('plugins.generic.dataverse.report.headers.DatasetsWithPublishError'),
+            __('plugins.generic.dataverse.report.headers.datasetsWithDepositError'),
+            __('plugins.generic.dataverse.report.headers.datasetsWithPublishError'),
+            __('plugins.generic.dataverse.report.headers.filesInDatasets'),
         ]);
     }
 
@@ -85,5 +90,30 @@ class DataverseReportService
         }
 
         return $qb;
+    }
+
+    public function countDatasetFiles(int $contextId): int
+    {
+        $submissionsWithDataset = $this->getQueryBuilder([
+            'contextIds' => [$contextId]
+        ])->getWithDataset()->get();
+
+        $searchBuilder = $this->getDataverseSearchBuilder($contextId)->addType('file');
+
+        foreach ($submissionsWithDataset as $submission) {
+            $searchBuilder->addFilterQuery('parentIdentifier', $submission->persistent_id);
+        }
+
+        $response = $searchBuilder->search();
+        $data = json_decode($response->getBody(), true);
+        return $data['data']['total_count'];
+    }
+
+    public function getDataverseSearchBuilder(int $contextId): DataverseSearchBuilder
+    {
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+        $httpClient = Application::get()->getHttpClient();
+
+        return new DataverseSearchBuilder($configuration, $httpClient);
     }
 }
