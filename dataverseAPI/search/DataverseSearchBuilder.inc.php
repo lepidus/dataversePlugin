@@ -1,5 +1,8 @@
 <?php
 
+import('plugins.generic.dataverse.classes.entities.DataverseResponse');
+import('plugins.generic.dataverse.classes.exception.DataverseException');
+
 class DataverseSearchBuilder
 {
     private $configuration;
@@ -54,14 +57,19 @@ class DataverseSearchBuilder
         }
 
         if (!empty($this->filterQueries)) {
-            $search .= '&fq=' . implode('+', array_map(static function (array $filterQuery) {
+            $search .= '&fq=' . implode('+', array_map(function (array $filterQuery) {
                 $field = key($filterQuery);
                 $value = $filterQuery[$field];
-                return $field . ':' . $value;
+                return $field . ':' . $this->escapeColon($value);
             }, $this->filterQueries));
         }
 
         return $search;
+    }
+
+    private function escapeColon(string $value): string
+    {
+        return str_replace(':', '\:', $value);
     }
 
     public function getSearchUrl(): string
@@ -77,7 +85,7 @@ class DataverseSearchBuilder
                     'X-Dataverse-key' => $this->configuration->getAPIToken()
                 ]
             ]);
-        } catch (RequestException $e) {
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
 
