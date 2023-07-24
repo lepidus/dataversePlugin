@@ -36,14 +36,14 @@ class DataverseReportQueryBuilder
 
         if (!empty($this->decisions)) {
             $q->leftJoin('edit_decisions as ed', 's.submission_id', '=', 'ed.submission_id')
-            ->whereIn('ed.decision', $this->decisions);
-        }
+                ->whereIn('ed.decision', $this->decisions);
 
-        $declineDecisions = [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE];
-        if (count(array_intersect($declineDecisions, $this->decisions))) {
-            $q->where('s.status', '=', STATUS_DECLINED);
-        } else {
-            $q->where('s.status', '!=', STATUS_DECLINED);
+            $declineDecisions = [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE];
+            if (count(array_intersect($declineDecisions, $this->decisions))) {
+                $q->where('s.status', '=', STATUS_DECLINED);
+            } else {
+                $q->where('s.status', '!=', STATUS_DECLINED);
+            }
         }
 
         $q->leftJoin('publications as pi', 'pi.submission_id', '=', 's.submission_id');
