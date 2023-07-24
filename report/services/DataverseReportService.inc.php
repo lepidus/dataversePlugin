@@ -80,16 +80,16 @@ class DataverseReportService
 
     public function getQueryBuilder($args = []): DataverseReportQueryBuilder
     {
-        $qb = new DataverseReportQueryBuilder();
+        $queryBuilder = new DataverseReportQueryBuilder();
 
         if (!empty($args['contextIds'])) {
-            $qb->filterByContexts($args['contextIds']);
+            $queryBuilder->filterByContexts($args['contextIds']);
         }
         if (!empty($args['decisions'])) {
-            $qb->filterByDecisions($args['decisions']);
+            $queryBuilder->filterByDecisions($args['decisions']);
         }
 
-        return $qb;
+        return $queryBuilder;
     }
 
     public function countDatasetFiles(int $contextId): int
