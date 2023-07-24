@@ -325,8 +325,11 @@ msgstr "Declined submissions"
 msgid "plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset"
 msgstr "Declined submissions with dataset"
 
-msgid "plugins.generic.dataverse.report.headers.DatasetsWithDepositError"
+msgid "plugins.generic.dataverse.report.headers.datasetsWithDepositError"
 msgstr "Datasets with error in the deposit"
 
-msgid "plugins.generic.dataverse.report.headers.DatasetsWithPublishError"
+msgid "plugins.generic.dataverse.report.headers.datasetsWithPublishError"
 msgstr "Datasets with error in the publication"
+
+msgid "plugins.generic.dataverse.report.headers.filesInDatasets"
+msgstr "Files in datasets"

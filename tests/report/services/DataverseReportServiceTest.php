@@ -71,8 +71,9 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $headers = array_merge($headers, [
             '##plugins.generic.dataverse.report.headers.declinedSubmissions##',
             '##plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset##',
-            '##plugins.generic.dataverse.report.headers.DatasetsWithDepositError##',
-            '##plugins.generic.dataverse.report.headers.DatasetsWithPublishError##'
+            '##plugins.generic.dataverse.report.headers.datasetsWithDepositError##',
+            '##plugins.generic.dataverse.report.headers.datasetsWithPublishError##',
+            '##plugins.generic.dataverse.report.headers.filesInDatasets##'
         ]);
 
         $this->assertEquals($headers, $reportService->getReportHeaders());
