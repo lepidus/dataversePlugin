@@ -57,6 +57,12 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return false;
         }
 
+        if (empty($dataset->getSubject())) {
+            $stepForm->addError('researchDataRequired', __('plugins.generic.dataverse.error.datasetSubjectRequired'));
+            $stepForm->addErrorField('researchDataRequired');
+            return false;
+        }
+
         $datasetService = new DatasetService();
         try {
             $datasetService->deposit($submission, $dataset);
