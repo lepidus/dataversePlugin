@@ -52,6 +52,8 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $dataset = $datasetFactory->getDataset();
 
         if (empty($dataset->getFiles())) {
+            $stepForm->addError('researchDataRequired', __('plugins.generic.dataverse.error.researchDataRequired'));
+            $stepForm->addErrorField('researchDataRequired');
             return false;
         }
 

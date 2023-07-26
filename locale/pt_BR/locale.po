@@ -102,6 +102,10 @@ msgstr "Dados de pesquisa publicados"
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Dados de pesquisa excluídos"
 
+msgid "plugins.generic.dataverse.error.researchDataRequired"
+msgstr "Para submeter dados de pesquisa é necessário enviar pelo menos um arquivo.<br>"
+"Certifique-se que você escolheu e enviou arquivos de dados de pesquisa no passo 2 da submissão."
+
 msgid "plugins.generic.dataverse.error.depositFailedOnSubmission"
 msgstr "Erro ao depositar dados de pesquisa no Dataverse: {$error}<br>"
 "Por favor, escolha outra opção de declaração de dados ou tente novamente mais tarde."
