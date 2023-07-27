@@ -99,6 +99,14 @@ msgstr "Research data published"
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Research data deleted"
 
+msgid "plugins.generic.dataverse.error.researchDataRequired"
+msgstr "To submit research data, it is necessary to send at least one file.<br>"
+"Please ensure that you have chosen and submitted research data files in step 2 of the submission."
+
+msgid "plugins.generic.dataverse.error.datasetSubjectRequired"
+msgstr "The subject of the research data is required.<br>"
+"Please ensure that you have chosen the subject of the research data in step 3 of the submission."
+
 msgid "plugins.generic.dataverse.error.depositFailedOnSubmission"
 msgstr "Error depositing research data to Dataverse: {$error}<br>"
 "Please choose another data statement option or try again later."
