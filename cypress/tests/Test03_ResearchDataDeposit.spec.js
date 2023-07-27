@@ -25,13 +25,41 @@ describe('Research data deposit', function () {
 		if (Cypress.env('contextTitles').en_US == 'Journal of Public Knowledge') {
 			cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
 		}
+
 		cy.get('input[id^="dataStatementTypes"][value=3]').click();
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[id=privacyConsent]').click();
 		cy.get('button.submitFormButton').click();
 
 		cy.get('#submitStep2Form button.submitFormButton').click();
+
+		cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
+		cy.get('label').contains('Title').click();
+		cy.get('textarea[id^="abstract-en_US-"').then((node) => {
+			cy.setTinyMceContent(node.attr('id'), submission.abstract);
+		});
+		cy.get('ul[id^="en_US-keywords-"]').then((node) => {
+			submission.keywords.forEach((keyword) => {
+				node.tagit('createTag', keyword);
+			});
+		});
+		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
+
+		cy.get('#submitTabs a:contains("1. Start")').click();
+
+		cy.get('input[id^="dataStatementTypes"][value=3]').click();
+		cy.get('input[id^="checklist-"]').click({ multiple: true });
+		cy.get('input[id=privacyConsent]').click();
+		cy.get('button.submitFormButton').click();
+
+		cy.get('button').contains('Finish Submission').click();
+		cy.get('button.pkpModalConfirmButton').click();
+		cy.get('div:contains("To submit research data, it is necessary to send at least one file. Please ensure that you have chosen and submitted research data files in step 2 of the submission.")');
+
+		cy.get('#submitTabs a:contains("2. Upload Submission")').click();
+		cy.get('#submitStep2Form button.submitFormButton').click();
 		cy.get('div:contains("Research data is required. Please ensure that you have chosen and uploaded research data.")');
+
 		cy.contains('Add research data').click();
 		cy.wait(1000);
 		cy.fixture('dummy.pdf', { encoding: 'base64' }).then((fileContent) => {
@@ -57,16 +85,11 @@ describe('Research data deposit', function () {
 		});
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
-		cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
-		cy.get('label').contains('Title').click();
-		cy.get('textarea[id^="abstract-en_US-"').then((node) => {
-			cy.setTinyMceContent(node.attr('id'), submission.abstract);
-		});
-		cy.get('ul[id^="en_US-keywords-"]').then((node) => {
-			submission.keywords.forEach((keyword) => {
-				node.tagit('createTag', keyword);
-			});
-		});
+		cy.get('button').contains('Finish Submission').click();
+		cy.get('button.pkpModalConfirmButton').click();
+		cy.get('div:contains("The subject of the research data is required. Please ensure that you have chosen the subject of the research data in step 3 of the submission.")');
+
+		cy.get('#submitTabs a:contains("3. Enter Metadata")').click();
 		cy.get('select[id^="datasetSubject"').select('Other');
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
