@@ -63,6 +63,7 @@ describe('Research data deposit', function () {
 		cy.get('div:contains("Please ensure that you have chosen and submitted research data files in step 2 of the submission.")');
 
 		cy.get('#submitTabs a:contains("2. Upload Submission")').click();
+		cy.waitJQuery();
 		cy.get('#submitStep2Form button.submitFormButton').click();
 		cy.get('div:contains("Research data is required. Please ensure that you have chosen and uploaded research data.")');
 
