@@ -15,6 +15,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             return this.components.datasetFiles.items.length === 0;
         },
 
+        userCanEditDataset: function () {
+            return this.canEditPublication;
+        },
+
         datasetIsPublished: function () {
             return this.dataset.versionState === 'RELEASED';
         },

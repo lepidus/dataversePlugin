@@ -123,7 +123,21 @@ describe('Research data deposit', function () {
 			dataverseServerName = citation.text().split(',')[5].trim();
 		});
 	});
+	it('Check author if options are disabled for authors without edit permission', function () {
+		cy.login('ckwantes', null, 'publicknowledge');
+		cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
 
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button[aria-controls="datasetTab"]').click();
+
+		cy.contains('Delete research data').should('be.disabled');
+		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
+
+		cy.get('button[aria-controls="dataset_files"]').click();
+		cy.contains('Add research data').should('be.enabled');
+
+		cy.get('#datasetFiles .listPanel__item button:contains(Delete)').should('be.disabled');
+	});
 	it('Check author can edit research data metadata', function () {
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
 			cy.allowAuthorToEditPublication('dbarnes', null, 'Catherine Kwantes');
