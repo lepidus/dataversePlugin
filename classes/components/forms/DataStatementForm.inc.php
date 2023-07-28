@@ -107,13 +107,13 @@ class DataStatementForm extends FormComponent
     {
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($publication->getData('submissionId'));
         $dataStatementTypes = $publication->getData('dataStatementTypes');
-        
+
         if (is_null($study)) {
             if (
                 is_array($dataStatementTypes)
                 && in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)
             ) {
-                $dataStatementTypes = array_diff($dataStatementTypes, [DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);    
+                $dataStatementTypes = array_diff($dataStatementTypes, [DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
                 Services::get('publication')->edit(
                     $publication,
                     ['dataStatementTypes' => $dataStatementTypes],
@@ -125,7 +125,7 @@ class DataStatementForm extends FormComponent
 
         if (empty($dataStatementTypes)) {
             $dataStatementTypes = [DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED];
-        } else if (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
+        } elseif (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
             $dataStatementTypes[] = DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED;
         }
 
