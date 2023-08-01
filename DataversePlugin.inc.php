@@ -78,6 +78,11 @@ class DataversePlugin extends GenericPlugin
         return new DataverseReportPlugin();
     }
 
+    public function getInstallEmailTemplatesFile()
+    {
+        return $this->getPluginPath() . DIRECTORY_SEPARATOR . 'emailTemplates.xml';
+    }
+
     public function getPluginFullPath(): string
     {
         $request = Application::get()->getRequest();
