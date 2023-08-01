@@ -102,7 +102,11 @@ class DatasetService extends DataverseService
 
         try {
             $dataverseClient = new DataverseClient();
-            $dataverseClient->getDatasetActions()->delete($study->getPersistentId());
+
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+            $dataverseName = $dataverseClient->getDataverseCollectionActions()->get()->getName();
+
+            $dataverseClient->getDatasetActions()->delete($dataset->getPersistentId());
         } catch (DataverseException $e) {
             $this->registerAndNotifyError(
                 $submission,
@@ -128,6 +132,8 @@ class DatasetService extends DataverseService
             ['dataStatementTypes' => $dataStatementTypes],
             $request
         );
+
+        $this->sendEmailToDatasetAuthor($request, $dataset, $submission, $dataverseName);
 
         $this->registerEventLog(
             $submission,
@@ -164,5 +170,53 @@ class DatasetService extends DataverseService
             [],
             SUBMISSION_LOG_ARTICLE_PUBLISH
         );
+    }
+
+    private function sendEmailToDatasetAuthor(
+        Request $request,
+        Dataset $dataset,
+        Submission $submission,
+        string $dataverseName
+    ): void {
+        $context = $request->getContext();
+
+        if (is_null($context)) {
+            return;
+        }
+
+        $mailTemplate = 'DATASET_DELETE_NOTIFICATION';
+        $datasetContact = $dataset->getContact();
+        $router = $request->getRouter();
+        $dispatcher = $router->getDispatcher();
+
+        $mail = $this->getMailTemplate($mailTemplate, $context);
+
+        $mail->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
+
+        $mail->setRecipients([[
+            'name' => $datasetContact->getName(),
+            'email' => $datasetContact->getEmail()
+        ]]);
+
+        $datasetStatementUrl = $dispatcher->url(
+            $request,
+            ROUTE_PAGE,
+            null,
+            'authorDashboard',
+            'submission',
+            $submission->getId() . '#publication/dataStatement'
+        );
+
+        $mail->sendWithParams([
+            'submissionTitle' => htmlspecialchars($submission->getLocalizedFullTitle()),
+            'dataverseName' => $dataverseName,
+            'dataStatementUrl' => $datasetStatementUrl,
+        ]);
+    }
+
+    private function getMailTemplate(string $emailKey, Context $context = null): MailTemplate
+    {
+        import('lib.pkp.classes.mail.MailTemplate');
+        return new MailTemplate($emailKey, null, $context, false);
     }
 }
