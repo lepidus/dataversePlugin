@@ -347,6 +347,7 @@ describe('Research data deposit', function () {
 		cy.get('button[aria-controls="datasetTab"]').click();
 
 		cy.get('button').contains('Upload research data').click();
+		cy.wait(1000);
 		cy.contains('Add research data').click();
 		cy.wait(1000);
 		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
