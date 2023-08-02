@@ -204,7 +204,9 @@ class DatasetService extends DataverseService
             null,
             'authorDashboard',
             'submission',
-            $submission->getId() . '#publication/dataStatement'
+            $submission->getId(),
+            null,
+            '#publication/dataStatement'
         );
 
         $mail->sendWithParams([
