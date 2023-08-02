@@ -1,0 +1,15 @@
+
+msgid "emails.datasetDeleteNotification.subject"
+msgstr "Dataset delete notification"
+
+msgid "emails.datasetDeleteNotification.body"
+msgstr ""
+"The research data from the manuscript submission \"{$submissionTitle}\" has been removed from the {$dataverseName} repository.<br />\n"
+"<br />\n"
+"One of the possible reasons for this is that the submitted files do not qualify as research data.<br />\n"
+"<br />\n"
+"Access the submission and review the data statement options in the <a href=\"{$dataStatementUrl}\"> Data Statement </a> tab."
+
+msgid "emails.datasetDeleteNotification.description"
+msgstr ""
+"Email template used to notify the author about the dataset deleting."
