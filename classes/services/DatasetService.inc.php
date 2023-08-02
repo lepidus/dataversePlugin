@@ -179,15 +179,20 @@ class DatasetService extends DataverseService
         string $dataverseName
     ): void {
         $context = $request->getContext();
+        $router = $request->getRouter();
+        $dispatcher = $router->getDispatcher();
+        $handler = $router->getHandler();
+        $userRoles = (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
 
-        if (is_null($context)) {
+        if (
+            is_null($context)
+            || !in_array(ROLE_ID_MANAGER, $userRoles)
+        ) {
             return;
         }
 
         $mailTemplate = 'DATASET_DELETE_NOTIFICATION';
         $datasetContact = $dataset->getContact();
-        $router = $request->getRouter();
-        $dispatcher = $router->getDispatcher();
 
         $mail = $this->getMailTemplate($mailTemplate, $context);
 
