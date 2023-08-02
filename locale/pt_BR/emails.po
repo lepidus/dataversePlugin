@@ -16,7 +16,7 @@ msgstr "Notificação de exclusão do dataset"
 
 msgid "emails.datasetDeleteNotification.body"
 msgstr ""
-"Os dados de pesquisa da submissão {$submissionTitle} foram excluídos do repositório {$dataverseName}.<br />\n"
+"Os dados de pesquisa da submissão do manuscrito \"{$submissionTitle}\" foram excluídos do repositório {$dataverseName}.<br />\n"
 "<br />\n"
 "Uma das possíveis causas para isso é que os arquivos enviados não constituem como dados de pesquisa.<br />\n"
 "<br />\n"
