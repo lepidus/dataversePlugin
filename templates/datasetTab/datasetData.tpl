@@ -7,7 +7,7 @@
             <pkp-button
                 @click="openDeleteDatasetModal"
                 :is-warnable="true"
-                :disabled="datasetIsPublished || !this.canEditPublication"
+                :disabled="datasetIsPublished || !canEditPublication"
             >
                 {translate key="plugins.generic.dataverse.researchData.delete"}
             </pkp-button>
@@ -64,7 +64,7 @@
                                 <pkp-button 
                                     @click="openDeleteFileModal(item.item.id)"
                                     class="pkpButton--isWarnable"
-                                    :disabled="datasetIsPublished || !this.canEditPublication"
+                                    :disabled="datasetIsPublished || !canEditPublication"
                                 >
                                     {{ __('common.delete') }}
                                 </pkp-button>
