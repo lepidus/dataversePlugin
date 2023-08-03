@@ -123,7 +123,7 @@ describe('Research data deposit', function () {
 			dataverseServerName = citation.text().split(',')[5].trim();
 		});
 	});
-	it('Check author if options are disabled for authors without edit permission', function () {
+	it('Check if options are disabled for authors without edit permission', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
 		cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
 
