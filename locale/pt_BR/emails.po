@@ -1,6 +1,6 @@
 
 msgid "emails.datasetDeleteNotification.subject"
-msgstr "Notificação de exclusão do dataset"
+msgstr "Notificação de exclusão dos dados de pesquisa"
 
 msgid "emails.datasetDeleteNotification.body"
 msgstr ""
@@ -12,4 +12,4 @@ msgstr ""
 
 msgid "emails.datasetDeleteNotification.description"
 msgstr ""
-"Modelo de e-mail usado para notificar o autor sobre a exclusão de seu dataset."
+"Modelo de e-mail usado para notificar o autor sobre a exclusão dos dados de pesquisa."

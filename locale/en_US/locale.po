@@ -99,6 +99,9 @@ msgstr "Research data published"
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Research data deleted"
 
+msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
+msgstr "Email sent to {$email} notifying the deletion of research data."
+
 msgid "plugins.generic.dataverse.error.researchDataRequired"
 msgstr "To submit research data, it is necessary to send at least one file.<br>"
 "Please ensure that you have chosen and submitted research data files in step 2 of the submission."

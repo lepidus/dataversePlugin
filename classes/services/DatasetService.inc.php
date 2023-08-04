@@ -219,11 +219,42 @@ class DatasetService extends DataverseService
             'dataverseName' => $dataverseName,
             'dataStatementUrl' => $datasetStatementUrl,
         ]);
+
+        $this->logEmail($request, $mail, $submission);
     }
 
     private function getMailTemplate(string $emailKey, Context $context = null): MailTemplate
     {
         import('lib.pkp.classes.mail.MailTemplate');
         return new MailTemplate($emailKey, null, $context, false);
+    }
+
+    private function logEmail(?Request $request, MailTemplate $mail, Submission $submission): void
+    {
+        $mail->replaceParams();
+
+        import('lib.pkp.classes.log.SubmissionEmailLogEntry');
+        $logDao = DAORegistry::getDAO('SubmissionEmailLogDAO');
+        $entry = $logDao->newDataObject();
+
+        $entry->setEventType(SUBMISSION_EMAIL_EDITOR_NOTIFY_AUTHOR);
+        $entry->setAssocId($submission->getId());
+        $entry->setDateSent(Core::getCurrentDate());
+
+        if ($request) {
+            $user = $request->getUser();
+            $entry->setSenderId($user == null ? 0 : $user->getId());
+        } else {
+            $entry->setSenderId(0);
+        }
+
+        $entry->setSubject($mail->getSubject());
+        $entry->setBody($mail->getBody());
+        $entry->setFrom($mail->getFromString(false));
+        $entry->setRecipients($mail->getRecipientString());
+        $entry->setCcs($mail->getCcString());
+        $entry->setBccs($mail->getBccString());
+
+        $logEntryId = $logDao->insertObject($entry);
     }
 }
