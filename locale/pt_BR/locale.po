@@ -102,6 +102,9 @@ msgstr "Dados de pesquisa publicados"
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Dados de pesquisa excluídos"
 
+msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
+msgstr "Email enviado para {$email} notificando a exclusão dos dados de pesquisa"
+
 msgid "plugins.generic.dataverse.error.researchDataRequired"
 msgstr "Para submeter dados de pesquisa é necessário enviar pelo menos um arquivo.<br>"
 "Certifique-se que você escolheu e enviou arquivos de dados de pesquisa no passo 2 da submissão."
