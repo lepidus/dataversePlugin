@@ -301,12 +301,15 @@ class DatasetHandler extends APIHandler
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
+        $requestParams = $slimRequest->getParsedBody();
+        $deleteMessage = $requestParams['deleteMessage'];
+
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
         $datasetService = new DatasetService();
-        $datasetService->delete($study);
+        $datasetService->delete($study, $deleteMessage);
 
         return $response->withJson(['message' => 'ok'], 200);
     }
