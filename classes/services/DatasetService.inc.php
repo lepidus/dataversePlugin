@@ -133,7 +133,13 @@ class DatasetService extends DataverseService
             $request
         );
 
-        $this->sendEmailToDatasetAuthor($request, $dataset, $submission, $deleteMessage);
+        $router = $request->getRouter();
+        $handler = $router->getHandler();
+        $userRoles = (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
+
+        if (in_array(ROLE_ID_MANAGER, $userRoles)) {
+            $this->sendEmailToDatasetAuthor($request, $dataset, $submission, $deleteMessage);
+        }
 
         $this->registerEventLog(
             $submission,
@@ -176,20 +182,9 @@ class DatasetService extends DataverseService
         Request $request,
         Dataset $dataset,
         Submission $submission,
-        string $deleteMessage
+        ?string $deleteMessage
     ): void {
         $context = $request->getContext();
-        $router = $request->getRouter();
-        $dispatcher = $router->getDispatcher();
-        $handler = $router->getHandler();
-        $userRoles = (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
-
-        if (
-            is_null($context)
-            || !in_array(ROLE_ID_MANAGER, $userRoles)
-        ) {
-            return;
-        }
 
         $mailTemplate = 'DATASET_DELETE_NOTIFICATION';
         $datasetContact = $dataset->getContact();

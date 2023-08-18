@@ -300,9 +300,12 @@ class DatasetHandler extends APIHandler
     {
         $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
+        $deleteMessage = null;
 
         $requestParams = $slimRequest->getParsedBody();
-        $deleteMessage = $requestParams['deleteMessage'];
+        if (isset($requestParams['deleteMessage'])) {
+            $deleteMessage = $requestParams['deleteMessage'];
+        }
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');

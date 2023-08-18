@@ -144,6 +144,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
         $dispatcher = $request->getDispatcher();
+        $router = $request->getRouter();
+        $userRoles = (array) $router->getHandler()->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($context->getId());
 
         $supportedFormLocales = $context->getSupportedFormLocales();
@@ -220,6 +222,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
                     'serverUrl' => $configuration->getDataverseServerUrl(),
                 ]),
                 'datasetCitationUrl' => $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
+                'canSendEmail' => in_array(ROLE_ID_MANAGER, $userRoles)
             ]);
         } catch (DataverseException $e) {
             error_log('Dataverse API error: ' . $e->getMessage());

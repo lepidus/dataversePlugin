@@ -5,7 +5,7 @@
         </h1>
         <template slot="actions">
             <pkp-button
-                @click="$modal.show('deleteDataset');"
+                @click="openDeleteDatasetModal"
                 :is-warnable="true"
                 :disabled="datasetIsPublished || !canEditPublication"
             >
