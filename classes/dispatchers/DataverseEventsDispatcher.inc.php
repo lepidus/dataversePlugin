@@ -22,7 +22,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
     {
-        $schema =& $params[0];
+        $schema = &$params[0];
         $schema->properties->{'datasetSubject'} = (object) [
             'type' => 'string',
             'apiSummary' => true,
@@ -193,7 +193,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     public function addDatasetPublishNoticeInEditorAction(string $hookName, array $params): ?string
     {
         $form = &$params[0];
-        $output =& $params[1];
+        $output = &$params[1];
 
         $request = PKPApplication::get()->getRequest();
         $context = $request->getContext();
@@ -311,7 +311,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
     public function setupDataverseHandlers($hookName, $params): bool
     {
-        $component =& $params[0];
+        $component = & $params[0];
         $ourHandlers = [
             'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler',
             'plugins.generic.dataverse.controllers.grid.DatasetReviewGridHandler'

@@ -28,7 +28,7 @@ class DatasetReviewDispatcher extends DataverseDispatcher
     private function addResearchDataToReviewStep($params, $pattern): ?string
     {
         $form = $params[0];
-        $output =& $params[1];
+        $output = &$params[1];
         $submission = $form->getReviewerSubmission();
 
         $request = PKPApplication::get()->getRequest();

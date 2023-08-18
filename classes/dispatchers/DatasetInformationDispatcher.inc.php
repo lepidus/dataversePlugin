@@ -12,8 +12,8 @@ class DatasetInformationDispatcher extends DataverseDispatcher
 
     public function addDatasetInformation(string $hookName, array $params): bool
     {
-        $templateMgr =& $params[1];
-        $output =& $params[2];
+        $templateMgr = &$params[1];
+        $output = &$params[2];
 
         $submission = $templateMgr->getTemplateVars('preprint') ?? $templateMgr->getTemplateVars('article');
         $publication = $submission->getCurrentPublication();

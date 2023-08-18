@@ -107,8 +107,8 @@ class DataStatementTabDispatcher extends DataverseDispatcher
 
     public function addDataStatementTab(string $hookName, array $params): bool
     {
-        $templateMgr =& $params[1];
-        $output =& $params[2];
+        $templateMgr = &$params[1];
+        $output = &$params[2];
 
         $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataStatementTab.tpl'));
 

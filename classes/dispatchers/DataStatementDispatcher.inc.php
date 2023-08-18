@@ -87,7 +87,7 @@ class DataStatementDispatcher extends DataverseDispatcher
 
     public function addDataStatementToPublicationSchema(string $hookName, array $args): bool
     {
-        $schema =& $args[0];
+        $schema = &$args[0];
 
         $schema->properties->dataStatementTypes = (object) [
             'type' => 'array',
@@ -238,8 +238,8 @@ class DataStatementDispatcher extends DataverseDispatcher
 
     public function viewDataStatement(string $hookName, array $params): bool
     {
-        $templateMgr =& $params[1];
-        $output =& $params[2];
+        $templateMgr = & $params[1];
+        $output = & $params[2];
 
         $dataStatementService = new DataStatementService();
         $allDataStatementTypes = $dataStatementService->getDataStatementTypes();
