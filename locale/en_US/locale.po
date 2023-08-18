@@ -195,6 +195,12 @@ msgstr "Files"
 msgid "plugins.generic.dataverse.researchData.delete"
 msgstr "Delete research data"
 
+msgid "plugins.generic.dataverse.researchData.delete.emailNotification"
+msgstr "Email notification"
+
+msgid "plugins.generic.dataverse.researchData.delete.submitLabel"
+msgstr "Delete and send email"
+
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publish research data"
 
