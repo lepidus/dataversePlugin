@@ -2,7 +2,7 @@
 
 class DatasetContact extends DataObject
 {
-    public function __construct(string $name, string $email, ?string $affiliation = null)
+    public function __construct(string $name, ?string $email, ?string $affiliation = null)
     {
         $this->setData('name', $name);
         $this->setData('email', $email);
@@ -24,7 +24,7 @@ class DatasetContact extends DataObject
         $this->setData('email', $email);
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->getData('email');
     }
