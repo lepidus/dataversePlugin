@@ -96,7 +96,7 @@ class DatasetService extends DataverseService
         );
     }
 
-    public function delete(DataverseStudy $study): void
+    public function delete(DataverseStudy $study, ?string $deleteMessage): void
     {
         $submission = Services::get('submission')->get($study->getSubmissionId());
 
@@ -133,7 +133,13 @@ class DatasetService extends DataverseService
             $request
         );
 
-        $this->sendEmailToDatasetAuthor($request, $dataset, $submission, $dataverseName);
+        $router = $request->getRouter();
+        $handler = $router->getHandler();
+        $userRoles = (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
+
+        if (in_array(ROLE_ID_MANAGER, $userRoles)) {
+            $this->sendEmailToDatasetAuthor($request, $dataset, $submission, $deleteMessage);
+        }
 
         $this->registerEventLog(
             $submission,
@@ -176,20 +182,9 @@ class DatasetService extends DataverseService
         Request $request,
         Dataset $dataset,
         Submission $submission,
-        string $dataverseName
+        ?string $deleteMessage
     ): void {
         $context = $request->getContext();
-        $router = $request->getRouter();
-        $dispatcher = $router->getDispatcher();
-        $handler = $router->getHandler();
-        $userRoles = (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
-
-        if (
-            is_null($context)
-            || !in_array(ROLE_ID_MANAGER, $userRoles)
-        ) {
-            return;
-        }
 
         $mailTemplate = 'DATASET_DELETE_NOTIFICATION';
         $datasetContact = $dataset->getContact();
@@ -203,24 +198,15 @@ class DatasetService extends DataverseService
             'email' => $datasetContact->getEmail()
         ]]);
 
-        $datasetStatementUrl = $dispatcher->url(
-            $request,
-            ROUTE_PAGE,
-            null,
-            'authorDashboard',
-            'submission',
-            $submission->getId(),
-            null,
-            '#publication/dataStatement'
-        );
+        $mail->setBody($deleteMessage);
 
-        $mail->sendWithParams([
-            'submissionTitle' => htmlspecialchars($submission->getLocalizedFullTitle()),
-            'dataverseName' => $dataverseName,
-            'dataStatementUrl' => $datasetStatementUrl,
-        ]);
-
-        $this->logEmail($request, $mail, $submission);
+        if (!$mail->send()) {
+            import('classes.notification.NotificationManager');
+            $notificationMgr = new NotificationManager();
+            $notificationMgr->createTrivialNotification($request->getUser()->getId(), NOTIFICATION_TYPE_ERROR, array('contents' => __('email.compose.error')));
+        } else {
+            $this->logEmail($request, $mail, $submission);
+        }
     }
 
     private function getMailTemplate(string $emailKey, Context $context = null): MailTemplate

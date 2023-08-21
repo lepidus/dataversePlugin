@@ -14,7 +14,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     public function addDraftDatasetFileContainer(string $hookName, array $params): ?string
     {
         $form = $params[0];
-        $output =& $params[1];
+        $output = &$params[1];
         $publication = $form->submission->getCurrentPublication();
 
         $request = PKPApplication::get()->getRequest();
@@ -47,7 +47,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
     public function addStep2Validation(string $hookName, array $params): void
     {
-        $form =& $params[0];
+        $form = &$params[0];
 
         $this->validateResearchDataFileRequired($form);
         $this->validateGalleyContainsResearchData($form);

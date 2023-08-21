@@ -12,8 +12,8 @@ class DatasetSubjectDispatcher extends DataverseDispatcher
 
     public function addSubjectField($hookName, $args): void
     {
-        $templateMgr =& $args[1];
-        $output =& $args[2];
+        $templateMgr = &$args[1];
+        $output = &$args[2];
 
         $submissionId = $templateMgr->get_template_vars('submissionId');
         $submission = Services::get('submission')->get($submissionId);
@@ -39,8 +39,8 @@ class DatasetSubjectDispatcher extends DataverseDispatcher
 
     public function readSubjectField($hookName, $args): bool
     {
-        $form =& $args[0];
-        $submission =& $form->submission;
+        $form = &$args[0];
+        $submission = &$form->submission;
 
         $form->readUserVars(array('datasetSubject'));
         $subject = $form->getData('datasetSubject');

@@ -73,28 +73,32 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
 
         openDeleteDatasetModal() {
-            self = this;
-            this.openDialog({
-                cancelLabel: this.__('common.no'),
-                modalName: 'delete',
-                title: this.deleteDatasetLabel,
-                message: this.confirmDeleteDatasetMessage,
-                callback: () => {
-                    $.ajax({
-                        url: this.components.datasetMetadata.action,
-                        type: 'POST',
-                        headers: {
-                            'X-Csrf-Token': pkp.currentUser.csrfToken,
-                            'X-Http-Method-Override': 'DELETE',
-                        },
-                        error: this.ajaxErrorCallback,
-                        success: function (r) {
-                            self.$modal.hide('delete');
-                            location.reload();
-                        },
-                    });
-                },
-            });
+            if (this.canSendEmail) {
+                this.$modal.show('deleteDataset');
+            } else {
+                self = this;
+                this.openDialog({
+                    cancelLabel: this.__('common.no'),
+                    modalName: 'delete',
+                    title: this.deleteDatasetLabel,
+                    message: this.confirmDeleteDatasetMessage,
+                    callback: () => {
+                        $.ajax({
+                            url: this.components.datasetMetadata.action,
+                            type: 'POST',
+                            headers: {
+                                'X-Csrf-Token': pkp.currentUser.csrfToken,
+                                'X-Http-Method-Override': 'DELETE',
+                            },
+                            error: this.ajaxErrorCallback,
+                            success: function (r) {
+                                self.$modal.hide('delete');
+                                location.reload();
+                            },
+                        });
+                    },
+                });
+            }
         },
 
         openDeleteFileModal(id) {

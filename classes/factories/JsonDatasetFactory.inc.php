@@ -45,7 +45,9 @@ class JsonDatasetFactory extends DatasetFactory
                     $contact = $metadata->value[0];
                     $props['contact'] = new DatasetContact(
                         $contact->datasetContactName->value,
-                        $contact->datasetContactEmail->value,
+                        isset($contact->datasetContactEmail->value) ?
+                            $contact->datasetContactEmail->value
+                            : null,
                         isset($contact->datasetContactAffiliation->value) ?
                             $contact->datasetContactAffiliation->value
                             : null

@@ -89,4 +89,17 @@
             </div>
         </tab>
     </tabs>
+    <modal 
+        v-bind="MODAL_PROPS" 
+        name="deleteDataset"
+    >
+        <modal-content 
+            close-label="common.close"
+            modal-name="deleteDataset"
+            :title="deleteDatasetLabel"
+        >
+            <pkp-form style="margin: -1rem" v-bind="components.deleteDataset" @set="set" @success="location.reload()">
+            </pkp-form>
+        </modal-content>
+    </modal>
 </section>

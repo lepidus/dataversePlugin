@@ -332,7 +332,9 @@ describe('Research data deposit', function () {
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.contains('Delete research data').click();
-		cy.get('[data-modal="delete"] button').contains('Yes').click();
+		cy.setTinyMceContent('deleteDataset-deleteMessage-control', 'Your research data has been deleted.');
+		cy.get('#deleteDataset-deleteMessage-control').click();
+		cy.get('[data-modal="deleteDataset"] button').contains('Delete and send email').click();
 		cy.contains('No research data transferred.');
 
 		cy.get('button[aria-controls="dataStatement"]').click();
