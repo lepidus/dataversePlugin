@@ -4,7 +4,7 @@
     </pkp-header>
     <span class="value">
         <p>
-            {translate key="plugins.generic.dataverse.notification.connectionError" errorMessage=$errorMessage}
+            {translate key="plugins.generic.dataverse.error.getFailed" error=$errorMessage}
         </p>
     </span>
 </section>
