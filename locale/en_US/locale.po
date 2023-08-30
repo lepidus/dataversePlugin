@@ -261,6 +261,9 @@ msgstr "Social Sciences"
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Other"
 
+msgid "plugins.generic.dataverse.metadataForm.license.label"
+msgstr "Research Data License"
+
 msgid "plugins.generic.dataverse.notice.cannotPublish"
 msgstr "Unable to publish research data in Dataverse: {$error}"
 

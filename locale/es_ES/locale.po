@@ -264,6 +264,9 @@ msgstr "Ciencias sociales"
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Otra"
 
+msgid "plugins.generic.dataverse.metadataForm.license.label"
+msgstr "Licencia de datos de investigación"
+
 msgid "plugins.generic.dataverse.notice.cannotPublish"
 msgstr "No se pueden publicar datos de pesquisa en Dataverse: {$error}"
 

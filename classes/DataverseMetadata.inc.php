@@ -63,4 +63,17 @@ class DataverseMetadata
             ],
         ];
     }
+
+    public static function getDataverseLicenses(DataverseConfiguration $configuration): array
+    {
+        $licensesUrl = $configuration->getDataverseServerUrl() . '/api/licenses';
+        $response = json_decode(file_get_contents($licensesUrl), true);
+
+        $licenses = [];
+        foreach($response['data'] as $license) {
+            $licenses[] = ['label' => $license['name'], 'value' => $license['id']];
+        }
+
+        return $licenses;
+    }
 }
