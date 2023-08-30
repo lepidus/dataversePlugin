@@ -101,6 +101,10 @@ describe('Research data deposit', function () {
 		cy.get('#submitTabs a:contains("3. Enter Metadata")').click();
 		cy.wait(1000);
 		cy.get('select[id^="datasetSubject"').select('Other');
+
+		cy.contains('Research data license');
+		cy.get('select[id^="datasetLicense"').find(':selected').contains('CC BY 4.0');
+		cy.get('select[id^="datasetLicense"').select('CC0 1.0');
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
 		cy.wait(1000);
@@ -158,6 +162,8 @@ describe('Research data deposit', function () {
 		cy.wait(500);
 		cy.get('#datasetMetadata-datasetKeywords-control').type('{enter}', { delay: 0 });
 		cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
+		cy.get('#datasetMetadata-datasetLicense-control').find(':selected').contains('CC0 1.0');
+		cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').click();
 		cy.get('#datasetTab [role="status"]').contains('Saved');
 
@@ -291,6 +297,8 @@ describe('Research data deposit', function () {
 		cy.wait(500);
 		cy.get('#datasetMetadata-datasetKeywords-control').type('{enter}', { delay: 0 });
 		cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
+		cy.get('#datasetMetadata-datasetLicense-control').find(':selected').contains('CC BY 4.0');
+		cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').click();
 		cy.get('#datasetTab [role="status"]').contains('Saved');
 
