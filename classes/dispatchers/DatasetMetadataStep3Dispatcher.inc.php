@@ -2,15 +2,15 @@
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 
-class DatasetSubjectDispatcher extends DataverseDispatcher
+class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addSubjectField'));
+        HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addDatasetMetadataFields'));
         HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'readSubjectField'));
     }
 
-    public function addSubjectField($hookName, $args): void
+    public function addDatasetMetadataFields($hookName, $args): void
     {
         $templateMgr = &$args[1];
         $output = &$args[2];
@@ -24,16 +24,18 @@ class DatasetSubjectDispatcher extends DataverseDispatcher
         if (!empty($draftDatasetFiles)) {
             import('plugins.generic.dataverse.classes.DataverseMetadata');
             $dataverseSubjectVocab = DataverseMetadata::getDataverseSubjects();
+            $dataverseAvailableLicenses = DataverseMetadata::getDataverseLicenses();
 
             $datasetSubjectLabels = array_column($dataverseSubjectVocab, 'label');
             $datasetSubjectValues = array_column($dataverseSubjectVocab, 'value');
 
             $templateMgr->assign([
                 'dataverseSubjectVocab' => $datasetSubjectLabels,
+                'dataverseAvailableLicenses' => $dataverseAvailableLicenses,
                 'subjectId' => array_search($submission->getData('datasetSubject'), $datasetSubjectValues)
             ]);
 
-            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('subjectField.tpl'));
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetMetadataStep3.tpl'));
         }
     }
 

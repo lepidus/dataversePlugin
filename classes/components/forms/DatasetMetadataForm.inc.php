@@ -50,7 +50,7 @@ class DatasetMetadataForm extends FormComponent
         ->addField(new FieldSelect('datasetLicense', [
             'label' => __('plugins.generic.dataverse.metadataForm.license.label'),
             'isRequired' => true,
-            'options' => DataverseMetadata::getDataverseLicenses($this->getDataverseConfiguration()),
+            'options' => DataverseMetadata::getDataverseLicenses(),
             'value' => $dataset->getLicense(),
         ]));
     }
@@ -60,16 +60,5 @@ class DatasetMetadataForm extends FormComponent
         $request = Application::get()->getRequest();
         $contextPath = $request->getContext()->getPath();
         return $request->getDispatcher()->url($request, ROUTE_API, $contextPath, 'vocabs', null, null, ['vocab' => 'submissionKeyword']);
-    }
-
-    private function getDataverseConfiguration(): DataverseConfiguration
-    {
-        $request = Application::get()->getRequest();
-        $context = $request->getContext();
-
-        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
-        $configuration = $configurationDAO->get($context->getId());
-
-        return $configuration;
     }
 }

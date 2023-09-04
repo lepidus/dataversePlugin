@@ -264,6 +264,9 @@ msgstr "Other"
 msgid "plugins.generic.dataverse.metadataForm.license.label"
 msgstr "Research Data License"
 
+msgid "plugins.generic.dataverse.metadataForm.license.description"
+msgstr "Select the license of research data to be deposited in Dataverse"
+
 msgid "plugins.generic.dataverse.notice.cannotPublish"
 msgstr "Unable to publish research data in Dataverse: {$error}"
 

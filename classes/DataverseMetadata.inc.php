@@ -64,8 +64,9 @@ class DataverseMetadata
         ];
     }
 
-    public static function getDataverseLicenses(DataverseConfiguration $configuration): array
+    public static function getDataverseLicenses(): array
     {
+        $configuration = $this->getDataverseConfiguration();
         $licensesUrl = $configuration->getDataverseServerUrl() . '/api/licenses';
         $response = json_decode(file_get_contents($licensesUrl), true);
 
@@ -75,5 +76,16 @@ class DataverseMetadata
         }
 
         return $licenses;
+    }
+
+    private function getDataverseConfiguration(): DataverseConfiguration
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+
+        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
+        $configuration = $configurationDAO->get($context->getId());
+
+        return $configuration;
     }
 }
