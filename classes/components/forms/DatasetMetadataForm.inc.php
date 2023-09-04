@@ -69,7 +69,7 @@ class DatasetMetadataForm extends FormComponent
     {
         $mappedLicenses = [];
         foreach($licenses as $license) {
-            $mappedLicenses[] = ['label' => $license['name'], 'value' => $license['id']];
+            $mappedLicenses[] = ['label' => $license['name'], 'value' => $license['name']];
         }
         return $mappedLicenses;
     }

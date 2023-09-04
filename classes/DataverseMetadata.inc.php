@@ -84,7 +84,7 @@ class DataverseMetadata
 
         foreach($this->dataverseLicenses as $license) {
             if($license['isDefault']) {
-                return $license['id'];
+                return $license['name'];
             }
         }
     }

@@ -47,7 +47,7 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
     {
         $mappedLicenses = [];
         foreach($licenses as $license) {
-            $mappedLicenses[$license['id']] = $license['name'];
+            $mappedLicenses[$license['name']] = $license['name'];
         }
         return $mappedLicenses;
     }
