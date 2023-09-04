@@ -2,7 +2,9 @@
 
 class DataverseMetadata
 {
-    public static function getDataverseSubjects(): array
+    private $dataverseLicenses;
+
+    public function getDataverseSubjects(): array
     {
         return [
             [
@@ -64,18 +66,27 @@ class DataverseMetadata
         ];
     }
 
-    public static function getDataverseLicenses(): array
+    public function getDataverseLicenses(): array
     {
         $configuration = $this->getDataverseConfiguration();
         $licensesUrl = $configuration->getDataverseServerUrl() . '/api/licenses';
         $response = json_decode(file_get_contents($licensesUrl), true);
+        $this->dataverseLicenses = $response['data'];
 
-        $licenses = [];
-        foreach($response['data'] as $license) {
-            $licenses[] = ['label' => $license['name'], 'value' => $license['id']];
+        return $this->dataverseLicenses;
+    }
+
+    private function getDefaultLicense(): int
+    {
+        if(is_null($this->dataverseLicenses)) {
+            $this->getDataverseLicenses();
         }
 
-        return $licenses;
+        foreach($this->dataverseLicenses as $license) {
+            if($license['isDefault']) {
+                return $license['id'];
+            }
+        }
     }
 
     private function getDataverseConfiguration(): DataverseConfiguration

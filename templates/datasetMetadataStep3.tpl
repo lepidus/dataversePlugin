@@ -27,8 +27,8 @@
         id="datasetLicense" 
         defaultLabel="" 
         defaultValue=""
-        {* selected=$licenseId  *}
-        from=$dataverseAvailableLicenses 
+        selected=$selectedLicense
+        from=$availableLicenses 
         translate=false 
         required=true
     }

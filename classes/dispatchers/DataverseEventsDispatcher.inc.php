@@ -28,6 +28,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             'apiSummary' => true,
             'validation' => ['nullable'],
         ];
+        $schema->properties->{'datasetLicense'} = (object) [
+            'type' => 'integer',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
 
         return false;
     }

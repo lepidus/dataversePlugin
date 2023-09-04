@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
+import('plugins.generic.dataverse.classes.DataverseMetadata');
 
 class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
 {
@@ -22,21 +23,33 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
         $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($submissionId);
 
         if (!empty($draftDatasetFiles)) {
-            import('plugins.generic.dataverse.classes.DataverseMetadata');
-            $dataverseSubjectVocab = DataverseMetadata::getDataverseSubjects();
-            $dataverseAvailableLicenses = DataverseMetadata::getDataverseLicenses();
+            $dataverseMetadata = new DataverseMetadata();
+            $dataverseSubjectVocab = $dataverseMetadata->getDataverseSubjects();
+            $availableLicenses = $dataverseMetadata->getDataverseLicenses();
 
             $datasetSubjectLabels = array_column($dataverseSubjectVocab, 'label');
             $datasetSubjectValues = array_column($dataverseSubjectVocab, 'value');
 
+            $selectedLicense = $submission->getData('datasetLicense') ?? $dataverseMetadata->getDefaultLicense();
+
             $templateMgr->assign([
                 'dataverseSubjectVocab' => $datasetSubjectLabels,
-                'dataverseAvailableLicenses' => $dataverseAvailableLicenses,
-                'subjectId' => array_search($submission->getData('datasetSubject'), $datasetSubjectValues)
+                'availableLicenses' => $this->mapLicensesForStep3Display($availableLicenses),
+                'subjectId' => array_search($submission->getData('datasetSubject'), $datasetSubjectValues),
+                'selectedLicense' => $selectedLicense
             ]);
 
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetMetadataStep3.tpl'));
         }
+    }
+
+    private function mapLicensesForStep3Display(array $licenses): array
+    {
+        $mappedLicenses = [];
+        foreach($licenses as $license) {
+            $mappedLicenses[$license['id']] = $license['name'];
+        }
+        return $mappedLicenses;
     }
 
     public function readSubjectField($hookName, $args): bool
@@ -44,20 +57,24 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
         $form = &$args[0];
         $submission = &$form->submission;
 
-        $form->readUserVars(array('datasetSubject'));
+        $form->readUserVars(array('datasetSubject', 'datasetLicense'));
         $subject = $form->getData('datasetSubject');
+        $license = $form->getData('datasetLicense');
 
         if(empty($subject)) {
             return false;
         }
 
-        import('plugins.generic.dataverse.classes.DataverseMetadata');
-        $dataverseSubjectVocab = DataverseMetadata::getDataverseSubjects();
+        $dataverseMetadata = new DataverseMetadata();
+        $dataverseSubjectVocab = $dataverseMetadata->getDataverseSubjects();
         $datasetSubjectValues = array_column($dataverseSubjectVocab, 'value');
 
         Services::get('submission')->edit(
             $submission,
-            ['datasetSubject' => $datasetSubjectValues[$subject]],
+            [
+                'datasetSubject' => $datasetSubjectValues[$subject],
+                'datasetLicense' => $license
+            ],
             Application::get()->getRequest()
         );
 
