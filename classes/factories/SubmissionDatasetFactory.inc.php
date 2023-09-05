@@ -25,6 +25,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['description'] = $publication->getLocalizedData('abstract');
         $props['keywords'] = $publication->getLocalizedData('keywords');
         $props['subject'] = $this->submission->getData('datasetSubject');
+        $props['license'] = $this->submission->getData('datasetLicense');
         $props['authors'] = array_map([$this, 'createDatasetAuthor'], $authors);
         $props['contact'] = $this->createDatasetContact();
         $props['depositor'] = $this->getDatasetDepositor();
