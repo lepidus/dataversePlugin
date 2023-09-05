@@ -2,6 +2,7 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.dataverseAPI.packagers.NativeAPIDatasetPackager');
+import('plugins.generic.dataverse.classes.DataverseMetadata');
 
 class NativeAPIDatasetPackagerTest extends PKPTestCase
 {
@@ -18,6 +19,16 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         parent::tearDown();
     }
 
+    private function getDataverseMetadataMock()
+    {
+        $mockDataverseMetadata = $this->createMock(DataverseMetadata::class);
+        $mockDataverseMetadata->method('getLicenseUri')->willReturnMap([
+            ['CC BY 4.0', 'http://creativecommons.org/licenses/by/4.0']
+        ]);
+
+        return $mockDataverseMetadata;
+    }
+
     public function testNativeAPIPackagerReturnsPackageDirPath(): void
     {
         $dataset = new Dataset();
@@ -32,7 +43,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset->setTitle('Test title');
 
         $this->packager = new NativeAPIDatasetPackager($dataset);
-        $this->packager->loadMetadata();
+        $this->packager->loadPackageData();
 
         $titleMetadata = $this->packager->getMetadataField('title');
         $titleMetadata['value'] = $dataset->getTitle();
@@ -46,7 +57,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset->setDescription('<p>Test description</p>');
 
         $this->packager = new NativeAPIDatasetPackager($dataset);
-        $this->packager->loadMetadata();
+        $this->packager->loadPackageData();
 
         $descriptionMetadata = $this->packager->getMetadataField('description');
         $descriptionMetadata['value'] = [
@@ -69,7 +80,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset->setPubCitation('User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems');
 
         $this->packager = new NativeAPIDatasetPackager($dataset);
-        $this->packager->loadMetadata();
+        $this->packager->loadPackageData();
 
         $publicationMetadata = $this->packager->getMetadataField('pubCitation');
         $publicationMetadata['value'] = [
@@ -92,7 +103,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset->setContact(new DatasetContact('Test name', 'test@mail.com', 'Dataverse'));
 
         $this->packager = new NativeAPIDatasetPackager($dataset);
-        $this->packager->loadMetadata();
+        $this->packager->loadPackageData();
 
         $contactMetadata = $this->packager->getMetadataField('contact');
         $contactMetadata['value'] = [
@@ -127,7 +138,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset->setSubject('Other');
 
         $this->packager = new NativeAPIDatasetPackager($dataset);
-        $this->packager->loadMetadata();
+        $this->packager->loadPackageData();
 
         $subjectMetadata = $this->packager->getMetadataField('subject');
         $subjectMetadata['value'] = [$dataset->getSubject()];
@@ -142,7 +153,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset->setFiles([$datasetFile]);
 
         $this->packager = new NativeAPIDatasetPackager($dataset);
-        $this->packager->loadMetadata();
+        $this->packager->loadPackageData();
 
         $this->assertEmpty($this->packager->getDatasetMetadata());
     }
@@ -151,7 +162,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
     {
         $dataset = new Dataset();
         $this->packager = new NativeAPIDatasetPackager($dataset);
-        $this->packager->loadMetadata();
+        $this->packager->loadPackageData();
         $this->packager->createDatasetPackage();
 
         $this->assertFileExists($this->packager->getPackageDirPath() . '/dataset.json');
@@ -162,13 +173,20 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset = new Dataset();
         $dataset->setPersistentId('doi:10.5072/FK2/TEST');
         $dataset->setTitle('Test title');
+        $dataset->setLicense('CC BY 4.0');
 
         $this->packager = new NativeAPIDatasetPackager($dataset);
-        $this->packager->loadMetadata();
+        $this->packager->setDataverseMetadata($this->getDataverseMetadataMock());
+        $this->packager->loadPackageData();
         $this->packager->createDatasetPackage();
 
         $datasetJson = json_decode(file_get_contents($this->packager->getPackageDirPath() . '/dataset.json'), true);
 
-        $this->assertEquals($dataset->getTitle(), $datasetJson['fields'][0]['value']);
+        $licenseInJson = $datasetJson['datasetVersion']['license'];
+        $expectedLicense = ['name' => 'CC BY 4.0', 'uri' => 'http://creativecommons.org/licenses/by/4.0'];
+        $this->assertEquals($expectedLicense, $licenseInJson);
+
+        $titleInJson = $datasetJson['datasetVersion']['metadataBlocks']['citation']['fields'][0]['value'];
+        $this->assertEquals($dataset->getTitle(), $titleInJson);
     }
 }

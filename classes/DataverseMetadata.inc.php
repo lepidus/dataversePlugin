@@ -76,7 +76,7 @@ class DataverseMetadata
         return $this->dataverseLicenses;
     }
 
-    private function getDefaultLicense(): int
+    public function getDefaultLicense(): int
     {
         if(is_null($this->dataverseLicenses)) {
             $this->getDataverseLicenses();
@@ -85,6 +85,19 @@ class DataverseMetadata
         foreach($this->dataverseLicenses as $license) {
             if($license['isDefault']) {
                 return $license['name'];
+            }
+        }
+    }
+
+    public function getLicenseUri(string $licenseName): string
+    {
+        if(is_null($this->dataverseLicenses)) {
+            $this->getDataverseLicenses();
+        }
+
+        foreach($this->dataverseLicenses as $license) {
+            if($license['name'] == $licenseName) {
+                return $license['uri'];
             }
         }
     }

@@ -1,21 +1,28 @@
 <?php
 
 import('plugins.generic.dataverse.dataverseAPI.packagers.DatasetPackager');
+import('plugins.generic.dataverse.classes.DataverseMetadata');
 
 class NativeAPIDatasetPackager extends DatasetPackager
 {
     private $packageDirPath;
-
+    private $dataverseMetadata;
+    private $datasetLicense;
     private $datasetMetadata = [];
-
     private $files = [];
 
     public function __construct(Dataset $dataset)
     {
+        $this->dataverseMetadata = new DataverseMetadata();
         $this->packageDirPath = tempnam('/tmp', 'dataverse');
         unlink($this->packageDirPath);
         mkdir($this->packageDirPath);
         parent::__construct($dataset);
+    }
+
+    public function setDataverseMetadata(DataverseMetadata $dataverseMetadata)
+    {
+        $this->dataverseMetadata = $dataverseMetadata;
     }
 
     public function getPackageDirPath(): string
@@ -28,9 +35,13 @@ class NativeAPIDatasetPackager extends DatasetPackager
         return $this->datasetMetadata;
     }
 
-    public function loadMetadata(): void
+    public function loadPackageData(): void
     {
         $datasetData = $this->dataset->getAllData();
+
+        if(isset($datasetData['license'])) {
+            $this->datasetLicense = $this->createLicenseNode($datasetData['license']);
+        }
 
         foreach ($datasetData as $attr => $value) {
             $metadataField = $this->getMetadataField($attr);
@@ -116,6 +127,13 @@ class NativeAPIDatasetPackager extends DatasetPackager
         return isset($fields[$metadata]) ? $fields[$metadata] : [];
     }
 
+    private function createLicenseNode(string $licenseName): array
+    {
+        $licenseUri = $this->dataverseMetadata->getLicenseUri($licenseName);
+
+        return ['name' => $licenseName, 'uri' => $licenseUri];
+    }
+
     private function createSimpleCompoundMetadata(array $metadataField, string $value): array
     {
         $typeName = $metadataField['typeName'] == 'publication'
@@ -155,14 +173,14 @@ class NativeAPIDatasetPackager extends DatasetPackager
 
     public function createDatasetPackage(): void
     {
-        $this->loadMetadata();
+        $this->loadPackageData();
 
         $datasetContent = [];
-        if (is_null($this->dataset->getPersistentId())) {
-            $datasetContent['datasetVersion']['metadataBlocks']['citation']['fields'] = $this->getDatasetMetadata();
-        } else {
-            $datasetContent['fields'] = $this->getDatasetMetadata();
+
+        if(!is_null($this->datasetLicense)) {
+            $datasetContent['datasetVersion']['license'] = $this->datasetLicense;
         }
+        $datasetContent['datasetVersion']['metadataBlocks']['citation']['fields'] = $this->getDatasetMetadata();
 
         $datasetPackage = fopen($this->getPackagePath(), 'w');
         fwrite($datasetPackage, json_encode($datasetContent));
