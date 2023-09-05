@@ -7,6 +7,8 @@ import('plugins.generic.dataverse.classes.DataverseMetadata');
 class NativeAPIDatasetPackagerTest extends PKPTestCase
 {
     private $packager;
+    private $licenseName = 'CC BY 4.0';
+    private $licenseUri = 'http://creativecommons.org/licenses/by/4.0';
 
     protected function setUp(): void
     {
@@ -23,7 +25,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
     {
         $mockDataverseMetadata = $this->createMock(DataverseMetadata::class);
         $mockDataverseMetadata->method('getLicenseUri')->willReturnMap([
-            ['CC BY 4.0', 'http://creativecommons.org/licenses/by/4.0']
+            [$this->licenseName, $this->licenseUri]
         ]);
 
         return $mockDataverseMetadata;
@@ -173,7 +175,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset = new Dataset();
         $dataset->setPersistentId('doi:10.5072/FK2/TEST');
         $dataset->setTitle('Test title');
-        $dataset->setLicense('CC BY 4.0');
+        $dataset->setLicense($this->licenseName);
 
         $this->packager = new NativeAPIDatasetPackager($dataset);
         $this->packager->setDataverseMetadata($this->getDataverseMetadataMock());
@@ -183,7 +185,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $datasetJson = json_decode(file_get_contents($this->packager->getPackageDirPath() . '/dataset.json'), true);
 
         $licenseInJson = $datasetJson['datasetVersion']['license'];
-        $expectedLicense = ['name' => 'CC BY 4.0', 'uri' => 'http://creativecommons.org/licenses/by/4.0'];
+        $expectedLicense = ['name' => $this->licenseName, 'uri' => $this->licenseUri];
         $this->assertEquals($expectedLicense, $licenseInJson);
 
         $titleInJson = $datasetJson['datasetVersion']['metadataBlocks']['citation']['fields'][0]['value'];
