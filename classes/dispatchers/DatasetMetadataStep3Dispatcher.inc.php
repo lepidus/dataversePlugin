@@ -61,7 +61,7 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
         $subject = $form->getData('datasetSubject');
         $license = $form->getData('datasetLicense');
 
-        if(empty($subject)) {
+        if(is_null($subject)) {
             return false;
         }
 
