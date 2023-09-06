@@ -184,11 +184,11 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
 
         $datasetJson = json_decode(file_get_contents($this->packager->getPackageDirPath() . '/dataset.json'), true);
 
-        $licenseInJson = $datasetJson['datasetVersion']['license'];
+        $licenseInJson = $datasetJson['license'];
         $expectedLicense = ['name' => $this->licenseName, 'uri' => $this->licenseUri];
         $this->assertEquals($expectedLicense, $licenseInJson);
 
-        $titleInJson = $datasetJson['datasetVersion']['metadataBlocks']['citation']['fields'][0]['value'];
+        $titleInJson = $datasetJson['metadataBlocks']['citation']['fields'][0]['value'];
         $this->assertEquals($dataset->getTitle(), $titleInJson);
     }
 }
