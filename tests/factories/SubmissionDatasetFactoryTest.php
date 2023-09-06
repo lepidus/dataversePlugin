@@ -128,6 +128,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $submission->setData('dateSubmitted', '2021-01-01 15:00:00');
         $submission->setData('locale', $this->locale);
         $submission->setData('datasetSubject', 'Other');
+        $submission->setData('datasetLicense', 'CC BY 4.0');
 
         import('classes.article.Author');
         $author = new Author();
@@ -188,6 +189,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $expectedDataset->setDescription($this->publication->getLocalizedData('abstract'));
         $expectedDataset->setKeywords($this->publication->getLocalizedData('keywords'));
         $expectedDataset->setSubject($this->submission->getData('datasetSubject'));
+        $expectedDataset->setLicense($this->submission->getData('datasetLicense'));
         $expectedDataset->setAuthors([$datasetAuthor]);
         $expectedDataset->setContact($datasetContact);
         $expectedDataset->setDepositor($datasetDepositor);

@@ -64,8 +64,8 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         $packager = new NativeAPIDatasetPackager($dataset);
         $packager->createDatasetPackage();
 
-        $args = '?persistentId=' . $dataset->getPersistentId() . '&replace=true';
-        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'editMetadata', $args);
+        $args = '?persistentId=' . $dataset->getPersistentId();
+        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions', ':draft', $args);
         $options = [
             'headers' => ['Content-Type' => 'application/json'],
             'body' => GuzzleHttp\Psr7\Utils::tryFopen($packager->getPackagePath(), 'rb')

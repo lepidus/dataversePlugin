@@ -20,6 +20,9 @@ class DatasetMetadataForm extends FormComponent
         $this->method = $method;
         $this->locales = $locales;
 
+        $dataverseMetadata = new DataverseMetadata();
+        $dataverseLicenses = $dataverseMetadata->getDataverseLicenses();
+
         $this->addField(new FieldText('datasetTitle', [
             'label' => __('plugins.generic.dataverse.metadataForm.title'),
             'isRequired' => true,
@@ -44,8 +47,14 @@ class DatasetMetadataForm extends FormComponent
         ->addField(new FieldSelect('datasetSubject', [
             'label' => __('plugins.generic.dataverse.metadataForm.subject.label'),
             'isRequired' => true,
-            'options' => DataverseMetadata::getDataverseSubjects(),
+            'options' => $dataverseMetadata->getDataverseSubjects(),
             'value' => $dataset->getSubject(),
+        ]))
+        ->addField(new FieldSelect('datasetLicense', [
+            'label' => __('plugins.generic.dataverse.metadataForm.license.label'),
+            'isRequired' => true,
+            'options' => $this->mapLicensesForDisplay($dataverseLicenses),
+            'value' => $dataset->getLicense(),
         ]));
     }
 
@@ -54,5 +63,14 @@ class DatasetMetadataForm extends FormComponent
         $request = Application::get()->getRequest();
         $contextPath = $request->getContext()->getPath();
         return $request->getDispatcher()->url($request, ROUTE_API, $contextPath, 'vocabs', null, null, ['vocab' => 'submissionKeyword']);
+    }
+
+    private function mapLicensesForDisplay(array $licenses): array
+    {
+        $mappedLicenses = [];
+        foreach($licenses as $license) {
+            $mappedLicenses[] = ['label' => $license['name'], 'value' => $license['name']];
+        }
+        return $mappedLicenses;
     }
 }

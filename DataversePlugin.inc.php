@@ -31,7 +31,7 @@ class DataversePlugin extends GenericPlugin
     private function loadDispatcherClasses(): void
     {
         $dispatcherClasses = [
-            'DatasetSubjectDispatcher',
+            'DatasetMetadataStep3Dispatcher',
             'DataStatementDispatcher',
             'DatasetInformationDispatcher',
             'DataStatementTabDispatcher',

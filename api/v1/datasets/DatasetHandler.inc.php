@@ -133,6 +133,7 @@ class DatasetHandler extends APIHandler
         $data['description'] = $requestParams['datasetDescription'];
         $data['keywords'] = (array) $requestParams['datasetKeywords'];
         $data['subject'] = $requestParams['datasetSubject'];
+        $data['license'] = $requestParams['datasetLicense'];
 
         $datasetService = new DatasetService();
         $datasetService->update($data);
@@ -206,6 +207,7 @@ class DatasetHandler extends APIHandler
         $dataset->setDescription($requestParams['datasetDescription']);
         $dataset->setKeywords((array) $requestParams['datasetKeywords']);
         $dataset->setSubject($requestParams['datasetSubject']);
+        $dataset->setLicense($requestParams['datasetLicense']);
 
         if (!empty($dataset->getFiles())) {
             try {

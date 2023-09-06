@@ -16,6 +16,10 @@
       "versionState": "DRAFT",
       "lastUpdateTime": "2023-03-27T21:13:38Z",
       "createTime": "2023-03-27T21:13:36Z",
+      "license": {
+        "name": "CC BY 4.0",
+        "uri": "http://creativecommons.org/licenses/by/4.0"
+      },
       "fileAccessRequest": true,
       "metadataBlocks": {
         "citation": {
