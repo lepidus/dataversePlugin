@@ -72,14 +72,17 @@ class DatasetService extends DataverseService
 
     public function update(array $data): void
     {
-        $dataset = new Dataset();
-        $dataset->setAllData($data);
+        $dataverseClient = new DataverseClient();
+        $dataset = $dataverseClient->getDatasetActions()->get($data['persistentId']);
+
+        foreach($data as $name => $value) {
+            $dataset->setData($name, $value);
+        }
 
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getByPersistentId($dataset->getPersistentId());
         $submission = Services::get('submission')->get($study->getSubmissionId());
 
         try {
-            $dataverseClient = new DataverseClient();
             $dataverseClient->getDatasetActions()->update($dataset);
         } catch (DataverseException $e) {
             $this->registerAndNotifyError(

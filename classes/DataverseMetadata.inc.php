@@ -76,7 +76,7 @@ class DataverseMetadata
         return $this->dataverseLicenses;
     }
 
-    public function getDefaultLicense(): int
+    public function getDefaultLicense(): string
     {
         if(is_null($this->dataverseLicenses)) {
             $this->getDataverseLicenses();

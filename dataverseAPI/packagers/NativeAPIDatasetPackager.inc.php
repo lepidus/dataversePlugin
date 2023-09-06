@@ -178,9 +178,13 @@ class NativeAPIDatasetPackager extends DatasetPackager
         $datasetContent = [];
 
         if(!is_null($this->datasetLicense)) {
-            $datasetContent['datasetVersion']['license'] = $this->datasetLicense;
+            $datasetContent['license'] = $this->datasetLicense;
         }
-        $datasetContent['datasetVersion']['metadataBlocks']['citation']['fields'] = $this->getDatasetMetadata();
+        $datasetContent['metadataBlocks']['citation']['fields'] = $this->getDatasetMetadata();
+
+        if(is_null($this->dataset->getPersistentId())) {
+            $datasetContent['datasetVersion'] = $datasetContent;
+        }
 
         $datasetPackage = fopen($this->getPackagePath(), 'w');
         fwrite($datasetPackage, json_encode($datasetContent));
