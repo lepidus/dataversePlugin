@@ -19,6 +19,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
         HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
         HookRegistry::register('initiateexternalreviewform::display', array($this, 'addSelectDataFilesForReview'));
+        HookRegistry::register('initiateexternalreviewform::execute', array($this, 'saveSelectedDataFilesForReview'));
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -28,6 +29,12 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             'type' => 'string',
             'apiSummary' => true,
             'validation' => ['nullable'],
+        ];
+        $schema->properties->{'selectedDataFilesForReview'} = (object) [
+            'type' => 'array',
+            'items' => (object) [
+                'type' => 'integer',
+            ]
         ];
 
         return false;
@@ -298,6 +305,23 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $fbv->setForm(null);
 
         return $output;
+    }
+
+    public function saveSelectedDataFilesForReview(string $hookName, array $params)
+    {
+        $form = &$params[0];
+        $submission = &$form->_submission;
+
+        $request = Application::get()->getRequest();
+        $selectedFiles = $request->getUserVar('selectedDataFilesForReview');
+
+        if (!is_null($selectedFiles)) {
+            $submission = Services::get('submission')->edit(
+                $submission,
+                ['selectedDataFilesForReview' => $selectedFiles],
+                $request
+            );
+        }
     }
 
     private function prepareFormToDisplay($templateMgr, $form, $request): string
