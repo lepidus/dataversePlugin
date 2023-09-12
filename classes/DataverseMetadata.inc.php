@@ -2,7 +2,9 @@
 
 class DataverseMetadata
 {
-    public static function getDataverseSubjects(): array
+    private $dataverseLicenses;
+
+    public function getDataverseSubjects(): array
     {
         return [
             [
@@ -62,5 +64,52 @@ class DataverseMetadata
                 'value' => 'Other'
             ],
         ];
+    }
+
+    public function getDataverseLicenses(): array
+    {
+        $configuration = $this->getDataverseConfiguration();
+        $licensesUrl = $configuration->getDataverseServerUrl() . '/api/licenses';
+        $response = json_decode(file_get_contents($licensesUrl), true);
+        $this->dataverseLicenses = $response['data'];
+
+        return $this->dataverseLicenses;
+    }
+
+    public function getDefaultLicense(): string
+    {
+        if(is_null($this->dataverseLicenses)) {
+            $this->getDataverseLicenses();
+        }
+
+        foreach($this->dataverseLicenses as $license) {
+            if($license['isDefault']) {
+                return $license['name'];
+            }
+        }
+    }
+
+    public function getLicenseUri(string $licenseName): string
+    {
+        if(is_null($this->dataverseLicenses)) {
+            $this->getDataverseLicenses();
+        }
+
+        foreach($this->dataverseLicenses as $license) {
+            if($license['name'] == $licenseName) {
+                return $license['uri'];
+            }
+        }
+    }
+
+    private function getDataverseConfiguration(): DataverseConfiguration
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+
+        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
+        $configuration = $configurationDAO->get($context->getId());
+
+        return $configuration;
     }
 }

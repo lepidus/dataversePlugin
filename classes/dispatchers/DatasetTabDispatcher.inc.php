@@ -52,7 +52,12 @@ class DatasetTabDispatcher extends DataverseDispatcher
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
             return $this->plugin->getTemplateResource('datasetTab/datasetData.tpl');
         } catch (DataverseException $e) {
+            if ($e->getCode() === 404) {
+                DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
+            }
+
             error_log('Dataverse API error: ' . $e->getMessage());
+
             $templateMgr = TemplateManager::getManager(Application::get()->getRequest());
             $templateMgr->assign('errorMessage', $e->getMessage());
             return $this->plugin->getTemplateResource('datasetTab/researchDataError.tpl');

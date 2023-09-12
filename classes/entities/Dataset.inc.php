@@ -45,6 +45,16 @@ class Dataset extends DataObject
         $this->setData('subject', $subject);
     }
 
+    public function getLicense(): ?string
+    {
+        return $this->getData('license');
+    }
+
+    public function setLicense(string $license): void
+    {
+        $this->setData('license', $license);
+    }
+
     public function getAuthors(): ?array
     {
         return $this->getData('authors');

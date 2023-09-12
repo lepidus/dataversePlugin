@@ -133,6 +133,7 @@ describe('Research data state', function () {
 		cy.get('button[aria-controls="datasetTab"]').click();
 
 		cy.get('button').contains('Upload research data').click();
+		cy.wait(1000);
 		cy.contains('Add research data').click();
 		cy.wait(1000);
 		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
@@ -148,6 +149,7 @@ describe('Research data state', function () {
 		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
 		cy.wait(200);
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
+		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC BY 4.0');
 		cy.get('#datasetTab form button').contains('Save').click();
 		cy.get('#datasetTab [role="status"]').contains('Saved');
 
