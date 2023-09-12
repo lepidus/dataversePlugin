@@ -1,6 +1,7 @@
-function addResearchDataFile(fileName) {
+function addResearchDataFile(filePath, fileName) {
+	cy.contains('Add research data').click();
 	cy.wait(1000);
-	cy.fixture('dummy.pdf', { encoding: 'base64' }).then((fileContent) => {
+	cy.fixture(filePath, { encoding: 'base64' }).then((fileContent) => {
 		cy.get('#uploadForm input[type=file]')
 			.upload({
 				fileContent,
@@ -12,11 +13,11 @@ function addResearchDataFile(fileName) {
 	cy.wait(200);
 	cy.get('input[name="termsOfUse"').check();
 	cy.get('#uploadForm button').contains('OK').click();
+	cy.wait(200);
 }
 
 describe('Research data on review', function () {
 	let submission;
-	let dataverseServerName;
 
 	before(function () {
 		if (Cypress.env('contextTitles').en_US !== 'Journal of Public Knowledge') {
@@ -45,11 +46,9 @@ describe('Research data on review', function () {
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[id=privacyConsent]').click();
 		cy.get('#submitStep1Form button.submitFormButton').click();
-
-		cy.contains('Add research data').click();
 		
-		addResearchDataFile(sumbission.researchDataFileNames[0]);
-		addResearchDataFile(sumbission.researchDataFileNames[1]);
+		addResearchDataFile('dummy.pdf', submission.researchDataFileNames[0]);
+		addResearchDataFile('dummy.zip', submission.researchDataFileNames[1]);
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
@@ -60,20 +59,19 @@ describe('Research data on review', function () {
 		cy.get('ul[id^="en_US-keywords-"]').then((node) => {
 			node.tagit('createTag', submission.keywords[0]);
 		});
+
+		cy.get('select[id^="datasetSubject"').select('Other');
+		cy.get('select[id^="datasetLicense"').select('CC BY 4.0');
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
 		cy.waitJQuery();
 		cy.get('#submitStep4Form button.submitFormButton').click();
+		cy.wait(1000);
 		cy.get('button.pkpModalConfirmButton').click();
 
 		cy.waitJQuery();
 		cy.get('h2:contains("Submission complete")');
-		cy.contains('Review this submission').click();
-		
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('#datasetData .value p').then((citation) => {
-			dataverseServerName = citation.text().split(',')[5].trim();
-		});
+		cy.contains('Review this submission');
 
 		cy.logout();
 	});
@@ -82,14 +80,15 @@ describe('Research data on review', function () {
 
 		cy.get('#editorialActions').contains('Send to Review').click();
 		
-		cy.get('#editorialActions').contains('This submission has deposited research data. Please, select which data files will be made available for reviewers to view.');
-		cy.get('input[name="selectDataFilesForReview"]').should('be.checked');
-		cy.get('input[name="selectDataFilesForReview"]').eq(1).uncheck();
+		cy.get('#selectDataFilesForReview').contains('This submission has deposited research data. Please, select which data files will be made available for reviewers to view.');
+		cy.get('input[name^="selectedDataFilesForReview"]').should('be.checked');
+		cy.get('input[name^="selectedDataFilesForReview"]').eq(1).uncheck();
 
 		cy.get('#initiateReview').contains('Send to Review').click();
 
+		cy.waitJQuery();
 		cy.contains('Add Reviewer').click();
-		cy.get(".listPanel__item").first().contains('Select Reviewer').click();
+		cy.contains('Select Reviewer').first().click();
 		cy.get('#advancedSearchReviewerForm').contains('Add Reviewer').click();
 
 		cy.logout();
@@ -101,7 +100,7 @@ describe('Research data on review', function () {
 		cy.get(".listPanel__item:visible").first().contains('View').click();
 
 		cy.contains('Data statement');
-		cy.contains('Research data has been submitted to the ' + dataverseName + ' repository');
+		cy.contains('Research data has been submitted to the Dataverse de Exemplo Lepidus repository');
 		cy.get('a:contains("' + submission.researchDataFileNames[0] + '")');
 	});
 });

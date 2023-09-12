@@ -34,11 +34,7 @@ class DatasetReviewDispatcher extends DataverseDispatcher
         $request = PKPApplication::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
 
-        $dataStatementService = new DataStatementService();
-        $allDataStatementTypes = $dataStatementService->getDataStatementTypes();
-        unset($allDataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
-
-        $templateMgr->assign('allDataStatementTypes', $allDataStatementTypes);
+        $templateMgr->assign('allDataStatementTypes', $this->getDataStatementTypes());
         $templateMgr->assign('publication', $submission->getCurrentPublication());
 
         $templateOutput = $templateMgr->fetch($form->_template);
@@ -50,5 +46,18 @@ class DatasetReviewDispatcher extends DataverseDispatcher
         }
 
         return $output;
+    }
+
+    private function getDataStatementTypes(): array
+    {
+        $dataStatementService = new DataStatementService();
+        $allDataStatementTypes = $dataStatementService->getDataStatementTypes();
+        $dataverseName = $dataStatementService->getDataverseName();
+
+        if(!is_null($dataverseName)) {
+            $allDataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED] = __('plugins.generic.dataverse.dataStatement.researchDataSubmitted', ['dataverseName' => $dataverseName]);
+        }
+
+        return $allDataStatementTypes;
     }
 }
