@@ -1,5 +1,22 @@
+function addResearchDataFile(fileName) {
+	cy.wait(1000);
+	cy.fixture('dummy.pdf', { encoding: 'base64' }).then((fileContent) => {
+		cy.get('#uploadForm input[type=file]')
+			.upload({
+				fileContent,
+				fileName: fileName,
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+	});
+	cy.wait(200);
+	cy.get('input[name="termsOfUse"').check();
+	cy.get('#uploadForm button').contains('OK').click();
+}
+
 describe('Research data on review', function () {
 	let submission;
+	let dataverseServerName;
 
 	before(function () {
 		if (Cypress.env('contextTitles').en_US !== 'Journal of Public Knowledge') {
@@ -12,6 +29,7 @@ describe('Research data on review', function () {
 			title: 'The Rise of the Machine Empire',
 			abstract: 'An example abstract.',
 			keywords: ['Modern History'],
+			researchDataFileNames : ['discarded_robots.csv', 'robots_spy_missions.csv']
 		}
 	});
 
@@ -23,11 +41,15 @@ describe('Research data on review', function () {
 		if (Cypress.env('contextTitles').en_US == 'Journal of Public Knowledge') {
 			cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
 		}
-		cy.get('input[id^="dataStatementTypes"][value=1]').click();
+		cy.get('input[id^="dataStatementTypes"][value=3]').click();
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[id=privacyConsent]').click();
-		cy.get('button.submitFormButton').click();
+		cy.get('#submitStep1Form button.submitFormButton').click();
 
+		cy.contains('Add research data').click();
+		
+		addResearchDataFile(sumbission.researchDataFileNames[0]);
+		addResearchDataFile(sumbission.researchDataFileNames[1]);
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
@@ -46,13 +68,24 @@ describe('Research data on review', function () {
 
 		cy.waitJQuery();
 		cy.get('h2:contains("Submission complete")');
+		cy.contains('Review this submission').click();
+		
+		cy.get('button[aria-controls="publication"]').click();
+		cy.get('#datasetData .value p').then((citation) => {
+			dataverseServerName = citation.text().split(',')[5].trim();
+		});
 
 		cy.logout();
 	});
-	it('Send submission to revision stage', function () {
+	it('Send submission to review stage', function () {
 		cy.findSubmissionAsEditor('dbarnes', null, 'Corino');
 
 		cy.get('#editorialActions').contains('Send to Review').click();
+		
+		cy.get('#editorialActions').contains('This submission has deposited research data. Please, select which data files will be made available for reviewers to view.');
+		cy.get('input[name="selectDataFilesForReview"]').should('be.checked');
+		cy.get('input[name="selectDataFilesForReview"]').eq(1).uncheck();
+
 		cy.get('#initiateReview').contains('Send to Review').click();
 
 		cy.contains('Add Reviewer').click();
@@ -68,8 +101,7 @@ describe('Research data on review', function () {
 		cy.get(".listPanel__item:visible").first().contains('View').click();
 
 		cy.contains('Data statement');
-		cy.contains('1. Request');
-		cy.contains('Data statement is contained in the manuscript');
-		cy.contains('Research data');
+		cy.contains('Research data has been submitted to the ' + dataverseName + ' repository');
+		cy.get('a:contains("' + submission.researchDataFileNames[0] + '")');
 	});
 });

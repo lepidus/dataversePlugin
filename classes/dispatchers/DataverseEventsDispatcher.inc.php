@@ -18,6 +18,8 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
         HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
         HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
+        HookRegistry::register('initiateexternalreviewform::display', array($this, 'addSelectDataFilesForReview'));
+        HookRegistry::register('initiateexternalreviewform::execute', array($this, 'saveSelectedDataFilesForReview'));
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -32,6 +34,12 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             'type' => 'string',
             'apiSummary' => true,
             'validation' => ['nullable'],
+        ];
+        $schema->properties->{'selectedDataFilesForReview'} = (object) [
+            'type' => 'array',
+            'items' => (object) [
+                'type' => 'integer',
+            ]
         ];
 
         return false;
@@ -240,6 +248,90 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             ]);
         }
 
+        $templateOutput = $this->prepareFormToDisplay($templateMgr, $form, $request);
+        $pattern = '/<div[^>]+id="promoteForm-step2[^>]+>/';
+
+        if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
+            $match = $matches[0][0];
+            $offset = $matches[0][1];
+            $output = substr($templateOutput, 0, $offset + strlen($match));
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('editorActionPublish.tpl'));
+            $output .= substr($templateOutput, $offset + strlen($match));
+        }
+
+        $fbv = $templateMgr->getFBV();
+        $fbv->setForm(null);
+
+        return $output;
+    }
+
+    public function addSelectDataFilesForReview(string $hookName, array $params): ?string
+    {
+        $form = & $params[0];
+        $output = & $params[1];
+
+        $request = PKPApplication::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
+
+        $submissionId = $templateMgr->get_template_vars('submissionId');
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submissionId);
+        if (empty($study)) {
+            return null;
+        }
+
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+            $datasetFiles = $dataverseClient->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
+
+            if ($dataset->isPublished()) {
+                return null;
+            }
+
+            $templateMgr->assign('datasetFiles', $datasetFiles);
+        } catch (DataverseException $e) {
+            $templateMgr->assign([
+                'dataverseError' => 'Dataverse Error: ' . $e->getMessage(),
+            ]);
+        }
+
+        $templateOutput = $this->prepareFormToDisplay($templateMgr, $form, $request);
+        $pattern = '/<p>'.__('editor.submission.externalReviewDescription').'<\/p>/';
+
+        if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
+            $match = $matches[0][0];
+            $offset = $matches[0][1];
+            $output = substr($templateOutput, 0, $offset);
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('selectDataFilesForReview.tpl'));
+            $output .= substr($templateOutput, $offset);
+        }
+
+        $fbv = $templateMgr->getFBV();
+        $fbv->setForm(null);
+
+        return $output;
+    }
+
+    public function saveSelectedDataFilesForReview(string $hookName, array $params)
+    {
+        $form = &$params[0];
+        $submission = &$form->_submission;
+
+        $request = Application::get()->getRequest();
+        $selectedFiles = $request->getUserVar('selectedDataFilesForReview');
+
+        if (!is_null($selectedFiles)) {
+            $submission = Services::get('submission')->edit(
+                $submission,
+                ['selectedDataFilesForReview' => $selectedFiles],
+                $request
+            );
+        }
+    }
+
+    private function prepareFormToDisplay($templateMgr, $form, $request): string
+    {
+        $context = $request->getContext();
         $templateMgr->setCacheability(CACHEABILITY_NO_STORE);
 
         $fbv = $templateMgr->getFBV();
@@ -260,19 +352,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             ]);
         }
 
-        $templateOutput = $templateMgr->fetch($form->_template);
-        $pattern = '/<div[^>]+id="promoteForm-step2[^>]+>/';
-        if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
-            $match = $matches[0][0];
-            $offset = $matches[0][1];
-            $output = substr($templateOutput, 0, $offset + strlen($match));
-            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('editorActionPublish.tpl'));
-            $output .= substr($templateOutput, $offset + strlen($match));
-        }
-
-        $fbv->setForm(null);
-
-        return $output;
+        return $templateMgr->fetch($form->_template);
     }
 
     public function setupDataverseAPIHandlers(string $hookname, Request $request): void

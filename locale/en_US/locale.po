@@ -167,6 +167,9 @@ msgstr ""
 "Do you really want to publish the research data related to this submission? This action cannot be undone.<br>"
 "Before proceeding, make sure they are suitable for publication in <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>.<br>"
 
+msgid "plugins.generic.dataverse.review.selectDataFiles"
+msgstr "This submission has deposited research data. Please, select which data files will be made available for reviewers to view."
+
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
 msgstr "The draft dataset file you requested was not found."
 
