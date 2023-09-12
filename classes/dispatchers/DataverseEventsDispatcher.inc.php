@@ -30,6 +30,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             'apiSummary' => true,
             'validation' => ['nullable'],
         ];
+        $schema->properties->{'datasetLicense'} = (object) [
+            'type' => 'string',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
         $schema->properties->{'selectedDataFilesForReview'} = (object) [
             'type' => 'array',
             'items' => (object) [
