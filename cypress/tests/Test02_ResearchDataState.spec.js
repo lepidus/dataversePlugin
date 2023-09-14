@@ -133,7 +133,6 @@ describe('Research data state', function () {
 		cy.get('button[aria-controls="datasetTab"]').click();
 
 		cy.get('button').contains('Upload research data').click();
-		cy.wait(1000);
 		cy.contains('Add research data').click();
 		cy.wait(1000);
 		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
@@ -144,10 +143,8 @@ describe('Research data state', function () {
 				encoding: 'base64',
 			});
 		});
-		cy.wait(200);
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
-		cy.wait(200);
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC BY 4.0');
 		cy.get('#datasetTab form button').contains('Save').click();
@@ -162,7 +159,6 @@ describe('Research data state', function () {
 			cy.get('li.ui-state-active a:contains("Production")');
 			cy.get('button[id="publication-button"]').click();
 			cy.get('div#publication button:contains("Schedule For Publication")').click();
-			cy.wait(1000);
 			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
 			cy.get('div[id^="assign-"] button:contains("Save")').click();
 			cy.get('input[name="shouldPublishResearchData"][value="1"]').click();

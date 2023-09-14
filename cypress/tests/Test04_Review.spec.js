@@ -10,10 +10,8 @@ function addResearchDataFile(filePath, fileName) {
 				encoding: 'base64',
 			});
 	});
-	cy.wait(200);
 	cy.get('input[name="termsOfUse"').check();
 	cy.get('#uploadForm button').contains('OK').click();
-	cy.wait(200);
 }
 
 describe('Research data on review', function () {
@@ -66,7 +64,6 @@ describe('Research data on review', function () {
 
 		cy.waitJQuery();
 		cy.get('#submitStep4Form button.submitFormButton').click();
-		cy.wait(1000);
 		cy.get('button.pkpModalConfirmButton').click();
 
 		cy.waitJQuery();
