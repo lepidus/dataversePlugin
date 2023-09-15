@@ -31,6 +31,7 @@ describe('Research data deposit', function () {
 		cy.get('input[id=privacyConsent]').click();
 		cy.get('#submitStep1Form button.submitFormButton').click();
 
+		cy.wait(1000);
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
@@ -45,6 +46,7 @@ describe('Research data deposit', function () {
 		});
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
+		cy.wait(1000);
 		cy.get('#submitTabs a:contains("1. Start")').click();
 		cy.wait(500);
 		cy.get('input[id^="dataStatementTypes"][value=3]').click();
@@ -52,13 +54,15 @@ describe('Research data deposit', function () {
 		cy.get('input[id=privacyConsent]').click();
 		cy.get('#submitStep1Form button.submitFormButton').click();
 
+		cy.wait(1000);
 		cy.get('button').contains('Finish Submission').click();
+		cy.wait(1000);
 		cy.get('button.pkpModalConfirmButton').click();
 		cy.get('div:contains("To submit research data, it is necessary to send at least one file.")');
 		cy.get('div:contains("Please ensure that you have chosen and submitted research data files in step 2 of the submission.")');
 
 		cy.get('#submitTabs a:contains("2. Upload Submission")').click();
-		cy.wait(500);
+		cy.wait(1000);
 		cy.get('#submitStep2Form button.submitFormButton').click();
 		cy.get('div:contains("Research data is required. Please ensure that you have chosen and uploaded research data.")');
 
@@ -87,13 +91,15 @@ describe('Research data deposit', function () {
 		});
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
+		cy.wait(1000);
 		cy.get('button').contains('Finish Submission').click();
+		cy.wait(1000);
 		cy.get('button.pkpModalConfirmButton').click();
 		cy.get('div:contains("The subject of the research data is required.")');
 		cy.get('div:contains("Please ensure that you have chosen the subject of the research data in step 3 of the submission.")');
 
 		cy.get('#submitTabs a:contains("3. Enter Metadata")').click();
-		cy.wait(500);
+		cy.wait(1000);
 		cy.get('select[id^="datasetSubject"').select('Other');
 
 		cy.contains('Research Data License');
@@ -101,7 +107,9 @@ describe('Research data deposit', function () {
 		cy.get('select[id^="datasetLicense"').select('CC BY 4.0');
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
+		cy.wait(1000);
 		cy.get('form[id=submitStep4Form]').find('button').contains('Finish Submission').click();
+		cy.wait(1000);
 		cy.get('button.pkpModalConfirmButton').click();
 
 		cy.waitJQuery();
