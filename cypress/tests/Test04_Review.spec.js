@@ -10,8 +10,10 @@ function addResearchDataFile(filePath, fileName) {
 				encoding: 'base64',
 			});
 	});
+	cy.wait(200);
 	cy.get('input[name="termsOfUse"').check();
 	cy.get('#uploadForm button').contains('OK').click();
+	cy.wait(200);
 }
 
 describe('Research data on review', function () {
@@ -47,6 +49,9 @@ describe('Research data on review', function () {
 		
 		addResearchDataFile('dummy.pdf', submission.researchDataFileNames[0]);
 		addResearchDataFile('dummy.zip', submission.researchDataFileNames[1]);
+		cy.contains(submission.researchDataFileNames[0]);
+		cy.contains(submission.researchDataFileNames[1]);
+
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
