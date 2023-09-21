@@ -8,7 +8,7 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
     protected function registerHooks(): void
     {
         HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addDatasetMetadataFields'));
-        HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'readSubjectField'));
+        HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'readDatasetMetadataFields'));
     }
 
     public function addDatasetMetadataFields($hookName, $args): void
@@ -52,7 +52,7 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
         return $mappedLicenses;
     }
 
-    public function readSubjectField($hookName, $args): bool
+    public function readDatasetMetadataFields($hookName, $args): bool
     {
         $form = &$args[0];
         $submission = &$form->submission;
