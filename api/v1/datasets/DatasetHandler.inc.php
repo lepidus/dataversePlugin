@@ -328,6 +328,6 @@ class DatasetHandler extends APIHandler
         $dataverseClient = new DataverseClient();
         $dataverseClient->getDatasetFileActions()->download($fileId, $filename);
 
-        return $response->withJson(['message' => 'ok'], 200);
+        return $response->withStatus(200);
     }
 }
