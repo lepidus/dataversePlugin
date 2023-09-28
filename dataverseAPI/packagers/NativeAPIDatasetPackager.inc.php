@@ -20,11 +20,6 @@ class NativeAPIDatasetPackager extends DatasetPackager
         parent::__construct($dataset);
     }
 
-    public function setDataverseMetadata(DataverseMetadata $dataverseMetadata)
-    {
-        $this->dataverseMetadata = $dataverseMetadata;
-    }
-
     public function getPackageDirPath(): string
     {
         return $this->packageDirPath;
@@ -40,7 +35,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
         $datasetData = $this->dataset->getAllData();
 
         if(isset($datasetData['license'])) {
-            $this->datasetLicense = $this->createLicenseNode($datasetData['license']);
+            $this->datasetLicense = $datasetData['license'];
         }
 
         foreach ($datasetData as $attr => $value) {
@@ -127,13 +122,6 @@ class NativeAPIDatasetPackager extends DatasetPackager
         return isset($fields[$metadata]) ? $fields[$metadata] : [];
     }
 
-    private function createLicenseNode(string $licenseName): array
-    {
-        $licenseUri = $this->dataverseMetadata->getLicenseUri($licenseName);
-
-        return ['name' => $licenseName, 'uri' => $licenseUri];
-    }
-
     private function createSimpleCompoundMetadata(array $metadataField, string $value): array
     {
         $typeName = $metadataField['typeName'] == 'publication'
@@ -183,7 +171,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
         $datasetContent['metadataBlocks']['citation']['fields'] = $this->getDatasetMetadata();
 
         if(is_null($this->dataset->getPersistentId())) {
-            $datasetContent['datasetVersion'] = $datasetContent;
+            $datasetContent = ['datasetVersion' => $datasetContent];
         }
 
         $datasetPackage = fopen($this->getPackagePath(), 'w');

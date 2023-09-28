@@ -89,19 +89,6 @@ class DataverseMetadata
         }
     }
 
-    public function getLicenseUri(string $licenseName): string
-    {
-        if(is_null($this->dataverseLicenses)) {
-            $this->getDataverseLicenses();
-        }
-
-        foreach($this->dataverseLicenses as $license) {
-            if($license['name'] == $licenseName) {
-                return $license['uri'];
-            }
-        }
-    }
-
     private function getDataverseConfiguration(): DataverseConfiguration
     {
         $request = Application::get()->getRequest();
