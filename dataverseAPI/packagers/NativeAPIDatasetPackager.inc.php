@@ -165,6 +165,8 @@ class NativeAPIDatasetPackager extends DatasetPackager
 
         $datasetContent = [];
 
+        //We use only the license name (instead of name and uri) to
+        //maintain compatibility with previous versions of Dataverse
         if(!is_null($this->datasetLicense)) {
             $datasetContent['license'] = $this->datasetLicense;
         }
