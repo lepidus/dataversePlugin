@@ -37,13 +37,13 @@ In the new window, the  _Dataverse_ (Dataverse URL), _API Token_ and _Terms of U
 
 You have to indicate the full Dataverse URL repository where the research data will be deposited, for example: https://demo.dataverse.org/dataverse/anotherdemo
 
-The Terms of Use can be defined for each languange configurated in your application.
+The Terms of Use can be defined for each language configurated in your application. If you have questions about what they are, consult those responsible for the repository.
 
-**Important:** The _API Token_ belongs to a Dataverse account. For more information on how to obtain the API token, see the [Dataverse User Guide](https://guides.dataverse.org/en/5.13/user/account.html#api-token).
+**Important:** The _API Token_ belongs to a Dataverse user account. For more information on how to obtain the API token, see the [Dataverse User Guide](https://guides.dataverse.org/en/5.13/user/account.html#api-token).
 
-It is important to mention that the Dataverse account user will be included in the list of contributors of the datasets deposited by the plugin.
+It is important to mention that the Dataverse user account will be included in the list of contributors of the datasets deposited by the plugin (for more [information, see this discussion](https://groups.google.com/g/dataverse-community/c/Oo4AUZJf4hE/m/DyVsQq9mAQAJ)).
 
-Therefore, we recommend the creation of a specific user for the journal/preprint server, instead of using a person's personal account.
+Therefore, we recommend the creation of a specific user for the journal/preprint server, instead of using a person's personal account, because each deposit will be associated with that account.
 
 After filling in the fields, just confirm the action by clicking `Save`. The plugin will only work after filling in these data.
 
