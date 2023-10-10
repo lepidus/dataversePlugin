@@ -126,6 +126,8 @@ describe('Research data deposit', function () {
 		cy.get('#datasetData .value p').then((citation) => {
 			dataverseServerName = citation.text().split(',')[5].trim();
 		});
+
+		cy.get('input[name="datasetTitle"]]').should('have.value', 'Replication Data for: ' + submission.title);
 	});
 	it('Check if options are disabled for authors without edit permission', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
@@ -272,6 +274,7 @@ describe('Research data deposit', function () {
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
 		cy.wait(200);
+		cy.get('input[name="datasetTitle"]]').should('have.value', 'Replication Data for: ' + submission.title);
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC0 1.0');
 		cy.get('#datasetTab form button').contains('Save').click();
