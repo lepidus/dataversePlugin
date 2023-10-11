@@ -5,7 +5,6 @@ describe('Research data state', function () {
 
 	before(function () {
 		submission = {
-			id: 0,
 			section: 'Articles',
 			title: 'Socio-Environmental Education: Promoting Sustainability and Global Citizenship',
 			abstract: 'Socio-environmental education promotes sustainable and equitable development by raising awareness and promoting responsible practices. It fosters engaged and conscious global citizens.',
@@ -72,7 +71,7 @@ describe('Research data state', function () {
 			cy.setTinyMceContent(node.attr('id'), submission.abstract);
 		});
 		cy.get('ul[id^="en_US-keywords-"]').then((node) => {
-			for(keyword in submission.keywords) {
+			for(let keyword in submission.keywords) {
 				node.tagit('createTag', keyword);
 			}
 		});
@@ -145,6 +144,7 @@ describe('Research data state', function () {
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC BY 4.0');
 		cy.get('#datasetTab form button').contains('Save').click();
+		cy.waitJQuery();
 		cy.contains('h1', 'Research data');
 
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
