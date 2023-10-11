@@ -21,7 +21,8 @@ class SubmissionDatasetFactory extends DatasetFactory
         $authors = $this->submission->getAuthors();
 
         $props = [];
-        $props['title'] = $publication->getLocalizedTitle('title');
+        $datasetTitlePrefix = __('plugins.generic.dataverse.dataset.titlePrefix');
+        $props['title'] = $datasetTitlePrefix . $publication->getLocalizedTitle('title');
         $props['description'] = $publication->getLocalizedData('abstract');
         $props['keywords'] = $publication->getLocalizedData('keywords');
         $props['subject'] = $this->submission->getData('datasetSubject');

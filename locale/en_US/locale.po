@@ -207,6 +207,9 @@ msgstr "Delete and send email"
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publish research data"
 
+msgid "plugins.generic.dataverse.dataset.titlePrefix"
+msgstr "Replication data for: "
+
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Title"
 
