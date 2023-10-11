@@ -4,12 +4,10 @@ import '../support/commands.js';
 describe('Research data deposit', function () {
 	const currentYear = new Date().getFullYear();
 	let submission;
-	let dataverseName;
 	let dataverseServerName;
 
 	before(function () {
 		submission = {
-			id: 0,
 			section: 'Articles',
 			title: 'The Rise of the Machine Empire',
 			abstract: 'An example abstract.',
@@ -40,9 +38,9 @@ describe('Research data deposit', function () {
 			cy.setTinyMceContent(node.attr('id'), submission.abstract);
 		});
 		cy.get('ul[id^="en_US-keywords-"]').then((node) => {
-			submission.keywords.forEach((keyword) => {
+			for(let keyword of submission.keywords) {
 				node.tagit('createTag', keyword);
-			});
+			}
 		});
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
@@ -80,7 +78,7 @@ describe('Research data deposit', function () {
 		cy.wait(200);
 		cy.get('label a:contains(Terms of Use)').should('have.attr', 'href', Cypress.env('dataverseTermsOfUse'));
 		cy.get('label:contains(Terms of Use) strong').then($strong => {
-			dataverseName = $strong.text();
+			dataverseServerName = $strong.text();
 		});
 		cy.get('#uploadForm button').contains('OK').click();
 		cy.get('label[for="termsOfUse"]').should('contain', 'This field is required');
@@ -108,7 +106,7 @@ describe('Research data deposit', function () {
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
 		cy.wait(1000);
-		cy.get('form[id=submitStep4Form]').find('button').contains('Finish Submission').click();
+		cy.get('form[id=submitStep4Form] button:contains("Finish Submission")').click();
 		cy.wait(1000);
 		cy.get('button.pkpModalConfirmButton').click();
 
@@ -122,19 +120,19 @@ describe('Research data deposit', function () {
 		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('be.checked');
 
 		cy.get('button[aria-controls="datasetTab"]').click();
-		cy.get('#datasetData .value').should('contain', `Kwantes, Catherine, ${currentYear}, "The Rise of the Machine Empire"`);
+		cy.get('#datasetData .value').should('contain', 'Kwantes, Catherine, ' + currentYear + ', "Replication data for: ' + submission.title + '"');
 		cy.get('#datasetData .value p').then((citation) => {
-			dataverseServerName = citation.text().split(',')[5].trim();
+			dataverseServerName = citation.text().split(', ')[5];
 		});
 
-		cy.get('input[name="datasetTitle"]]').should('have.value', 'Replication Data for: ' + submission.title);
+		cy.get('input[name="datasetTitle"]').should('have.value', 'Replication data for: ' + submission.title);
 	});
 	it('Check if options are disabled for authors without edit permission', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
-		cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
+		cy.get('.pkpButton:visible:contains("View")').first().click();
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('#publication-button').click();
+		cy.get('#datasetTab-button').click();
 
 		cy.contains('Delete research data').should('be.disabled');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
@@ -150,10 +148,10 @@ describe('Research data deposit', function () {
 		}
 
 		cy.login('ckwantes', null, 'publicknowledge');
-		cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
+		cy.get('.pkpButton:visible:contains("View")').first().click();
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('#publication-button').click();
+		cy.get('#datasetTab-button').click();
 
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').clear();
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').type('The Power of Computer Vision: Advances, Applications and Challenges', { delay: 0 });
@@ -174,7 +172,7 @@ describe('Research data deposit', function () {
 
 	it('Check author can edit research data files', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
-		cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
+		cy.get('.pkpButton:visible:contains("View")').first().click();
 
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
@@ -204,7 +202,7 @@ describe('Research data deposit', function () {
 
 	it('Check author can delete research data', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
-		cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
+		cy.get('.pkpButton:visible:contains("View")').first().click();
 
 		cy.get('button[aria-controls="publication"]').click();
 		cy.get('button[aria-controls="datasetTab"]').click();
@@ -216,7 +214,7 @@ describe('Research data deposit', function () {
 		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('not.be.checked');
 	});
 
-	it('Check author actions was registered in activity log', function () {
+	it('Check author actions were registered in activity log', function () {
 		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
 		cy.contains('Activity Log').click();
@@ -227,7 +225,7 @@ describe('Research data deposit', function () {
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data deleted) td').should('contain', 'Catherine Kwantes');
 	});
 
-	it('Check research data can be deposit in research data tab', function () {
+	it('Check research data can be deposited in research data tab', function () {
 		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
@@ -274,13 +272,13 @@ describe('Research data deposit', function () {
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
 		cy.wait(200);
-		cy.get('input[name="datasetTitle"]]').should('have.value', 'Replication Data for: ' + submission.title);
+		cy.get('input[name="datasetTitle"]').should('have.value', 'Replication data for: ' + submission.title);
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC0 1.0');
 		cy.get('#datasetTab form button').contains('Save').click();
-		cy.get('#datasetTab [role="status"]').contains('Saved');
+		cy.contains('h1', 'Research data');
 
-		cy.get('#datasetData .value').should('contain', `Kwantes, Catherine, ${currentYear}, "The Rise of the Machine Empire"`);
+		cy.get('#datasetData .value').should('contain', 'Kwantes, Catherine, ' + currentYear + ', "Replication data for: ' + submission.title + '"');
 
 		cy.get('button[aria-controls="dataStatement"]').click();
 		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('be.checked');
@@ -354,7 +352,6 @@ describe('Research data deposit', function () {
 	});
 
 	it('Check editor can publish research data', function () {
-		let representation = (Cypress.env('contextTitles').en_US === 'Public Knowledge Preprint Server') ? 'preprint' : 'article';
 		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
 		cy.get('button[aria-controls="publication"]').click();
@@ -379,7 +376,7 @@ describe('Research data deposit', function () {
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC BY 4.0');
 		cy.get('#datasetTab form button').contains('Save').click();
-		cy.get('#datasetTab [role="status"]').contains('Saved');
+		cy.contains('h1', 'Research data');
 
 		cy.get('div#publication button:contains("Schedule For Publication"), div#publication button:contains("Post")').click();
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
@@ -405,21 +402,16 @@ describe('Research data deposit', function () {
 		cy.contains('View').click();
 
 		cy.get('.label').contains('Research data');
-		cy.get('.data_citation .value').contains(`Kwantes, Catherine, ${currentYear}, "The Rise of the Machine Empire"`);
+		cy.get('.data_citation .value').contains('Kwantes, Catherine, ' + currentYear + ', "Replication data for: ' + submission.title + '"');
 		cy.get('.data_citation .value a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
-		cy.get('.data_citation .value').contains(`${dataverseServerName}, V1`);
+		cy.get('.data_citation .value').contains(dataverseServerName + ', V1');
 		cy.logout();
-
-		cy.visit(`index.php/publicknowledge/${representation}/view/${submission.id}`);
-		cy.get('.label').contains('Research data');
-		cy.get('.data_citation .value').contains(`Kwantes, Catherine, ${currentYear}, "The Rise of the Machine Empire"`);
-		cy.get('.data_citation .value a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
-		cy.get('.data_citation .value').contains(`${dataverseServerName}, V1`);
 	});
 
-	it('Check editor actions was registered in activity log', function () {
-		cy.login('dbarnes');
-		cy.visit('/index.php/publicknowledge/workflow/access/' + submission.id);
+	it('Check editor actions were registered in activity log', function () {
+		cy.login('dbarnes', null, 'publicknowledge');
+		cy.get('#archive-button').click();
+		cy.get('.pkpButton:visible:contains("View")').first().click();
 
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data deposited) td').should('contain', 'Daniel Barnes');

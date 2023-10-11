@@ -71,7 +71,7 @@ describe('Research data state', function () {
 			cy.setTinyMceContent(node.attr('id'), submission.abstract);
 		});
 		cy.get('ul[id^="en_US-keywords-"]').then((node) => {
-			for(let keyword in submission.keywords) {
+			for(let keyword of submission.keywords) {
 				node.tagit('createTag', keyword);
 			}
 		});
