@@ -171,18 +171,18 @@ describe('Research data state', function () {
 			cy.contains('This version has been posted and can not be edited.');
 		}
 
-		cy.get('#dataStatement button').contains('Save').should('be.disabled');
+		cy.get('#dataStatement button:contains("Save")').should('be.disabled');
 
 		cy.visit(`/index.php/publicknowledge/${representation}/view/${submission.id}`);
 
-		cy.get('.dataStatement .label').contains('Data statement');
-		cy.get('.data_statement_list').contains('Data statement is contained in the manuscript');
-		cy.get('.data_statement_list').contains('They are available in one or more data repository(ies)').next().contains('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
-		cy.get('.data_statement_list').contains('They are available on demand, condition justified in the manuscript');
-		cy.get('.data_statement_list').contains('They cannot be made publicly available').next().contains('Has sensitive data');
+		cy.get('.label:contains("Data statement")');
+		cy.contains('Data statement is contained in the manuscript');
+		cy.contains('They are available in one or more data repository(ies)').next().contains('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
+		cy.contains('They are available on demand, condition justified in the manuscript');
+		cy.contains('They cannot be made publicly available').next().contains('Has sensitive data');
 
-		cy.get('.label').contains('Research data');
-		cy.get('.data_citation .value').contains(`Ostrom, Elinor, ${currentYear}, "${submission.title}"`);
-		cy.get('.data_citation .value a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
+		cy.get('.label:contains("Research data")');
+		cy.get('.data_citation').contains(`Ostrom, Elinor, ${currentYear}, "${submission.title}"`);
+		cy.get('.data_citation').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
 	});
 });
