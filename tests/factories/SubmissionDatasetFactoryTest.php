@@ -74,8 +74,8 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $this->journal->setName('Dataverse Preprints', $this->locale);
 
         $journalDAO->expects($this->any())
-                   ->method('getById')
-                   ->will($this->returnValue($this->journal));
+            ->method('getById')
+            ->will($this->returnValue($this->journal));
 
         DAORegistry::registerDAO('JournalDAO', $journalDAO);
     }
@@ -95,8 +95,8 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
 
         $draftDatasetFileDAO->expects($this->any())
-                   ->method('getBySubmissionId')
-                   ->will($this->returnValue([$draftDatasetFile]));
+            ->method('getBySubmissionId')
+            ->will($this->returnValue([$draftDatasetFile]));
 
         DAORegistry::registerDAO('DraftDatasetFileDAO', $draftDatasetFileDAO);
     }
@@ -113,8 +113,8 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $this->temporaryFile->setOriginalFileName('sample.pdf');
 
         $temporaryFileDAO->expects($this->any())
-                   ->method('getTemporaryFile')
-                   ->will($this->returnValue($this->temporaryFile));
+            ->method('getTemporaryFile')
+            ->will($this->returnValue($this->temporaryFile));
 
         DAORegistry::registerDAO('TemporaryFileDAO', $temporaryFileDAO);
     }
@@ -185,7 +185,8 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $datasetFile->setPath($this->temporaryFile->getFilePath());
 
         $expectedDataset = new Dataset();
-        $expectedDataset->setTitle($this->publication->getLocalizedTitle());
+        $datasetTitlePrefix = __('plugins.generic.dataverse.dataset.titlePrefix');
+        $expectedDataset->setTitle($datasetTitlePrefix . $this->publication->getLocalizedTitle());
         $expectedDataset->setDescription($this->publication->getLocalizedData('abstract'));
         $expectedDataset->setKeywords($this->publication->getLocalizedData('keywords'));
         $expectedDataset->setSubject($this->submission->getData('datasetSubject'));

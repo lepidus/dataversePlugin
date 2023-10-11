@@ -210,6 +210,9 @@ msgstr "Eliminar y enviar correo electrónico"
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publicar datos de investigación"
 
+msgid "plugins.generic.dataverse.dataset.titlePrefix"
+msgstr "Datos de réplica: "
+
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Título"
 

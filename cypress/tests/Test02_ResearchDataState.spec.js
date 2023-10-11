@@ -5,7 +5,6 @@ describe('Research data state', function () {
 
 	before(function () {
 		submission = {
-			id: 0,
 			section: 'Articles',
 			title: 'Socio-Environmental Education: Promoting Sustainability and Global Citizenship',
 			abstract: 'Socio-environmental education promotes sustainable and equitable development by raising awareness and promoting responsible practices. It fosters engaged and conscious global citizens.',
@@ -64,9 +63,6 @@ describe('Research data state', function () {
 		cy.get('button.submitFormButton').click();
 
 		cy.wait(500);
-		cy.location('search').then(search => {
-			submission.id = parseInt(search.split('=')[1], 10);
-		});
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.get('input[id^="title-en_US-"').type(submission.title, { delay: 0 });
@@ -75,9 +71,9 @@ describe('Research data state', function () {
 			cy.setTinyMceContent(node.attr('id'), submission.abstract);
 		});
 		cy.get('ul[id^="en_US-keywords-"]').then((node) => {
-			submission.keywords.forEach((keyword) => {
+			for(let keyword of submission.keywords) {
 				node.tagit('createTag', keyword);
-			});
+			}
 		});
 		cy.get('select[id^="datasetSubject"').should('not.be.visible');
 
@@ -85,7 +81,7 @@ describe('Research data state', function () {
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
 		cy.waitJQuery();
-		cy.get('form[id=submitStep4Form]').find('button').contains('Finish Submission').click();
+		cy.get('form[id=submitStep4Form] button:contains("Finish Submission")').click();
 		cy.get('button.pkpModalConfirmButton').click();
 		cy.waitJQuery();
 		cy.get('h2:contains("Submission complete")');
@@ -98,10 +94,10 @@ describe('Research data state', function () {
 
 		cy.login('eostrom', null, 'publicknowledge');
 
-		cy.visit('index.php/publicknowledge/authorDashboard/submission/' + submission.id);
+		cy.get('.pkpButton:visible:contains("View")').first().click();
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="dataStatement"]').click();
+		cy.get('#publication-button').click();
+		cy.get('#dataStatement-button').click();
 
 		cy.get('input[name="dataStatementTypes"][value="2"]').should('be.checked');
 		cy.get('input[name="dataStatementTypes"][value="5"]').should('be.checked');
@@ -123,16 +119,16 @@ describe('Research data state', function () {
 	});
 
 	it('Check submission landing page displays data statement state', function () {
-		const representation = (Cypress.env('contextTitles').en_US === 'Public Knowledge Preprint Server') ? 'preprint' : 'article';
 		const currentYear = new Date().getFullYear();
 
-		cy.login('dbarnes');
-		cy.visit('/index.php/publicknowledge/workflow/access/' + submission.id);
+		cy.login('dbarnes', null, 'publicknowledge');
+		cy.get('#active-button').click();
+		cy.get('.pkpButton:visible:contains("View")').first().click();
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.get('#publication-button').click();
+		cy.get('#datasetTab-button').click();
 
-		cy.get('button').contains('Upload research data').click();
+		cy.get('button:contains("Upload research data")').click();
 		cy.contains('Add research data').click();
 		cy.wait(1000);
 		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
@@ -148,7 +144,8 @@ describe('Research data state', function () {
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC BY 4.0');
 		cy.get('#datasetTab form button').contains('Save').click();
-		cy.get('#datasetTab [role="status"]').contains('Saved');
+		cy.waitJQuery();
+		cy.contains('h1', 'Research data');
 
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
 			cy.get('#workflow-button').click();
@@ -171,18 +168,18 @@ describe('Research data state', function () {
 			cy.contains('This version has been posted and can not be edited.');
 		}
 
-		cy.get('#dataStatement button').contains('Save').should('be.disabled');
+		cy.get('#dataStatement button:contains("Save")').should('be.disabled');
 
-		cy.visit(`/index.php/publicknowledge/${representation}/view/${submission.id}`);
+		cy.get('.pkpHeader__actions a:contains("View")').click();
 
-		cy.get('.dataStatement .label').contains('Data statement');
-		cy.get('.data_statement_list').contains('Data statement is contained in the manuscript');
-		cy.get('.data_statement_list').contains('They are available in one or more data repository(ies)').next().contains('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
-		cy.get('.data_statement_list').contains('They are available on demand, condition justified in the manuscript');
-		cy.get('.data_statement_list').contains('They cannot be made publicly available').next().contains('Has sensitive data');
+		cy.get('.label:contains("Data statement")');
+		cy.contains('Data statement is contained in the manuscript');
+		cy.contains('They are available in one or more data repository(ies)').next().contains('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
+		cy.contains('They are available on demand, condition justified in the manuscript');
+		cy.contains('They cannot be made publicly available').next().contains('Has sensitive data');
 
-		cy.get('.label').contains('Research data');
-		cy.get('.data_citation .value').contains(`Ostrom, Elinor, ${currentYear}, "${submission.title}"`);
-		cy.get('.data_citation .value a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
+		cy.get('.label:contains("Research data")');
+		cy.get('.data_citation').contains('Ostrom, Elinor, ' + currentYear + ', "Replication data for: ' + submission.title + '"');
+		cy.get('.data_citation').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
 	});
 });
