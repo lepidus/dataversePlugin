@@ -301,10 +301,10 @@ msgid "plugins.generic.dataverse.dataStatement.required"
 msgstr "It is required to inform the declaration of the data statement."
 
 msgid "plugins.generic.dataverse.dataStatement.inManuscript"
-msgstr "Data statement is contained in the manuscript"
+msgstr "The research data is contained in the manuscript"
 
 msgid "plugins.generic.dataverse.dataStatement.repoAvailable"
-msgstr "They are available in one or more data repository(ies)"
+msgstr "The research data is available in one or more data repository(ies)"
 
 msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls"
 msgstr "URLs"
@@ -319,13 +319,13 @@ msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat"
 msgstr "You must only enter the URLs to the data. Other textual information is not accepted."
 
 msgid "plugins.generic.dataverse.dataStatement.submissionDeposit"
-msgstr "They will be submitted to the \"{$dataverseName}\" repository in the subsequent stages of this submission"
+msgstr "The research data will be submitted to the \"{$dataverseName}\" repository in the subsequent stages of this submission"
 
 msgid "plugins.generic.dataverse.dataStatement.onDemand"
-msgstr "They are available on demand, condition justified in the manuscript"
+msgstr "The research data is available on demand, condition justified in the manuscript"
 
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable"
-msgstr "They cannot be made publicly available"
+msgstr "The research data cannot be made publicly available"
 
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason"
 msgstr "Justification"
@@ -334,7 +334,7 @@ msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.descri
 msgstr "Provide the justification for the unavailability of the data."
 
 msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
-msgstr "Research data has been submitted to the <strong>{$dataverseName}</strong> repository."
+msgstr "The research data has been submitted to the <strong>{$dataverseName}</strong> repository."
 
 msgid "plugins.generic.dataverse.report.displayName"
 msgstr "Dataverse Report"

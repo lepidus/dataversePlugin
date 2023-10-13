@@ -308,10 +308,10 @@ msgid "plugins.generic.dataverse.dataStatement.required"
 msgstr "Es obligatorio informar la declaración de los datos."
 
 msgid "plugins.generic.dataverse.dataStatement.inManuscript"
-msgstr "Están incluidos en el propio manuscrito"
+msgstr "Los datos de investigación están incluidos en el propio manuscrito"
 
 msgid "plugins.generic.dataverse.dataStatement.repoAvailable"
-msgstr "Ya están disponibles en uno o más repositorio de datos"
+msgstr "Los datos de investigación ya están disponibles en uno o más repositorio de datos"
 
 msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls"
 msgstr "URLs"
@@ -326,13 +326,13 @@ msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat"
 msgstr "Solo debe ingresar las URL a los datos. No se acepta otra información textual."
 
 msgid "plugins.generic.dataverse.dataStatement.submissionDeposit"
-msgstr "Se enviarán al repositorio \"{$dataverseName}\" en las siguientes etapas de esta presentación"
+msgstr "Los datos de investigación se enviarán al repositorio \"{$dataverseName}\" en las siguientes etapas de esta presentación"
 
 msgid "plugins.generic.dataverse.dataStatement.onDemand"
-msgstr "Están disponibles a petición, condición justificada en el manuscrito"
+msgstr "Los datos de investigación están disponibles a petición, condición justificada en el manuscrito"
 
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable"
-msgstr "No se pueden disponibilizar públicamente"
+msgstr "Los datos de investigación no se pueden disponibilizar públicamente"
 
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason"
 msgstr "Justificación"
@@ -341,7 +341,7 @@ msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.descri
 msgstr "Introduzca el motivo de la no disponibilidad de los datos."
 
 msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
-msgstr "Se han enviado datos de investigación al repositorio <strong>{$dataverseName}</strong>."
+msgstr "Los datos de investigación se han enviado al repositorio <strong>{$dataverseName}</strong>."
 
 msgid "plugins.generic.dataverse.report.displayName"
 msgstr "Informe de Dataverse"

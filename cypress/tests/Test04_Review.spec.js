@@ -102,7 +102,7 @@ describe('Research data on review', function () {
 		cy.get(".listPanel__item:visible").first().contains('View').click();
 
 		cy.contains('Data statement');
-		cy.contains('Research data has been submitted to the Dataverse de Exemplo Lepidus repository');
+		cy.contains('The research data has been submitted to the Dataverse de Exemplo Lepidus repository');
 		cy.get('a:contains("' + submission.researchDataFileNames[0] + '")');
 	});
 });
