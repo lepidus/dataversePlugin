@@ -173,10 +173,10 @@ describe('Research data state', function () {
 		cy.get('.pkpHeader__actions a:contains("View")').click();
 
 		cy.get('.label:contains("Data statement")');
-		cy.contains('Data statement is contained in the manuscript');
-		cy.contains('They are available in one or more data repository(ies)').next().contains('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
-		cy.contains('They are available on demand, condition justified in the manuscript');
-		cy.contains('They cannot be made publicly available').next().contains('Has sensitive data');
+		cy.contains('The research data is contained in the manuscript');
+		cy.contains('The research data is available in one or more data repository(ies)').next().contains('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
+		cy.contains('The research data is available on demand, condition justified in the manuscript');
+		cy.contains('The research data cannot be made publicly available').next().contains('Has sensitive data');
 
 		cy.get('.label:contains("Research data")');
 		cy.get('.data_citation').contains('Ostrom, Elinor, ' + currentYear + ', "Replication data for: ' + submission.title + '"');
