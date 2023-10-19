@@ -14,6 +14,7 @@
 
 import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
+import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
 
 class DataversePlugin extends GenericPlugin
 {
@@ -21,9 +22,14 @@ class DataversePlugin extends GenericPlugin
     {
         $success = parent::register($category, $path, $mainContextId);
 
-        $this->loadDispatcherClasses();
+        $dataverseConfigurationDAO = new DataverseConfigurationDAO();
+        $context = Application::get()->getRequest()->getContext();
         $this->registerDAOClasses();
-        PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
+
+        if(!is_null($context) and $dataverseConfigurationDAO->hasConfiguration($context->getId())) {
+            $this->loadDispatcherClasses();
+            PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
+        }
 
         return $success;
     }
@@ -51,7 +57,6 @@ class DataversePlugin extends GenericPlugin
     {
         import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
         import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudyDAO');
-        import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
 
         $draftDatasetFileDAO = new DraftDatasetFileDAO();
         $dataverseStudyDAO = new DataverseStudyDAO();

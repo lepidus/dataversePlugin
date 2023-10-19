@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfiguration');
 
 class DataverseConfigurationDAO
@@ -16,6 +18,16 @@ class DataverseConfigurationDAO
     public function newDataObject(): DataverseConfiguration
     {
         return new DataverseConfiguration();
+    }
+
+    public function hasConfiguration(int $contextId): bool
+    {
+        $numSettings = Capsule::table('plugin_settings')
+            ->where('plugin_name', 'dataverseplugin')
+            ->whereIn('setting_name', ['dataverseUrl', 'apiToken', 'termsOfUse'])
+            ->count();
+
+        return ($numSettings >= 3);
     }
 
     public function get(int $contextId): DataverseConfiguration

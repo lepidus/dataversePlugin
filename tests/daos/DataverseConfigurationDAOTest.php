@@ -47,6 +47,15 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
         return $configuration;
     }
 
+    public function testContextHasConfiguration(): void
+    {
+        $this->assertFalse($this->dataverseConfigurationDAO->hasConfiguration($this->contextId));
+
+        $this->dataverseConfigurationDAO->insert($this->contextId, $this->dataverseConfiguration);
+
+        $this->assertTrue($this->dataverseConfigurationDAO->hasConfiguration($this->contextId));
+    }
+
     public function testReturnsCorrectConfigurationFromDatabase(): void
     {
         $settings = $this->dataverseConfiguration->getAllData();

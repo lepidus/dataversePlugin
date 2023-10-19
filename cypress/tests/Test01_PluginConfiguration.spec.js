@@ -1,18 +1,28 @@
 
 describe('Plugin configuration', function () {
-
-	it('Check Configuration', function () {
-		const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
-
+	it('Check plugin does not break submission view', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
-
-		cy.get('a:contains("Website")').click();
+		cy.contains('a', 'Website').click();
 
 		cy.waitJQuery();
-		cy.get('button#plugins-button').click();
+		cy.get('#plugins-button').click();
 
 		cy.get('input[id^=select-cell-dataverseplugin]').check();
 		cy.get('input[id^=select-cell-dataverseplugin]').should('be.checked');
+
+		cy.contains('a', 'Submissions').click();
+		cy.get('#active-button').click();
+		cy.get('.pkpButton:visible:contains("View")').first().click();
+		cy.get('#publication-button').click();
+	});
+	it('Configures plugin', function() {
+		const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
+		
+		cy.login('dbarnes', null, 'publicknowledge');
+		cy.contains('a', 'Website').click();
+
+		cy.waitJQuery();
+		cy.get('#plugins-button').click();
 
 		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
 		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
