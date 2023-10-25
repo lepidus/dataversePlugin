@@ -35,8 +35,12 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
                     'name'     => 'file',
                     'contents' => Utils::tryFopen($filePath, 'rb'),
                     'filename' => $filename
+                ],
+                [
+                    'name' => 'jsonData',
+                    'contents' => json_encode(['label' => $filename])
                 ]
-            ]
+            ],
         ];
 
         $this->nativeAPIRequest('POST', $uri, $options);
