@@ -221,8 +221,8 @@ describe('Research data deposit', function () {
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data deposited) td').should('contain', 'Catherine Kwantes');
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data metadata updated) td').should('contain', 'Catherine Kwantes');
-		cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" added as research data.) td').should('contain', 'Catherine Kwantes');
-		cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" deleted from research data.) td').should('contain', 'Catherine Kwantes');
+		cy.get('#submissionHistoryGridContainer tr:contains(File "Submissão de dados.pdf" added as research data.) td').should('contain', 'Catherine Kwantes');
+		cy.get('#submissionHistoryGridContainer tr:contains(File "Submissão de dados.pdf" deleted from research data.) td').should('contain', 'Catherine Kwantes');
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data deleted) td').should('contain', 'Catherine Kwantes');
 	});
 
