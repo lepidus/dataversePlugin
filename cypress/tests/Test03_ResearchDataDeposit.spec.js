@@ -182,7 +182,7 @@ describe('Research data deposit', function () {
 		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').upload({
 				fileContent,
-				fileName: 'samples.pdf',
+				fileName: 'Submissão de dados.pdf',
 				mimeType: 'application/pdf',
 				encoding: 'base64',
 			});
@@ -190,14 +190,14 @@ describe('Research data deposit', function () {
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('form:visible button:contains("Save")').click();
 		cy.waitJQuery();
-		cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
+		cy.get('#datasetFiles .listPanel__items').contains('Submissão de dados.pdf');
 		cy.get('#datasetTab-button .pkpBadge').contains('2');
 
-		cy.get('.listPanel__item:contains(samples.pdf) button:contains(Delete)').click();
-		cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
+		cy.get('.listPanel__item:contains(Submissão de dados.pdf) button:contains(Delete)').click();
+		cy.get('#datasetFiles .listPanel__items').contains('Submissão de dados.pdf');
 		cy.get('.modal:visible button:contains(Yes)').click();
 		cy.waitJQuery();
-		cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'samples.pdf');
+		cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'Submissão de dados.pdf');
 		cy.get('#datasetTab-button .pkpBadge').contains('1');
 	});
 
@@ -221,8 +221,8 @@ describe('Research data deposit', function () {
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data deposited) td').should('contain', 'Catherine Kwantes');
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data metadata updated) td').should('contain', 'Catherine Kwantes');
-		cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" added as research data.) td').should('contain', 'Catherine Kwantes');
-		cy.get('#submissionHistoryGridContainer tr:contains(File "samples.pdf" deleted from research data.) td').should('contain', 'Catherine Kwantes');
+		cy.get('#submissionHistoryGridContainer tr:contains(File "Submissão de dados.pdf" added as research data.) td').should('contain', 'Catherine Kwantes');
+		cy.get('#submissionHistoryGridContainer tr:contains(File "Submissão de dados.pdf" deleted from research data.) td').should('contain', 'Catherine Kwantes');
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data deleted) td').should('contain', 'Catherine Kwantes');
 	});
 
@@ -500,6 +500,7 @@ describe('Research data deposit', function () {
 			+ dataverseServerName;
 		cy.get('div[data-modal="publish"]').contains(publishMsg);
 		cy.get('div[data-modal="publish"] button').contains('Yes').click();
+		cy.wait(1000);
 
 		cy.get('.value > p').contains('V1');
 		cy.get('button').contains('Publish research data').should('not.exist');

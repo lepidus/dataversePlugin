@@ -21,6 +21,15 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             $datasetFile->setId($file['dataFile']['id']);
             $datasetFile->setFileName($file['label']);
             $datasetFile->setOriginalFileName($file['dataFile']['filename']);
+
+            $encodedChar = 'Ã';
+            if (str_contains($file['label'], $encodedChar)) {
+                $datasetFile->setFileName(utf8_decode($file['label']));
+            }
+            if (str_contains($file['dataFile']['filename'], $encodedChar)) {
+                $datasetFile->setOriginalFileName(utf8_decode($file['dataFile']['filename']));
+            }
+
             return $datasetFile;
         }, $jsonContent['data']);
     }
@@ -35,8 +44,12 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
                     'name'     => 'file',
                     'contents' => Utils::tryFopen($filePath, 'rb'),
                     'filename' => $filename
+                ],
+                [
+                    'name' => 'jsonData',
+                    'contents' => json_encode(['label' => $filename])
                 ]
-            ]
+            ],
         ];
 
         $this->nativeAPIRequest('POST', $uri, $options);
