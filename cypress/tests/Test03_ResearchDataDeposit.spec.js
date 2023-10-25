@@ -500,6 +500,7 @@ describe('Research data deposit', function () {
 			+ dataverseServerName;
 		cy.get('div[data-modal="publish"]').contains(publishMsg);
 		cy.get('div[data-modal="publish"] button').contains('Yes').click();
+		cy.wait(1000);
 
 		cy.get('.value > p').contains('V1');
 		cy.get('button').contains('Publish research data').should('not.exist');
