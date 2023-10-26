@@ -20,6 +20,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
         HookRegistry::register('initiateexternalreviewform::display', array($this, 'addSelectDataFilesForReview'));
         HookRegistry::register('initiateexternalreviewform::execute', array($this, 'saveSelectedDataFilesForReview'));
+        HookRegistry::register('Publication::edit', array($this, 'updateDatasetOnPublicationUpdate'));
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -327,6 +328,35 @@ class DataverseEventsDispatcher extends DataverseDispatcher
                 $request
             );
         }
+    }
+
+    public function updateDatasetOnPublicationUpdate(string $hookName, array $args): bool
+    {
+        $publication = &$args[0];
+        $data = [];
+
+        $publicationDAO = DAORegistry::getDAO('PublicationDAO');
+        $publicationDAO->updateObject($publication);
+
+        $submission = Services::get('submission')->get($publication->getData('submissionId'));
+
+        $studyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $studyDAO->getStudyBySubmissionId($submission->getId());
+
+        if (!$study) {
+            return false;
+        }
+
+        import('plugins.generic.dataverse.classes.APACitation');
+        $apaCitation = new APACitation();
+
+        $data['persistentId'] = $study->getPersistentId();
+        $data['pubCitation'] = $apaCitation->getFormattedCitationBySubmission($submission);
+
+        $datasetService = new DatasetService();
+        $datasetService->update($data);
+
+        return false;
     }
 
     private function prepareFormToDisplay($templateMgr, $form, $request): string
