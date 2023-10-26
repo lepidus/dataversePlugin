@@ -19,7 +19,6 @@ class DataStatementForm extends FormComponent
         $this->action = $action;
         $this->locales = $locales;
 
-        $publication = $this->fixDataStatementTypesConversion($publication);
         $dataStatementTypes = $this->getDataStatementTypes();
 
         $dataStatementOptions = array_map(function ($value, $label) {
@@ -68,23 +67,6 @@ class DataStatementForm extends FormComponent
         ]));
     }
 
-    private function fixDataStatementTypesConversion($publication): Publication
-    {
-        $dataStatementTypes = $publication->getData('dataStatementTypes');
-
-        if (is_array($dataStatementTypes)) {
-            sort($dataStatementTypes);
-
-            Services::get('publication')->edit(
-                $publication,
-                ['dataStatementTypes' => $dataStatementTypes],
-                \Application::get()->getRequest()
-            );
-        }
-
-        return Services::get('publication')->get($publication->getId());
-    }
-
     private function getDataStatementTypes(): array
     {
         $dataStatementService = new DataStatementService();
@@ -105,35 +87,12 @@ class DataStatementForm extends FormComponent
 
     private function hasDataset(Publication $publication): bool
     {
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($publication->getData('submissionId'));
-        $dataStatementTypes = $publication->getData('dataStatementTypes');
+        $studyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $studyDAO->getStudyBySubmissionId($publication->getData('submissionId'));
 
         if (is_null($study)) {
-            if (
-                is_array($dataStatementTypes)
-                && in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)
-            ) {
-                $dataStatementTypes = array_diff($dataStatementTypes, [DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
-                Services::get('publication')->edit(
-                    $publication,
-                    ['dataStatementTypes' => $dataStatementTypes],
-                    \Application::get()->getRequest()
-                );
-            }
             return false;
         }
-
-        if (empty($dataStatementTypes)) {
-            $dataStatementTypes = [DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED];
-        } elseif (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
-            $dataStatementTypes[] = DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED;
-        }
-
-        Services::get('publication')->edit(
-            $publication,
-            ['dataStatementTypes' => $dataStatementTypes],
-            \Application::get()->getRequest()
-        );
 
         return true;
     }
