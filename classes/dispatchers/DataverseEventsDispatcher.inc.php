@@ -268,8 +268,8 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
     public function addSelectDataFilesForReview(string $hookName, array $params): ?string
     {
-        $form = & $params[0];
-        $output = & $params[1];
+        $form = &$params[0];
+        $output = &$params[1];
 
         $request = PKPApplication::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
@@ -426,7 +426,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
     public function setupDataverseHandlers($hookName, $params): bool
     {
-        $component = & $params[0];
+        $component = &$params[0];
         $ourHandlers = [
             'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler',
             'plugins.generic.dataverse.controllers.grid.DatasetReviewGridHandler'

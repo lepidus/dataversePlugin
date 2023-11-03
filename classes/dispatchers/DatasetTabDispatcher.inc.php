@@ -16,7 +16,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
     private function getSubmissionStudy(int $submissionId): ?DataverseStudy
     {
-        $dataverseStudyDao = & DAORegistry::getDAO('DataverseStudyDAO');
+        $dataverseStudyDao = &DAORegistry::getDAO('DataverseStudyDAO');
         $study = $dataverseStudyDao->getStudyBySubmissionId($submissionId);
         return $study;
     }

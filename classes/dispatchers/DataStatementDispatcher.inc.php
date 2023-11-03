@@ -238,8 +238,8 @@ class DataStatementDispatcher extends DataverseDispatcher
 
     public function viewDataStatement(string $hookName, array $params): bool
     {
-        $templateMgr = & $params[1];
-        $output = & $params[2];
+        $templateMgr = &$params[1];
+        $output = &$params[2];
 
         $dataStatementService = new DataStatementService();
         $allDataStatementTypes = $dataStatementService->getDataStatementTypes();
