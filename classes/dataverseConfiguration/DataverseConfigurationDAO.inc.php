@@ -22,12 +22,13 @@ class DataverseConfigurationDAO
 
     public function hasConfiguration(int $contextId): bool
     {
-        $numSettings = Capsule::table('plugin_settings')
+        $numSettingsFound = Capsule::table('plugin_settings')
             ->where('plugin_name', 'dataverseplugin')
             ->whereIn('setting_name', ['dataverseUrl', 'apiToken', 'termsOfUse'])
             ->count();
+        $minNumSettings = 3;
 
-        return ($numSettings >= 3);
+        return ($numSettingsFound >= $minNumSettings);
     }
 
     public function get(int $contextId): DataverseConfiguration
