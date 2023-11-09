@@ -57,7 +57,8 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         }
 
         $publication = $submission->getCurrentPublication();
-        if (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $publication->getData('dataStatementTypes'))) {
+        $dataStatementTypes = $publication->getData('dataStatementTypes');
+        if (empty($dataStatementTypes) || !in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
             return false;
         }
 
