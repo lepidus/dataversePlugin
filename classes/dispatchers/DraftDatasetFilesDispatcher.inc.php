@@ -29,7 +29,8 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             $templateMgr->assign('requestArgs', $requestArgs);
         }
 
-        if (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $publication->getData('dataStatementTypes'))) {
+        $dataStatementTypes = $publication->getData('dataStatementTypes');
+        if (empty($dataStatementTypes) || !in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
             return $output;
         }
 
@@ -48,9 +49,12 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     public function addStep2Validation(string $hookName, array $params): void
     {
         $form = &$params[0];
+        $publication = $form->submission->getCurrentPublication();
 
-        $this->validateResearchDataFileRequired($form);
-        $this->validateGalleyContainsResearchData($form);
+        if (!empty($publication->getData('dataStatementTypes'))) {
+            $this->validateResearchDataFileRequired($form);
+            $this->validateGalleyContainsResearchData($form);
+        }
     }
 
     private function validateResearchDataFileRequired(SubmissionSubmitStep2Form $form): void
