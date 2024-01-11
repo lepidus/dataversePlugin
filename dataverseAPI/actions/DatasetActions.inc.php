@@ -8,9 +8,9 @@ import('plugins.generic.dataverse.classes.entities.DatasetIdentifier');
 
 class DatasetActions extends DataverseActions implements DatasetActionsInterface
 {
-    public function get(string $persistendId): Dataset
+    public function get(string $persistentId): Dataset
     {
-        $args = '?persistentId=' . $persistendId;
+        $args = '?persistentId=' . $persistentId;
         $uri = $this->createNativeAPIURI('datasets', ':persistentId' . $args);
         $response = $this->nativeAPIRequest('GET', $uri);
 
@@ -18,9 +18,20 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         return $datasetFactory->getDataset();
     }
 
-    public function getCitation(string $persistendId): string
+    public function getCitation(string $persistentId): string
     {
-        $uri = $this->createSWORDAPIURI('edit', 'study', $persistendId);
+        $args = '?persistentId=' . $persistentId;
+        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions', ':latest', 'citation' . $args);
+        $response = $this->nativeAPIRequest('GET', $uri);
+
+        $jsonContent = json_decode($response->getBody(), true);
+        $citation = $jsonContent['data']['message'];
+        return preg_replace('/,+.UNF[^]]+]/', '', $citation);
+    }
+
+    private function getSWORDCitation(string $persistentId): string
+    {
+        $uri = $this->createSWORDAPIURI('edit', 'study', $persistentId);
         $response = $this->swordAPIRequest('GET', $uri);
 
         $doc = new DOMDocument();
@@ -36,7 +47,6 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         );
 
         return preg_replace('/,+.UNF[^]]+]/', '', $citation);
-
     }
 
     public function create(Dataset $dataset): DatasetIdentifier
