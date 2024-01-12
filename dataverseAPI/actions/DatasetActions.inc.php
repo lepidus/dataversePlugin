@@ -20,6 +20,29 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
 
     public function getCitation(string $persistentId): string
     {
+        $dataset = $this->get($persistentId);
+
+        if ($dataset->isPublished()) {
+            $args = '?exporter=dataverse_json&persistentId=' . $persistentId;
+            $uri = $this->createNativeAPIURI('datasets', 'export' . $args);
+            $response = $this->nativeAPIRequest('GET', $uri);
+
+            $jsonContent = json_decode($response->getBody(), true);
+            $citation = $jsonContent['datasetVersion']['citation'];
+            $persistentUrl = $jsonContent['persistentUrl'];
+            $citation = str_replace(
+                $persistentUrl,
+                '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>',
+                $citation
+            );
+            return preg_replace('/,+.UNF[^]]+]/', '', $citation);
+        } else {
+            return $this->getSWORDCitation($persistentId);
+        }
+    }
+
+    public function getNativeCitation(string $persistentId): string
+    {
         $args = '?persistentId=' . $persistentId;
         $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions', ':latest', 'citation' . $args);
         $response = $this->nativeAPIRequest('GET', $uri);
