@@ -1,5 +1,13 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes;
+
+use DateTime;
+use APP\submission\Submission;
+use APP\author\Author;
+use PKP\db\DAORegistry;
+use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
+
 class APACitation
 {
     private $locale;
@@ -12,16 +20,16 @@ class APACitation
 
     public function getFormattedCitationBySubmission(Submission $submission): string
     {
-        $this->locale = $submission->getLocale();
+        $this->locale = $submission->getData('locale');
         $journalDao = DAORegistry::getDAO('JournalDAO');
-        $journal = $journalDao->getById($submission->getContextId());
+        $journal = $journalDao->getById($submission->getData('contextId'));
         $publication = $submission->getCurrentPublication();
         $authors =  $publication->getData('authors');
-        $submittedDate = new DateTime($submission->getDateSubmitted());
+        $submittedDate = new DateTime($submission->getData('dateSubmitted'));
 
         $submissionCitation = $this->createAuthorsCitationAPA($authors) . ' ';
         $submissionCitation .= '(' . date_format($submittedDate, 'Y') . '). ';
-        $submissionCitation .= '<em>' . $submission->getLocalizedTitle($submission->getLocale()) . '</em>. ';
+        $submissionCitation .= '<em>' . $publication->getLocalizedTitle($this->locale) . '</em>. ';
         $submissionCitation .= $journal->getLocalizedName();
 
         return $submissionCitation;
@@ -65,25 +73,5 @@ class APACitation
         }
 
         return $familyName . ', ' . mb_substr($givenName, 0, 1) . ".";
-    }
-
-    private function retrievePubIdAttributes(Submission $submission): array
-    {
-        $contextId = $submission->getContextId();
-
-        $pubIdAttributes = array();
-        $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $contextId);
-        if (isset($pubIdPlugins['doipubidplugin'])) {
-            $doiPlugin = $pubIdPlugins['doipubidplugin'];
-
-            $pubId = $submission->getStoredPubId($doiPlugin->getPubIdType());
-            if (isset($pubId)) {
-                $pubIdAttributes['holdingsURI'] = $doiPlugin->getResolvingURL($contextId, $pubId);
-                $pubIdAttributes['agency'] = $doiPlugin->getDisplayName();
-                $pubIdAttributes['IDNo'] = $pubId;
-            }
-        }
-
-        return $pubIdAttributes;
     }
 }

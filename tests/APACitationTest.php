@@ -1,12 +1,14 @@
 <?php
 
-import('lib.pkp.tests.PKPTestCase');
-import('lib.pkp.classes.db.DAO');
-import('classes.submission.Submission');
-import('classes.publication.Publication');
-import('classes.article.Author');
-import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudy');
-import('plugins.generic.dataverse.classes.APACitation');
+use PKP\tests\PKPTestCase;
+use APP\submission\Submission;
+use APP\publication\Publication;
+use APP\author\Author;
+use APP\journal\Journal;
+use APP\journal\JournalDAO;
+use PKP\db\DAORegistry;
+use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
+use APP\plugins\generic\dataverse\classes\APACitation;
 
 class APACitationTest extends PKPTestCase
 {
@@ -41,8 +43,8 @@ class APACitationTest extends PKPTestCase
         $journal->setName('Preprints da Lepidus', 'pt_BR');
 
         $journalDAO->expects($this->any())
-                   ->method('getById')
-                   ->will($this->returnValue($journal));
+            ->method('getById')
+            ->will($this->returnValue($journal));
 
         DAORegistry::registerDAO('JournalDAO', $journalDAO);
     }
@@ -82,7 +84,7 @@ class APACitationTest extends PKPTestCase
         $this->submission->setData('publications', array($this->publication));
     }
 
-    public function testHasDOIAsMarkup(): void
+    public function testHasDoiAsMarkup(): void
     {
         $expectedDOI = 'https://doi.org/10.12345/FK2/NTF9X8';
         $dataCitation = "Iris Castanheiras, 2021, \"The Rise of The Machine Empire\", $expectedDOI, Demo Dataverse, V1, UNF:6:dEgtc5Z1MSF3u7c+kF4kXg== [fileUNF]";
@@ -98,7 +100,7 @@ class APACitationTest extends PKPTestCase
         $this->assertEquals($expectedCitationMarkup, $studyCitationMarkup);
     }
 
-    public function testPreprintCitationIsAPA(): void
+    public function testPreprintCitationIsApa(): void
     {
         $expectedSubmissionCitation = 'Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
 

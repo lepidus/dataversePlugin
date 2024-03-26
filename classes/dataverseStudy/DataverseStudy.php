@@ -1,5 +1,9 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes\dataverseStudy;
+
+use PKP\core\DataObject;
+
 class DataverseStudy extends DataObject
 {
     public function getId(): int
