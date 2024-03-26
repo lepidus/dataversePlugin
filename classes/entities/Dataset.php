@@ -1,5 +1,9 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes\entities;
+
+use PKP\core\DataObject;
+
 class Dataset extends DataObject
 {
     public const VERSION_STATE_DRAFT = 'DRAFT';

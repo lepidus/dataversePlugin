@@ -1,6 +1,8 @@
 <?php
 
-import('plugins.generic.dataverse.classes.entities.Dataset');
+namespace APP\plugins\generic\dataverse\classes\factories;
+
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
 
 abstract class DatasetFactory
 {

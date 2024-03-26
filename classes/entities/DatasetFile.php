@@ -1,13 +1,12 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes\entities;
+
 class DatasetFile
 {
     private $id;
-
     private $fileName;
-
     private $originalFileName;
-
     private $path;
 
     public function getId(): int

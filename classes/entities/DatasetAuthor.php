@@ -1,5 +1,9 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes\entities;
+
+use PKP\core\DataObject;
+
 class DatasetAuthor extends DataObject
 {
     public function __construct(string $name, ?string $affiliation = null, ?string $identifier = null)

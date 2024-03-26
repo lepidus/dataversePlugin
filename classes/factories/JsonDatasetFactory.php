@@ -1,9 +1,12 @@
 <?php
 
-import('plugins.generic.dataverse.classes.factories.DatasetFactory');
-import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
-import('plugins.generic.dataverse.classes.entities.DatasetContact');
-import('plugins.generic.dataverse.classes.entities.DatasetFile');
+namespace APP\plugins\generic\dataverse\classes\factories;
+
+use APP\plugins\generic\dataverse\classes\factories\DatasetFactory;
+use APP\plugins\generic\dataverse\classes\entities\DatasetAuthor;
+use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
+use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
+use stdClass;
 
 class JsonDatasetFactory extends DatasetFactory
 {
