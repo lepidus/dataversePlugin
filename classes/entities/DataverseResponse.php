@@ -1,5 +1,7 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes\entities;
+
 class DataverseResponse
 {
     private $statusCode;
