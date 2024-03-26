@@ -2,8 +2,8 @@
 /**
  * @file plugins/generic/dataverse/DataversePlugin.inc.php
  *
- * Copyright (c) 2019-2021 Lepidus Tecnologia
- * Copyright (c) 2020-2021 SciELO
+ * Copyright (c) 2019 - 2024 Lepidus Tecnologia
+ * Copyright (c) 2020 - 2024 SciELO
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @class DataversePlugin
@@ -12,9 +12,11 @@
  * @brief dataverse plugin class
  */
 
-import('lib.pkp.classes.plugins.GenericPlugin');
-import('classes.notification.NotificationManager');
-import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
+namespace APP\plugins\generic\dataverse;
+
+use PKP\plugins\GenericPlugin;
+use APP\core\Application;
+use APP\plugins\generic\dataverse\classes\migrations\DataverseMigration;
 
 class DataversePlugin extends GenericPlugin
 {
@@ -22,14 +24,18 @@ class DataversePlugin extends GenericPlugin
     {
         $success = parent::register($category, $path, $mainContextId);
 
-        $dataverseConfigurationDAO = new DataverseConfigurationDAO();
+        if (Application::isUnderMaintenance()) {
+            return true;
+        }
+
+        /*$dataverseConfigurationDAO = new DataverseConfigurationDAO();
         $context = Application::get()->getRequest()->getContext();
         $this->registerDAOClasses();
 
         if(!is_null($context) and $dataverseConfigurationDAO->hasConfiguration($context->getId())) {
             $this->loadDispatcherClasses();
             PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
-        }
+        }*/
 
         return $success;
     }
@@ -143,7 +149,6 @@ class DataversePlugin extends GenericPlugin
 
     public function getInstallMigration(): DataverseMigration
     {
-        $this->import('classes.migration.DataverseMigration');
         return new DataverseMigration();
     }
 }
