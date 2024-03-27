@@ -5,9 +5,9 @@ use APP\submission\Submission;
 use APP\publication\Publication;
 use PKP\plugins\Hook;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
-use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
 
-class DraftDatasetFileDAOTest extends DatabaseTestCase
+class RepositoryTest extends DatabaseTestCase
 {
     private $draftDatasetFile;
     private $submissionId;
@@ -15,21 +15,9 @@ class DraftDatasetFileDAOTest extends DatabaseTestCase
     public function setUp(): void
     {
         parent::setUp();
+        $this->addDraftDatasetFileSchema();
         $this->submissionId = $this->createSubmission();
         $this->draftDatasetFile = $this->createDraftDatasetFile();
-        Hook::add('Schema::get::draftDatasetFile', function ($hookname, $params) {
-            $schema = &$params[0];
-            $draftDatasetFileSchemaFile = BASE_SYS_DIR . '/plugins/generic/dataverse/schemas/draftDatasetFile.json';
-
-            if (file_exists($draftDatasetFileSchemaFile)) {
-                $schema = json_decode(file_get_contents($draftDatasetFileSchemaFile));
-                if (!$schema) {
-                    fatalError('Schema failed to decode. This usually means it is invalid JSON. Requested: ' . $draftDatasetFileSchemaFile . '. Last JSON error: ' . json_last_error());
-                }
-            }
-
-            return false;
-        });
     }
 
     public function tearDown(): void
@@ -42,6 +30,23 @@ class DraftDatasetFileDAOTest extends DatabaseTestCase
     protected function getAffectedTables()
     {
         return ['draft_dataset_files'];
+    }
+
+    private function addDraftDatasetFileSchema()
+    {
+        Hook::add('Schema::get::draftDatasetFile', function ($hookname, $params) {
+            $schema = &$params[0];
+            $draftDatasetFileSchemaFile = BASE_SYS_DIR . '/plugins/generic/dataverse/schemas/draftDatasetFile.json';
+
+            if (file_exists($draftDatasetFileSchemaFile)) {
+                $schema = json_decode(file_get_contents($draftDatasetFileSchemaFile));
+                if (!$schema) {
+                    fatalError('Schema failed to decode. This usually means it is invalid JSON. Requested: ' . $draftDatasetFileSchemaFile . '. Last JSON error: ' . json_last_error());
+                }
+            }
+
+            return true;
+        });
     }
 
     private function createSubmission(): int
@@ -66,6 +71,9 @@ class DraftDatasetFileDAOTest extends DatabaseTestCase
             'fileName' => 'example.pdf'
         ]);
 
+        $id = Repo::draftDatasetFile()->add($draftDatasetFile);
+        $draftDatasetFile->setId($id);
+
         return $draftDatasetFile;
     }
 
@@ -78,7 +86,9 @@ class DraftDatasetFileDAOTest extends DatabaseTestCase
     public function testGetBySubmissionId(): void
     {
         $files = Repo::draftDatasetFile()->getBySubmissionId($this->submissionId);
-        $draftDatasetFile = $files->toArray()[0];
+        $draftDatasetFileId = $this->draftDatasetFile->getId();
+        $draftDatasetFile = $files->toArray()[$draftDatasetFileId];
+
         $this->assertEquals($this->draftDatasetFile->getAllData(), $draftDatasetFile->getAllData());
     }
 
