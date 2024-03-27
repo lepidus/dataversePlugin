@@ -1,5 +1,9 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes\draftDatasetFile;
+
+use PKP\core\DataObject;
+
 class DraftDatasetFile extends DataObject
 {
     public function getSubmissionId(): int
