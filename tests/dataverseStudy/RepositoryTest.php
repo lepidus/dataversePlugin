@@ -9,7 +9,6 @@ use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 class RepositoryTest extends DatabaseTestCase
 {
     private $study;
-    private $studyId;
     private $submissionId;
     private $editUri;
     private $editMediaUri;
@@ -85,7 +84,7 @@ class RepositoryTest extends DatabaseTestCase
 
     public function testGetBySubmissionId(): void
     {
-        $dataverseStudy = Repo::dataverseStudy()->getBySubmissionId($this->study->getSubmissionId());
+        $dataverseStudy = Repo::dataverseStudy()->getBySubmissionId($this->submissionId);
         $this->assertEquals($this->study->getAllData(), $dataverseStudy->getAllData());
     }
 
