@@ -1,10 +1,14 @@
 <?php
 
-define('DATASET_PUBLISH_SUBMISSION_ACCEPTED', 1);
-define('DATASET_PUBLISH_SUBMISSION_PUBLISHED', 2);
+namespace APP\plugins\generic\dataverse\classes\dataverseConfiguration;
+
+use PKP\core\DataObject;
 
 class DataverseConfiguration extends DataObject
 {
+    public const DATASET_PUBLISH_SUBMISSION_ACCEPTED = 1;
+    public const DATASET_PUBLISH_SUBMISSION_PUBLISHED = 2;
+
     public function setDataverseUrl(string $url): void
     {
         $this->setData('dataverseUrl', $url);
@@ -64,8 +68,8 @@ class DataverseConfiguration extends DataObject
     public function getDatasetPublishOptions(): array
     {
         return [
-            DATASET_PUBLISH_SUBMISSION_ACCEPTED => 'plugins.generic.dataverse.settings.datasetPublish.submissionAccepted',
-            DATASET_PUBLISH_SUBMISSION_PUBLISHED => 'plugins.generic.dataverse.settings.datasetPublish.submissionPublished'
+            self::DATASET_PUBLISH_SUBMISSION_ACCEPTED => 'plugins.generic.dataverse.settings.datasetPublish.submissionAccepted',
+            self::DATASET_PUBLISH_SUBMISSION_PUBLISHED => 'plugins.generic.dataverse.settings.datasetPublish.submissionPublished'
         ];
     }
 }

@@ -1,13 +1,14 @@
 <?php
 
-use Illuminate\Database\Capsule\Manager as Capsule;
+namespace APP\plugins\generic\dataverse\classes\dataverseConfiguration;
 
-import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfiguration');
+use Illuminate\Support\Facades\DB;
+use PKP\db\DAORegistry;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 
 class DataverseConfigurationDAO
 {
     private $dao;
-
     private $pluginName = 'dataverseplugin';
 
     public function __construct()
@@ -22,7 +23,7 @@ class DataverseConfigurationDAO
 
     public function hasConfiguration(int $contextId): bool
     {
-        $numSettingsFound = Capsule::table('plugin_settings')
+        $numSettingsFound = DB::table('plugin_settings')
             ->where('plugin_name', 'dataverseplugin')
             ->whereIn('setting_name', ['dataverseUrl', 'apiToken', 'termsOfUse'])
             ->count();
