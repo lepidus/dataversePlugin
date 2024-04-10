@@ -1,8 +1,12 @@
 <?php
 
-import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataverse.dataverseAPI.packagers.NativeAPIDatasetPackager');
-import('plugins.generic.dataverse.classes.DataverseMetadata');
+use PKP\tests\PKPTestCase;
+
+use APP\plugins\generic\dataverse\dataverseAPI\packagers\NativeAPIDatasetPackager;
+use APP\plugins\generic\dataverse\classes\DataverseMetadata;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
+use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 
 class NativeAPIDatasetPackagerTest extends PKPTestCase
 {
@@ -20,7 +24,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         parent::tearDown();
     }
 
-    public function testNativeAPIPackagerReturnsPackageDirPath(): void
+    public function testNativeApiPackagerReturnsPackageDirPath(): void
     {
         $dataset = new Dataset();
         $this->packager = new NativeAPIDatasetPackager($dataset);
@@ -28,7 +32,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $this->assertMatchesRegularExpression('/\/tmp\/dataverse.+/', $packageDirPath);
     }
 
-    public function testNativeAPIPackagerBuildsPrimitiveMetadata(): void
+    public function testNativeApiPackagerBuildsPrimitiveMetadata(): void
     {
         $dataset = new Dataset();
         $dataset->setTitle('Test title');
@@ -42,7 +46,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $this->assertContains($titleMetadata, $this->packager->getDatasetMetadata());
     }
 
-    public function testNativeAPIPackagerBuildsSimpleCompoundMetadata(): void
+    public function testNativeApiPackagerBuildsSimpleCompoundMetadata(): void
     {
         $dataset = new Dataset();
         $dataset->setDescription('<p>Test description</p>');
@@ -65,7 +69,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $this->assertContains($descriptionMetadata, $this->packager->getDatasetMetadata());
     }
 
-    public function testNativeAPIPackagerBuildsPubCitationMetadata(): void
+    public function testNativeApiPackagerBuildsPubCitationMetadata(): void
     {
         $dataset = new Dataset();
         $dataset->setPubCitation('User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems');
@@ -88,7 +92,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $this->assertContains($publicationMetadata, $this->packager->getDatasetMetadata());
     }
 
-    public function testNativeAPIPackagerBuildsMultiCompoundMetadata(): void
+    public function testNativeApiPackagerBuildsMultiCompoundMetadata(): void
     {
         $dataset = new Dataset();
         $dataset->setContact(new DatasetContact('Test name', 'test@mail.com', 'Dataverse'));
@@ -123,7 +127,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $this->assertContains($contactMetadata, $this->packager->getDatasetMetadata());
     }
 
-    public function testNativeAPIPackagerBuildsControlledVocabularyMetadata(): void
+    public function testNativeApiPackagerBuildsControlledVocabularyMetadata(): void
     {
         $dataset = new Dataset();
         $dataset->setSubject('Other');
@@ -137,7 +141,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $this->assertContains($subjectMetadata, $this->packager->getDatasetMetadata());
     }
 
-    public function testNativeAPIPackagerIgnoreUndefinedMetadata(): void
+    public function testNativeApiPackagerIgnoreUndefinedMetadata(): void
     {
         $datasetFile = new DatasetFile();
         $dataset = new Dataset();
@@ -149,7 +153,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $this->assertEmpty($this->packager->getDatasetMetadata());
     }
 
-    public function testNativeAPIPackagerCreatesDatasetJson(): void
+    public function testNativeApiPackagerCreatesDatasetJson(): void
     {
         $dataset = new Dataset();
         $this->packager = new NativeAPIDatasetPackager($dataset);

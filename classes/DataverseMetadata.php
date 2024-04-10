@@ -1,5 +1,11 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes;
+
+use APP\core\Application;
+use PKP\db\DAORegistry;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+
 class DataverseMetadata
 {
     private $dataverseLicenses;

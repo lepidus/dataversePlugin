@@ -1,7 +1,10 @@
 <?php
 
-import('plugins.generic.dataverse.dataverseAPI.packagers.DatasetPackager');
-import('plugins.generic.dataverse.classes.DataverseMetadata');
+namespace APP\plugins\generic\dataverse\dataverseAPI\packagers;
+
+use APP\plugins\generic\dataverse\dataverseAPI\packagers\DatasetPackager;
+use APP\plugins\generic\dataverse\classes\DataverseMetadata;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
 
 class NativeAPIDatasetPackager extends DatasetPackager
 {

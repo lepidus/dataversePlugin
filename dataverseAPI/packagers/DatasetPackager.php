@@ -1,5 +1,9 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\dataverseAPI\packagers;
+
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
+
 abstract class DatasetPackager
 {
     protected $dataset;
