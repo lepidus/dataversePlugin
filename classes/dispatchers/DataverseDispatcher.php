@@ -1,5 +1,9 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes\dispatchers;
+
+use PKP\plugins\Plugin;
+
 abstract class DataverseDispatcher
 {
     protected $plugin;

@@ -1,20 +1,26 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.classes.services.DataStatementService');
+namespace APP\plugins\generic\dataverse\classes\dispatchers;
+
+use PKP\plugins\Hook;
+use APP\core\Application;
+use APP\template\TemplateManager;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 
 class DataStatementDispatcher extends DataverseDispatcher
 {
     public function registerHooks(): void
     {
-        HookRegistry::register('TemplateManager::display', [$this, 'addDataStatementResources']);
-        HookRegistry::register('submissionsubmitstep1form::display', [$this, 'addDataStatementField']);
-        HookRegistry::register('submissionsubmitstep1form::readuservars', [$this, 'readDataStatementVars']);
-        HookRegistry::register('SubmissionHandler::saveSubmit', [$this, 'saveDataStatement']);
-        HookRegistry::register('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
-        HookRegistry::register('Publication::validate', [$this, 'validateDataStatementProps']);
-        HookRegistry::register('Templates::Preprint::Details', [$this, 'viewDataStatement']);
-        HookRegistry::register('Templates::Article::Details', [$this, 'viewDataStatement']);
+        Hook::add('TemplateManager::display', [$this, 'addDataStatementResources']);
+        Hook::add('submissionsubmitstep1form::display', [$this, 'addDataStatementField']);
+        Hook::add('submissionsubmitstep1form::readuservars', [$this, 'readDataStatementVars']);
+        Hook::add('SubmissionHandler::saveSubmit', [$this, 'saveDataStatement']);
+        Hook::add('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
+        Hook::add('Publication::validate', [$this, 'validateDataStatementProps']);
+        Hook::add('Templates::Preprint::Details', [$this, 'viewDataStatement']);
+        Hook::add('Templates::Article::Details', [$this, 'viewDataStatement']);
     }
 
     public function addDataStatementResources(string $hookName, array $args): bool
@@ -58,14 +64,14 @@ class DataStatementDispatcher extends DataverseDispatcher
 
     public function addDataStatementField(string $hookName, array $args): bool
     {
-        $request = PKPApplication::get()->getRequest();
+        $request = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
 
         $dataStatementService = new DataStatementService();
 
         $templateMgr->assign('allDataStatementsTypes', $dataStatementService->getDataStatementTypes());
+        $templateMgr->registerFilter("output", [$this, 'dataStatementFilter']);
 
-        $templateMgr->registerFilter("output", array($this, 'dataStatementFilter'));
         return false;
     }
 
@@ -80,7 +86,7 @@ class DataStatementDispatcher extends DataverseDispatcher
             );
 
             $output = substr_replace($output, $dataStatementTemplate, $posMatch, 0);
-            $templateMgr->unregisterFilter('output', array($this, 'dataStatementFilter'));
+            $templateMgr->unregisterFilter('output', [$this, 'dataStatementFilter']);
         }
         return $output;
     }
@@ -130,18 +136,18 @@ class DataStatementDispatcher extends DataverseDispatcher
         }
 
         $submissionId = $stepForm->execute();
-        $submission = Services::get('submission')->get($submissionId);
+        $submission = Repo::submission()->get($submissionId);
         $publication = $submission->getCurrentPublication();
 
         $params = $this->createDataStatementParams($stepForm);
 
-        $newPublication = Services::get('publication')->edit($publication, $params, \Application::get()->getRequest());
-        $stepForm->submission = Services::get('submission')->get($newPublication->getData('submissionId'));
+        $newPublication = Repo::publication()->edit($publication, $params);
+        $stepForm->submission = Repo::submission()->get($newPublication->getData('submissionId'));
 
         return false;
     }
 
-    private function isValidStepForm(int $step, SubmissionSubmitForm &$stepForm): bool
+    private function isValidStepForm(int $step, &$stepForm): bool
     {
         if ($step !== 1 || !$stepForm->validate()) {
             return false;
@@ -182,7 +188,7 @@ class DataStatementDispatcher extends DataverseDispatcher
         return true;
     }
 
-    private function createDataStatementParams(SubmissionSubmitForm $stepForm): array
+    private function createDataStatementParams($stepForm): array
     {
         $dataStatementTypes = $stepForm->getData('dataStatementTypes');
         $dataStatementUrls = null;

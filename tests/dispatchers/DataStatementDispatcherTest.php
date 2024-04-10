@@ -46,8 +46,8 @@ class DataStatementDispatcherTest extends DatabaseTestCase
         $publicationId = $this->createTestPublication($publicationData);
         $insertedPublication = Repo::publication()->get($publicationId);
 
-        $this->assertEquals($dataStatementTypes, $insertedPublication->getData('dataStatementTypes'));
-        $this->assertEquals($dataStatementUrls, $insertedPublication->getData('dataStatementUrls'));
-        $this->assertEquals($dataStatementReason, $insertedPublication->getData('dataStatementReason'));
+        $this->assertEquals($publicationData['dataStatementTypes'], $insertedPublication->getData('dataStatementTypes'));
+        $this->assertEquals($publicationData['dataStatementUrls'], $insertedPublication->getData('dataStatementUrls'));
+        $this->assertEquals($publicationData['dataStatementReason'], $insertedPublication->getData('dataStatementReason'));
     }
 }
