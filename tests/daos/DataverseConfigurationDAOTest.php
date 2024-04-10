@@ -1,18 +1,15 @@
 <?php
 
-import('lib.pkp.tests.DatabaseTestCase');
-import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
+use PKP\tests\DatabaseTestCase;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
 
 class DataverseConfigurationDAOTest extends DatabaseTestCase
 {
     private $contextId = 9090;
-
     private $pluginName = 'dataverseplugin';
-
     private $pluginSettingsDAO;
-
     private $dataverseConfigurationDAO;
-
     private $dataverseConfiguration;
 
     protected function setUp(): void
@@ -26,7 +23,7 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
 
     protected function getAffectedTables(): array
     {
-        return array('plugin_settings');
+        return ['plugin_settings'];
     }
 
     private function createTestDataverseConfiguration(): DataverseConfiguration
