@@ -6,7 +6,7 @@ use APP\publication\Publication;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 
-class RepositoryTest extends DatabaseTestCase
+class DataverseStudyRepositoryTest extends DatabaseTestCase
 {
     private $study;
     private $submissionId;

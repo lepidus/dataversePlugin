@@ -7,7 +7,7 @@ use PKP\plugins\Hook;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
 
-class RepositoryTest extends DatabaseTestCase
+class DraftDatasetFileRepositoryTest extends DatabaseTestCase
 {
     private $draftDatasetFile;
     private $submissionId;
