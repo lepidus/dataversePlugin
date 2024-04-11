@@ -1,18 +1,17 @@
 <?php
 
-import('plugins.generic.dataverse.classes.entities.DataverseResponse');
-import('plugins.generic.dataverse.classes.exception.DataverseException');
+namespace APP\plugins\generic\dataverse\dataverseAPI\search;
+
+use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 
 class DataverseSearchBuilder
 {
     private $configuration;
-
     private $httpClient;
-
     private $queries = [];
-
     private $types = [];
-
     private $filterQueries = [];
 
     public function __construct(DataverseConfiguration $configuration, \GuzzleHttp\Client $httpClient)
