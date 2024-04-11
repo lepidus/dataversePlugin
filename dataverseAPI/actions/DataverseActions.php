@@ -1,18 +1,19 @@
 <?php
 
-use GuzzleHttp\Exception\RequestException;
+namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
-import('plugins.generic.dataverse.classes.entities.DataverseResponse');
-import('plugins.generic.dataverse.classes.exception.DataverseException');
+use APP\core\Application;
+use PKP\db\DAORegistry;
+use GuzzleHttp\Exception\RequestException;
+use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 
 abstract class DataverseActions
 {
     protected $serverURL;
-
     protected $apiToken;
-
     protected $dataverseAlias;
-
     protected $client;
 
     public function __construct(

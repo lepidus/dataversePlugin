@@ -24,7 +24,7 @@ class DataverseActionsTest extends PKPTestCase
         $this->configuration->setAPIToken('apiToken');
     }
 
-    public function testNativeAPIURICreation(): void
+    public function testNativeApiUriCreation(): void
     {
         $actions = $this->getMockBuilder(DataverseActions::class)
             ->setConstructorArgs([$this->configuration])
@@ -38,7 +38,7 @@ class DataverseActionsTest extends PKPTestCase
         );
     }
 
-    public function testGetCurrentDataverseURI(): void
+    public function testGetCurrentDataverseUri(): void
     {
         $actions = $this->getMockBuilder(DataverseActions::class)
             ->setConstructorArgs([$this->configuration])
@@ -52,7 +52,7 @@ class DataverseActionsTest extends PKPTestCase
         );
     }
 
-    public function testGetRootDataverseURI(): void
+    public function testGetRootDataverseUri(): void
     {
         $actions = $this->getMockBuilder(DataverseActions::class)
             ->setConstructorArgs([$this->configuration])
@@ -66,7 +66,7 @@ class DataverseActionsTest extends PKPTestCase
         );
     }
 
-    public function testSwordAPIURICreation(): void
+    public function testSwordApiUriCreation(): void
     {
         $actions = $this->getMockBuilder(DataverseActions::class)
             ->setConstructorArgs([$this->configuration])
@@ -80,7 +80,7 @@ class DataverseActionsTest extends PKPTestCase
         );
     }
 
-    public function testSuccessfulNativeAPIRequest(): void
+    public function testSuccessfulNativeApiRequest(): void
     {
         $mockHandler = new MockHandler([
             new Response(200, [], '{"foo": "bar"}'),
