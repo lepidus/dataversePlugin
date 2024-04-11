@@ -39,4 +39,14 @@ class Repository
     {
         return $this->dao->insert($draftDatasetFile);
     }
+
+    public function delete(DraftDatasetFile $draftDatasetFile)
+    {
+        $this->dao->deleteById($draftDatasetFile->getId());
+    }
+
+    public function deleteBySubmissionId(int $submissionId)
+    {
+        $this->dao->deleteBySubmissionId($submissionId);
+    }
 }

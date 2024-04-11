@@ -61,6 +61,13 @@ class DAO extends EntityDAO
         return parent::_insert($draftDatasetFile);
     }
 
+    public function deleteBySubmissionId(int $submissionId)
+    {
+        DB::table($this->table)
+            ->where('submission_id', $submissionId)
+            ->delete();
+    }
+
     private function makeCollectionFromRows($rows): LazyCollection
     {
         return LazyCollection::make(function () use ($rows) {

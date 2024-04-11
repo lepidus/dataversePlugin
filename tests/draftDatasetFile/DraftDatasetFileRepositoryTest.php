@@ -122,8 +122,26 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
         }
     }
 
-    //teste delete
+    public function testDeleteByObject(): void
+    {
+        $draftDatasetFile = $this->draftDatasetFiles[0];
+        Repo::draftDatasetFile()->delete($draftDatasetFile);
 
-    //teste deleteBySubmissionId
+        $retrievedFiles = Repo::draftDatasetFile()->getAll($this->contextId)->toArray();
+        $secondDraftDatasetFile = $this->draftDatasetFiles[1];
+        $retrievedDatasetFile = $retrievedFiles[$secondDraftDatasetFile->getId()];
+        $this->assertCount(1, $retrievedFiles);
+        $this->assertEquals($secondDraftDatasetFile->getAllData(), $retrievedDatasetFile->getAllData());
+    }
 
+    public function testDeleteBySubmissionId(): void
+    {
+        Repo::draftDatasetFile()->deleteBySubmissionId($this->secondSubmissionId);
+
+        $retrievedFiles = Repo::draftDatasetFile()->getAll($this->contextId)->toArray();
+        $firstDraftDatasetFile = $this->draftDatasetFiles[0];
+        $retrievedDatasetFile = $retrievedFiles[$firstDraftDatasetFile->getId()];
+        $this->assertCount(1, $retrievedFiles);
+        $this->assertEquals($firstDraftDatasetFile->getAllData(), $retrievedDatasetFile->getAllData());
+    }
 }
