@@ -9,22 +9,31 @@ use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
 
 class DraftDatasetFileRepositoryTest extends DatabaseTestCase
 {
-    private $draftDatasetFile;
-    private $submissionId;
+    private $contextId = 1;
+    private $draftDatasetFiles;
+    private $firstSubmissionId;
+    private $secondSubmissionId;
 
     public function setUp(): void
     {
         parent::setUp();
         $this->addDraftDatasetFileSchema();
-        $this->submissionId = $this->createSubmission();
-        $this->draftDatasetFile = $this->createDraftDatasetFile();
+        $this->firstSubmissionId = $this->createSubmission();
+        $this->secondSubmissionId = $this->createSubmission();
+
+        $firstDraftDatasetFile = $this->createDraftDatasetFile($this->firstSubmissionId, 200, 300, 'example.pdf');
+        $secondDraftDatasetFile = $this->createDraftDatasetFile($this->secondSubmissionId, 201, 301, 'dummy.pdf');
+
+        $this->draftDatasetFiles = [$firstDraftDatasetFile, $secondDraftDatasetFile];
     }
 
     public function tearDown(): void
     {
         parent::tearDown();
-        $submission = Repo::submission()->get($this->submissionId);
-        Repo::submission()->delete($submission);
+        $firstSubmission = Repo::submission()->get($this->firstSubmissionId);
+        $secondSubmission = Repo::submission()->get($this->secondSubmissionId);
+        Repo::submission()->delete($firstSubmission);
+        Repo::submission()->delete($secondSubmission);
     }
 
     protected function getAffectedTables()
@@ -51,24 +60,23 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
 
     private function createSubmission(): int
     {
-        $contextId = 1;
-        $context = DAORegistry::getDAO('JournalDAO')->getById($contextId);
+        $context = DAORegistry::getDAO('JournalDAO')->getById($this->contextId);
 
         $submission = new Submission();
-        $submission->setData('contextId', $contextId);
+        $submission->setData('contextId', $this->contextId);
         $publication = new Publication();
 
         return Repo::submission()->add($submission, $publication, $context);
     }
 
-    private function createDraftDatasetFile(): DraftDatasetFile
+    private function createDraftDatasetFile($submissionId, $userId, $fileId, $fileName): DraftDatasetFile
     {
         $draftDatasetFile = new DraftDatasetFile();
         $draftDatasetFile->setAllData([
-            'submissionId' => $this->submissionId,
-            'userId' => 200,
-            'fileId' => 300,
-            'fileName' => 'example.pdf'
+            'submissionId' => $submissionId,
+            'userId' => $userId,
+            'fileId' => $fileId,
+            'fileName' => $fileName
         ]);
 
         $id = Repo::draftDatasetFile()->add($draftDatasetFile);
@@ -83,16 +91,36 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
         $this->assertInstanceOf(DraftDatasetFile::class, $draftDatasetFile);
     }
 
-    public function testGetBySubmissionId(): void
+    public function testGetById(): void
     {
-        $files = Repo::draftDatasetFile()->getBySubmissionId($this->submissionId);
-        $draftDatasetFileId = $this->draftDatasetFile->getId();
-        $draftDatasetFile = $files->toArray()[$draftDatasetFileId];
+        $draftDatasetFile = $this->draftDatasetFiles[0];
+        $retrievedDatasetFile = Repo::draftDatasetFile()->get($draftDatasetFile->getId());
 
-        $this->assertEquals($this->draftDatasetFile->getAllData(), $draftDatasetFile->getAllData());
+        $this->assertEquals($draftDatasetFile->getAllData(), $retrievedDatasetFile->getAllData());
     }
 
-    //teste getall
+    public function testGetBySubmissionId(): void
+    {
+        $retrievedFiles = Repo::draftDatasetFile()->getBySubmissionId($this->firstSubmissionId)->toArray();
+        $draftDatasetFile = $this->draftDatasetFiles[0];
+        $draftDatasetFileId = $draftDatasetFile->getId();
+        $retrievedDatasetFile = $retrievedFiles[$draftDatasetFileId];
+
+        $this->assertCount(1, $retrievedFiles);
+        $this->assertEquals($draftDatasetFile->getAllData(), $retrievedDatasetFile->getAllData());
+    }
+
+    public function testGetAll(): void
+    {
+        $retrievedFiles = Repo::draftDatasetFile()->getAll($this->contextId)->toArray();
+
+        $this->assertCount(2, $retrievedFiles);
+
+        foreach ($this->draftDatasetFiles as $draftDatasetFile) {
+            $retrievedDatasetFile = $retrievedFiles[$draftDatasetFile->getId()];
+            $this->assertEquals($draftDatasetFile->getAllData(), $retrievedDatasetFile->getAllData());
+        }
+    }
 
     //teste delete
 

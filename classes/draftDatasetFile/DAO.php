@@ -25,9 +25,13 @@ class DAO extends EntityDAO
         return app(DraftDatasetFile::class);
     }
 
-    public function insert(DraftDatasetFile $draftDatasetFile): int
+    public function get(int $id): ?DraftDatasetFile
     {
-        return parent::_insert($draftDatasetFile);
+        $row = DB::table($this->table)
+            ->where('draft_dataset_file_id', $id)
+            ->first();
+
+        return $row ? $this->fromRow($row) : null;
     }
 
     public function getBySubmissionId(int $submissionId): LazyCollection
@@ -36,6 +40,29 @@ class DAO extends EntityDAO
             ->where('submission_id', $submissionId)
             ->get();
 
+        return $this->makeCollectionFromRows($rows);
+    }
+
+    public function getAll(int $contextId): LazyCollection
+    {
+        $rows = DB::table($this->table)
+            ->whereIn('submission_id', function ($query) use ($contextId) {
+                $query->select('submission_id')
+                    ->from('submissions')
+                    ->where('context_id', $contextId);
+            })
+            ->get();
+
+        return $this->makeCollectionFromRows($rows);
+    }
+
+    public function insert(DraftDatasetFile $draftDatasetFile): int
+    {
+        return parent::_insert($draftDatasetFile);
+    }
+
+    private function makeCollectionFromRows($rows): LazyCollection
+    {
         return LazyCollection::make(function () use ($rows) {
             foreach ($rows as $row) {
                 yield $row->draft_dataset_file_id => $this->fromRow($row);

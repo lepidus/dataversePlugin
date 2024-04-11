@@ -20,9 +20,19 @@ class Repository
         return $this->dao->newDataObject();
     }
 
+    public function get(int $studyId): ?DraftDatasetFile
+    {
+        return $this->dao->get($studyId);
+    }
+
     public function getBySubmissionId(int $submissionId): LazyCollection
     {
         return $this->dao->getBySubmissionId($submissionId);
+    }
+
+    public function getAll(int $contextId): LazyCollection
+    {
+        return $this->dao->getAll($contextId);
     }
 
     public function add(DraftDatasetFile $draftDatasetFile): int
