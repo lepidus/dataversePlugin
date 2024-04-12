@@ -12,12 +12,16 @@ use APP\journal\JournalDAO;
 use PKP\file\TemporaryFile;
 use PKP\file\TemporaryFileDAO;
 use PKP\db\DAORegistry;
+use PKP\services\PKPSchemaService;
 use Illuminate\Support\LazyCollection;
 use APP\plugins\generic\dataverse\classes\APACitation;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
 use APP\plugins\generic\dataverse\classes\entities\DatasetAuthor;
+use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
-use APP\plugins\generic\dataverse\classes\draftDatasetFile\Repo as DraftDatasetFileRepo;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DAO as DraftDatasetFileDao;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\Repository as DraftDatasetFileRepo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 
 class SubmissionDatasetFactoryTest extends PKPTestCase
@@ -29,6 +33,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
     private $user;
     private $journal;
     private $temporaryFile;
+    private $draftDatasetFile;
     private $mockDraftDatasetFileRepo;
 
     protected function setUp(): void
@@ -89,7 +94,10 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
     private function createMockDraftDatasetFileRepo()
     {
+        $schemaService = new PKPSchemaService();
+        $draftDatasetFileDao = new DraftDatasetFileDao($schemaService);
         $draftDatasetFileRepo = $this->getMockBuilder(DraftDatasetFileRepo::class)
+            ->setConstructorArgs([$draftDatasetFileDao])
             ->setMethods(['getBySubmissionId'])
             ->getMock();
 
@@ -99,9 +107,10 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $draftDatasetFile->setData('userId', $this->user->getId());
         $draftDatasetFile->setData('fileId', rand());
         $draftDatasetFile->setData('fileName', 'test.pdf');
+        $this->draftDatasetFile = $draftDatasetFile;
 
         $collectionFiles = LazyCollection::make(function () use ($draftDatasetFile) {
-            yield $draftDatasetFile['draftDatasetFileId'] => $draftDatasetFile;
+            yield $draftDatasetFile->getId() => $draftDatasetFile;
         });
 
         $draftDatasetFileRepo->expects($this->any())
@@ -140,11 +149,16 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $submission->setData('datasetLicense', 'CC BY 4.0');
 
         $author = new Author();
+        $author->setId(rand());
         $author->setGivenName('Iris', $this->locale);
         $author->setFamilyName('Castanheiras', $this->locale);
         $author->setEmail('iris@testmail.com');
         $author->setAffiliation('Dataverse', $this->locale);
         $author->setOrcid('https://orcid.org/0000-0000-0000-0000');
+
+        $collectionAuthors = LazyCollection::make(function () use ($author) {
+            yield $author->getId() => $author;
+        });
 
         $publication = new Publication();
         $publication->setId(rand());
@@ -155,7 +169,8 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
         $author->setData('publicationId', $publication->getId());
         $publication->setData('submissionId', $submission->getId());
-        $publication->setData('authors', [$author]);
+        $publication->setData('primaryContactId', $author->getId());
+        $publication->setData('authors', $collectionAuthors);
         $submission->setData('currentPublicationId', $publication->getId());
         $submission->setData('publications', [$publication]);
 
@@ -198,11 +213,11 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $expectedDataset->setKeywords($this->publication->getLocalizedData('keywords'));
         $expectedDataset->setSubject($this->submission->getData('datasetSubject'));
         $expectedDataset->setLicense($this->submission->getData('datasetLicense'));
-        $expectedDataset->setAuthors([$datasetAuthor]);
+        $expectedDataset->setAuthors([$this->author->getId() => $datasetAuthor]);
         $expectedDataset->setContact($datasetContact);
         $expectedDataset->setDepositor($datasetDepositor);
         $expectedDataset->setPubCitation($datasetPubCitation);
-        $expectedDataset->setFiles([$datasetFile]);
+        $expectedDataset->setFiles([$this->draftDatasetFile->getId() => $datasetFile]);
 
         $this->assertEquals($expectedDataset, $dataset);
     }
