@@ -1,7 +1,12 @@
 <?php
 
-import('lib.pkp.tests.DatabaseTestCase');
-import('plugins.generic.dataverse.report.services.queryBuilders.DataverseReportQueryBuilder');
+use PKP\tests\DatabaseTestCase;
+use APP\core\Application;
+use PKP\plugins\Hook;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
+use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
+use APP\plugins\generic\dataverse\DataversePlugin;
 
 class DataverseReportQueryBuilderTest extends DatabaseTestCase
 {
@@ -22,46 +27,46 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         return new DataverseReportQueryBuilder();
     }
 
-    private function createTestContext(): int
+    private function createTestContext()
     {
         $contextDAO = Application::getContextDAO();
         $context = $contextDAO->newDataObject();
         $context->setPath('test');
-        $context->setPrimaryLocale('en_US');
-        return $contextDAO->insertObject($context);
+        $context->setPrimaryLocale('en');
+        $id = $contextDAO->insertObject($context);
+        $context->setId($id);
+
+        return $context;
     }
 
-    private function createTestSubmission(array $data): Submission
+    private function createTestSubmission($context, $data): Submission
     {
         $plugin = new DataversePlugin();
         $dispatcher = new DataStatementDispatcher($plugin);
 
-        HookRegistry::register(
-            'Schema::get::publication',
-            [$dispatcher, 'addDataStatementToPublicationSchema']
-        );
+        Hook::add('Schema::get::publication', [$dispatcher, 'addDataStatementToPublicationSchema']);
 
-        $submission = DAORegistry::getDAO('SubmissionDAO')->newDataObject();
+        $submission = new Submission();
         $submission->setAllData($data);
-        DAORegistry::getDAO('SubmissionDAO')->insertObject($submission);
+        $submission->setData('contextId', $context->getId());
 
-        $publication = DAORegistry::getDAO('PublicationDAO')->newDataObject();
-        $publication->setData('submissionId', $submission->getId());
-        DAORegistry::getDAO('PublicationDAO')->insertObject($publication);
+        $publication = new Publication();
+
+        $submissionId = Repo::submission()->add($submission, $publication, $context);
+        $submission->setId($submissionId);
 
         return $submission;
     }
 
     public function testFilterSubmissionByContexts(): void
     {
-        $contextId = $this->createTestContext();
-        $submission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
+        $context = $this->createTestContext();
+        $submission = $this->createTestSubmission($context, [
+            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
         $query = $this->getQueryBuilder()
-            ->filterByContexts($contextId)
+            ->filterByContexts($context->getId())
             ->getQuery();
 
         $this->assertEquals(
@@ -72,16 +77,14 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
     public function testFilterSubmissionByDecisions(): void
     {
-        $contextId = $this->createTestContext();
+        $context = $this->createTestContext();
 
-        $acceptedSubmission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
+        $acceptedSubmission = $this->createTestSubmission($context, [
+            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
-        $declinedSubmission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
+        $declinedSubmission = $this->createTestSubmission($context, [
+            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
         DAORegistry::getDAO('EditDecisionDAO')->updateEditorDecision($acceptedSubmission->getId(), [
