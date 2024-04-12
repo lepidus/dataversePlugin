@@ -24,7 +24,7 @@ class APACitation
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($submission->getData('contextId'));
         $publication = $submission->getCurrentPublication();
-        $authors =  $publication->getData('authors');
+        $authors =  $publication->getData('authors')->toArray();
         $submittedDate = new DateTime($submission->getData('dateSubmitted'));
 
         $submissionCitation = $this->createAuthorsCitationAPA($authors) . ' ';
@@ -38,6 +38,7 @@ class APACitation
     public function createAuthorsCitationAPA(array $authors): string
     {
         $authorsCitation = '';
+        $authors = array_values($authors);
         $authorsNumbers = count($authors);
 
         if ($authorsNumbers > 5) {

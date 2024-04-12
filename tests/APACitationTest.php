@@ -7,6 +7,7 @@ use APP\author\Author;
 use APP\journal\Journal;
 use APP\journal\JournalDAO;
 use PKP\db\DAORegistry;
+use Illuminate\Support\LazyCollection;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\APACitation;
 
@@ -52,6 +53,7 @@ class APACitationTest extends PKPTestCase
     private function createAuthors(): void
     {
         $author = new Author();
+        $author->setId(987);
         $author->setData('publicationId', 1234);
         $author->setGivenName('Iris', 'pt_BR');
         $author->setFamilyName('Castanheiras', 'pt_BR');
@@ -73,9 +75,20 @@ class APACitationTest extends PKPTestCase
         $this->publication->setId(1234);
         $this->publication->setData('submissionId', 1245);
         $this->publication->setData('title', "The Rise of The Machine Empire", 'pt_BR');
-        $this->publication->setData('authors', $this->authors);
+        $this->publication->setData('authors', $this->lazyCollectionFromAuthors($this->authors));
         $this->publication->setData('locale', 'pt_BR');
         $this->publication->setData('relationStatus', '1');
+    }
+
+    private function lazyCollectionFromAuthors(array $authors): LazyCollection
+    {
+        $collectionAuthors = LazyCollection::make(function () use ($authors) {
+            foreach ($authors as $author) {
+                yield $author->getId() => $author;
+            }
+        });
+
+        return $collectionAuthors;
     }
 
     private function addCurrentPublicationToSubmission(): void
@@ -114,6 +127,7 @@ class APACitationTest extends PKPTestCase
     {
         $this->authors[0]->setGivenName('Átila', 'pt_BR');
         $this->authors[0]->setFamilyName('Álamo', 'pt_BR');
+        $this->publication->setData('authors', $this->lazyCollectionFromAuthors($this->authors));
 
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
@@ -126,6 +140,7 @@ class APACitationTest extends PKPTestCase
     {
         $this->authors[0]->setGivenName('Mário', 'pt_BR');
         $this->authors[0]->setFamilyName('Fernandes', 'pt_BR');
+        $this->publication->setData('authors', $this->lazyCollectionFromAuthors($this->authors));
 
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
@@ -138,6 +153,7 @@ class APACitationTest extends PKPTestCase
     {
         $this->authors[0]->setGivenName('Lucas', 'pt_BR');
         $this->authors[0]->setFamilyName('Átila', 'pt_BR');
+        $this->publication->setData('authors', $this->lazyCollectionFromAuthors($this->authors));
 
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
@@ -150,6 +166,7 @@ class APACitationTest extends PKPTestCase
     {
         $this->authors[0]->setGivenName('Cláudio', 'pt_BR');
         $this->authors[0]->setFamilyName('Sérgio', 'pt_BR');
+        $this->publication->setData('authors', $this->lazyCollectionFromAuthors($this->authors));
 
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
@@ -161,6 +178,7 @@ class APACitationTest extends PKPTestCase
     public function testGivenNameWithAccentOnTheFirstLetter(): void
     {
         $this->authors[0]->setGivenName('Ângelo', 'pt_BR');
+        $this->publication->setData('authors', $this->lazyCollectionFromAuthors($this->authors));
 
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
