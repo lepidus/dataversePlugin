@@ -2,7 +2,12 @@
 
 use PKP\tests\DatabaseTestCase;
 use APP\core\Application;
+use PKP\core\Core;
 use PKP\plugins\Hook;
+use APP\submission\Submission;
+use APP\publication\Publication;
+use APP\decision\Decision;
+use APP\log\event\SubmissionEventLogEntry;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
@@ -10,16 +15,19 @@ use APP\plugins\generic\dataverse\DataversePlugin;
 
 class DataverseReportQueryBuilderTest extends DatabaseTestCase
 {
-    protected function getAffectedTables(): array
+    private $context;
+
+    public function setUp(): void
     {
-        return [
-            'publications', 'publication_settings',
-            'submissions', 'submission_settings',
-            'journals', 'journal_settings',
-            'edit_decisions',
-            'dataverse_studies',
-            'event_log'
-        ];
+        parent::setUp();
+        $this->context = $this->createTestContext();
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $contextDAO = Application::getContextDAO();
+        $contextDAO->deleteObject($this->context);
     }
 
     private function getQueryBuilder(): DataverseReportQueryBuilder
@@ -60,13 +68,12 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
     public function testFilterSubmissionByContexts(): void
     {
-        $context = $this->createTestContext();
-        $submission = $this->createTestSubmission($context, [
+        $submission = $this->createTestSubmission($this->context, [
             'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
         $query = $this->getQueryBuilder()
-            ->filterByContexts($context->getId())
+            ->filterByContexts($this->context->getId())
             ->getQuery();
 
         $this->assertEquals(
@@ -77,40 +84,38 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
     public function testFilterSubmissionByDecisions(): void
     {
-        $context = $this->createTestContext();
-
-        $acceptedSubmission = $this->createTestSubmission($context, [
+        $acceptedSubmission = $this->createTestSubmission($this->context, [
             'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
-        $declinedSubmission = $this->createTestSubmission($context, [
+        $declinedSubmission = $this->createTestSubmission($this->context, [
             'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
+            'status' => Submission::STATUS_DECLINED
         ]);
 
-        DAORegistry::getDAO('EditDecisionDAO')->updateEditorDecision($acceptedSubmission->getId(), [
-            'editDecisionId' => null,
+        $acceptDecision = Repo::decision()->newDataObject([
+            'decision' => Decision::ACCEPT,
+            'submissionId' => $acceptedSubmission->getId(),
+            'dateDecided' => date(Core::getCurrentDate()),
             'editorId' => 1,
-            'decision' => SUBMISSION_EDITOR_DECISION_ACCEPT,
-            'dateDecided' => date(Core::getCurrentDate())
         ]);
+        Repo::decision()->dao->insert($acceptDecision);
 
-        DAORegistry::getDAO('EditDecisionDAO')->updateEditorDecision($declinedSubmission->getId(), [
-            'editDecisionId' => null,
+        $declineDecision = Repo::decision()->newDataObject([
+            'decision' => Decision::DECLINE,
+            'submissionId' => $declinedSubmission->getId(),
+            'dateDecided' => date(Core::getCurrentDate()),
             'editorId' => 1,
-            'decision' => SUBMISSION_EDITOR_DECISION_DECLINE,
-            'dateDecided' => date(Core::getCurrentDate())
         ]);
-
-        $declinedSubmission->setStatus(STATUS_DECLINED);
-        DAORegistry::getDAO('SubmissionDAO')->updateObject($declinedSubmission);
+        Repo::decision()->dao->insert($declineDecision);
 
         $query = $this->getQueryBuilder()
-            ->filterByContexts($contextId);
+            ->filterByContexts($this->context->getId());
 
-        $acceptedQuery = $query->filterByDecisions([SUBMISSION_EDITOR_DECISION_ACCEPT])
+        $acceptedQuery = $query->filterByDecisions([Decision::ACCEPT])
             ->getQuery();
 
-        $declinedQuery = $query->filterByDecisions([SUBMISSION_EDITOR_DECISION_DECLINE])
+        $declinedQuery = $query->filterByDecisions([Decision::DECLINE])
             ->getQuery();
 
         $this->assertEquals(
@@ -126,20 +131,15 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
     public function testGetSubmissionsWithDataset(): void
     {
-        $contextId = $this->createTestContext();
-
-        $submission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
+        $submission = $this->createTestSubmission($this->context, [
+            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
-        $datasetSubmission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
+        $datasetSubmission = $this->createTestSubmission($this->context, [
+            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
-        $studyDAO = new DataverseStudyDAO();
-        $study = $studyDAO->newDataObject();
+        $study = Repo::dataverseStudy()->newDataObject();
         $study->setAllData([
             'submissionId' => $datasetSubmission->getId(),
             'persistentId' => 'testId',
@@ -148,10 +148,10 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             'editMediaUri' => 'testEditMediaUri',
             'statementUri' => 'testStatementUri',
         ]);
-        $studyDAO->insertStudy($study);
+        Repo::dataverseStudy()->add($study);
 
         $query = $this->getQueryBuilder()
-            ->filterByContexts($contextId)
+            ->filterByContexts($this->context->getId())
             ->getWithDataset();
 
         $this->assertEquals(
@@ -162,43 +162,36 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
     public function testCountDatasetsWithDepositError(): void
     {
-        $contextId = $this->createTestContext();
-
-        $submission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
+        $submission = $this->createTestSubmission($this->context, [
+            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
-        import('classes.log.SubmissionEventLogEntry');
+        $depositErrorEntry = Repo::eventLog()->newDataObject([
+            'assocType' => Application::ASSOC_TYPE_SUBMISSION,
+            'assocId' => $submission->getId(),
+            'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_METADATA_UPDATE,
+            'message' => 'plugins.generic.dataverse.error.depositFailed',
+            'isTranslated' => false,
+            'dateLogged' => Core::getCurrentDate(),
+        ]);
+        Repo::eventLog()->add($depositErrorEntry);
 
-        $submissionEventLogDao = DAORegistry::getDAO('SubmissionEventLogDAO');
-        $depositErrorEntry = $submissionEventLogDao->newDataObject();
-        $depositErrorEntry->setDateLogged(Core::getCurrentDate());
-        $depositErrorEntry->setUserId(rand());
-        $depositErrorEntry->setSubmissionId($submission->getId());
-        $depositErrorEntry->setEventType(SUBMISSION_LOG_METADATA_UPDATE);
-        $depositErrorEntry->setMessage('plugins.generic.dataverse.error.depositFailed');
-        $depositErrorEntry->setParams([]);
-        $depositErrorEntry->setIsTranslated(0);
-        $submissionEventLogDao->insertObject($depositErrorEntry);
-
-        $submissionEventLogDao = DAORegistry::getDAO('SubmissionEventLogDAO');
-        $publishErrorEntry = $submissionEventLogDao->newDataObject();
-        $publishErrorEntry->setDateLogged(Core::getCurrentDate());
-        $publishErrorEntry->setUserId(rand());
-        $publishErrorEntry->setSubmissionId($submission->getId());
-        $publishErrorEntry->setEventType(SUBMISSION_LOG_METADATA_UPDATE);
-        $publishErrorEntry->setMessage('plugins.generic.dataverse.error.publishFailed');
-        $publishErrorEntry->setParams([]);
-        $publishErrorEntry->setIsTranslated(0);
-        $submissionEventLogDao->insertObject($publishErrorEntry);
+        $publishErrorEntry = Repo::eventLog()->newDataObject([
+            'assocType' => Application::ASSOC_TYPE_SUBMISSION,
+            'assocId' => $submission->getId(),
+            'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_METADATA_UPDATE,
+            'message' => 'plugins.generic.dataverse.error.publishFailed',
+            'isTranslated' => false,
+            'dateLogged' => Core::getCurrentDate(),
+        ]);
+        Repo::eventLog()->add($publishErrorEntry);
 
         $depositErrorsCount = $this->getQueryBuilder()
-            ->filterByContexts($contextId)
+            ->filterByContexts($this->context->getId())
             ->countDatasetsWithError(['plugins.generic.dataverse.error.depositFailed']);
 
         $publishErrorsCount = $this->getQueryBuilder()
-            ->filterByContexts($contextId)
+            ->filterByContexts($this->context->getId())
             ->countDatasetsWithError(['plugins.generic.dataverse.error.publishFailed']);
 
         $this->assertEquals(1, $depositErrorsCount);

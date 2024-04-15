@@ -1,17 +1,17 @@
 <?php
 
-use Illuminate\Database\Capsule\Manager as Capsule;
+namespace APP\plugins\generic\dataverse\report\services\queryBuilders;
+
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
-
-import('classes.workflow.EditorDecisionActionsManager');
-import('lib.pkp.classes.submission.PKPSubmission');
-
-define('SUBMISSION_PROGRESS_COMPLETE', 0);
+use APP\decision\Decision;
+use APP\submission\Submission;
 
 class DataverseReportQueryBuilder
 {
-    protected $contextIds = [];
+    public const SUBMISSION_PROGRESS_COMPLETE = 0;
 
+    protected $contextIds = [];
     protected $decisions = [];
 
     public function filterByContexts($contextIds): self
@@ -28,7 +28,7 @@ class DataverseReportQueryBuilder
 
     public function getQuery(): Builder
     {
-        $query = Capsule::table('submissions as s');
+        $query = DB::table('submissions as s');
 
         if (!empty($this->contextIds)) {
             $query->whereIn('s.context_id', $this->contextIds);
@@ -38,17 +38,17 @@ class DataverseReportQueryBuilder
             $query->leftJoin('edit_decisions as ed', 's.submission_id', '=', 'ed.submission_id')
                 ->whereIn('ed.decision', $this->decisions);
 
-            $declineDecisions = [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE];
+            $declineDecisions = [Decision::DECLINE, Decision::INITIAL_DECLINE];
             if (count(array_intersect($declineDecisions, $this->decisions))) {
-                $query->where('s.status', '=', STATUS_DECLINED);
+                $query->where('s.status', '=', Submission::STATUS_DECLINED);
             } else {
-                $query->where('s.status', '!=', STATUS_DECLINED);
+                $query->where('s.status', '!=', Submission::STATUS_DECLINED);
             }
         }
 
         $query->leftJoin('publications as pi', 'pi.submission_id', '=', 's.submission_id');
 
-        $query->where('s.submission_progress', '=', SUBMISSION_PROGRESS_COMPLETE);
+        $query->where('s.submission_progress', '=', self::SUBMISSION_PROGRESS_COMPLETE);
 
         return $query;
     }
@@ -70,7 +70,7 @@ class DataverseReportQueryBuilder
         $query->leftJoin('event_log as el', 'el.assoc_id', '=', 's.submission_id')
             ->whereIn('el.message', $messages);
 
-        $query->select(Capsule::raw('COUNT(DISTINCT s.submission_id) as count'));
+        $query->select(DB::raw('COUNT(DISTINCT s.submission_id) as count'));
 
         return $query->get()->first()->count;
     }
