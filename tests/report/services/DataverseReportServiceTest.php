@@ -1,47 +1,63 @@
 <?php
 
-import('lib.pkp.tests.DatabaseTestCase');
-import('plugins.generic.dataverse.report.services.DataverseReportService');
+use PKP\tests\DatabaseTestCase;
+use APP\core\Application;
+use PKP\core\Core;
+use PKP\plugins\Hook;
+use APP\submission\Submission;
+use APP\publication\Publication;
+use APP\decision\Decision;
+use APP\log\event\SubmissionEventLogEntry;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
+use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
+use APP\plugins\generic\dataverse\report\services\DataverseReportService;
+use APP\plugins\generic\dataverse\DataversePlugin;
 
 class DataverseReportServiceTest extends DatabaseTestCase
 {
-    protected function getAffectedTables(): array
+    private $context;
+
+    public function setUp(): void
     {
-        return [
-            'publications', 'publication_settings',
-            'submissions', 'submission_settings',
-            'journals', 'journal_settings',
-            'edit_decisions',
-            'dataverse_studies',
-        ];
+        parent::setUp();
+        $this->context = $this->createTestContext();
     }
 
-    private function createTestContext(): int
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $contextDAO = Application::getContextDAO();
+        $contextDAO->deleteObject($this->context);
+    }
+
+    private function createTestContext()
     {
         $contextDAO = Application::getContextDAO();
         $context = $contextDAO->newDataObject();
         $context->setPath('test');
-        $context->setPrimaryLocale('en_US');
-        return $contextDAO->insertObject($context);
+        $context->setPrimaryLocale('en');
+        $id = $contextDAO->insertObject($context);
+        $context->setId($id);
+
+        return $context;
     }
 
-    private function createTestSubmission(array $data): Submission
+    private function createTestSubmission($context, $data): Submission
     {
         $plugin = new DataversePlugin();
         $dispatcher = new DataStatementDispatcher($plugin);
 
-        HookRegistry::register(
-            'Schema::get::publication',
-            [$dispatcher, 'addDataStatementToPublicationSchema']
-        );
+        Hook::add('Schema::get::publication', [$dispatcher, 'addDataStatementToPublicationSchema']);
 
-        $submission = DAORegistry::getDAO('SubmissionDAO')->newDataObject();
+        $submission = new Submission();
         $submission->setAllData($data);
-        DAORegistry::getDAO('SubmissionDAO')->insertObject($submission);
+        $submission->setData('contextId', $context->getId());
 
-        $publication = DAORegistry::getDAO('PublicationDAO')->newDataObject();
-        $publication->setData('submissionId', $submission->getId());
-        DAORegistry::getDAO('PublicationDAO')->insertObject($publication);
+        $publication = new Publication();
+
+        $submissionId = Repo::submission()->add($submission, $publication, $context);
+        $submission->setId($submissionId);
 
         return $submission;
     }
@@ -58,22 +74,21 @@ class DataverseReportServiceTest extends DatabaseTestCase
     public function testGetReportHeaders(): void
     {
         $reportService = new DataverseReportService();
-
         $headers = [];
 
-        if (Application::get()->getName() === 'ojs2') {
+        if (Application::get()->getName() == 'ojs2') {
             $headers = array_merge($headers, [
-                '##plugins.generic.dataverse.report.headers.acceptedSubmissions##',
-                '##plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset##',
+                __('plugins.generic.dataverse.report.headers.acceptedSubmissions'),
+                __('plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset'),
             ]);
         }
 
         $headers = array_merge($headers, [
-            '##plugins.generic.dataverse.report.headers.declinedSubmissions##',
-            '##plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset##',
-            '##plugins.generic.dataverse.report.headers.datasetsWithDepositError##',
-            '##plugins.generic.dataverse.report.headers.datasetsWithPublishError##',
-            '##plugins.generic.dataverse.report.headers.filesInDatasets##'
+            __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
+            __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
+            __('plugins.generic.dataverse.report.headers.datasetsWithDepositError'),
+            __('plugins.generic.dataverse.report.headers.datasetsWithPublishError'),
+            __('plugins.generic.dataverse.report.headers.filesInDatasets')
         ]);
 
         $this->assertEquals($headers, $reportService->getReportHeaders());
@@ -81,27 +96,26 @@ class DataverseReportServiceTest extends DatabaseTestCase
 
     public function testCountSubmissions(): void
     {
-        $contextId = $this->createTestContext();
-        $submission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
+        $submission = $this->createTestSubmission($this->context, [
+            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
         ]);
 
-        DAORegistry::getDAO('EditDecisionDAO')->updateEditorDecision($submission->getId(), [
-            'editDecisionId' => null,
+        $acceptDecision = Repo::decision()->newDataObject([
+            'decision' => Decision::ACCEPT,
+            'submissionId' => $submission->getId(),
+            'dateDecided' => date(Core::getCurrentDate()),
             'editorId' => 1,
-            'decision' => SUBMISSION_EDITOR_DECISION_ACCEPT,
-            'dateDecided' => date(Core::getCurrentDate())
         ]);
+        Repo::decision()->dao->insert($acceptDecision);
 
         $reportService = new DataverseReportService();
         $acceptedSubmissions = $reportService->countSubmissions([
-            'contextIds' => [$contextId],
-            'decisions' => [SUBMISSION_EDITOR_DECISION_ACCEPT],
+            'contextIds' => [$this->context->getId()],
+            'decisions' => [Decision::ACCEPT],
         ]);
         $declinedSubmissions = $reportService->countSubmissions([
-            'contextIds' => [$contextId],
-            'decisions' => [SUBMISSION_EDITOR_DECISION_DECLINE],
+            'contextIds' => [$this->context->getId()],
+            'decisions' => [Decision::DECLINE],
         ]);
 
         $this->assertEquals(1, $acceptedSubmissions);
@@ -110,15 +124,12 @@ class DataverseReportServiceTest extends DatabaseTestCase
 
     public function testCountSubmissionsWithDataset(): void
     {
-        $contextId = $this->createTestContext();
-
-        $submission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
+        $submission = $this->createTestSubmission($this->context, [
+            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
+            'status' => Submission::STATUS_DECLINED
         ]);
 
-        $studyDAO = new DataverseStudyDAO();
-        $study = $studyDAO->newDataObject();
+        $study = Repo::dataverseStudy()->newDataObject();
         $study->setAllData([
             'submissionId' => $submission->getId(),
             'persistentId' => 'testId',
@@ -127,21 +138,20 @@ class DataverseReportServiceTest extends DatabaseTestCase
             'editMediaUri' => 'testEditMediaUri',
             'statementUri' => 'testStatementUri',
         ]);
-        $studyDAO->insertStudy($study);
+        Repo::dataverseStudy()->add($study);
 
-        DAORegistry::getDAO('EditDecisionDAO')->updateEditorDecision($submission->getId(), [
-            'editDecisionId' => null,
+        $declineDecision = Repo::decision()->newDataObject([
+            'decision' => Decision::DECLINE,
+            'submissionId' => $submission->getId(),
+            'dateDecided' => date(Core::getCurrentDate()),
             'editorId' => 1,
-            'decision' => SUBMISSION_EDITOR_DECISION_DECLINE,
-            'dateDecided' => date(Core::getCurrentDate())
         ]);
-        $submission->setStatus(STATUS_DECLINED);
-        DAORegistry::getDAO('SubmissionDAO')->updateObject($submission);
+        Repo::decision()->dao->insert($declineDecision);
 
         $reportService = new DataverseReportService();
         $this->assertEquals(1, $reportService->countSubmissionsWithDataset([
-            'contextIds' => [$contextId],
-            'decisions' => [SUBMISSION_EDITOR_DECISION_DECLINE],
+            'contextIds' => [$this->context->getId()],
+            'decisions' => [Decision::DECLINE],
         ]));
     }
 }

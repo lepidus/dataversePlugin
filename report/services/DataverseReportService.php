@@ -1,7 +1,12 @@
 <?php
 
-import('plugins.generic.dataverse.report.services.queryBuilders.DataverseReportQueryBuilder');
-import('plugins.generic.dataverse.dataverseAPI.search.DataverseSearchBuilder');
+namespace APP\plugins\generic\dataverse\report\services;
+
+use APP\core\Application;
+use APP\decision\Decision;
+use PKP\db\DAORegistry;
+use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
+use APP\plugins\generic\dataverse\dataverseAPI\search\DataverseSearchBuilder;
 
 class DataverseReportService
 {
@@ -9,15 +14,15 @@ class DataverseReportService
     {
         $overview = [];
 
-        if (Application::get()->getName() === 'ojs2') {
+        if (Application::get()->getName() == 'ojs2') {
             $overview = array_merge($overview, [
                 'acceptedSubmissions' => $this->countSubmissions([
                     'contextIds' => [$contextId],
-                    'decisions' => [SUBMISSION_EDITOR_DECISION_ACCEPT]
+                    'decisions' => [Decision::ACCEPT]
                 ]),
                 'acceptedSubmissionsWithDataset' => $this->countSubmissionsWithDataset([
                     'contextIds' => [$contextId],
-                    'decisions' => [SUBMISSION_EDITOR_DECISION_ACCEPT]
+                    'decisions' => [Decision::ACCEPT]
                 ])
             ]);
         }
@@ -25,11 +30,11 @@ class DataverseReportService
         return array_merge($overview, [
             'declinedSubmissions' => $this->countSubmissions([
                 'contextIds' => [$contextId],
-                'decisions' => [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE]
+                'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
             ]),
             'declinedSubmissionsWithDataset' => $this->countSubmissionsWithDataset([
                 'contextIds' => [$contextId],
-                'decisions' => [SUBMISSION_EDITOR_DECISION_DECLINE, SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE]
+                'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
             ]),
             'datasetsWithDepositError' => $this->countDatasetsWithError(
                 ['plugins.generic.dataverse.error.depositFailed'],
@@ -47,7 +52,7 @@ class DataverseReportService
     {
         $headers = [];
 
-        if (Application::get()->getName() === 'ojs2') {
+        if (Application::get()->getName() == 'ojs2') {
             $headers = array_merge($headers, [
                 __('plugins.generic.dataverse.report.headers.acceptedSubmissions'),
                 __('plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset'),
