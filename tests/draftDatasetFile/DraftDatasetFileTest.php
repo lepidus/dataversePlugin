@@ -1,6 +1,7 @@
 <?php
 
-import('lib.pkp.tests.PKPTestCase');
+use PKP\tests\PKPTestCase;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
 
 class DraftDatasetFileTest extends PKPTestCase
 {

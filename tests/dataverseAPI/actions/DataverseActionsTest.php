@@ -5,11 +5,11 @@ use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Exception\RequestException;
-
-import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataverse.dataverseAPI.actions.DataverseActions');
-import('plugins.generic.dataverse.classes.entities.DataverseResponse');
-import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfiguration');
+use PKP\tests\PKPTestCase;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
+use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 
 class DataverseActionsTest extends PKPTestCase
 {
@@ -24,10 +24,10 @@ class DataverseActionsTest extends PKPTestCase
         $this->configuration->setAPIToken('apiToken');
     }
 
-    public function testNativeAPIURICreation(): void
+    public function testNativeApiUriCreation(): void
     {
         $actions = $this->getMockBuilder(DataverseActions::class)
-            ->setConstructorArgs(array($this->configuration))
+            ->setConstructorArgs([$this->configuration])
             ->getMockForAbstractClass();
 
         $uri = $actions->createNativeAPIURI('datasets', ':persistentId?persistentId=doi:10.12345/FK2/123456');
@@ -38,10 +38,10 @@ class DataverseActionsTest extends PKPTestCase
         );
     }
 
-    public function testGetCurrentDataverseURI(): void
+    public function testGetCurrentDataverseUri(): void
     {
         $actions = $this->getMockBuilder(DataverseActions::class)
-            ->setConstructorArgs(array($this->configuration))
+            ->setConstructorArgs([$this->configuration])
             ->getMockForAbstractClass();
 
         $uri = $actions->getCurrentDataverseURI();
@@ -52,10 +52,10 @@ class DataverseActionsTest extends PKPTestCase
         );
     }
 
-    public function testGetRootDataverseURI(): void
+    public function testGetRootDataverseUri(): void
     {
         $actions = $this->getMockBuilder(DataverseActions::class)
-            ->setConstructorArgs(array($this->configuration))
+            ->setConstructorArgs([$this->configuration])
             ->getMockForAbstractClass();
 
         $uri = $actions->getRootDataverseURI();
@@ -66,10 +66,10 @@ class DataverseActionsTest extends PKPTestCase
         );
     }
 
-    public function testSwordAPIURICreation(): void
+    public function testSwordApiUriCreation(): void
     {
         $actions = $this->getMockBuilder(DataverseActions::class)
-            ->setConstructorArgs(array($this->configuration))
+            ->setConstructorArgs([$this->configuration])
             ->getMockForAbstractClass();
 
         $uri = $actions->createSWORDAPIURI('edit', 'file', '12345');
@@ -80,7 +80,7 @@ class DataverseActionsTest extends PKPTestCase
         );
     }
 
-    public function testSuccessfulNativeAPIRequest(): void
+    public function testSuccessfulNativeApiRequest(): void
     {
         $mockHandler = new MockHandler([
             new Response(200, [], '{"foo": "bar"}'),
@@ -88,7 +88,7 @@ class DataverseActionsTest extends PKPTestCase
         $guzzleClient = new Client(['handler' => $mockHandler]);
 
         $actions = $this->getMockBuilder(DataverseActions::class)
-            ->setConstructorArgs(array($this->configuration, $guzzleClient))
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
             ->getMockForAbstractClass();
 
         $response = $actions->nativeAPIRequest('GET', 'https://example.com');
@@ -107,7 +107,7 @@ class DataverseActionsTest extends PKPTestCase
         $guzzleClient = new Client(['handler' => $mockHandler]);
 
         $actions = $this->getMockBuilder(DataverseActions::class)
-            ->setConstructorArgs(array($this->configuration, $guzzleClient))
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
             ->getMockForAbstractClass();
 
         $this->expectException(DataverseException::class);
@@ -127,7 +127,7 @@ class DataverseActionsTest extends PKPTestCase
         $guzzleClient = new Client(['handler' => $mockHandler]);
 
         $actions = $this->getMockBuilder(DataverseActions::class)
-            ->setConstructorArgs(array($this->configuration, $guzzleClient))
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
             ->getMockForAbstractClass();
 
         $this->expectException(DataverseException::class);
@@ -148,7 +148,7 @@ class DataverseActionsTest extends PKPTestCase
         $guzzleClient = new Client(['handler' => $mockHandler]);
 
         $actions = $this->getMockBuilder(DataverseActions::class)
-            ->setConstructorArgs(array($this->configuration, $guzzleClient))
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
             ->getMockForAbstractClass();
 
         $this->expectException(DataverseException::class);

@@ -1,6 +1,7 @@
 <?php
 
-import('plugins.generic.dataverse.dataverseAPI.search.DataverseSearchBuilder');
+use APP\plugins\generic\dataverse\dataverseAPI\search\DataverseSearchBuilder;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 
 class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
 {

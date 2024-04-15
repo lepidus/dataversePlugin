@@ -1,7 +1,7 @@
 <?php
 
-import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataverse.classes.entities.DataverseResponse');
+use PKP\tests\PKPTestCase;
+use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 
 class DataverseResponseTest extends PKPTestCase
 {

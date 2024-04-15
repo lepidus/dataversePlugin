@@ -1,7 +1,7 @@
 <?php
 
-import('lib.pkp.tests.PKPTestCase');
-import('plugins.generic.dataverse.classes.factories.JsonDatasetFactory');
+use PKP\tests\PKPTestCase;
+use APP\plugins\generic\dataverse\classes\factories\JsonDatasetFactory;
 
 class JsonDatasetFactoryTest extends PKPTestCase
 {
