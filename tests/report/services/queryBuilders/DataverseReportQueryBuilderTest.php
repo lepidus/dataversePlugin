@@ -20,6 +20,8 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
     public function setUp(): void
     {
         parent::setUp();
+        $plugin = new DataversePlugin();
+        $dispatcher = new DataStatementDispatcher($plugin);
         $this->context = $this->createTestContext();
     }
 
@@ -49,11 +51,6 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
     private function createTestSubmission($context, $data): Submission
     {
-        $plugin = new DataversePlugin();
-        $dispatcher = new DataStatementDispatcher($plugin);
-
-        Hook::add('Schema::get::publication', [$dispatcher, 'addDataStatementToPublicationSchema']);
-
         $submission = new Submission();
         $submission->setAllData($data);
         $submission->setData('contextId', $context->getId());

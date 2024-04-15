@@ -5,6 +5,8 @@ use APP\submission\Submission;
 use APP\publication\Publication;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
+use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
+use APP\plugins\generic\dataverse\DataversePlugin;
 
 class DataverseStudyRepositoryTest extends DatabaseTestCase
 {
@@ -19,6 +21,8 @@ class DataverseStudyRepositoryTest extends DatabaseTestCase
     public function setUp(): void
     {
         parent::setUp();
+        $plugin = new DataversePlugin();
+        $dispatcher = new DataStatementDispatcher($plugin);
 
         $this->submissionId = $this->createSubmission();
         $this->editUri = "https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:00.00000/ABC/DFG8HI";

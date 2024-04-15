@@ -10,9 +10,20 @@ use APP\plugins\generic\dataverse\DataversePlugin;
 
 class DataStatementDispatcherTest extends DatabaseTestCase
 {
-    protected function getAffectedTables(): array
+    private $submissionId;
+
+    protected function setUp(): void
     {
-        return ['publications','publication_settings'];
+        parent::setUp();
+        $plugin = new DataversePlugin();
+        $dispatcher = new DataStatementDispatcher($plugin);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $submission = Repo::submission()->get($this->submissionId);
+        Repo::submission()->delete($submission);
     }
 
     private function createTestPublication(array $data): int
@@ -25,29 +36,26 @@ class DataStatementDispatcherTest extends DatabaseTestCase
         $publication = new Publication();
         $publication->setAllData($data);
 
-        $submissionId = Repo::submission()->add($submission, $publication, $context);
-        $submission = Repo::submission()->get($submissionId);
+        $this->submissionId = Repo::submission()->add($submission, $publication, $context);
+        $submission = Repo::submission()->get($this->submissionId);
 
         return $submission->getData('currentPublicationId');
     }
 
     public function testDataStatementPropsInPublicationSchema(): void
     {
-        $plugin = new DataversePlugin();
-        $dispatcher = new DataStatementDispatcher($plugin);
+        $locale = 'en';
         $publicationData = [
             'dataStatementTypes' => [2, 3, 5],
             'dataStatementUrls' => ['https://example.com', 'https://link.to.data'],
-            'dataStatementReason' => 'Has sensitive data'
+            'dataStatementReason' => [$locale => 'Has sensitive data']
         ];
-
-        Hook::add('Schema::get::publication', [$dispatcher, 'addDataStatementToPublicationSchema']);
 
         $publicationId = $this->createTestPublication($publicationData);
         $insertedPublication = Repo::publication()->get($publicationId);
 
         $this->assertEquals($publicationData['dataStatementTypes'], $insertedPublication->getData('dataStatementTypes'));
         $this->assertEquals($publicationData['dataStatementUrls'], $insertedPublication->getData('dataStatementUrls'));
-        $this->assertEquals($publicationData['dataStatementReason'], $insertedPublication->getData('dataStatementReason'));
+        $this->assertEquals($publicationData['dataStatementReason'][$locale], $insertedPublication->getData('dataStatementReason', $locale));
     }
 }
