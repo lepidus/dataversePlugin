@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
+namespace APP\plugins\generic\dataverse\classes\entities;
 
 use PKP\core\DataObject;
 
