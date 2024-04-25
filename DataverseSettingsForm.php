@@ -1,8 +1,20 @@
 <?php
 
-import('lib.pkp.classes.form.Form');
-import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
-import('plugins.generic.dataverse.dataverseAPI.actions.DataverseCollectionActions');
+namespace APP\plugins\generic\dataverse;
+
+use PKP\form\Form;
+use PKP\plugins\Plugin;
+use APP\core\Application;
+use APP\template\TemplateManager;
+use PKP\db\DAORegistry;
+use PKP\form\validation\FormValidatorUrl;
+use PKP\form\validation\FormValidator;
+use PKP\form\validation\FormValidatorCustom;
+use PKP\form\validation\FormValidatorPost;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 
 class DataverseSettingsForm extends Form
 {
@@ -19,29 +31,29 @@ class DataverseSettingsForm extends Form
         $this->addCheck(new FormValidatorUrl(
             $this,
             'dataverseUrl',
-            FORM_VALIDATOR_REQUIRED_VALUE,
+            FormValidator::FORM_VALIDATOR_REQUIRED_VALUE,
             'plugins.generic.dataverse.settings.dataverseUrlRequired'
         ));
         $this->addCheck(new FormValidator(
             $this,
             'apiToken',
-            FORM_VALIDATOR_REQUIRED_VALUE,
+            FormValidator::FORM_VALIDATOR_REQUIRED_VALUE,
             'plugins.generic.dataverse.settings.tokenRequired'
         ));
         $this->addCheck(new FormValidatorCustom(
             $this,
             'termsOfUse',
-            FORM_VALIDATOR_REQUIRED_VALUE,
+            FormValidator::FORM_VALIDATOR_REQUIRED_VALUE,
             'plugins.generic.dataverse.settings.dataverseUrlNotValid',
-            array($this, 'validateConfiguration')
+            [$this, 'validateConfiguration']
         ));
         $this->addCheck(new FormValidatorPost($this));
 
-        if (Application::get()->getName() === 'ojs2') {
+        if (Application::get()->getName() == 'ojs2') {
             $this->addCheck(new FormValidator(
                 $this,
                 'datasetPublish',
-                FORM_VALIDATOR_REQUIRED_VALUE,
+                FormValidator::FORM_VALIDATOR_REQUIRED_VALUE,
                 'plugins.generic.dataverse.settings.datasetPublishRequired'
             ));
         }
@@ -59,7 +71,7 @@ class DataverseSettingsForm extends Form
 
     public function readInputData(): void
     {
-        $this->readUserVars(array('dataverseUrl', 'apiToken', 'termsOfUse', 'datasetPublish'));
+        $this->readUserVars(['dataverseUrl', 'apiToken', 'termsOfUse', 'datasetPublish']);
         $this->setData('dataverseUrl', $this->normalizeURI($this->getData('dataverseUrl')));
     }
 

@@ -1,8 +1,11 @@
 <?php
 
-import('plugins.generic.dataverse.dataverseAPI.actions.interfaces.DataverseCollectionActionsInterface');
-import('plugins.generic.dataverse.classes.entities.DataverseCollection');
-import('plugins.generic.dataverse.dataverseAPI.actions.DataverseActions');
+namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
+
+use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DataverseCollectionActionsInterface;
+use APP\plugins\generic\dataverse\classes\entities\DataverseCollection;
+use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
 
 class DataverseCollectionActions extends DataverseActions implements DataverseCollectionActionsInterface
 {
