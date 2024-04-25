@@ -1,4 +1,3 @@
-
 describe('Plugin configuration', function () {
 	it('Check plugin does not break submission view before configuration', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
