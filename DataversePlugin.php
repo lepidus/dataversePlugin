@@ -16,7 +16,14 @@ namespace APP\plugins\generic\dataverse;
 
 use PKP\plugins\GenericPlugin;
 use APP\core\Application;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\AjaxModal;
+use APP\notification\NotificationManager;
+use PKP\core\JSONMessage;
+use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\migrations\DataverseMigration;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
+use APP\plugins\generic\dataverse\DataverseSettingsForm;
 
 class DataversePlugin extends GenericPlugin
 {
@@ -28,9 +35,10 @@ class DataversePlugin extends GenericPlugin
             return true;
         }
 
-        /*$dataverseConfigurationDAO = new DataverseConfigurationDAO();
-        $context = Application::get()->getRequest()->getContext();
-        $this->registerDAOClasses();
+        $dataverseConfigurationDAO = new DataverseConfigurationDAO();
+        DAORegistry::registerDAO('DataverseConfigurationDAO', $dataverseConfigurationDAO);
+
+        /*$context = Application::get()->getRequest()->getContext();
 
         if(!is_null($context) and $dataverseConfigurationDAO->hasConfiguration($context->getId())) {
             $this->loadDispatcherClasses();
@@ -57,20 +65,6 @@ class DataversePlugin extends GenericPlugin
             $this->import('classes.dispatchers.' . $dispatcherClass);
             $dispatcher = new $dispatcherClass($this);
         }
-    }
-
-    private function registerDAOClasses(): void
-    {
-        import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
-        import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudyDAO');
-
-        $draftDatasetFileDAO = new DraftDatasetFileDAO();
-        $dataverseStudyDAO = new DataverseStudyDAO();
-        $dataverseConfigurationDAO = new DataverseConfigurationDAO();
-
-        DAORegistry::registerDAO('DataverseConfigurationDAO', $dataverseConfigurationDAO);
-        DAORegistry::registerDAO('DataverseStudyDAO', $dataverseStudyDAO);
-        DAORegistry::registerDAO('DraftDatasetFileDAO', $draftDatasetFileDAO);
     }
 
     public function getDisplayName()
@@ -103,7 +97,6 @@ class DataversePlugin extends GenericPlugin
     public function getActions($request, $actionArgs)
     {
         $router = $request->getRouter();
-        import('lib.pkp.classes.linkAction.request.AjaxModal');
         return array_merge(
             $this->getEnabled() ? array(
                 new LinkAction(
@@ -127,7 +120,6 @@ class DataversePlugin extends GenericPlugin
                 $context = $request->getContext();
                 $contextId = ($context == null) ? 0 : $context->getId();
 
-                $this->import('DataverseSettingsForm');
                 $form = new DataverseSettingsForm($this, $contextId);
                 if ($request->getUserVar('save')) {
                     $form->readInputData();

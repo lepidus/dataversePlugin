@@ -1,5 +1,9 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
+
+use PKP\core\DataObject;
+
 class DataverseCollection extends DataObject
 {
     public function getAlias(): string
