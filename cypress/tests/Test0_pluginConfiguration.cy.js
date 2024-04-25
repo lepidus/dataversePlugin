@@ -28,7 +28,7 @@ describe('Plugin configuration', function () {
 
 		cy.get('input[name=dataverseUrl]').focus().clear();
 		cy.get('input[name=apiToken]').focus().clear();
-		cy.get('input[name="termsOfUse[en_US]"]').focus().clear();
+		cy.get('input[name="termsOfUse[en]"]').focus().clear();
 
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('label[for^=dataverseUrl].error').should('contain', 'This field is required.');
@@ -39,13 +39,13 @@ describe('Plugin configuration', function () {
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('label[for^=dataverseUrl].error').should('contain', 'Please enter a valid URL.');
 
-		cy.get('input[name="termsOfUse[en_US]"]').focus().clear().type('invalidTermsOfUse');
+		cy.get('input[name="termsOfUse[en]"]').focus().clear().type('invalidTermsOfUse');
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('label[for^=termsOfUse].error').should('contain', 'Please enter a valid URL.');
 
 		cy.get('input[name=dataverseUrl]').focus().clear().type(Cypress.env('dataverseUrl'));
 		cy.get('input[name=apiToken]').focus().clear().type('invalidToken');
-		cy.get('input[name="termsOfUse[en_US]"]').focus().clear().type(Cypress.env('dataverseTermsOfUse'));
+		cy.get('input[name="termsOfUse[en]"]').focus().clear().type(Cypress.env('dataverseTermsOfUse'));
 
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.contains("Can't connect to Dataverse");
