@@ -1,23 +1,24 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes\components\forms;
+
 use PKP\components\forms\FieldOptions;
 use PKP\components\forms\FieldText;
 use PKP\components\forms\FormComponent;
-
-import('plugins.generic.dataverse.classes.services.DataStatementService');
-
-define('FORM_DATA_STATEMENT', 'dataStatement');
+use APP\core\Application;
+use PKP\db\DAORegistry;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
+use APP\plugins\generic\dataverse\classes\components\forms\FieldControlledVocabUrl;
 
 class DataStatementForm extends FormComponent
 {
-    public $id = FORM_DATA_STATEMENT;
-
+    public $id = 'dataStatement';
     public $method = 'PUT';
 
-    public function __construct($action, $locales, $publication)
+    public function __construct($action, $publication)
     {
         $this->action = $action;
-        $this->locales = $locales;
 
         $dataStatementTypes = $this->getDataStatementTypes();
 
@@ -30,9 +31,8 @@ class DataStatementForm extends FormComponent
 
         $request = Application::get()->getRequest();
         $contextPath = $request->getContext()->getPath();
-        $vocabApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $contextPath, 'vocabs');
+        $vocabApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $contextPath, 'vocabs');
 
-        import('plugins.generic.dataverse.classes.components.forms.FieldControlledVocabUrl');
         $this->addField(new FieldOptions('dataStatementTypes', [
             'label' => __('plugins.generic.dataverse.dataStatement.title'),
             'isRequired' => true,
@@ -78,14 +78,13 @@ class DataStatementForm extends FormComponent
 
     private function getDataverseName(): string
     {
-        import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
         $dataverseClient = new DataverseClient();
         $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
 
         return $dataverseCollection->getName();
     }
 
-    private function hasDataset(Publication $publication): bool
+    private function hasDataset($publication): bool
     {
         $studyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $studyDAO->getStudyBySubmissionId($publication->getData('submissionId'));

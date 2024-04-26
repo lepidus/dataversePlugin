@@ -38,21 +38,20 @@ class DataversePlugin extends GenericPlugin
         $dataverseConfigurationDAO = new DataverseConfigurationDAO();
         DAORegistry::registerDAO('DataverseConfigurationDAO', $dataverseConfigurationDAO);
 
-        /*$context = Application::get()->getRequest()->getContext();
+        $context = Application::get()->getRequest()->getContext();
 
         if(!is_null($context) and $dataverseConfigurationDAO->hasConfiguration($context->getId())) {
             $this->loadDispatcherClasses();
-            PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
-        }*/
+            //PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
+        }
 
         return $success;
     }
 
     private function loadDispatcherClasses(): void
     {
-        $dispatcherClasses = [
+        $remainingDispatcherClasses = [
             'DatasetMetadataStep3Dispatcher',
-            'DataStatementDispatcher',
             'DatasetInformationDispatcher',
             'DataStatementTabDispatcher',
             'DatasetTabDispatcher',
@@ -61,8 +60,12 @@ class DataversePlugin extends GenericPlugin
             'DraftDatasetFilesDispatcher'
         ];
 
+        $dispatcherClasses = [
+            'DataStatementDispatcher'
+        ];
+
         foreach ($dispatcherClasses as $dispatcherClass) {
-            $this->import('classes.dispatchers.' . $dispatcherClass);
+            $dispatcherClass = 'APP\plugins\generic\dataverse\classes\dispatchers\\' . $dispatcherClass;
             $dispatcher = new $dispatcherClass($this);
         }
     }

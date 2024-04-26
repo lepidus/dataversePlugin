@@ -5,33 +5,30 @@ namespace APP\plugins\generic\dataverse\classes\dispatchers;
 use PKP\plugins\Hook;
 use APP\core\Application;
 use APP\template\TemplateManager;
+use APP\pages\submission\SubmissionHandler;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
+use APP\plugins\generic\dataverse\classes\components\forms\DataStatementForm;
 
 class DataStatementDispatcher extends DataverseDispatcher
 {
     public function registerHooks(): void
     {
         Hook::add('TemplateManager::display', [$this, 'addDataStatementResources']);
-        Hook::add('submissionsubmitstep1form::display', [$this, 'addDataStatementField']);
-        Hook::add('submissionsubmitstep1form::readuservars', [$this, 'readDataStatementVars']);
-        Hook::add('SubmissionHandler::saveSubmit', [$this, 'saveDataStatement']);
+        Hook::add('TemplateManager::display', [$this, 'addToDetailsStep']);
         Hook::add('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
-        Hook::add('Publication::validate', [$this, 'validateDataStatementProps']);
-        Hook::add('Templates::Preprint::Details', [$this, 'viewDataStatement']);
-        Hook::add('Templates::Article::Details', [$this, 'viewDataStatement']);
+        // Hook::add('Publication::validate', [$this, 'validateDataStatementProps']);
+        // Hook::add('Templates::Preprint::Details', [$this, 'viewDataStatement']);
+        // Hook::add('Templates::Article::Details', [$this, 'viewDataStatement']);
     }
 
-    public function addDataStatementResources(string $hookName, array $args): bool
+    public function addDataStatementResources(string $hookName, array $params): bool
     {
-        $templateMgr = $args[0];
-        $template = $args[1];
+        $templateMgr = $params[0];
+        $template = $params[1];
 
-        if (
-            $template === 'frontend/pages/preprint.tpl'
-            || $template === 'frontend/pages/article.tpl'
-        ) {
+        if ($template == 'frontend/pages/preprint.tpl' or $template == 'frontend/pages/article.tpl') {
             $templateMgr->addStyleSheet(
                 'dataStatementList',
                 $this->plugin->getPluginFullPath() . '/styles/dataStatementList.css',
@@ -41,7 +38,7 @@ class DataStatementDispatcher extends DataverseDispatcher
             return false;
         }
 
-        if ($template !== 'submission/form/index.tpl') {
+        if ($template != 'submission/form/index.tpl') {
             return false;
         }
 
@@ -62,33 +59,47 @@ class DataStatementDispatcher extends DataverseDispatcher
         return false;
     }
 
-    public function addDataStatementField(string $hookName, array $args): bool
+    public function addToDetailsStep(string $hookName, array $params)
     {
         $request = Application::get()->getRequest();
-        $templateMgr = TemplateManager::getManager($request);
+        $context = $request->getContext();
+        $templateMgr = $params[0];
 
-        $dataStatementService = new DataStatementService();
+        if ($request->getRequestedPage() !== 'submission' || $request->getRequestedOp() === 'saved') {
+            return false;
+        }
 
-        $templateMgr->assign('allDataStatementsTypes', $dataStatementService->getDataStatementTypes());
-        $templateMgr->registerFilter("output", [$this, 'dataStatementFilter']);
+        $submission = $request
+            ->getRouter()
+            ->getHandler()
+            ->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+
+        if (!$submission || !$submission->getData('submissionProgress')) {
+            return false;
+        }
+
+        $publication = $submission->getLatestPublication();
+        $publicationEndpoint = 'submissions/' . $submission->getId() . '/publications/' . $publication->getId();
+        $saveFormUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), $publicationEndpoint);
+        $dataStatementForm = new DataStatementForm($saveFormUrl, $publication);
+
+        $steps = $templateMgr->getState('steps');
+        $steps = array_map(function ($step) use ($dataStatementForm) {
+            if ($step['id'] === 'details') {
+                $step['sections'][] = [
+                    'id' => 'dataStatement',
+                    'name' => __('plugins.generic.dataverse.dataStatement.title'),
+                    'description' => __('plugins.generic.dataverse.dataStatement.description'),
+                    'type' => SubmissionHandler::SECTION_TYPE_FORM,
+                    'form' => $dataStatementForm->getConfig(),
+                ];
+            }
+            return $step;
+        }, $steps);
+
+        $templateMgr->setState(['steps' => $steps]);
 
         return false;
-    }
-
-    public function dataStatementFilter(string $output, Smarty_Internal_Template $templateMgr)
-    {
-        if (preg_match('/<div[^>]+id="pkp_submissionChecklist/', $output, $matches, PREG_OFFSET_CAPTURE)) {
-            $match = $matches[0][0];
-            $posMatch = $matches[0][1];
-
-            $dataStatementTemplate = $templateMgr->fetch(
-                $this->plugin->getTemplateResource('dataStatement.tpl')
-            );
-
-            $output = substr_replace($output, $dataStatementTemplate, $posMatch, 0);
-            $templateMgr->unregisterFilter('output', [$this, 'dataStatementFilter']);
-        }
-        return $output;
     }
 
     public function addDataStatementToPublicationSchema(string $hookName, array $args): bool
@@ -113,36 +124,6 @@ class DataStatementDispatcher extends DataverseDispatcher
             'type' => 'string',
             'multilingual' => true
         ];
-
-        return false;
-    }
-
-    public function readDataStatementVars(string $hookName, array $args): bool
-    {
-        $vars = &$args[1];
-
-        array_push($vars, 'dataStatementTypes', 'keywords', 'dataStatementReason');
-
-        return false;
-    }
-
-    public function saveDataStatement(string $hookname, array $args): bool
-    {
-        $step = $args[0];
-        $stepForm = $args[2];
-
-        if (!$this->isValidStepForm($step, $stepForm)) {
-            return false;
-        }
-
-        $submissionId = $stepForm->execute();
-        $submission = Repo::submission()->get($submissionId);
-        $publication = $submission->getCurrentPublication();
-
-        $params = $this->createDataStatementParams($stepForm);
-
-        $newPublication = Repo::publication()->edit($publication, $params);
-        $stepForm->submission = Repo::submission()->get($newPublication->getData('submissionId'));
 
         return false;
     }
