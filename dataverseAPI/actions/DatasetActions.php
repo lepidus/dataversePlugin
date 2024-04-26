@@ -1,10 +1,15 @@
 <?php
 
-import('plugins.generic.dataverse.dataverseAPI.actions.interfaces.DatasetActionsInterface');
-import('plugins.generic.dataverse.dataverseAPI.actions.DataverseActions');
-import('plugins.generic.dataverse.dataverseAPI.packagers.NativeAPIDatasetPackager');
-import('plugins.generic.dataverse.classes.factories.JsonDatasetFactory');
-import('plugins.generic.dataverse.classes.entities.DatasetIdentifier');
+namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
+
+use DOMDocument;
+use GuzzleHttp\Psr7\Utils;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\entities\DatasetIdentifier;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetActionsInterface;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
+use APP\plugins\generic\dataverse\dataverseAPI\packagers\NativeAPIDatasetPackager;
+use APP\plugins\generic\dataverse\classes\factories\JsonDatasetFactory;
 
 class DatasetActions extends DataverseActions implements DatasetActionsInterface
 {
@@ -80,7 +85,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         $uri = $this->getCurrentDataverseURI() . '/datasets';
         $options = [
             'headers' => ['Content-Type' => 'application/json'],
-            'body' => GuzzleHttp\Psr7\Utils::tryFopen($packager->getPackagePath(), 'rb')
+            'body' => Utils::tryFopen($packager->getPackagePath(), 'rb')
         ];
         $response = $this->nativeAPIRequest('POST', $uri, $options);
 
@@ -101,7 +106,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions', ':draft', $args);
         $options = [
             'headers' => ['Content-Type' => 'application/json'],
-            'body' => GuzzleHttp\Psr7\Utils::tryFopen($packager->getPackagePath(), 'rb')
+            'body' => Utils::tryFopen($packager->getPackagePath(), 'rb')
         ];
         $this->nativeAPIRequest('PUT', $uri, $options);
         $packager->clear();
