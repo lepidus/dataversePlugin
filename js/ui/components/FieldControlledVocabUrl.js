@@ -1,6 +1,13 @@
 const template = pkp.Vue.compile(`
-    <div class="pkpFormField pkpFormField--autosuggest pkpFormField--url">
-        <div class="pkpFormField__heading">
+    <div
+        class="pkpFormField pkpAutosuggest pkpFormField--url"
+        :class="{
+            'pkpAutosuggest--disabled': isDisabled,
+            'pkpAutosuggest--inline': isLabelInline,
+            'pkpAutosuggest--rtl': isRTL,
+        }"
+    >
+        <div class="pkpFormField__heading" ref="heading">
             <form-field-label
                 :controlId="controlId"
                 :label="label"
@@ -30,58 +37,33 @@ const template = pkp.Vue.compile(`
             v-html="description"
             :id="describedByDescriptionId"
         />
-        <div
-            class="pkpFormField__control pkpFormField--autosuggest__control"
-            :class="{
-                'pkpFormField__control--hasMultilingualIndicator':
-                    isMultilingual && locales.length > 1
-            }"
-        >
+        <div class="pkpFormField__control pkpAutosuggest__control">
             <div
-                v-if="currentPosition === 'inline'"
-                class="pkpFormField--autosuggest__values pkpFormField--autosuggest__values--inline"
-                :id="describedBySelectedId"
+                class="pkpAutosuggest__inputWrapper pkpFormField__input"
+                :class="{
+                    'pkpAutosuggest__inputWrapper--multilingual':
+                        isMultilingual && locales.length > 1,
+                    'pkpAutosuggest__inputWrapper--focus': isFocused,
+                }"
                 ref="values"
+                :id="describedBySelectedId"
+                @click="setFocusToInput"
             >
                 <span class="-screenReader">{{ selectedLabel }}</span>
                 <span v-if="!currentValue.length" class="-screenReader">
                     {{ __('common.none') }}
                 </span>
-                <pkp-badge v-else v-for="item in currentSelected" :key="item.value">
-                    <a :href="item.label" target="_new">{{ item.label }}</a>
-                    <button
-                        class="pkpFormField--autosuggest__valueButton"
-                        @click.stop.prevent="deselect(item)"
-                    >
-                        <icon icon="times" />
-                        <span class="-screenReader">
-                            {{ deselectLabel.replace('{$item}', item.label) }}
-                        </span>
-                    </button>
-                </pkp-badge>
-            </div>
-            <vue-autosuggest
-                v-model="inputValue"
-                ref="autosuggest"
-                class="pkpFormField--autosuggest__autosuggest"
-                v-bind="autosuggestOptions"
-                @selected="selectSuggestion"
-            />
-            <div
-                v-if="currentPosition === 'below'"
-                class="pkpFormField--autosuggest__values pkpFormField--autosuggest__values--below"
-                :id="describedBySelectedId"
-                ref="values"
-            >
-                <span class="-screenReader">{{ selectedLabel }}</span>
-                <span v-if="!currentValue.length" class="-screenReader">
-                    {{ __('common.none') }}
-                </span>
-                <pkp-badge v-else v-for="item in currentSelected" :key="item.value">
+                <pkp-badge
+                    v-else
+                    v-for="item in currentSelected"
+                    :key="item.value"
+                    class="pkpAutosuggest__selection"
+                >
                     <a v-if="isValidUrl(item.label)" :href="item.label" target="_new">{{ item.label }}</a>
                     <span v-else>{{ item.label }}</span>
                     <button
-                        class="pkpFormField--autosuggest__valueButton"
+                        v-if="!isDisabled"
+                        class="pkpAutosuggest__deselect"
                         @click.stop.prevent="deselect(item)"
                     >
                         <icon icon="times" />
@@ -90,6 +72,16 @@ const template = pkp.Vue.compile(`
                         </span>
                     </button>
                 </pkp-badge>
+                <vue-autosuggest
+                    v-if="!isDisabled"
+                    v-model="inputValue"
+                    ref="autosuggest"
+                    class="pkpAutosuggest__autosuggester"
+                    v-bind="autosuggestOptions"
+                    @selected="selectSuggestion"
+                    @focus="() => (isFocused = true)"
+                    @blur="() => (isFocused = false)"
+                />
             </div>
             <multilingual-progress
                 v-if="isMultilingual && locales.length > 1"
@@ -130,7 +122,7 @@ pkp.Vue.component('field-controlled-vocab-url', {
 				item = this.suggestions[0];
 			}
             if (this.isValidUrl(item.value)) {
-                this.currentSelected.push(item);
+                this.setSelected([...this.currentSelected, item]);
             } else {
                 this.setErrors([this.__('validator.active_url')]);
             }

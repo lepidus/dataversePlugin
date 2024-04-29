@@ -5,6 +5,7 @@ namespace APP\plugins\generic\dataverse\classes\components\forms;
 use PKP\components\forms\FieldOptions;
 use PKP\components\forms\FieldText;
 use PKP\components\forms\FormComponent;
+use PKP\components\forms\FieldControlledVocab;
 use APP\core\Application;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
@@ -48,7 +49,6 @@ class DataStatementForm extends FormComponent
         ->addField(new FieldText('dataStatementReason', [
             'label' => __('plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason'),
             'isRequired' => true,
-            'isMultilingual' => true,
             'value' => $publication->getData('dataStatementReason'),
             'size' => 'large',
         ]));
