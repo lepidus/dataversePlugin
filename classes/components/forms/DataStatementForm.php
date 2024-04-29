@@ -10,18 +10,18 @@ use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\classes\components\forms\FieldControlledVocabUrl;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DataStatementForm extends FormComponent
 {
     public $id = 'dataStatement';
     public $method = 'PUT';
 
-    public function __construct($action, $publication)
+    public function __construct($action, $publication, $page)
     {
         $this->action = $action;
 
-        $dataStatementTypes = $this->getDataStatementTypes();
-
+        $dataStatementTypes = $this->getDataStatementTypes($page);
         $dataStatementOptions = array_map(function ($value, $label) {
             return [
                 'value' => $value,
@@ -43,7 +43,7 @@ class DataStatementForm extends FormComponent
             'label' => __('plugins.generic.dataverse.dataStatement.repoAvailable.urls'),
             'description' => __('plugins.generic.dataverse.dataStatement.repoAvailable.urls.description'),
             'apiUrl' => $vocabApiUrl,
-            'selected' => $publication->getData('dataStatementUrls') ?? [],
+            'value' => $publication->getData('dataStatementUrls') ?? [],
         ]))
         ->addField(new FieldText('dataStatementReason', [
             'label' => __('plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason'),
@@ -51,27 +51,33 @@ class DataStatementForm extends FormComponent
             'isMultilingual' => true,
             'value' => $publication->getData('dataStatementReason'),
             'size' => 'large',
-        ]))
-        ->addField(new FieldOptions('researchDataSubmitted', [
-            'label' => __('plugins.generic.dataverse.researchData'),
-            'options' => [
-                [
-                    'value' => true,
-                    'label' => __('plugins.generic.dataverse.dataStatement.researchDataSubmitted', [
-                        'dataverseName' => $this->getDataverseName(),
-                    ]),
-                    'disabled' => true,
-                ],
-            ],
-            'value' => $this->hasDataset($publication),
         ]));
+
+        if ($page == 'workflow') {
+            $this->addField(new FieldOptions('researchDataSubmitted', [
+                'label' => __('plugins.generic.dataverse.researchData'),
+                'options' => [
+                    [
+                        'value' => true,
+                        'label' => __('plugins.generic.dataverse.dataStatement.researchDataSubmitted', [
+                            'dataverseName' => $this->getDataverseName(),
+                        ]),
+                        'disabled' => true,
+                    ],
+                ],
+                'value' => $this->hasDataset($publication),
+            ]));
+        }
     }
 
-    private function getDataStatementTypes(): array
+    private function getDataStatementTypes($page): array
     {
         $dataStatementService = new DataStatementService();
         $dataStatementTypes = $dataStatementService->getDataStatementTypes();
-        unset($dataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+
+        if ($page == 'workflow') {
+            unset($dataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+        }
 
         return $dataStatementTypes;
     }
@@ -86,13 +92,8 @@ class DataStatementForm extends FormComponent
 
     private function hasDataset($publication): bool
     {
-        $studyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $studyDAO->getStudyBySubmissionId($publication->getData('submissionId'));
+        $study = Repo::dataverseStudy()->getBySubmissionId($publication->getData('submissionId'));
 
-        if (is_null($study)) {
-            return false;
-        }
-
-        return true;
+        return !is_null($study);
     }
 }

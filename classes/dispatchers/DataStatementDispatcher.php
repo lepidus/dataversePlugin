@@ -78,10 +78,28 @@ class DataStatementDispatcher extends DataverseDispatcher
             return false;
         }
 
+        $templateMgr->addJavaScript(
+            'dataStatementForm',
+            $this->plugin->getPluginFullPath() . '/js/ui/components/DataStatementForm.js',
+            [
+                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
+                'contexts' => ['backend']
+            ]
+        );
+
+        $templateMgr->addJavaScript(
+            'field-controlled-vocab-url',
+            $this->plugin->getPluginFullPath() . '/js/ui/components/FieldControlledVocabUrl.js',
+            [
+                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
+                'contexts' => ['backend']
+            ]
+        );
+
         $publication = $submission->getLatestPublication();
         $publicationEndpoint = 'submissions/' . $submission->getId() . '/publications/' . $publication->getId();
         $saveFormUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), $publicationEndpoint);
-        $dataStatementForm = new DataStatementForm($saveFormUrl, $publication);
+        $dataStatementForm = new DataStatementForm($saveFormUrl, $publication, 'submission');
 
         $steps = $templateMgr->getState('steps');
         $steps = array_map(function ($step) use ($dataStatementForm) {
