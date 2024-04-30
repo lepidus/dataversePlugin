@@ -140,7 +140,8 @@ class DataStatementDispatcher extends DataverseDispatcher
 
         $schema->properties->dataStatementReason = (object) [
             'type' => 'string',
-            'multilingual' => true
+            'multilingual' => true,
+            'validation' => ['nullable']
         ];
 
         return false;
