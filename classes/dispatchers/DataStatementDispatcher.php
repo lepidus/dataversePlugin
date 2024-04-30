@@ -15,12 +15,32 @@ class DataStatementDispatcher extends DataverseDispatcher
 {
     public function registerHooks(): void
     {
+        Hook::add('TemplateManager::setupBackendPage', [$this, 'addDataStatementResourcesToBackend']);
         Hook::add('TemplateManager::display', [$this, 'addDataStatementResources']);
         Hook::add('TemplateManager::display', [$this, 'addToDetailsStep']);
         Hook::add('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
         // Hook::add('Publication::validate', [$this, 'validateDataStatementProps']);
         // Hook::add('Templates::Preprint::Details', [$this, 'viewDataStatement']);
         // Hook::add('Templates::Article::Details', [$this, 'viewDataStatement']);
+    }
+
+    public function addDataStatementResourcesToBackend(string $hookName): void
+    {
+        $request = Application::get()->getRequest();
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->setConstants([
+            'DATA_STATEMENT_TYPE_IN_MANUSCRIPT',
+            'DATA_STATEMENT_TYPE_REPO_AVAILABLE',
+            'DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED',
+            'DATA_STATEMENT_TYPE_ON_DEMAND',
+            'DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE',
+        ]);
+
+        $templateMgr->setLocaleKeys([
+            'validator.active_url'
+        ]);
+
+        return;
     }
 
     public function addDataStatementResources(string $hookName, array $params): bool
@@ -34,27 +54,7 @@ class DataStatementDispatcher extends DataverseDispatcher
                 $this->plugin->getPluginFullPath() . '/styles/dataStatementList.css',
                 ['contexts' => ['frontend']]
             );
-
-            return false;
         }
-
-        if ($template != 'submission/form/index.tpl') {
-            return false;
-        }
-
-        $templateMgr->addStyleSheet(
-            'dataStatement',
-            $this->plugin->getPluginFullPath() . '/styles/dataStatement.css',
-            ['contexts' => ['backend']]
-        );
-
-        $templateMgr->setConstants([
-            'DATA_STATEMENT_TYPE_IN_MANUSCRIPT',
-            'DATA_STATEMENT_TYPE_REPO_AVAILABLE',
-            'DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED',
-            'DATA_STATEMENT_TYPE_ON_DEMAND',
-            'DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE',
-        ]);
 
         return false;
     }
@@ -87,14 +87,14 @@ class DataStatementDispatcher extends DataverseDispatcher
             ]
         );
 
-        $templateMgr->addJavaScript(
+        /*$templateMgr->addJavaScript(
             'field-controlled-vocab-url',
             $this->plugin->getPluginFullPath() . '/js/ui/components/FieldControlledVocabUrl.js',
             [
                 'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
                 'contexts' => ['backend']
             ]
-        );
+        );*/
 
         $publication = $submission->getLatestPublication();
         $publicationEndpoint = 'submissions/' . $submission->getId() . '/publications/' . $publication->getId();
