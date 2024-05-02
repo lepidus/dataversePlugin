@@ -5,7 +5,6 @@ namespace APP\plugins\generic\dataverse\classes\components\forms;
 use PKP\components\forms\FieldOptions;
 use PKP\components\forms\FieldText;
 use PKP\components\forms\FormComponent;
-use PKP\components\forms\FieldControlledVocab;
 use APP\core\Application;
 use PKP\db\DAORegistry;
 use PKP\facades\Locale;

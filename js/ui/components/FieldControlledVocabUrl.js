@@ -98,15 +98,86 @@ const template = pkp.Vue.compile(`
     </div>
 `);
 
-const FieldControlledVocab =
+const FieldBaseAutosuggest =
     pkp.controllers.Container.components.PkpForm.components.FormPage.components
-        .FormGroup.components.FieldControlledVocab;
+        .FormGroup.components.FieldBaseAutosuggest;
 
 pkp.Vue.component('field-controlled-vocab-url', {
     name: 'FieldControlledVocabUrl',
-    extends: FieldControlledVocab,
+    extends: FieldBaseAutosuggest,
+    data() {
+		return {
+			allSuggestions: [],
+			suggestionsLoaded: false,
+		};
+	},
     methods: {
-        isValidUrl: function (string) {
+        getSuggestions() {
+			if (!this.inputValue) {
+				this.suggestions = [];
+				return;
+			}
+			if (!this.suggestionsLoaded) {
+				this.loadSuggestions(this.setSuggestions);
+			}
+			this.setSuggestions();
+		},
+
+		loadSuggestions(successCallback) {
+			$.ajax({
+				url: this.apiUrl,
+				type: 'GET',
+				context: this,
+				data: this.isMultilingual ? {locale: this.localeKey} : {},
+				error(r) {
+					this.ajaxErrorCallback(r);
+				},
+				success(r) {
+					this.allSuggestions = r.map((v) => {
+						return {
+							value: v,
+							label: v,
+						};
+					});
+					this.suggestionsLoaded = true;
+					if (successCallback) {
+						successCallback.apply(this);
+					}
+				},
+			});
+		},
+
+		selectSuggestion(suggestion) {
+			if (suggestion) {
+				this.select(suggestion.item);
+			} else if (this.inputValue) {
+				this.select({
+					value: this.inputValue,
+					label: this.inputValue,
+				});
+			}
+		},
+		setSuggestions() {
+			// Escape the input for regex
+			// See: https://stackoverflow.com/a/3561711/1723499
+			const regex = new RegExp(
+				this.inputValue.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'),
+				'gi'
+			);
+			this.suggestions = this.allSuggestions.filter(
+				(suggestion) =>
+					!this.inputValue ||
+					(this.inputValue !== suggestion.value &&
+						suggestion.value.match(regex))
+			);
+			if (this.inputValue && !this.suggestions.includes(this.inputValue)) {
+				this.suggestions.unshift({
+					value: this.inputValue,
+					label: this.inputValue,
+				});
+			}
+		},
+        isValidUrl(string) {
             try {
                 new URL(string);
                 return true;

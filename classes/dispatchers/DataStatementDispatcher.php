@@ -87,14 +87,14 @@ class DataStatementDispatcher extends DataverseDispatcher
             ]
         );
 
-        /*$templateMgr->addJavaScript(
+        $templateMgr->addJavaScript(
             'field-controlled-vocab-url',
             $this->plugin->getPluginFullPath() . '/js/ui/components/FieldControlledVocabUrl.js',
             [
                 'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
                 'contexts' => ['backend']
             ]
-        );*/
+        );
 
         $publication = $submission->getLatestPublication();
         $publicationEndpoint = 'submissions/' . $submission->getId() . '/publications/' . $publication->getId();
