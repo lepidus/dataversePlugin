@@ -19,7 +19,7 @@ class DataStatementDispatcher extends DataverseDispatcher
         Hook::add('TemplateManager::display', [$this, 'addDataStatementResources']);
         Hook::add('TemplateManager::display', [$this, 'addToDetailsStep']);
         Hook::add('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
-        // Hook::add('Publication::validate', [$this, 'validateDataStatementProps']);
+        Hook::add('Publication::edit', [$this, 'dataStatementEditingCheck']);
         // Hook::add('Templates::Preprint::Details', [$this, 'viewDataStatement']);
         // Hook::add('Templates::Article::Details', [$this, 'viewDataStatement']);
     }
@@ -28,13 +28,8 @@ class DataStatementDispatcher extends DataverseDispatcher
     {
         $request = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
-        $templateMgr->setConstants([
-            'DATA_STATEMENT_TYPE_IN_MANUSCRIPT',
-            'DATA_STATEMENT_TYPE_REPO_AVAILABLE',
-            'DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED',
-            'DATA_STATEMENT_TYPE_ON_DEMAND',
-            'DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE',
-        ]);
+        $dataStatementService = new DataStatementService();
+        $templateMgr->setConstants($dataStatementService->getConstantsForTemplates());
 
         $templateMgr->setLocaleKeys([
             'validator.active_url'
@@ -215,28 +210,21 @@ class DataStatementDispatcher extends DataverseDispatcher
         return preg_match($urlPattern, $input) === 1;
     }
 
-    public function validateDataStatementProps(string $hookName, array $args): bool
+    public function dataStatementEditingCheck(string $hookName, array $params): bool
     {
-        $errors = &$args[0];
-        $props = $args[2];
+        $publication = &$params[0];
+        $fields = $params[2];
 
-        if (!isset($props['dataStatementTypes'])) {
+        if (!isset($fields['dataStatementTypes'])) {
             return false;
         }
 
-        if (empty($errors)) {
-            $errors = [];
+        if(!in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, $fields['dataStatementTypes'])) {
+            $publication->unsetData('dataStatementUrls');
         }
 
-        if (empty($props['dataStatementTypes'])) {
-            $errors['dataStatementTypes'] = [__('plugins.generic.dataverse.dataStatement.required')];
-        }
-
-        if (
-            in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $props['dataStatementTypes'])
-            && empty($props['dataStatementUrls'])
-        ) {
-            $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')];
+        if(!in_array(DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE, $fields['dataStatementTypes'])) {
+            $publication->unsetData('dataStatementReason');
         }
 
         return false;

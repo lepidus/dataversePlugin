@@ -1,53 +1,19 @@
-pkp.Vue.component('data-statement-form', {
-	name: 'DataStatementForm',
-	extends: pkp.controllers.Container.components.PkpForm,
-	data() {
-		return {
-			allFields: null
-		};
-	},
-	methods: {
-		shouldShowField(field) {
-			const dataStatementTypesField = this.fields.find(
-				(field) => field.name === 'dataStatementTypes'
-			);
-			if (!Array.isArray(dataStatementTypesField.value)) {
-				dataStatementTypesField.value = [];
-			}
-			if (
-				field.name === 'dataStatementUrls'
-				&& !dataStatementTypesField.value.includes(pkp.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE)
-			) {
-				this.removeError(field.name);
-				return false;
-			}
-			if (
-				field.name === 'dataStatementReason'
-				&& !dataStatementTypesField.value.includes(pkp.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE)
-			) {
-				this.removeError(field.name);
-				return false;
-			}
-			return true;
-		},
-		fieldChanged: function (name, prop, value, localeKey) {
-			const newFields = this.allFields.map(field => {
-				if (field.name === name) {
-					if (localeKey) {
-						field[prop][localeKey] = value;
-					} else {
-						field[prop] = value;
-					}
-				}
-				return field;
-			});
-			this.$emit('set', this.id, { fields: newFields.filter(this.shouldShowField) });
-			this.removeError(name, localeKey);
-		},
-	},
-	mounted() {
-		this.allFields = this.fields;
-		const newFields = this.allFields.filter(this.shouldShowField);
-		this.$emit('set', this.id, { fields: newFields });
-	},
-});
+function addEventListeners() {
+	let checkRepoAvailable = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE + '"]')[0];
+	let checkPublicUnavailable = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE + '"]')[0];
+	let dataStatementUrlsField = document.getElementById('dataStatement-dataStatementUrls-description').parentNode;
+	let dataStatementReasonField = document.querySelectorAll('[id^="dataStatement-dataStatementReason-description"')[0].parentNode;
+
+	dataStatementUrlsField.hidden = !checkRepoAvailable.checked;
+	dataStatementReasonField.hidden = !checkPublicUnavailable.checked;
+
+	checkRepoAvailable.addEventListener('change', function() {
+		dataStatementUrlsField.hidden = !this.checked;
+	});
+
+	checkPublicUnavailable.addEventListener('change', function() {
+		dataStatementReasonField.hidden = !this.checked;
+	});
+}
+
+$(document).ready(addEventListeners);
