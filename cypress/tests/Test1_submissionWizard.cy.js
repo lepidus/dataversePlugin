@@ -48,35 +48,39 @@ describe('Dataverse Plugin - Submission wizard features', function () {
             cy.get('#titleAbstract-keywords-control-en').type('{enter}', {delay: 0});
         });
 
-        // cy.contains('h2', 'Data statement');
-        // cy.get('input[id^="dataStatementTypes"][value=2]').click();
-		// cy.get('ul[id^="dataStatementUrls"]').should('be.visible');
+        cy.contains('h2', 'Data statement');
+        cy.contains('Insert the URLs to the data').should('not.exist');
+        cy.contains('Provide the justification for the unavailability of the data').should('not.exist');
+
+        cy.get('input[id^="dataStatementTypes"][value=2]').click();
+		cy.contains('Insert the URLs to the data');
+        cy.get('#dataStatement-dataStatementUrls-control').should('be.visible');
 		advanceNSteps(4);
         cy.get('#reviewDataStatement');
         cy.contains('h3', 'Data statement');
 		cy.contains('It is required to inform the URLs to the data in repositories');
 
         cy.get('.pkpSteps__step__label:contains("Details")').click();
-        cy.get('input[id^="dataStatementTypes"][value=2]').click();
-		cy.get('ul[id^="dataStatementUrls"]').then((node) => {
-			node.tagit('createTag', 'Example text');
+		cy.get('#dataStatement-dataStatementUrls-control').then((node) => {
+            node.type('Example text', {delay: 0});
+            node.type('{enter}', {delay: 0});
 		});
-		advanceNSteps(4);
-		cy.contains('You must only enter the URLs to the data. Other textual information is not accepted');
+        cy.contains('This is not a valid URL.');
 
-        cy.get('.pkpSteps__step__label:contains("Details")').click();
-        cy.get('input[id^="dataStatementTypes"][value=2]').click();
-		cy.get('ul[id^="dataStatementUrls"]').then((node) => {
-			node.tagit('createTag', 'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
+		cy.get('#dataStatement-dataStatementUrls-control').then((node) => {
+			node.type('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM', {delay: 0});
+            node.type('{enter}', {delay: 0});
 		});
+        cy.contains('This is not a valid URL.').should('not.exist');
 
         cy.get('input[id^="dataStatementTypes"][value=5]').click();
-		cy.get('input[id^="dataStatementReason-en"]').should('be.visible');
+        cy.contains('Provide the justification for the unavailability of the data');
+		cy.get('#dataStatement-dataStatementReason-control-en').should('be.visible');
 		advanceNSteps(4);
 		cy.contains('It is required to inform the justification for the unavailability of the data');
 
 		cy.get('.pkpSteps__step__label:contains("Details")').click();
-		cy.get('input[id^="dataStatementReason-en"]').clear().type('Has sensitive data', {delay: 0});
+		cy.get('#dataStatement-dataStatementReason-control-en').clear().type('Has sensitive data', {delay: 0});
         advanceNSteps(4);
         cy.get('#reviewDataStatement').parent().parent().within(() => {
             cy.get('.pkpNotification--warning').should('not.exist');
