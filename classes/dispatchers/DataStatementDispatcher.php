@@ -21,7 +21,7 @@ class DataStatementDispatcher extends DataverseDispatcher
         Hook::add('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
         Hook::add('Publication::edit', [$this, 'dataStatementEditingCheck']);
         Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewStep']);
-        // Hook::add('Submission::validateSubmit', [$this, 'validateSubmissionFields']);
+        Hook::add('Submission::validateSubmit', [$this, 'validateSubmissionFields']);
         // Hook::add('Templates::Preprint::Details', [$this, 'viewDataStatement']);
         // Hook::add('Templates::Article::Details', [$this, 'viewDataStatement']);
     }
@@ -207,12 +207,6 @@ class DataStatementDispatcher extends DataverseDispatcher
         ];
     }
 
-    private function inputIsURL(string $input): bool
-    {
-        $urlPattern = '/^(https?:\/\/)?[a-z0-9\-]+(\.[a-z0-9\-]+)+([\/?#].*)?$/i';
-        return preg_match($urlPattern, $input) === 1;
-    }
-
     public function dataStatementEditingCheck(string $hookName, array $params): bool
     {
         $publication = &$params[0];
@@ -241,6 +235,49 @@ class DataStatementDispatcher extends DataverseDispatcher
 
         if ($step === 'details') {
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review/dataStatement.tpl'));
+        }
+
+        return false;
+    }
+
+    private function inputIsURL(string $input): bool
+    {
+        $urlPattern = '/^(https?:\/\/)?[a-z0-9\-]+(\.[a-z0-9\-]+)+([\/?#].*)?$/i';
+        return preg_match($urlPattern, $input) === 1;
+    }
+
+    public function validateSubmissionFields($hookName, $params)
+    {
+        $errors = &$params[0];
+        $submission = $params[1];
+        $publication = $submission->getCurrentPublication();
+
+        $dataStatementTypes = $publication->getData('dataStatementTypes');
+        $dataStatementUrls = $publication->getData('dataStatementUrls');
+        $dataStatementReason = $publication->getData('dataStatementReason');
+
+        if (!$dataStatementTypes) {
+            $errors['dataStatement'] = [__('plugins.generic.dataverse.dataStatement.required')];
+            return false;
+        }
+
+        if (in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)) {
+            if(!$dataStatementUrls) {
+                $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')];
+            } else {
+                foreach ($dataStatementUrls as $url) {
+                    if(!$this->inputIsURL($url)) {
+                        $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')];
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)
+            && !$dataStatementReason
+        ) {
+            $errors['dataStatementReason'] = [__('plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.required')];
         }
 
         return false;

@@ -58,6 +58,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		advanceNSteps(4);
         cy.get('#reviewDataStatement');
         cy.contains('h3', 'Data statement');
+        cy.contains('li', 'The research data is available in one or more data repository(ies)');
 		cy.contains('It is required to inform the URLs to the data in repositories');
 
         cy.get('.pkpSteps__step__label:contains("Details")').click();
@@ -82,6 +83,11 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.get('.pkpSteps__step__label:contains("Details")').click();
 		cy.get('#dataStatement-dataStatementReason-control-en').clear().type('Has sensitive data', {delay: 0});
         advanceNSteps(4);
+        
+        cy.contains('li', 'The research data is available in one or more data repository(ies)');
+        cy.contains('li', ' The research data cannot be made publicly available ');
+        cy.contains('a', 'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
+        cy.contains('Has sensitive data');
         cy.get('#reviewDataStatement').parent().parent().within(() => {
             cy.get('.pkpNotification--warning').should('not.exist');
         });

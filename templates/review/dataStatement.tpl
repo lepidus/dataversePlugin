@@ -35,7 +35,7 @@
             <div class="submissionWizard__reviewPanel__item__value">
                 <notification v-if="errors.dataStatementUrls" type="warning">
                     <icon icon="exclamation-triangle" :inline="true"></icon>
-                    {{ errors.dataStatementUrls }}
+                    {{ errors.dataStatementUrls[0] }}
                 </notification>
                 <ul v-else>
                     <li v-for="url in publication.dataStatementUrls">
@@ -50,7 +50,7 @@
         >
             <notification v-if="errors.dataStatementReason" type="warning">
                 <icon icon="exclamation-triangle" :inline="true"></icon>
-                {{ errors.dataStatementReason }}
+                {{ errors.dataStatementReason[0] }}
             </notification>
             <div
                 v-else 

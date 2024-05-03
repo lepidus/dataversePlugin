@@ -340,6 +340,9 @@ msgstr "Justificación"
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description"
 msgstr "Introduzca el motivo de la no disponibilidad de los datos."
 
+msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.required"
+msgstr "Es obligatorio informar el motivo de la no disponibilidad de los datos."
+
 msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
 msgstr "Los datos de investigación se han enviado al repositorio <strong>{$dataverseName}</strong>."
 
