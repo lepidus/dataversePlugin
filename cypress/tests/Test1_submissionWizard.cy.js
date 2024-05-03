@@ -87,4 +87,19 @@ describe('Dataverse Plugin - Submission wizard features', function () {
             cy.get('.pkpNotification--warning').should('not.exist');
         });
     });
+    it('Begins submission. Checks for data statement fields', function () {
+        cy.login('eostrom', null, 'publicknowledge');
+
+        cy.findSubmission('myQueue', submissionData.title);
+        advanceNSteps(1);
+
+        cy.get('h2:contains("Research data")').should('not.be.visible');
+        cy.get('.pkpSteps__step__label:contains("Details")').click();
+        cy.get('input[name="dataStatementTypes"][value=3]').click();
+        advanceNSteps(1);
+
+        cy.contains('h2', 'Research data');
+        cy.contains('Use this field only for submitting research data');
+        cy.contains('button', 'Add research data');
+    });
 });
