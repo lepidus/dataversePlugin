@@ -32,6 +32,7 @@ class DataStatementDispatcher extends DataverseDispatcher
         $templateMgr = TemplateManager::getManager($request);
         $dataStatementService = new DataStatementService();
         $templateMgr->setConstants($dataStatementService->getConstantsForTemplates());
+        $templateMgr->setConstants(['dataStatementTypes' => $dataStatementService->getDataStatementTypes()]);
 
         $templateMgr->setLocaleKeys([
             'validator.active_url'
