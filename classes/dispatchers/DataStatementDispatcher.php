@@ -20,6 +20,8 @@ class DataStatementDispatcher extends DataverseDispatcher
         Hook::add('TemplateManager::display', [$this, 'addToDetailsStep']);
         Hook::add('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
         Hook::add('Publication::edit', [$this, 'dataStatementEditingCheck']);
+        Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewStep']);
+        // Hook::add('Submission::validateSubmit', [$this, 'validateSubmissionFields']);
         // Hook::add('Templates::Preprint::Details', [$this, 'viewDataStatement']);
         // Hook::add('Templates::Article::Details', [$this, 'viewDataStatement']);
     }
@@ -225,6 +227,19 @@ class DataStatementDispatcher extends DataverseDispatcher
 
         if(!in_array(DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE, $fields['dataStatementTypes'])) {
             $publication->unsetData('dataStatementReason');
+        }
+
+        return false;
+    }
+
+    public function addToReviewStep(string $hookName, array $params): bool
+    {
+        $step = $params[0]['step'];
+        $templateMgr = $params[1];
+        $output = &$params[2];
+
+        if ($step === 'details') {
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review/dataStatement.tpl'));
         }
 
         return false;
