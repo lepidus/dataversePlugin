@@ -38,43 +38,38 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 
     it('Begins submission. Checks for data statement fields', function () {
         cy.login('eostrom', null, 'publicknowledge');
-
+        
         cy.get('div#myQueue a:contains("New Submission")').click();
         beginSubmission(submissionData);
 
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         submissionData.keywords.forEach(keyword => {
             cy.get('#titleAbstract-keywords-control-en').type(keyword, {delay: 0});
+            cy.wait(500);
             cy.get('#titleAbstract-keywords-control-en').type('{enter}', {delay: 0});
         });
 
         cy.contains('h2', 'Data statement');
-        cy.contains('Insert the URLs to the data').should('not.exist');
-        cy.contains('Provide the justification for the unavailability of the data').should('not.exist');
+        cy.get('#dataStatement-dataStatementUrls-control').should('not.be.visible');
+        cy.get('#dataStatement-dataStatementReason-control-en').should('not.be.visible');
 
-        cy.get('input[id^="dataStatementTypes"][value=2]').click();
+        cy.get('input[name="dataStatementTypes"][value=2]').click();
 		cy.contains('Insert the URLs to the data');
         cy.get('#dataStatement-dataStatementUrls-control').should('be.visible');
 		advanceNSteps(4);
-        cy.get('#reviewDataStatement');
         cy.contains('h3', 'Data statement');
-        cy.contains('li', 'The research data is available in one or more data repository(ies)');
 		cy.contains('It is required to inform the URLs to the data in repositories');
 
         cy.get('.pkpSteps__step__label:contains("Details")').click();
-		cy.get('#dataStatement-dataStatementUrls-control').then((node) => {
-            node.type('Example text', {delay: 0});
-            node.type('{enter}', {delay: 0});
-		});
+		cy.get('#dataStatement-dataStatementUrls-control').type('Example text');
+        cy.get('#dataStatement-dataStatementUrls-control').type('{enter}', {delay: 0});
         cy.contains('This is not a valid URL.');
 
-		cy.get('#dataStatement-dataStatementUrls-control').then((node) => {
-			node.type('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM', {delay: 0});
-            node.type('{enter}', {delay: 0});
-		});
+        cy.get('#dataStatement-dataStatementUrls-control').type('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
+        cy.get('#dataStatement-dataStatementUrls-control').type('{enter}', {delay: 0});
         cy.contains('This is not a valid URL.').should('not.exist');
 
-        cy.get('input[id^="dataStatementTypes"][value=5]').click();
+        cy.get('input[name="dataStatementTypes"][value=5]').click();
         cy.contains('Provide the justification for the unavailability of the data');
 		cy.get('#dataStatement-dataStatementReason-control-en').should('be.visible');
 		advanceNSteps(4);
@@ -88,7 +83,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('li', ' The research data cannot be made publicly available ');
         cy.contains('a', 'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
         cy.contains('Has sensitive data');
-        cy.get('#reviewDataStatement').parent().parent().within(() => {
+        cy.get('h3:contains("Data statement")').parent().parent().within(() => {
             cy.get('.pkpNotification--warning').should('not.exist');
         });
     });

@@ -26,7 +26,7 @@
             </div>
         </div>
         <div
-            v-if="publication.dataStatementTypes.includes(pkp.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE)"
+            v-if="publication.dataStatementTypes && publication.dataStatementTypes.includes(pkp.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE)"
             class="submissionWizard__reviewPanel__item"
         >
             <h4 class="submissionWizard__reviewPanel__item__header">
@@ -45,7 +45,7 @@
             </div>
         </div>
         <div
-            v-if="publication.dataStatementTypes.includes(pkp.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE)"
+            v-if="publication.dataStatementTypes && publication.dataStatementTypes.includes(pkp.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE)"
             class="submissionWizard__reviewPanel__item"
         >
             <notification v-if="errors.dataStatementReason" type="warning">
