@@ -23,7 +23,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $templateMgr = $params[1];
         $output = &$params[2];
 
-        $output .= '<template v-if="section.type === \'datasetFiles\'">Simulating template</template>';
+        $output .= $templateMgr->fetch($this->plugin->getTemplateResource('draftDatasetFiles.tpl'));
     }
 
     public function addToFilesStep(string $hookName, array $params)
@@ -48,7 +48,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $addGalleyLabel = __('submission.layout.galleys');
 
         $steps = $templateMgr->getState('steps');
-        $steps = array_map(function ($step) use ($dataStatementForm) {
+        $steps = array_map(function ($step) {
             if ($step['id'] === 'files') {
                 $step['sections'][] = [
                     'id' => 'datasetFiles',

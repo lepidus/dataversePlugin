@@ -87,7 +87,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
             cy.get('.pkpNotification--warning').should('not.exist');
         });
     });
-    it('Begins submission. Checks for data statement fields', function () {
+    it('Adds dataset files', function () {
         cy.login('eostrom', null, 'publicknowledge');
 
         cy.findSubmission('myQueue', submissionData.title);
