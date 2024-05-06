@@ -1,14 +1,68 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.classes.services.DataStatementService');
+namespace APP\plugins\generic\dataverse\classes\dispatchers;
+
+use PKP\plugins\Hook;
+use APP\core\Application;
+use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 
 class DraftDatasetFilesDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFileContainer'));
-        HookRegistry::register('submissionsubmitstep2form::validate', array($this, 'addStep2Validation'));
+        Hook::add('Template::SubmissionWizard::Section', [$this, 'addDraftDatasetFilesSection']);
+        Hook::add('TemplateManager::display', [$this, 'addToFilesStep']);
+        // HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFileContainer'));
+        // HookRegistry::register('submissionsubmitstep2form::validate', array($this, 'addStep2Validation'));
+    }
+
+    public function addDraftDatasetFilesSection(string $hookName, array $params)
+    {
+        $submission = $params[0]['submission'];
+        $templateMgr = $params[1];
+        $output = &$params[2];
+
+        $output .= '<template v-if="section.type === \'datasetFiles\'">Simulating template</template>';
+    }
+
+    public function addToFilesStep(string $hookName, array $params)
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $templateMgr = $params[0];
+
+        if ($request->getRequestedPage() !== 'submission' || $request->getRequestedOp() === 'saved') {
+            return false;
+        }
+
+        $submission = $request
+            ->getRouter()
+            ->getHandler()
+            ->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+
+        if (!$submission || !$submission->getData('submissionProgress')) {
+            return false;
+        }
+
+        $addGalleyLabel = __('submission.layout.galleys');
+
+        $steps = $templateMgr->getState('steps');
+        $steps = array_map(function ($step) use ($dataStatementForm) {
+            if ($step['id'] === 'files') {
+                $step['sections'][] = [
+                    'id' => 'datasetFiles',
+                    'name' => __('plugins.generic.dataverse.researchData'),
+                    'description' => __('plugins.generic.dataverse.researchDataDescription', ['addGalleyLabel' => $addGalleyLabel]),
+                    'type' => 'datasetFiles',
+                ];
+            }
+            return $step;
+        }, $steps);
+
+        $templateMgr->setState(['steps' => $steps]);
+
+        return false;
     }
 
     public function addDraftDatasetFileContainer(string $hookName, array $params): ?string
