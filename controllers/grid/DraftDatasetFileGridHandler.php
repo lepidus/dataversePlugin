@@ -1,6 +1,14 @@
 <?php
 
-import('lib.pkp.classes.controllers.grid.GridHandler');
+namespace APP\plugins\generic\dataverse\controllers\grid;
+
+use PKP\controllers\grid\GridHandler;
+use APP\core\Application;
+use PKP\security\Role;
+use PKP\security\authorization\PublicationAccessPolicy;
+use PKP\security\authorization\WorkflowStageAccessPolicy;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\AjaxModal;
 
 class DraftDatasetFileGridHandler extends GridHandler
 {
@@ -8,19 +16,19 @@ class DraftDatasetFileGridHandler extends GridHandler
     {
         parent::__construct();
         $this->addRoleAssignment(
-            [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT, ROLE_ID_AUTHOR],
+            [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT, Role::ROLE_ID_AUTHOR],
             ['fetchGrid', 'fetchRow', 'addFile', 'uploadFile', 'saveFile', 'deleteFile']
         );
     }
 
-    public function getSubmission(): Submission
+    public function getSubmission()
     {
-        return $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
+        return $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
     }
 
-    public function getPublication(): Publication
+    public function getPublication()
     {
-        return $this->getAuthorizedContextObject(ASSOC_TYPE_PUBLICATION);
+        return $this->getAuthorizedContextObject(Application::ASSOC_TYPE_PUBLICATION);
     }
 
     public function getRequestArgs(): array
@@ -33,10 +41,7 @@ class DraftDatasetFileGridHandler extends GridHandler
 
     public function authorize($request, &$args, $roleAssignments)
     {
-        import('lib.pkp.classes.security.authorization.WorkflowStageAccessPolicy');
         $this->addPolicy(new WorkflowStageAccessPolicy($request, $args, $roleAssignments, 'submissionId', WORKFLOW_STAGE_ID_PRODUCTION));
-
-        import('lib.pkp.classes.security.authorization.PublicationAccessPolicy');
         $this->addPolicy(new PublicationAccessPolicy($request, $args, $roleAssignments));
 
         return parent::authorize($request, $args, $roleAssignments);
@@ -49,7 +54,6 @@ class DraftDatasetFileGridHandler extends GridHandler
         $this->setTitle('plugins.generic.dataverse.researchData');
 
         $router = $request->getRouter();
-        import('lib.pkp.classes.linkAction.request.AjaxModal');
         $this->addAction(
             new LinkAction(
                 'addFile',

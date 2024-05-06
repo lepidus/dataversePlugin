@@ -23,6 +23,15 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $templateMgr = $params[1];
         $output = &$params[2];
 
+        $requestArgs = $templateMgr->getTemplateVars('requestArgs');
+        if (empty($requestArgs)) {
+            $requestArgs = [
+                'submissionId' => $submission->getId(),
+                'publicationId' => $submission->getData('currentPublicationId'),
+            ];
+            $templateMgr->assign('requestArgs', $requestArgs);
+        }
+
         $output .= $templateMgr->fetch($this->plugin->getTemplateResource('draftDatasetFiles.tpl'));
     }
 
