@@ -3,12 +3,23 @@
 namespace APP\plugins\generic\dataverse\controllers\grid;
 
 use PKP\controllers\grid\GridHandler;
+use PKP\controllers\grid\GridColumn;
 use APP\core\Application;
 use PKP\security\Role;
 use PKP\security\authorization\PublicationAccessPolicy;
 use PKP\security\authorization\WorkflowStageAccessPolicy;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
+use PKP\core\JSONMessage;
+use PKP\plugins\PluginRegistry;
+use PKP\file\TemporaryFileManager;
+use PKP\db\DAO;
+use PKP\core\Core;
+use APP\log\event\SubmissionEventLogEntry;
+use APP\plugins\generic\dataverse\controllers\grid\DraftDatasetFileGridRow;
+use APP\plugins\generic\dataverse\controllers\grid\DraftDatasetFileGridCellProvider;
+use APP\plugins\generic\dataverse\controllers\grid\form\DraftDatasetFileForm;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DraftDatasetFileGridHandler extends GridHandler
 {
@@ -72,20 +83,18 @@ class DraftDatasetFileGridHandler extends GridHandler
 
     protected function loadData($request, $filter)
     {
-        import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
-        $draftDatasetFileDAO = new DraftDatasetFileDAO();
-        $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($this->getSubmission()->getId());
-
+        $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($this->getSubmission()->getId());
         $researchDataFiles = [];
+
         foreach ($draftDatasetFiles as $draftDatasetFile) {
             $researchDataFiles[$draftDatasetFile->getId()] = $draftDatasetFile;
         }
+
         return $researchDataFiles;
     }
 
     protected function getRowInstance()
     {
-        import('plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridRow');
         return new DraftDatasetFileGridRow(
             $this->getSubmission(),
             $this->getPublication()
@@ -94,7 +103,6 @@ class DraftDatasetFileGridHandler extends GridHandler
 
     public function getFileNameColumn(): GridColumn
     {
-        import('plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridCellProvider');
         return new GridColumn(
             'label',
             'common.name',
@@ -109,7 +117,6 @@ class DraftDatasetFileGridHandler extends GridHandler
         $plugin = PluginRegistry::getPlugin('generic', 'dataverseplugin');
         $template = $plugin->getTemplateResource('form/draftDatasetFileForm.tpl');
 
-        import('plugins.generic.dataverse.controllers.grid.form.DraftDatasetFileForm');
         return new DraftDatasetFileForm(
             $template,
             $this->getSubmission()->getId(),
@@ -128,7 +135,6 @@ class DraftDatasetFileGridHandler extends GridHandler
     {
         $user = $request->getUser();
 
-        import('lib.pkp.classes.file.TemporaryFileManager');
         $temporaryFileManager = new TemporaryFileManager();
         $temporaryFile = $temporaryFileManager->handleUpload('uploadedFile', $user->getId());
         if ($temporaryFile) {
@@ -162,19 +168,19 @@ class DraftDatasetFileGridHandler extends GridHandler
         $context = $request->getContext();
 
         if ($request->checkCSRF() && $fileId) {
-            import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
-            $draftDatasetFileDAO = new DraftDatasetFileDAO();
-            $draftDatasetFileDAO->deleteById($fileId);
+            $submission = $this->getSubmission();
+            $draftDatasetFile = Repo::draftDatasetFile()->get($fileId);
+            Repo::draftDatasetFile()->delete($draftDatasetFile);
 
-            import('lib.pkp.classes.log.SubmissionLog');
-            import('lib.pkp.classes.log.SubmissionFileEventLogEntry');
-            \SubmissionLog::logEvent(
-                $request,
-                $this->getSubmission(),
-                SUBMISSION_LOG_FILE_UPLOAD,
-                'plugins.generic.dataverse.log.researchDataFileDeleted',
-                ['filename' => $args['fileName']]
-            );
+            $researchDataLog = Repo::eventLog()->newDataObject([
+                'assocType' => Application::ASSOC_TYPE_SUBMISSION,
+                'assocId' => $submission->getId(),
+                'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_FILE_UPLOAD,
+                'message' => __('plugins.generic.dataverse.log.researchDataFileDeleted', ['filename' => $args['fileName']]),
+                'isTranslated' => true,
+                'dateLogged' => Core::getCurrentDate(),
+            ]);
+            Repo::eventLog()->add($researchDataLog);
 
             return DAO::getDataChangedEvent();
         }

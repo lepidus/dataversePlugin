@@ -1,11 +1,14 @@
 <?php
 
-import('lib.pkp.classes.controllers.grid.GridRow');
+namespace APP\plugins\generic\dataverse\controllers\grid;
+
+use PKP\controllers\grid\GridRow;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\RemoteActionConfirmationModal;
 
 class DraftDatasetFileGridRow extends GridRow
 {
     private $submission;
-
     private $publication;
 
     public function __construct($submission, $publication)
@@ -27,7 +30,6 @@ class DraftDatasetFileGridRow extends GridRow
             $actionArgs['fileId'] = $fileId;
             $actionArgs['fileName'] = $rowData->getData('fileName');
 
-            import('lib.pkp.classes.linkAction.request.RemoteActionConfirmationModal');
             $this->addAction(new LinkAction(
                 'deleteFile',
                 new RemoteActionConfirmationModal(
@@ -43,12 +45,12 @@ class DraftDatasetFileGridRow extends GridRow
         }
     }
 
-    public function getSubmission(): Submission
+    public function getSubmission()
     {
         return $this->submission;
     }
 
-    public function getPublication(): Publication
+    public function getPublication()
     {
         return $this->publication;
     }

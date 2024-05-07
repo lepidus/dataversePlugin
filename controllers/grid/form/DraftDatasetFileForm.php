@@ -1,11 +1,15 @@
 <?php
 
-import('lib.pkp.classes.form.Form');
+namespace APP\plugins\generic\dataverse\controllers\grid;
+
+use PKP\form\Form;
+use PKP\form\validation\FormValidator;
+use PKP\form\validation\FormValidatorPost;
+use PKP\form\validation\FormValidatorCSRF;
 
 class DraftDatasetFileForm extends Form
 {
     private $submissionId;
-
     private $publicationId;
 
     public function __construct($template, $submissionId, $publicationId)

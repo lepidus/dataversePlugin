@@ -57,7 +57,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $addGalleyLabel = __('submission.layout.galleys');
 
         $steps = $templateMgr->getState('steps');
-        $steps = array_map(function ($step) {
+        $steps = array_map(function ($step) use ($addGalleyLabel) {
             if ($step['id'] === 'files') {
                 $step['sections'][] = [
                     'id' => 'datasetFiles',

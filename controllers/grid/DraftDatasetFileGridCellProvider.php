@@ -1,6 +1,8 @@
 <?php
 
-import('lib.pkp.classes.controllers.grid.GridCellProvider');
+namespace APP\plugins\generic\dataverse\controllers\grid;
+
+use PKP\controllers\grid\GridCellProvider;
 
 class DraftDatasetFileGridCellProvider extends GridCellProvider
 {

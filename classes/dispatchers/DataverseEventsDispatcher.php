@@ -1,26 +1,26 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.classes.services.DatasetService');
-import('lib.pkp.classes.log.SubmissionLog');
-import('classes.log.SubmissionEventLogEntry');
+namespace APP\plugins\generic\dataverse\classes\dispatchers;
+
+use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use PKP\plugins\Hook;
 
 class DataverseEventsDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('SubmissionHandler::saveSubmit', array($this, 'datasetDepositOnSubmission'));
-        HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
-        HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
-        HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
-        HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDataverseAPIHandlers'));
-        HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
-        HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
-        HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
-        HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
-        HookRegistry::register('initiateexternalreviewform::display', array($this, 'addSelectDataFilesForReview'));
-        HookRegistry::register('initiateexternalreviewform::execute', array($this, 'saveSelectedDataFilesForReview'));
-        HookRegistry::register('Publication::edit', array($this, 'updateDatasetOnPublicationUpdate'));
+        Hook::add('Schema::get::draftDatasetFile', [$this, 'loadDraftDatasetFileSchema']);
+        Hook::add('LoadComponentHandler', [$this, 'setupDataverseHandlers']);
+        // HookRegistry::register('SubmissionHandler::saveSubmit', array($this, 'datasetDepositOnSubmission'));
+        // HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
+        // HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDataverseAPIHandlers'));
+        // HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
+        // HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
+        // HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
+        // HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
+        // HookRegistry::register('initiateexternalreviewform::display', array($this, 'addSelectDataFilesForReview'));
+        // HookRegistry::register('initiateexternalreviewform::execute', array($this, 'saveSelectedDataFilesForReview'));
+        // HookRegistry::register('Publication::edit', array($this, 'updateDatasetOnPublicationUpdate'));
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -427,14 +427,19 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
     public function setupDataverseHandlers($hookName, $params): bool
     {
+        error_log('caindo aqui?');
         $component = &$params[0];
+        $componentInstance = &$params[2];
         $ourHandlers = [
-            'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler',
-            'plugins.generic.dataverse.controllers.grid.DatasetReviewGridHandler'
+            'DraftDatasetFileGridHandler',
+            'DatasetReviewGridHandler'
         ];
-        if (in_array($component, $ourHandlers)) {
-            import($component);
-            return true;
+        foreach ($ourHandlers as $handlerName) {
+            if ($component == "plugins.generic.dataverse.controllers.grid.$handlerName") {
+                $className = "APP\plugins\generic\dataverse\controllers\grid\\$handlerName";
+                $componentInstance = new $className();
+                return true;
+            }
         }
         return false;
     }
