@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use APP\plugins\generic\dataverse\controllers\grid\DraftDatasetFileGridHandler;
 use PKP\plugins\Hook;
 
 class DataverseEventsDispatcher extends DataverseDispatcher
@@ -427,19 +428,12 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
     public function setupDataverseHandlers($hookName, $params): bool
     {
-        error_log('caindo aqui?');
         $component = &$params[0];
         $componentInstance = &$params[2];
-        $ourHandlers = [
-            'DraftDatasetFileGridHandler',
-            'DatasetReviewGridHandler'
-        ];
-        foreach ($ourHandlers as $handlerName) {
-            if ($component == "plugins.generic.dataverse.controllers.grid.$handlerName") {
-                $className = "APP\plugins\generic\dataverse\controllers\grid\\$handlerName";
-                $componentInstance = new $className();
-                return true;
-            }
+
+        if ($component == 'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler') {
+            $componentInstance = new DraftDatasetFileGridHandler();
+            return true;
         }
         return false;
     }

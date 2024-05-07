@@ -6,6 +6,14 @@ use PKP\form\Form;
 use PKP\form\validation\FormValidator;
 use PKP\form\validation\FormValidatorPost;
 use PKP\form\validation\FormValidatorCSRF;
+use APP\core\Application;
+use APP\template\TemplateManager;
+use PKP\facades\Locale;
+use PKP\db\DAORegistry;
+use PKP\core\Core;
+use APP\log\event\SubmissionEventLogEntry;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DraftDatasetFileForm extends Form
 {
@@ -47,9 +55,8 @@ class DraftDatasetFileForm extends Form
     private function getTermsOfUseArgs(): array
     {
         $contextId = Application::get()->getRequest()->getContext()->getId();
-        $locale = AppLocale::getLocale();
+        $locale = Locale::getLocale();
 
-        import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
         $dataverseClient = new DataverseClient();
         $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
 
@@ -91,26 +98,24 @@ class DraftDatasetFileForm extends Form
             $user->getId()
         );
 
-        import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
-        $draftDatasetFileDAO = new DraftDatasetFileDAO();
-        $draftDatasetFile = $draftDatasetFileDAO->newDataObject();
+        $draftDatasetFile = Repo::draftDatasetFile()->newDataObject();
         $draftDatasetFile->setData('submissionId', $this->getData('submissionId'));
         $draftDatasetFile->setData('userId', $user->getId());
         $draftDatasetFile->setData('fileId', $temporaryFile->getId());
         $draftDatasetFile->setData('fileName', $temporaryFile->getOriginalFileName());
-        $draftDatasetFileDAO->insertObject($draftDatasetFile);
+        Repo::draftDatasetFile()->add($draftDatasetFile);
 
-        $submission = Services::get('submission')->get($this->getData('submissionId'));
+        $submission = Repo::submission()->get($this->getData('submissionId'));
 
-        import('lib.pkp.classes.log.SubmissionLog');
-        import('lib.pkp.classes.log.SubmissionFileEventLogEntry');
-        \SubmissionLog::logEvent(
-            $request,
-            $submission,
-            SUBMISSION_LOG_FILE_UPLOAD,
-            'plugins.generic.dataverse.log.researchDataFileAdded',
-            ['filename' => $draftDatasetFile->getData('fileName')]
-        );
+        $researchDataLog = Repo::eventLog()->newDataObject([
+            'assocType' => Application::ASSOC_TYPE_SUBMISSION,
+            'assocId' => $submission->getId(),
+            'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_FILE_UPLOAD,
+            'message' => __('plugins.generic.dataverse.log.researchDataFileAdded', ['filename' => $draftDatasetFile->getData('fileName')]),
+            'isTranslated' => true,
+            'dateLogged' => Core::getCurrentDate(),
+        ]);
+        Repo::eventLog()->add($researchDataLog);
 
         parent::execute(...$functionArgs);
         return $draftDatasetFile->getId();
