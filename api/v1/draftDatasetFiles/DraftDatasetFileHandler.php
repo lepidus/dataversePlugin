@@ -1,6 +1,11 @@
 <?php
 
-import('lib.pkp.classes.handler.APIHandler');
+namespace APP\plugins\generic\dataverse\api\v1\draftDatasetFiles;
+
+use PKP\handler\APIHandler;
+use APP\core\Services;
+use PKP\file\TemporaryFileManager;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DraftDatasetFileHandler extends APIHandler
 {
@@ -9,26 +14,26 @@ class DraftDatasetFileHandler extends APIHandler
     public function __construct()
     {
         $this->_handlerPath = 'draftDatasetFiles';
-        $this->_endpoints = array(
-            'GET' => array(
-                array(
+        $this->_endpoints = [
+            'GET' => [
+                [
                     'pattern' => $this->getEndpointPattern(),
-                    'handler' => array($this, 'getMany'),
-                ),
-            ),
-            'POST' => array(
-                array(
+                    'handler' => [$this, 'getMany'],
+                ],
+            ],
+            'POST' => [
+                [
                     'pattern' => $this->getEndpointPattern(),
-                    'handler' => array($this, 'add'),
-                )
-            ),
-            'DELETE' => array(
-                array(
+                    'handler' => [$this, 'add'],
+                ]
+            ],
+            'DELETE' => [
+                [
                     'pattern' => $this->getEndpointPattern(),
-                    'handler' => array($this, 'delete'),
-                ),
-            )
-        );
+                    'handler' => [$this, 'delete'],
+                ],
+            ]
+        ];
         parent::__construct();
     }
 
@@ -37,9 +42,9 @@ class DraftDatasetFileHandler extends APIHandler
         $requestParams = $slimRequest->getQueryParams();
         $submissionId = $requestParams['submissionId'] ?? null;
 
-        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+        $draftDatasetFileRepo = Repo::draftDatasetFile();
 
-        $result = is_null($submissionId) ? $draftDatasetFileDAO->getAll() : $draftDatasetFileDAO->getBySubmissionId($submissionId);
+        $result = is_null($submissionId) ? $draftDatasetFileRepo->getAll() : $draftDatasetFileRepo->getBySubmissionId($submissionId);
 
         $items = [];
         foreach ($result as $draftDatasetFile) {
@@ -60,7 +65,6 @@ class DraftDatasetFileHandler extends APIHandler
 
         $fileId = $requestParams['datasetFile']['temporaryFileId'];
 
-        import('lib.pkp.classes.file.TemporaryFileManager');
         $temporaryFileManager = new TemporaryFileManager();
         $file = $temporaryFileManager->getFile($fileId, $queryParams['userId']);
 
@@ -70,10 +74,9 @@ class DraftDatasetFileHandler extends APIHandler
         $params['fileName'] = $file->getOriginalFileName();
         $params = $this->convertStringsToSchema($this->schemaName, $params);
 
-        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
-        $draftDatasetFile = $draftDatasetFileDAO->newDataObject();
+        $draftDatasetFile = Repo::draftDatasetFile()->newDataObject();
         $draftDatasetFile->setAllData($params);
-        $draftDatasetFile->setId($draftDatasetFileDAO->insertObject($draftDatasetFile));
+        $draftDatasetFile->setId(Repo::draftDatasetFile()->add($draftDatasetFile));
 
         $draftDatasetFileProps = $this->getFullProperties($draftDatasetFile);
 
@@ -83,17 +86,14 @@ class DraftDatasetFileHandler extends APIHandler
     public function delete($slimRequest, $response, $args)
     {
         $requestParams = $slimRequest->getQueryParams();
-        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
-
-        $draftDatasetFile = $draftDatasetFileDAO->getById((int) $requestParams['fileId']);
+        $draftDatasetFile = Repo::draftDatasetFile()->get((int) $requestParams['fileId']);
 
         if (!$draftDatasetFile) {
             return $response->withStatus(404)->withJsonError('api.draftDatasetFile.404.drafDatasetFileNotFound');
         }
 
         $draftDatasetFileProps = $this->getFullProperties($draftDatasetFile);
-
-        $draftDatasetFileDAO->deleteObject($draftDatasetFile);
+        Repo::draftDatasetFile()->delete($draftDatasetFile);
 
         return $response->withJson($draftDatasetFileProps, 200);
     }

@@ -3,7 +3,7 @@
 namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
-use APP\plugins\generic\dataverse\controllers\grid\DraftDatasetFileGridHandler;
+use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileHandler;
 use PKP\plugins\Hook;
 
 class DataverseEventsDispatcher extends DataverseDispatcher
@@ -11,10 +11,10 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     protected function registerHooks(): void
     {
         Hook::add('Schema::get::draftDatasetFile', [$this, 'loadDraftDatasetFileSchema']);
-        Hook::add('LoadComponentHandler', [$this, 'setupDataverseHandlers']);
+        Hook::add('Dispatcher::dispatch', [$this, 'setupDataverseAPIHandlers']);
+        //Hook::add('LoadComponentHandler', [$this, 'setupDataverseHandlers']);
         // HookRegistry::register('SubmissionHandler::saveSubmit', array($this, 'datasetDepositOnSubmission'));
         // HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
-        // HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDataverseAPIHandlers'));
         // HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
         // HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
         // HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
@@ -387,18 +387,21 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         return $templateMgr->fetch($form->_template);
     }
 
-    public function setupDataverseAPIHandlers(string $hookname, Request $request): void
+    public function setupDataverseAPIHandlers(string $hookname, array $params): void
     {
+        $request = $params[0];
         $router = $request->getRouter();
-        if (!($router instanceof \APIRouter)) {
+
+        if (!($router instanceof \PKP\core\APIRouter)) {
             return;
         }
 
-        if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
-            $this->plugin->import('api.v1.datasets.DatasetHandler');
-            $handler = new DatasetHandler();
-        } elseif (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
-            $this->plugin->import('api.v1.draftDatasetFiles.DraftDatasetFileHandler');
+        // Later, on workflow features adaption
+        // if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
+        //     $handler = new DatasetHandler();
+        // } else
+
+        if (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
             $handler = new DraftDatasetFileHandler();
         }
 
