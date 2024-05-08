@@ -1,14 +1,7 @@
-<template v-if="section.type === 'datasetFiles'">
-    <div id="datasetFilesSection">
-        {capture assign=draftDatasetFileGridUrl}
-            {url 
-                router=\PKP\core\PKPApplication::ROUTE_COMPONENT
-                component="plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler" 
-                op="fetchGrid"
-                params=$requestArgs
-                escape=false
-            }
-        {/capture}
-        {load_url_in_div id="draftDatasetFileGridContainer"|uniqid url=$draftDatasetFileGridUrl}
-    </div>
-</template>
+<div id="datasetFilesSection">
+    <dataset-files-list-panel
+        v-if="section.type === 'datasetFiles'"
+        v-bind="components.datasetFiles"
+        @set='set'
+    ></dataset-files-list-panel>
+</div>

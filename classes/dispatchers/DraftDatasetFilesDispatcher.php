@@ -4,8 +4,11 @@ namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
 use PKP\plugins\Hook;
 use APP\core\Application;
+use APP\template\TemplateManager;
+use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DraftDatasetFilesDispatcher extends DataverseDispatcher
 {
@@ -22,15 +25,6 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $submission = $params[0]['submission'];
         $templateMgr = $params[1];
         $output = &$params[2];
-
-        $requestArgs = $templateMgr->getTemplateVars('requestArgs');
-        if (empty($requestArgs)) {
-            $requestArgs = [
-                'submissionId' => $submission->getId(),
-                'publicationId' => $submission->getData('currentPublicationId'),
-            ];
-            $templateMgr->assign('requestArgs', $requestArgs);
-        }
 
         $output .= $templateMgr->fetch($this->plugin->getTemplateResource('draftDatasetFiles.tpl'));
     }
@@ -54,7 +48,8 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             return false;
         }
 
-        $addGalleyLabel = __('submission.layout.galleys');
+        $this->addDatasetFilesList($templateMgr, $request, $submission);
+        $addGalleyLabel = __('submission.upload.uploadFiles');
 
         $steps = $templateMgr->getState('steps');
         $steps = array_map(function ($step) use ($addGalleyLabel) {
@@ -72,6 +67,51 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $templateMgr->setState(['steps' => $steps]);
 
         return false;
+    }
+
+    private function addDatasetFilesList($templateMgr, $request, $submission): void
+    {
+        $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
+        $fileListApiUrl = $request
+            ->getDispatcher()
+            ->url($request, Application::ROUTE_API, $request->getContext()->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
+
+        $items = array_map(function ($draftDatasetFile) {
+            return $draftDatasetFile->getAllData();
+        }, $draftDatasetFiles);
+        ksort($items);
+
+        $items = [['id' => 128, 'fileName' => 'barao de cote.zip']]; //only for tests
+
+        $datasetFilesListPanel = new DatasetFilesListPanel(
+            'datasetFiles',
+            __('plugins.generic.dataverse.researchData.files'),
+            [
+                'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
+                'apiUrl' => $fileListApiUrl,
+                'items' => $items,
+                'modalTitle' => __('plugins.generic.dataverse.modal.addFile.title'),
+                'title' => __('plugins.generic.dataverse.researchData'),
+            ]
+        );
+
+        $wizardComponents = $templateMgr->getState('components');
+        $wizardComponents[$datasetFilesListPanel->id] = $datasetFilesListPanel->getConfig();
+
+        $templateMgr->addJavaScript(
+            'dataset-files-list-panel',
+            $this->plugin->getPluginFullPath() . '/js/ui/components/DatasetFilesListPanel.js',
+            [
+                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
+                'contexts' => ['backend']
+            ]
+        );
+
+        $templateMgr->setState([
+            'components' => $wizardComponents,
+            'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
+            'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete')
+        ]);
     }
 
     public function addDraftDatasetFileContainer(string $hookName, array $params): ?string
