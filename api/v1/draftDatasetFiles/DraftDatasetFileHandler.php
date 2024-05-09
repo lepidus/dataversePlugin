@@ -39,8 +39,8 @@ class DraftDatasetFileHandler extends APIHandler
 
     public function getMany($slimRequest, $response, $args)
     {
-        $requestParams = $slimRequest->getQueryParams();
-        $submissionId = $requestParams['submissionId'] ?? null;
+        $queryParams = $slimRequest->getQueryParams();
+        $submissionId = $queryParams['submissionId'] ?? null;
 
         $draftDatasetFileRepo = Repo::draftDatasetFile();
 
@@ -85,8 +85,8 @@ class DraftDatasetFileHandler extends APIHandler
 
     public function delete($slimRequest, $response, $args)
     {
-        $requestParams = $slimRequest->getQueryParams();
-        $draftDatasetFile = Repo::draftDatasetFile()->get((int) $requestParams['fileId']);
+        $queryParams = $slimRequest->getQueryParams();
+        $draftDatasetFile = Repo::draftDatasetFile()->get((int) $queryParams['fileId']);
 
         if (!$draftDatasetFile) {
             return $response->withStatus(404)->withJsonError('api.draftDatasetFile.404.drafDatasetFileNotFound');

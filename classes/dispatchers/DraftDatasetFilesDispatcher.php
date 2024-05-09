@@ -72,7 +72,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     private function addDatasetFilesList($templateMgr, $request, $submission): void
     {
         $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
-        $fileListApiUrl = $request
+        $datasetFilesApiUrl = $request
             ->getDispatcher()
             ->url($request, Application::ROUTE_API, $request->getContext()->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
 
@@ -81,14 +81,13 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         }, $draftDatasetFiles);
         ksort($items);
 
-        $items = [['id' => 128, 'fileName' => 'barao de cote.zip']]; //only for tests
-
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
             __('plugins.generic.dataverse.researchData.files'),
+            $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
-                'apiUrl' => $fileListApiUrl,
+                'datasetFilesApiUrl' => $datasetFilesApiUrl,
                 'items' => $items,
                 'modalTitle' => __('plugins.generic.dataverse.modal.addFile.title'),
                 'title' => __('plugins.generic.dataverse.researchData'),
@@ -109,8 +108,6 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
         $templateMgr->setState([
             'components' => $wizardComponents,
-            'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
-            'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete')
         ]);
     }
 

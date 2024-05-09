@@ -6,17 +6,27 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
                     <h2>{{ title }}</h2>
                     <spinner v-if="isLoading"></spinner>
                     <template slot="actions">
-                        <pkp-button 
+                        <pkp-button
+                            @click="openAddFileModal"
                         >
                             {{ addFileLabel }}
                         </pkp-button>
                     </template>
                 </pkp-header>
+                <modal 
+                    name="addDatasetFileModal"
+                    :title="modalTitle"
+                    :closeLabel="__('common.close')"
+                >
+                    <pkp-form
+                        v-bind="form"
+                    />
+                </modal>
             </slot>
         </div>
         <div class="listPanel__body">
             <div class="listPanel__items">
-                <div v-if="!items.length" class="listPanel__empty">
+                <div v-if="Object.keys(items).length == 0" class="listPanel__empty">
                     <slot name="itemsEmpty">{{ __('common.noItemsFound') }}</slot>
                 </div>
                 <ul v-else class="listPanel__itemsList">
@@ -39,8 +49,7 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
     </div>
 `);
 
-const ListPanel =
-    pkp.controllers.Container.components.ListPanel;
+const ListPanel = pkp.controllers.Container.components.ListPanel;
 
 pkp.Vue.component('dataset-files-list-panel', {
     name: 'DatasetFilesListPanel',
@@ -54,9 +63,16 @@ pkp.Vue.component('dataset-files-list-panel', {
         addFileLabel: {
             type: String,
         },
-        downloadFileUrl: {
+        modalTitle: {
             type: String,
-        }
+        },
+        apiUrl: {
+            type: String,
+        },
+        form: {
+			type: Object,
+			required: true,
+		},
     },
     methods: {
         getFileDownloadUrl(item) {
@@ -64,6 +80,9 @@ pkp.Vue.component('dataset-files-list-panel', {
                 this.downloadFileUrl +
                 `?fileId=${item.id}&filename=${item.fileName}`
             );
+        },
+        openAddFileModal() {
+            this.$modal.show('addDatasetFileModal');
         },
     },
     render: function (h) {

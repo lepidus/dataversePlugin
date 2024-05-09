@@ -1,8 +1,14 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes\components\forms;
+
 use PKP\components\forms\FormComponent;
 use PKP\components\forms\FieldUpload;
 use PKP\components\forms\FieldOptions;
+use APP\core\Application;
+use PKP\facades\Locale;
+use PKP\db\DAORegistry;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 class DraftDatasetFileForm extends FormComponent
 {
@@ -35,17 +41,14 @@ class DraftDatasetFileForm extends FormComponent
     private function getTemporaryFileApiUrl($context): string
     {
         $request = Application::get()->getRequest();
-        $temporaryFileApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'temporaryFiles');
+        $temporaryFileApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'temporaryFiles');
         return $temporaryFileApiUrl;
     }
 
     private function getTermsOfUseData($contextId)
     {
-        $locale = AppLocale::getLocale();
-
-        import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+        $locale = Locale::getLocale();
         $dataverseClient = new DataverseClient();
-
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
 
         try {
