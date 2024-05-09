@@ -100,6 +100,32 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 
         cy.contains('h2', 'Research data');
         cy.contains('Use this field only for submitting research data');
-        cy.contains('button', 'Add research data');
+        cy.contains('button', 'Add research data').click();
+        cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').upload({
+				fileContent,
+				fileName: 'Data_detailing.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('form:visible button:contains("Save")').click();
+		cy.waitJQuery();
+        cy.get('#datasetFiles .listPanel__items').contains('Data_detailing.pdf');
+        
+        cy.fixture('dummy.xlsx', 'base64').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').upload({
+				fileContent,
+				fileName: 'Raw_data.xlsx',
+				mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+				encoding: 'base64',
+			});
+		});
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('form:visible button:contains("Save")').click();
+		cy.waitJQuery();
+        cy.get('#datasetFiles .listPanel__items').contains('Data_detailing.pdf');
+		cy.get('#datasetFiles .listPanel__items').contains('Raw_data.xlsx');
     });
 });
