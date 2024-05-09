@@ -4,7 +4,7 @@ function addEventListeners() {
 	let checkDataverseSubmitted = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED + '"]')[0];
 	let dataStatementUrlsField = document.getElementById('dataStatement-dataStatementUrls-description').parentNode;
 	let dataStatementReasonField = document.querySelectorAll('[id^="dataStatement-dataStatementReason-description"')[0].parentNode;
-	let datasetFilesSection = document.getElementById('datasetFilesSection').parentNode.parentNode;
+	let datasetFilesPanel = document.getElementById('datasetFiles').parentNode.parentNode;
 
 	dataStatementUrlsField.hidden = !checkRepoAvailable.checked;
 	dataStatementReasonField.hidden = !checkPublicUnavailable.checked;
@@ -19,13 +19,13 @@ function addEventListeners() {
 
 	checkDataverseSubmitted.addEventListener('change', function() {
 		if (this.checked) {
-			datasetFilesSection.style.display = '';
+			datasetFilesPanel.style.display = '';
 		} else {
-			datasetFilesSection.style.display = 'none';
+			datasetFilesPanel.style.display = 'none';
 		}
 	});
 
-	datasetFilesSection.style.display = (checkDataverseSubmitted.checked ? '' : 'none');
+	datasetFilesPanel.style.display = (checkDataverseSubmitted.checked ? '' : 'none');
 }
 
 $(document).ready(addEventListeners);
