@@ -102,7 +102,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('Use this field only for submitting research data');
         cy.contains('button', 'Add research data').click();
         cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').upload({
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
 				fileName: 'Data_detailing.pdf',
 				mimeType: 'application/pdf',
@@ -114,8 +114,9 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.waitJQuery();
         cy.get('#datasetFiles .listPanel__items').contains('Data_detailing.pdf');
         
+        cy.contains('button', 'Add research data').click();
         cy.fixture('dummy.xlsx', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').upload({
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
 				fileName: 'Raw_data.xlsx',
 				mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
