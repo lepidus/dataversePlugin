@@ -41,6 +41,15 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
                                         </a>
                                     </div>
                                 </div>
+                                <div class="listPanel__itemActions">
+                                    <pkp-button
+                                        :disabled="isLoading"
+                                        :isWarnable="true"
+                                        @click="openDeleteFileModal(item.id)"
+                                    >
+                                        {{ __('common.delete') }}
+                                    </pkp-button>
+								</div>
                             </div>
                         </slot>
                     </li>
@@ -72,8 +81,10 @@ pkp.Vue.component('dataset-files-list-panel', {
         },
         form: {
 			type: Object,
-			required: true,
 		},
+        deleteForm: {
+			type: Object,
+		}
     },
     methods: {
         getFileDownloadUrl(item) {
@@ -88,6 +99,13 @@ pkp.Vue.component('dataset-files-list-panel', {
         addFileFormSuccess(data) {
             this.refreshItems();
             this.$modal.hide('addDatasetFileModal');
+        },
+        openDeleteFileModal() {
+            this.$modal.show('deleteDatasetFileModal');
+        },
+        deleteFileFormSuccess(data) {
+            this.refreshItems();
+            this.$modal.hide('deleteDatasetFileModal');
         },
         refreshItems() {
             var self = this;
@@ -117,7 +135,7 @@ pkp.Vue.component('dataset-files-list-panel', {
                     self.isLoading = false;
 				},
 			});
-        }
+        },
     },
     render: function (h) {
         return datasetFilesListTemplate.render.call(this, h);

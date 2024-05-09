@@ -4,6 +4,8 @@ namespace APP\plugins\generic\dataverse\classes\components\listPanel;
 
 use APP\core\Application;
 use PKP\components\listPanels\ListPanel;
+use PKP\components\forms\FormComponent;
+use PKP\components\forms\FieldHTML;
 use APP\plugins\generic\dataverse\classes\components\forms\DraftDatasetFileForm;
 
 class DatasetFilesListPanel extends ListPanel
@@ -25,6 +27,7 @@ class DatasetFilesListPanel extends ListPanel
     {
         $config = parent::getConfig();
         $form = $this->getForm();
+        $deleteForm = $this->getDeleteForm();
 
         $config = array_merge(
             $config,
@@ -34,6 +37,7 @@ class DatasetFilesListPanel extends ListPanel
                 'modalTitle' => $this->modalTitle,
                 'title' => $this->title,
                 'form' => $form->getConfig(),
+                'deleteForm' => $deleteForm->getConfig()
             ]
         );
 
@@ -50,5 +54,25 @@ class DatasetFilesListPanel extends ListPanel
             $addFileUrl,
             $request->getContext()
         );
+    }
+
+    private function getDeleteForm(): FormComponent
+    {
+        $deleteDatasetFileForm = new FormComponent('deleteDatasetFile', 'DELETE', $this->datasetFilesApiUrl);
+
+        $deleteDatasetFileForm->addPage([
+            'id' => 'default',
+            'submitButton' => [
+                'label' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
+            ],
+        ])->addGroup([
+            'id' => 'default',
+            'pageId' => 'default',
+        ])->addField(new FieldHTML('deleteMessage', [
+            'description' => __('plugins.generic.dataverse.modal.confirmDelete'),
+            'groupId' => 'default'
+        ]));
+
+        return $deleteDatasetFileForm;
     }
 }

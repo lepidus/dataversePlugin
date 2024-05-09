@@ -126,7 +126,12 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('form:visible button:contains("Save")').click();
 		cy.waitJQuery();
-        cy.get('#datasetFiles .listPanel__items').contains('Data_detailing.pdf');
-		cy.get('#datasetFiles .listPanel__items').contains('Raw_data.xlsx');
+        cy.get('#datasetFiles').contains('a', 'Data_detailing.pdf');
+		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
+
+        cy.get('.listPanel__item:contains(Data_detailing.pdf) button:contains(Delete)').click();
+		cy.get('.modal:visible button:contains(Yes)').click();
+        cy.waitJQuery();
+        cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'Data_detailing.pdf');
     });
 });
