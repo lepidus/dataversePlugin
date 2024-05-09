@@ -20,6 +20,7 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
                 >
                     <pkp-form
                         v-bind="form"
+                        @success="addFileFormSuccess"
                     />
                 </modal>
             </slot>
@@ -66,7 +67,7 @@ pkp.Vue.component('dataset-files-list-panel', {
         modalTitle: {
             type: String,
         },
-        apiUrl: {
+        datasetFilesApiUrl: {
             type: String,
         },
         form: {
@@ -84,6 +85,39 @@ pkp.Vue.component('dataset-files-list-panel', {
         openAddFileModal() {
             this.$modal.show('addDatasetFileModal');
         },
+        addFileFormSuccess(data) {
+            this.refreshItems();
+            this.$modal.hide('addDatasetFileModal');
+        },
+        refreshItems() {
+            var self = this;
+            this.isLoading = true;
+            this.latestGetRequest = $.pkp.classes.Helper.uuid();
+
+            $.ajax({
+				url: this.datasetFilesApiUrl,
+				type: 'GET',
+				_uuid: this.latestGetRequest,
+				error: function (response) {
+                    if (self.latestGetRequest !== this._uuid) {
+                        return;
+                    }
+                    self.ajaxErrorCallback(response);
+                },
+				success: function (response) {
+                    if (self.latestGetRequest !== this._uuid) {
+                        return;
+                    }
+                    self.items = response.items;
+				},
+				complete() {
+					if (self.latestGetRequest !== this._uuid) {
+                        return;
+                    }
+                    self.isLoading = false;
+				},
+			});
+        }
     },
     render: function (h) {
         return datasetFilesListTemplate.render.call(this, h);
