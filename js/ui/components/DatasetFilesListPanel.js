@@ -15,7 +15,7 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
                 </pkp-header>
                 <modal 
                     name="addDatasetFileModal"
-                    :title="modalTitle"
+                    :title="addFileModalTitle"
                     :closeLabel="__('common.close')"
                 >
                     <pkp-form
@@ -60,10 +60,17 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
 `);
 
 const ListPanel = pkp.controllers.Container.components.ListPanel;
+const Modal = pkp.controllers.SubmissionWizardPage.components.Modal;
+const ajaxError = pkp.controllers.SubmissionWizardPage.mixins[0];
+const dialog = pkp.controllers.SubmissionWizardPage.mixins[2];
 
 pkp.Vue.component('dataset-files-list-panel', {
     name: 'DatasetFilesListPanel',
     extends: ListPanel,
+    components: {
+        Modal
+    },
+    mixins: [ajaxError, dialog],
     data() {
         return {
             isLoading: false,
@@ -73,7 +80,7 @@ pkp.Vue.component('dataset-files-list-panel', {
         addFileLabel: {
             type: String,
         },
-        modalTitle: {
+        addFileModalTitle: {
             type: String,
         },
         datasetFilesApiUrl: {
@@ -82,9 +89,15 @@ pkp.Vue.component('dataset-files-list-panel', {
         form: {
 			type: Object,
 		},
-        deleteForm: {
-			type: Object,
-		}
+        deleteFileTitle: {
+            type: String
+        },
+        deleteFileMessage: {
+            type: String
+        },
+        deleteFileConfirmLabel: {
+            type: String
+        }
     },
     methods: {
         getFileDownloadUrl(item) {
@@ -100,12 +113,57 @@ pkp.Vue.component('dataset-files-list-panel', {
             this.refreshItems();
             this.$modal.hide('addDatasetFileModal');
         },
-        openDeleteFileModal() {
-            this.$modal.show('deleteDatasetFileModal');
-        },
-        deleteFileFormSuccess(data) {
-            this.refreshItems();
-            this.$modal.hide('deleteDatasetFileModal');
+        openDeleteFileModal(fileId) {
+            const datasetFile = Object.values(this.items).find(
+                (file) => file.id === fileId
+            );
+            if (typeof datasetFile === 'undefined') {
+                this.openDialog({
+                    name: 'unknownError',
+                    title: this.__('common.error'),
+                    message: this.__('common.unknownError'),
+                    actions: [
+                        {
+                            label: this.__('common.ok'),
+                            callback: () => this.$modal.hide('unknownError'),
+                        }
+                    ]
+                });
+                return;
+            }
+            this.openDialog({
+                name: 'deleteDatasetFile',
+                title: this.deleteFileTitle,
+                message: this.replaceLocaleParams(this.deleteFileMessage, {
+                    title: datasetFile.fileName,
+                }),
+                actions: [
+					{
+						label: this.deleteFileConfirmLabel,
+						isWarnable: true,
+						callback: () => {
+							var self = this;
+                            $.ajax({
+                                url: this.datasetFilesApiUrl + '&fileId=' + fileId,
+                                type: 'DELETE',
+                                headers: {
+                                    'X-Csrf-Token': pkp.currentUser.csrfToken,
+                                },
+                                error: self.ajaxErrorCallback,
+                                success: function (r) {
+                                    self.refreshItems();
+                                    self.$modal.hide('deleteDatasetFile');
+                                    self.setFocusIn(self.$el);
+                                },
+                            });
+						},
+					},
+					{
+						label: this.__('common.cancel'),
+						callback: () => this.$modal.hide('deleteDatasetFile'),
+					},
+				]
+            });
         },
         refreshItems() {
             var self = this;

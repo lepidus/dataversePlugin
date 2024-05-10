@@ -130,7 +130,8 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
 
         cy.get('.listPanel__item:contains(Data_detailing.pdf) button:contains(Delete)').click();
-		cy.get('.modal:visible button:contains(Yes)').click();
+        cy.contains('Are you sure you want to permanently delete the research data file Data_detailing.pdf?');
+		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
         cy.waitJQuery();
         cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'Data_detailing.pdf');
     });
