@@ -109,9 +109,9 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'base64',
 			});
 		});
-		cy.get('input[name="termsOfUse"').check();
+        cy.wait(1000);
+		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
-		cy.waitJQuery();
         cy.get('#datasetFiles .listPanel__items').contains('Data_detailing.pdf');
         
         cy.contains('button', 'Add research data').click();
@@ -123,9 +123,9 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'base64',
 			});
 		});
-		cy.get('input[name="termsOfUse"').check();
+		cy.wait(1000);
+		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
-		cy.waitJQuery();
         cy.get('#datasetFiles').contains('a', 'Data_detailing.pdf');
 		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
 
