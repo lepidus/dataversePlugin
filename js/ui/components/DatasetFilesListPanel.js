@@ -101,10 +101,10 @@ pkp.Vue.component('dataset-files-list-panel', {
     },
     methods: {
         getFileDownloadUrl(item) {
-            return (
-                this.downloadFileUrl +
-                `?fileId=${item.id}&filename=${item.fileName}`
-            );
+            let indexQueryParams = this.datasetFilesApiUrl.indexOf('?');
+            return this.datasetFilesApiUrl.slice(0, indexQueryParams)
+                + '/' + item.id + '/download'
+                + this.datasetFilesApiUrl.slice(indexQueryParams);
         },
         openAddFileModal() {
             this.$modal.show('addDatasetFileModal');

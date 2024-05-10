@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\dataverse\api\v1\draftDatasetFiles;
 
 use PKP\handler\APIHandler;
+use APP\core\Application;
 use APP\core\Services;
 use PKP\file\TemporaryFileManager;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
@@ -19,6 +20,14 @@ class DraftDatasetFileHandler extends APIHandler
                 [
                     'pattern' => $this->getEndpointPattern(),
                     'handler' => [$this, 'getMany'],
+                ],
+                [
+                    'pattern' => $this->getEndpointPattern() . '/{fileId:\d+}',
+                    'handler' => [$this, 'get'],
+                ],
+                [
+                    'pattern' => $this->getEndpointPattern() . '/{fileId:\d+}/download',
+                    'handler' => [$this, 'download'],
                 ],
             ],
             'POST' => [
@@ -56,6 +65,41 @@ class DraftDatasetFileHandler extends APIHandler
         return $response->withJson([
             'items' => $items,
         ], 200);
+    }
+
+    public function get($slimRequest, $response, $args)
+    {
+        $draftDatasetFile = Repo::draftDatasetFile()->get($args['fileId']);
+
+        if (!$draftDatasetFile) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        return $response->withJson($this->getFullProperties($draftDatasetFile), 200);
+    }
+
+    public function download($slimRequest, $response, $args)
+    {
+        $draftDatasetFile = Repo::draftDatasetFile()->get($args['fileId']);
+
+        if (!$draftDatasetFile) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $temporaryFileManager = new TemporaryFileManager();
+        $user = Application::get()->getRequest()->getUser();
+        $file = $temporaryFileManager->getFile($draftDatasetFile->getFileId(), $user->getId());
+
+        if (!$file) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $filePath = $temporaryFileManager->getBasePath() . $file->getServerFileName();
+        $fileType = $file->getData('filetype');
+        $fileName = $draftDatasetFile->getData('fileName');
+        $temporaryFileManager->downloadByPath($filePath, $fileType, false, $fileName);
+
+        return $response->withStatus(200);
     }
 
     public function add($slimRequest, $response, $args)
