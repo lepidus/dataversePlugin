@@ -112,7 +112,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.wait(1000);
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
-        cy.get('#datasetFiles .listPanel__items').contains('Data_detailing.pdf');
+        cy.get('#datasetFiles').contains('Data_detailing.pdf');
         
         cy.contains('button', 'Add research data').click();
         cy.fixture('dummy.xlsx', 'base64').then((fileContent) => {
@@ -129,10 +129,19 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('#datasetFiles').contains('a', 'Data_detailing.pdf');
 		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
 
+        advanceNSteps(3);
+        cy.contains('h3', 'Research data');
+        cy.contains('a', 'Data_detailing.pdf');
+        cy.contains('a', 'Raw_data.xlsx');
+
         cy.get('.listPanel__item:contains(Data_detailing.pdf) button:contains(Delete)').click();
         cy.contains('Are you sure you want to permanently delete the research data file Data_detailing.pdf?');
 		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
         cy.waitJQuery();
-        cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'Data_detailing.pdf');
+        cy.get('#datasetFiles').should('not.include.text', 'Data_detailing.pdf');
+        
+        advanceNSteps(3);
+        cy.get('a:contains("Data_detailing.pdf")').should('not.exist');
+        cy.contains('a', 'Raw_data.xlsx');
     });
 });
