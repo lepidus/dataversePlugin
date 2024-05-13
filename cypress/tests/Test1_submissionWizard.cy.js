@@ -100,6 +100,10 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 
         cy.contains('h2', 'Research data');
         cy.contains('Use this field only for submitting research data');
+        advanceNSteps(3);
+        cy.contains("To submit research data, it is necessary to send at least one file");
+        
+        cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
         cy.contains('button', 'Add research data').click();
         cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({

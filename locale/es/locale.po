@@ -107,9 +107,9 @@ msgstr "Datos de investigación eliminados"
 msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
 msgstr "Correo electrónico enviado a {$email} para notificar la eliminación de los datos de investigación."
 
-msgid "plugins.generic.dataverse.error.researchDataRequired"
-msgstr "Para enviar datos de investigación, es necesario enviar al menos un archivo.<br>"
-"Asegúrate de haber seleccionado y enviado archivos de datos de investigación en el paso 2 del envío."
+msgid "plugins.generic.dataverse.error.researchData.required"
+msgstr "Para enviar datos de investigación, es necesario enviar al menos un archivo. "
+"Asegúrate de haber seleccionado y enviado archivos de datos de investigación en el paso “Subir archivos”."
 
 msgid "plugins.generic.dataverse.error.datasetSubjectRequired"
 msgstr "El asunto de los datos de investigación es obligatorio.<br>"
