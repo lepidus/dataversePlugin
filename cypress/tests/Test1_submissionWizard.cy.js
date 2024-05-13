@@ -134,6 +134,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('a', 'Data_detailing.pdf');
         cy.contains('a', 'Raw_data.xlsx');
 
+        cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
         cy.get('.listPanel__item:contains(Data_detailing.pdf) button:contains(Delete)').click();
         cy.contains('Are you sure you want to permanently delete the research data file Data_detailing.pdf?');
 		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
