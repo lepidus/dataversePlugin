@@ -7,7 +7,7 @@ use PKP\core\Core;
 use APP\core\Application;
 use APP\core\Services;
 use PKP\file\TemporaryFileManager;
-use APP\log\event\SubmissionEventLogEntry;
+use PKP\log\event\SubmissionFileEventLogEntry;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DraftDatasetFileHandler extends APIHandler
@@ -89,8 +89,7 @@ class DraftDatasetFileHandler extends APIHandler
         }
 
         $temporaryFileManager = new TemporaryFileManager();
-        $user = Application::get()->getRequest()->getUser();
-        $file = $temporaryFileManager->getFile($draftDatasetFile->getFileId(), $user->getId());
+        $file = $temporaryFileManager->getFile($draftDatasetFile->getFileId(), $draftDatasetFile->getUserId());
 
         if (!$file) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
@@ -152,7 +151,7 @@ class DraftDatasetFileHandler extends APIHandler
         $eventLog = Repo::eventLog()->newDataObject([
             'assocType' => Application::ASSOC_TYPE_SUBMISSION,
             'assocId' => $draftDatasetFile->getSubmissionId(),
-            'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_FILE_UPLOAD,
+            'eventType' => SubmissionFileEventLogEntry::SUBMISSION_LOG_FILE_UPLOAD,
             'message' => __($messageKey, ['filename' => $draftDatasetFile->getData('fileName')]),
             'isTranslated' => true,
             'dateLogged' => Core::getCurrentDate(),
@@ -168,6 +167,14 @@ class DraftDatasetFileHandler extends APIHandler
         foreach ($props as $prop) {
             $objectProps[$prop] = $object->getData($prop);
         }
+
+        $request = Application::get()->getRequest();
+        $datasetFileId = $object->getId();
+        $datasetFileDownloadUrl = $request
+            ->getDispatcher()
+            ->url($request, Application::ROUTE_API, $request->getContext()->getPath(), "draftDatasetFiles/$datasetFileId/download");
+
+        $objectProps['downloadUrl'] = $datasetFileDownloadUrl;
 
         return $objectProps;
     }

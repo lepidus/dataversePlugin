@@ -36,7 +36,7 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
                             <div class="listPanel__itemSummary">
                                 <div class="listPanel__itemIdentity">
                                     <div class="listPanel__itemTitle">
-                                        <a :href="getFileDownloadUrl(item)">
+                                        <a :href="item.downloadUrl">
                                             {{ item.fileName }}
                                         </a>
                                     </div>
@@ -100,12 +100,6 @@ pkp.Vue.component('dataset-files-list-panel', {
         }
     },
     methods: {
-        getFileDownloadUrl(item) {
-            let indexQueryParams = this.datasetFilesApiUrl.indexOf('?');
-            return this.datasetFilesApiUrl.slice(0, indexQueryParams)
-                + '/' + item.id + '/download'
-                + this.datasetFilesApiUrl.slice(indexQueryParams);
-        },
         openAddFileModal() {
             this.$modal.show('addDatasetFileModal');
         },
@@ -185,6 +179,7 @@ pkp.Vue.component('dataset-files-list-panel', {
                         return;
                     }
                     self.items = response.items;
+                    pkp.registry._instances.app.components.datasetFiles.items = self.items;
 				},
 				complete() {
 					if (self.latestGetRequest !== this._uuid) {

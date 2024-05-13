@@ -16,6 +16,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     {
         Hook::add('Template::SubmissionWizard::Section', [$this, 'addDraftDatasetFilesSection']);
         Hook::add('TemplateManager::display', [$this, 'addToFilesStep']);
+        Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewStep']);
         // HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFileContainer'));
         // HookRegistry::register('submissionsubmitstep2form::validate', array($this, 'addStep2Validation'));
     }
@@ -71,15 +72,10 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
     private function addDatasetFilesList($templateMgr, $request, $submission): void
     {
-        $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
+        $items = $this->getDatasetFiles($request, $submission->getId());
         $datasetFilesApiUrl = $request
             ->getDispatcher()
             ->url($request, Application::ROUTE_API, $request->getContext()->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
-
-        $items = array_map(function ($draftDatasetFile) {
-            return $draftDatasetFile->getAllData();
-        }, $draftDatasetFiles);
-        ksort($items);
 
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
@@ -109,6 +105,37 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $templateMgr->setState([
             'components' => $wizardComponents,
         ]);
+    }
+
+    private function getDatasetFiles($request, $submissionId): array
+    {
+        $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submissionId)->toArray();
+        $datasetFilesApiUrl = $request
+            ->getDispatcher()
+            ->url($request, Application::ROUTE_API, $request->getContext()->getPath(), "draftDatasetFiles");
+        $datasetFilesProps = [];
+
+        foreach ($draftDatasetFiles as $draftDatasetFile) {
+            $props = $draftDatasetFile->getAllData();
+            $props['downloadUrl'] = $datasetFilesApiUrl . '/' . $draftDatasetFile->getId() . '/download';
+            $datasetFilesProps[] = $props;
+        }
+        ksort($datasetFilesProps);
+
+        return $datasetFilesProps;
+    }
+
+    public function addToReviewStep(string $hookName, array $params): bool
+    {
+        $step = $params[0]['step'];
+        $templateMgr = $params[1];
+        $output = &$params[2];
+
+        if ($step === 'files') {
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review/draftDatasetFiles.tpl'));
+        }
+
+        return false;
     }
 
     public function addDraftDatasetFileContainer(string $hookName, array $params): ?string
