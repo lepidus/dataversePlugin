@@ -89,7 +89,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
     });
     it('Adds dataset files', function () {
         cy.login('eostrom', null, 'publicknowledge');
-
         cy.findSubmission('myQueue', submissionData.title);
         advanceNSteps(1);
 
@@ -101,9 +100,17 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('h2', 'Research data');
         cy.contains('Use this field only for submitting research data');
         advanceNSteps(3);
+        cy.contains('h3', 'Research data');
         cy.contains("To submit research data, it is necessary to send at least one file");
         
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
+        cy.uploadSubmissionFiles([{
+			'file': 'dummy.pdf',
+			'fileName': 'dummy.pdf',
+			'mimeType': 'application/pdf',
+			'genre': 'Article Text'
+		}]);
+
         cy.contains('button', 'Add research data').click();
         cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
@@ -134,7 +141,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
 
         advanceNSteps(3);
-        cy.contains('h3', 'Research data');
+        cy.contains('Research data and galley have the same file');
         cy.contains('a', 'Data_detailing.pdf');
         cy.contains('a', 'Raw_data.xlsx');
 
@@ -147,6 +154,8 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         
         advanceNSteps(3);
         cy.get('a:contains("Data_detailing.pdf")').should('not.exist');
+        cy.get('div:contains("To submit research data, it is necessary to send at least one file")').should('not.exist');
+        cy.get('div:contains("Research data and galley have the same file")').should('not.exist');
         cy.contains('a', 'Raw_data.xlsx');
     });
 });
