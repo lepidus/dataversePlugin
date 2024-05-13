@@ -3,9 +3,11 @@
 namespace APP\plugins\generic\dataverse\api\v1\draftDatasetFiles;
 
 use PKP\handler\APIHandler;
+use PKP\core\Core;
 use APP\core\Application;
 use APP\core\Services;
 use PKP\file\TemporaryFileManager;
+use APP\log\event\SubmissionEventLogEntry;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DraftDatasetFileHandler extends APIHandler
@@ -122,6 +124,7 @@ class DraftDatasetFileHandler extends APIHandler
         $draftDatasetFile->setAllData($params);
         $draftDatasetFile->setId(Repo::draftDatasetFile()->add($draftDatasetFile));
 
+        $this->createFileEventLog($draftDatasetFile, 'plugins.generic.dataverse.log.researchDataFileAdded');
         $draftDatasetFileProps = $this->getFullProperties($draftDatasetFile);
 
         return $response->withJson($draftDatasetFileProps, 200);
@@ -139,7 +142,22 @@ class DraftDatasetFileHandler extends APIHandler
         $draftDatasetFileProps = $this->getFullProperties($draftDatasetFile);
         Repo::draftDatasetFile()->delete($draftDatasetFile);
 
+        $this->createFileEventLog($draftDatasetFile, 'plugins.generic.dataverse.log.researchDataFileDeleted');
+
         return $response->withJson($draftDatasetFileProps, 200);
+    }
+
+    private function createFileEventLog($draftDatasetFile, $messageKey)
+    {
+        $eventLog = Repo::eventLog()->newDataObject([
+            'assocType' => Application::ASSOC_TYPE_SUBMISSION,
+            'assocId' => $draftDatasetFile->getSubmissionId(),
+            'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_FILE_UPLOAD,
+            'message' => __($messageKey, ['filename' => $draftDatasetFile->getData('fileName')]),
+            'isTranslated' => true,
+            'dateLogged' => Core::getCurrentDate(),
+        ]);
+        Repo::eventLog()->add($eventLog);
     }
 
     private function getFullProperties($object)
