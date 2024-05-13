@@ -17,6 +17,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         Hook::add('Template::SubmissionWizard::Section', [$this, 'addDraftDatasetFilesSection']);
         Hook::add('TemplateManager::display', [$this, 'addToFilesStep']);
         Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewStep']);
+        Hook::add('Submission::validateSubmit', [$this, 'validateSubmissionFields']);
         // HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFileContainer'));
         // HookRegistry::register('submissionsubmitstep2form::validate', array($this, 'addStep2Validation'));
     }
@@ -133,6 +134,25 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
         if ($step === 'files') {
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review/draftDatasetFiles.tpl'));
+        }
+
+        return false;
+    }
+
+    public function validateSubmissionFields(string $hookName, array $params)
+    {
+        $errors = &$params[0];
+        $submission = $params[1];
+        $publication = $submission->getCurrentPublication();
+
+        $dataStatementTypes = $publication->getData('dataStatementTypes');
+
+        if (in_array(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
+            $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
+
+            if (empty($draftDatasetFiles)) {
+                $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.researchData.required')];
+            }
         }
 
         return false;
