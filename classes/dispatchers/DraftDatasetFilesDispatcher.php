@@ -5,9 +5,11 @@ namespace APP\plugins\generic\dataverse\classes\dispatchers;
 use PKP\plugins\Hook;
 use APP\core\Application;
 use APP\template\TemplateManager;
+use PKP\file\TemporaryFileManager;
 use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
+use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DraftDatasetFilesDispatcher extends DataverseDispatcher
@@ -18,8 +20,6 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         Hook::add('TemplateManager::display', [$this, 'addToFilesStep']);
         Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewStep']);
         Hook::add('Submission::validateSubmit', [$this, 'validateSubmissionFields']);
-        // HookRegistry::register('submissionsubmitstep2form::display', array($this, 'addDraftDatasetFileContainer'));
-        // HookRegistry::register('submissionsubmitstep2form::validate', array($this, 'addStep2Validation'));
     }
 
     public function addDraftDatasetFilesSection(string $hookName, array $params)
@@ -152,102 +152,35 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
             if (empty($draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.researchData.required')];
+            } elseif ($this->validateGalleyContainsResearchData($submission, $draftDatasetFiles)) {
+                $errors['datasetFiles'] = [__('plugins.generic.dataverse.notification.galleyContainsResearchData')];
             }
         }
 
         return false;
     }
 
-    public function addDraftDatasetFileContainer(string $hookName, array $params): ?string
+    private function validateGalleyContainsResearchData($submission, $draftDatasetFiles): bool
     {
-        $form = $params[0];
-        $output = &$params[1];
-        $publication = $form->submission->getCurrentPublication();
+        $submissionFiles = Repo::submissionFile()
+            ->getCollector()
+            ->filterBySubmissionIds([$submission->getId()])
+            ->getMany()
+            ->toArray();
 
-        $request = PKPApplication::get()->getRequest();
-        $templateMgr = TemplateManager::getManager($request);
-
-        $requestArgs = $templateMgr->get_template_vars('requestArgs');
-        if (empty($requestArgs)) {
-            $requestArgs = [
-                'submissionId' => $form->submission->getId(),
-                'publicationId' => $publication->getId(),
-            ];
-            $templateMgr->assign('requestArgs', $requestArgs);
+        if (empty($submissionFiles)) {
+            return false;
         }
 
-        $dataStatementTypes = $publication->getData('dataStatementTypes');
-        if (empty($dataStatementTypes) || !in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
-            return $output;
-        }
-
-        $templateOutput = $templateMgr->fetch($form->_template);
-        $pattern = '/<div[^>]+class="section formButtons form_buttons[^>]+>/';
-        if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
-            $offset = $matches[0][1];
-            $output = substr($templateOutput, 0, $offset);
-            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('draftDatasetFile.tpl'));
-            $output .= substr($templateOutput, $offset);
-        }
-
-        return $output;
-    }
-
-    public function addStep2Validation(string $hookName, array $params): void
-    {
-        $form = &$params[0];
-        $publication = $form->submission->getCurrentPublication();
-
-        if (!empty($publication->getData('dataStatementTypes'))) {
-            $this->validateResearchDataFileRequired($form);
-            $this->validateGalleyContainsResearchData($form);
-        }
-    }
-
-    private function validateResearchDataFileRequired(SubmissionSubmitStep2Form $form): void
-    {
-        $publication = $form->submission->getCurrentPublication();
-
-        if (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $publication->getData('dataStatementTypes'))) {
-            return;
-        }
-
-        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
-        if (empty($draftDatasetFileDAO->getBySubmissionId($form->submission->getId()))) {
-            $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.researchDataFile.error"));
-            $form->addErrorField('dataverseStep2ValidationError');
-        }
-    }
-
-    private function validateGalleyContainsResearchData(SubmissionSubmitStep2Form $form): void
-    {
-        $galleys = $form->submission->getGalleys();
-
-        if (empty($galleys)) {
-            return;
-        }
-
-        $galleyFiles = array_map(function (ArticleGalley $galley) {
-            return Services::get('submissionFile')->get($galley->getFileId());
-        }, $galleys);
-
-        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
-        $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($form->submission->getId());
-
-        import('lib.pkp.classes.file.TemporaryFileManager');
-        $datasetFiles = array_map(function (DraftDatasetFile $draftFile) {
-            $temporaryFileManager = new TemporaryFileManager();
+        $temporaryFileManager = new TemporaryFileManager();
+        $datasetFiles = array_map(function ($draftFile) use ($temporaryFileManager) {
             return $temporaryFileManager->getFile(
                 $draftFile->getData('fileId'),
                 $draftFile->getData('userId')
             );
         }, $draftDatasetFiles);
 
-        import('plugins.generic.dataverse.classes.DraftDatasetFilesValidator');
         $validator = new DraftDatasetFilesValidator();
-        if ($validator->galleyContainsResearchData($galleyFiles, $datasetFiles)) {
-            $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.notification.galleyContainsResearchData"));
-            $form->addErrorField('dataverseStep2ValidationError');
-        }
+        return $validator->galleyContainsResearchData($submissionFiles, $datasetFiles);
     }
 }
