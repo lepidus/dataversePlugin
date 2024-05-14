@@ -86,6 +86,12 @@ msgstr "Sin dato de investigación"
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Anãdir datos de investigación"
 
+msgid "plugins.generic.dataverse.datasetMetadata"
+msgstr "Metadatos de datos de investigación"
+
+msgid "plugins.generic.dataverse.datasetMetadata.description"
+msgstr "Por favor, introduzca los siguientes detalles sobre los datos de investigación que presenta."
+
 msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
 msgstr "Archivo \"{$filename}\" añadido como datos de investigación."
 

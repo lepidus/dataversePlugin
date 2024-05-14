@@ -83,6 +83,12 @@ msgstr "No research data"
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Add research data"
 
+msgid "plugins.generic.dataverse.datasetMetadata"
+msgstr "Research data metadata"
+
+msgid "plugins.generic.dataverse.datasetMetadata.description"
+msgstr "Please provide the following details about the research data you are submitting."
+
 msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
 msgstr "File \"{$filename}\" added as research data."
 

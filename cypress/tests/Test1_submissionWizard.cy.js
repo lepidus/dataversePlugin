@@ -170,7 +170,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         advanceNSteps(3);
 
         cy.contains('h2', 'Research data metadata');
-        cy.contains('Please provide the following details about the the research data you are submitting');
+        cy.contains('Please provide the following details about the research data you are submitting');
         cy.contains('Research Data Subject');
         cy.contains('Research Data License');
     });

@@ -1,14 +1,66 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.classes.DataverseMetadata');
+namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
-class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
+use PKP\plugins\Hook;
+use APP\core\Application;
+use APP\pages\submission\SubmissionHandler;
+use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use APP\plugins\generic\dataverse\classes\DataverseMetadata;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
+
+class DatasetMetadataDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addDatasetMetadataFields'));
-        HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'readDatasetMetadataFields'));
+        Hook::add('TemplateManager::display', [$this, 'addToEditorsStep']);
+        // HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addDatasetMetadataFields'));
+        // HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'readDatasetMetadataFields'));
+    }
+
+    public function addToEditorsStep(string $hookName, array $params)
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $templateMgr = $params[0];
+
+        if ($request->getRequestedPage() !== 'submission' || $request->getRequestedOp() === 'saved') {
+            return false;
+        }
+
+        $submission = $request
+            ->getRouter()
+            ->getHandler()
+            ->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+
+        if (!$submission || !$submission->getData('submissionProgress')) {
+            return false;
+        }
+
+        $submissionApiUrl = 'f';
+        $dataset = new Dataset();
+        $dataset->setData('subject', $submission->getData('datasetSubject'));
+        $dataset->setData('license', $submission->getData('datasetLicense'));
+        $datasetMetadataForm = new DatasetMetadataForm($submissionApiUrl, 'POST', $dataset, 'submission');
+
+        $steps = $templateMgr->getState('steps');
+        $steps = array_map(function ($step) use ($datasetMetadataForm) {
+            if ($step['id'] === 'editors') {
+                $step['sections'][] = [
+                    'id' => 'datasetMetadata',
+                    'name' => __('plugins.generic.dataverse.datasetMetadata'),
+                    'description' => __('plugins.generic.dataverse.datasetMetadata.description'),
+                    'type' => SubmissionHandler::SECTION_TYPE_FORM,
+                    'form' => $datasetMetadataForm->getConfig()
+                ];
+            }
+            return $step;
+        }, $steps);
+
+        $templateMgr->setState(['steps' => $steps]);
+
+        return false;
     }
 
     public function addDatasetMetadataFields($hookName, $args): void
