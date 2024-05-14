@@ -158,4 +158,20 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('div:contains("Research data and galley have the same file")').should('not.exist');
         cy.contains('a', 'Raw_data.xlsx');
     });
+    it('Adds dataset metadata', function () {
+        cy.login('eostrom', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionData.title);
+        
+        cy.get('input[name="dataStatementTypes"][value=3]').uncheck();
+        advanceNSteps(3);
+        cy.get('h2:contains("Research data metadata")').should('not.be.visible');
+        cy.get('.pkpSteps__step__label:contains("Details")').click();
+        cy.get('input[name="dataStatementTypes"][value=3]').check();
+        advanceNSteps(3);
+
+        cy.contains('h2', 'Research data metadata');
+        cy.contains('Please provide the following details about the the research data you are submitting');
+        cy.contains('Research Data Subject');
+        cy.contains('Research Data License');
+    });
 });
