@@ -1,26 +1,27 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.classes.services.DatasetService');
-import('lib.pkp.classes.log.SubmissionLog');
-import('classes.log.SubmissionEventLogEntry');
+namespace APP\plugins\generic\dataverse\classes\dispatchers;
+
+use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileHandler;
+use PKP\plugins\Hook;
 
 class DataverseEventsDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('SubmissionHandler::saveSubmit', array($this, 'datasetDepositOnSubmission'));
-        HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
-        HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
-        HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
-        HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDataverseAPIHandlers'));
-        HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
-        HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
-        HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
-        HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
-        HookRegistry::register('initiateexternalreviewform::display', array($this, 'addSelectDataFilesForReview'));
-        HookRegistry::register('initiateexternalreviewform::execute', array($this, 'saveSelectedDataFilesForReview'));
-        HookRegistry::register('Publication::edit', array($this, 'updateDatasetOnPublicationUpdate'));
+        Hook::add('Schema::get::draftDatasetFile', [$this, 'loadDraftDatasetFileSchema']);
+        Hook::add('Dispatcher::dispatch', [$this, 'setupDataverseAPIHandlers']);
+        //Hook::add('LoadComponentHandler', [$this, 'setupDataverseHandlers']);
+        // HookRegistry::register('SubmissionHandler::saveSubmit', array($this, 'datasetDepositOnSubmission'));
+        // HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
+        // HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
+        // HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
+        // HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
+        // HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
+        // HookRegistry::register('initiateexternalreviewform::display', array($this, 'addSelectDataFilesForReview'));
+        // HookRegistry::register('initiateexternalreviewform::execute', array($this, 'saveSelectedDataFilesForReview'));
+        // HookRegistry::register('Publication::edit', array($this, 'updateDatasetOnPublicationUpdate'));
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -386,18 +387,21 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         return $templateMgr->fetch($form->_template);
     }
 
-    public function setupDataverseAPIHandlers(string $hookname, Request $request): void
+    public function setupDataverseAPIHandlers(string $hookname, array $params): void
     {
+        $request = $params[0];
         $router = $request->getRouter();
-        if (!($router instanceof \APIRouter)) {
+
+        if (!($router instanceof \PKP\core\APIRouter)) {
             return;
         }
 
-        if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
-            $this->plugin->import('api.v1.datasets.DatasetHandler');
-            $handler = new DatasetHandler();
-        } elseif (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
-            $this->plugin->import('api.v1.draftDatasetFiles.DraftDatasetFileHandler');
+        // Later, on workflow features adaption
+        // if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
+        //     $handler = new DatasetHandler();
+        // } else
+
+        if (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
             $handler = new DraftDatasetFileHandler();
         }
 
@@ -428,12 +432,10 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     public function setupDataverseHandlers($hookName, $params): bool
     {
         $component = &$params[0];
-        $ourHandlers = [
-            'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler',
-            'plugins.generic.dataverse.controllers.grid.DatasetReviewGridHandler'
-        ];
-        if (in_array($component, $ourHandlers)) {
-            import($component);
+        $componentInstance = &$params[2];
+
+        if ($component == 'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler') {
+            $componentInstance = new DraftDatasetFileGridHandler();
             return true;
         }
         return false;

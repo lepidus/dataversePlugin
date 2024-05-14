@@ -2,35 +2,48 @@
 
 namespace APP\plugins\generic\dataverse\classes\services;
 
-define('DATA_STATEMENT_TYPE_IN_MANUSCRIPT', 0x000000001);
-define('DATA_STATEMENT_TYPE_REPO_AVAILABLE', 0x000000002);
-define('DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED', 0x000000003);
-define('DATA_STATEMENT_TYPE_ON_DEMAND', 0x000000004);
-define('DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE', 0x000000005);
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 
 class DataStatementService
 {
+    public const DATA_STATEMENT_TYPE_IN_MANUSCRIPT = 0x000000001;
+    public const DATA_STATEMENT_TYPE_REPO_AVAILABLE = 0x000000002;
+    public const DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED = 0x000000003;
+    public const DATA_STATEMENT_TYPE_ON_DEMAND = 0x000000004;
+    public const DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE = 0x000000005;
+
     public function getDataStatementTypes(): array
     {
         $dataverseName = $this->getDataverseName();
         $types = [
-            DATA_STATEMENT_TYPE_IN_MANUSCRIPT => __('plugins.generic.dataverse.dataStatement.inManuscript'),
-            DATA_STATEMENT_TYPE_REPO_AVAILABLE => __('plugins.generic.dataverse.dataStatement.repoAvailable'),
-            DATA_STATEMENT_TYPE_ON_DEMAND => __('plugins.generic.dataverse.dataStatement.onDemand'),
-            DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE => __('plugins.generic.dataverse.dataStatement.publiclyUnavailable')
+            self::DATA_STATEMENT_TYPE_IN_MANUSCRIPT => __('plugins.generic.dataverse.dataStatement.inManuscript'),
+            self::DATA_STATEMENT_TYPE_REPO_AVAILABLE => __('plugins.generic.dataverse.dataStatement.repoAvailable'),
+            self::DATA_STATEMENT_TYPE_ON_DEMAND => __('plugins.generic.dataverse.dataStatement.onDemand'),
+            self::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE => __('plugins.generic.dataverse.dataStatement.publiclyUnavailable')
         ];
 
         if (!is_null($dataverseName)) {
-            $types[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED] = __('plugins.generic.dataverse.dataStatement.submissionDeposit', ['dataverseName' => $dataverseName]);
+            $types[self::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED] = __('plugins.generic.dataverse.dataStatement.submissionDeposit', ['dataverseName' => $dataverseName]);
         }
 
         return $types;
     }
 
+    public function getConstantsForTemplates(): array
+    {
+        return [
+            'DATA_STATEMENT_TYPE_IN_MANUSCRIPT' => self::DATA_STATEMENT_TYPE_IN_MANUSCRIPT,
+            'DATA_STATEMENT_TYPE_REPO_AVAILABLE' => self::DATA_STATEMENT_TYPE_REPO_AVAILABLE,
+            'DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED' => self::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED,
+            'DATA_STATEMENT_TYPE_ON_DEMAND' => self::DATA_STATEMENT_TYPE_ON_DEMAND,
+            'DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE' => self::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE,
+        ];
+    }
+
     public function getDataverseName(): ?string
     {
         try {
-            import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
             $dataverseClient = new DataverseClient();
             $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
             return $dataverseCollection->getName();

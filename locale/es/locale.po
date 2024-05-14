@@ -70,7 +70,9 @@ msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Ingrese una clave API para Dataverse."
 
 msgid "plugins.generic.dataverse.researchDataDescription"
-msgstr "Use este campo solo para enviar datos de investigación. Para enviar el manuscrito, utilice “{$addGalleyLabel}”"
+msgstr "Utilice este campo sólo para enviar datos de investigación. "
+"No utilice este campo para enviar su manuscrito o la lista de referencias bibliográficas de su manuscrito. "
+"El archivo del manuscrito sólo debe enviarse en el área “{$addGalleyLabel}” anterior"
 
 msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
 msgstr "Datos de investigación y galerada tienen el mismo archivo. Asegúrese de que los archivos se agreguen en la sección correspondiente."
@@ -105,9 +107,9 @@ msgstr "Datos de investigación eliminados"
 msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
 msgstr "Correo electrónico enviado a {$email} para notificar la eliminación de los datos de investigación."
 
-msgid "plugins.generic.dataverse.error.researchDataRequired"
-msgstr "Para enviar datos de investigación, es necesario enviar al menos un archivo.<br>"
-"Asegúrate de haber seleccionado y enviado archivos de datos de investigación en el paso 2 del envío."
+msgid "plugins.generic.dataverse.error.researchData.required"
+msgstr "Para enviar datos de investigación, es necesario enviar al menos un archivo. "
+"Asegúrate de haber seleccionado y enviado archivos de datos de investigación en el paso “Subir archivos”."
 
 msgid "plugins.generic.dataverse.error.datasetSubjectRequired"
 msgstr "El asunto de los datos de investigación es obligatorio.<br>"
@@ -339,6 +341,9 @@ msgstr "Justificación"
 
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description"
 msgstr "Introduzca el motivo de la no disponibilidad de los datos."
+
+msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.required"
+msgstr "Es obligatorio informar el motivo de la no disponibilidad de los datos."
 
 msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
 msgstr "Los datos de investigación se han enviado al repositorio <strong>{$dataverseName}</strong>."

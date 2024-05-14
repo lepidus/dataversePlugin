@@ -1,9 +1,13 @@
 <?php
 
-use GuzzleHttp\Psr7\Utils;
+namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
-import('plugins.generic.dataverse.dataverseAPI.actions.interfaces.DatasetFileActionsInterface');
-import('plugins.generic.dataverse.dataverseAPI.actions.DataverseActions');
+use GuzzleHttp\Psr7\Utils;
+use PKP\config\Config;
+use PKP\file\FileManager;
+use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetFileActionsInterface;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
 
 class DatasetFileActions extends DataverseActions implements DatasetFileActionsInterface
 {
@@ -16,7 +20,6 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         $jsonContent = json_decode($response->getBody(), true);
 
         return array_map(function (array $file) {
-            import('plugins.generic.dataverse.classes.entities.DatasetFile');
             $datasetFile = new DatasetFile();
             $datasetFile->setId($file['dataFile']['id']);
             $datasetFile->setFileName($file['label']);
@@ -75,7 +78,6 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
         $this->nativeAPIRequest('GET', $uri, $options);
 
-        import('lib.pkp.classes.file.FileManager');
         $fileManager = new FileManager();
         $fileManager->downloadByPath($filePath);
 

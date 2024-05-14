@@ -1,0 +1,196 @@
+const datasetFilesListTemplate = pkp.Vue.compile(`
+    <div class="listPanel">
+        <div class="listPanel__header">
+            <slot name="header">
+                <pkp-header>
+                    <h2>{{ title }}</h2>
+                    <spinner v-if="isLoading"></spinner>
+                    <template slot="actions">
+                        <pkp-button
+                            @click="openAddFileModal"
+                        >
+                            {{ addFileLabel }}
+                        </pkp-button>
+                    </template>
+                </pkp-header>
+                <modal 
+                    name="addDatasetFileModal"
+                    :title="addFileModalTitle"
+                    :closeLabel="__('common.close')"
+                >
+                    <pkp-form
+                        v-bind="form"
+                        @success="addFileFormSuccess"
+                    />
+                </modal>
+            </slot>
+        </div>
+        <div class="listPanel__body">
+            <div class="listPanel__items">
+                <div v-if="Object.keys(items).length == 0" class="listPanel__empty">
+                    <slot name="itemsEmpty">{{ __('common.noItemsFound') }}</slot>
+                </div>
+                <ul v-else class="listPanel__itemsList">
+                    <li v-for="item in items" :key="item.id" class="listPanel__item">
+                        <slot name="item" :item="item">
+                            <div class="listPanel__itemSummary">
+                                <div class="listPanel__itemIdentity">
+                                    <div class="listPanel__itemTitle">
+                                        <a :href="item.downloadUrl">
+                                            {{ item.fileName }}
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="listPanel__itemActions">
+                                    <pkp-button
+                                        :disabled="isLoading"
+                                        :isWarnable="true"
+                                        @click="openDeleteFileModal(item.id)"
+                                    >
+                                        {{ __('common.delete') }}
+                                    </pkp-button>
+								</div>
+                            </div>
+                        </slot>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+`);
+
+const ListPanel = pkp.controllers.Container.components.ListPanel;
+const Modal = pkp.controllers.SubmissionWizardPage.components.Modal;
+const ajaxError = pkp.controllers.SubmissionWizardPage.mixins[0];
+const dialog = pkp.controllers.SubmissionWizardPage.mixins[2];
+
+pkp.Vue.component('dataset-files-list-panel', {
+    name: 'DatasetFilesListPanel',
+    extends: ListPanel,
+    components: {
+        Modal
+    },
+    mixins: [ajaxError, dialog],
+    data() {
+        return {
+            isLoading: false,
+        }
+    },
+    props: {
+        addFileLabel: {
+            type: String,
+        },
+        addFileModalTitle: {
+            type: String,
+        },
+        datasetFilesApiUrl: {
+            type: String,
+        },
+        form: {
+			type: Object,
+		},
+        deleteFileTitle: {
+            type: String
+        },
+        deleteFileMessage: {
+            type: String
+        },
+        deleteFileConfirmLabel: {
+            type: String
+        }
+    },
+    methods: {
+        openAddFileModal() {
+            this.$modal.show('addDatasetFileModal');
+        },
+        addFileFormSuccess(data) {
+            this.refreshItems();
+            this.$modal.hide('addDatasetFileModal');
+        },
+        openDeleteFileModal(fileId) {
+            const datasetFile = Object.values(this.items).find(
+                (file) => file.id === fileId
+            );
+            if (typeof datasetFile === 'undefined') {
+                this.openDialog({
+                    name: 'unknownError',
+                    title: this.__('common.error'),
+                    message: this.__('common.unknownError'),
+                    actions: [
+                        {
+                            label: this.__('common.ok'),
+                            callback: () => this.$modal.hide('unknownError'),
+                        }
+                    ]
+                });
+                return;
+            }
+            this.openDialog({
+                name: 'deleteDatasetFile',
+                title: this.deleteFileTitle,
+                message: this.replaceLocaleParams(this.deleteFileMessage, {
+                    title: datasetFile.fileName,
+                }),
+                actions: [
+					{
+						label: this.deleteFileConfirmLabel,
+						isWarnable: true,
+						callback: () => {
+							var self = this;
+                            $.ajax({
+                                url: this.datasetFilesApiUrl + '&fileId=' + fileId,
+                                type: 'DELETE',
+                                headers: {
+                                    'X-Csrf-Token': pkp.currentUser.csrfToken,
+                                },
+                                error: self.ajaxErrorCallback,
+                                success: function (r) {
+                                    self.refreshItems();
+                                    self.$modal.hide('deleteDatasetFile');
+                                    self.setFocusIn(self.$el);
+                                },
+                            });
+						},
+					},
+					{
+						label: this.__('common.cancel'),
+						callback: () => this.$modal.hide('deleteDatasetFile'),
+					},
+				]
+            });
+        },
+        refreshItems() {
+            var self = this;
+            this.isLoading = true;
+            this.latestGetRequest = $.pkp.classes.Helper.uuid();
+
+            $.ajax({
+				url: this.datasetFilesApiUrl,
+				type: 'GET',
+				_uuid: this.latestGetRequest,
+				error: function (response) {
+                    if (self.latestGetRequest !== this._uuid) {
+                        return;
+                    }
+                    self.ajaxErrorCallback(response);
+                },
+				success: function (response) {
+                    if (self.latestGetRequest !== this._uuid) {
+                        return;
+                    }
+                    self.items = response.items;
+                    pkp.registry._instances.app.components.datasetFiles.items = self.items;
+				},
+				complete() {
+					if (self.latestGetRequest !== this._uuid) {
+                        return;
+                    }
+                    self.isLoading = false;
+				},
+			});
+        },
+    },
+    render: function (h) {
+        return datasetFilesListTemplate.render.call(this, h);
+    }
+});

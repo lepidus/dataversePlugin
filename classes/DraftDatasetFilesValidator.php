@@ -1,5 +1,9 @@
 <?php
 
+namespace APP\plugins\generic\dataverse\classes;
+
+use PKP\config\Config;
+
 class DraftDatasetFilesValidator
 {
     public function galleyContainsResearchData(array $galleyFiles, array $datasetFiles): bool

@@ -67,7 +67,9 @@ msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Please enter a API token."
 
 msgid "plugins.generic.dataverse.researchDataDescription"
-msgstr "Use this field only for submitting research data. To send the manuscript, use “{$addGalleyLabel}”"
+msgstr "Use this field only for submitting research data. "
+"Do not use it to upload your manuscript or the list of bibliographic references available in your manuscript. "
+"The manuscript file must be sent only in the “{$addGalleyLabel}” area above"
 
 msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
 msgstr "Research data and galley have the same file. Make sure the files are added in the proper section."
@@ -102,9 +104,9 @@ msgstr "Research data deleted"
 msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
 msgstr "Email sent to {$email} notifying the deletion of research data."
 
-msgid "plugins.generic.dataverse.error.researchDataRequired"
-msgstr "To submit research data, it is necessary to send at least one file.<br>"
-"Please ensure that you have chosen and submitted research data files in step 2 of the submission."
+msgid "plugins.generic.dataverse.error.researchData.required"
+msgstr "To submit research data, it is necessary to send at least one file. "
+"Please ensure that you have chosen and submitted research data files in the “Upload Files” step."
 
 msgid "plugins.generic.dataverse.error.datasetSubjectRequired"
 msgstr "The subject of the research data is required.<br>"
@@ -332,6 +334,9 @@ msgstr "Justification"
 
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description"
 msgstr "Provide the justification for the unavailability of the data."
+
+msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.required"
+msgstr "It is required to inform the justification for the unavailability of the data."
 
 msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
 msgstr "The research data has been submitted to the <strong>{$dataverseName}</strong> repository."

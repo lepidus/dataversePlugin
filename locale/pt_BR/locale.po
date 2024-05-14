@@ -70,7 +70,9 @@ msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Informe uma chave de API para Dataverse."
 
 msgid "plugins.generic.dataverse.researchDataDescription"
-msgstr "Use esse campo apenas para submeter dados de pesquisa. Para enviar o manuscrito, utilize “{$addGalleyLabel}”"
+msgstr "Use esse campo apenas para submeter dados de pesquisa. "
+"Não use este campo para enviar seu manuscrito ou a lista de referências bibliográficas de seu manuscrito. "
+"O arquivo do manuscrito deve ser enviado apenas na área “{$addGalleyLabel}” acima"
 
 msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
 msgstr "Dados de pesquisa e composição final possuem o mesmo arquivo. Certifique-se de que os arquivos sejam adicionados na seção apropriada."
@@ -105,9 +107,9 @@ msgstr "Dados de pesquisa excluídos"
 msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
 msgstr "Email enviado para {$email} notificando a exclusão dos dados de pesquisa"
 
-msgid "plugins.generic.dataverse.error.researchDataRequired"
-msgstr "Para submeter dados de pesquisa é necessário enviar pelo menos um arquivo.<br>"
-"Certifique-se que você escolheu e enviou arquivos de dados de pesquisa no passo 2 da submissão."
+msgid "plugins.generic.dataverse.error.researchData.required"
+msgstr "Para submeter dados de pesquisa é necessário enviar pelo menos um arquivo. "
+"Certifique-se que você escolheu e enviou arquivos de dados de pesquisa no passo “Enviar Arquivos”."
 
 msgid "plugins.generic.dataverse.error.datasetSubjectRequired"
 msgstr "O assunto dos dados de pesquisa é obrigatório.<br>"
@@ -335,6 +337,9 @@ msgstr "Justificativa"
 
 msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description"
 msgstr "Informe a justificativa para a não disponibilidade dos dados."
+
+msgid "plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.required"
+msgstr "É obrigatório informar a justificativa para a não disponibilidade dos dados."
 
 msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
 msgstr "Os dados de pesquisa foram submetidos ao repositório <strong>{$dataverseName}</strong>."
