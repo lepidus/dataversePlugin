@@ -51,12 +51,14 @@ class DatasetMetadataForm extends FormComponent
 
         $this->addField(new FieldSelect('datasetSubject', [
             'label' => __('plugins.generic.dataverse.metadataForm.subject.label'),
+            'description' => ($page == 'submission' ? __('plugins.generic.dataverse.metadataForm.subject.description') : ''),
             'isRequired' => true,
             'options' => $dataverseMetadata->getDataverseSubjects(),
             'value' => $dataset->getSubject(),
         ]))
         ->addField(new FieldSelect('datasetLicense', [
             'label' => __('plugins.generic.dataverse.metadataForm.license.label'),
+            'description' => ($page == 'submission' ? __('plugins.generic.dataverse.metadataForm.license.description') : ''),
             'isRequired' => true,
             'options' => $this->mapLicensesForDisplay($dataverseLicenses),
             'value' => $selectedLicense,
