@@ -184,5 +184,21 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('Please provide the following details about the research data you are submitting');
         cy.contains('Research Data Subject');
         cy.contains('Research Data License');
+        //TODO: check if license is the default value for the Dataverse repository
+
+        advanceNSteps(1);
+        cy.contains('h3', 'Research data metadata');
+        cy.contains('Research Data Subject');
+        cy.contains('Research Data License');
+        cy.contains('The subject of the research data is required');
+        
+        cy.get('.pkpSteps__step__label:contains("For the Editors")').click();
+        cy.get('select[name="datasetSubject"]').select('Earth and Environmental Sciences');
+        cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
+
+        advanceNSteps(1);
+        cy.get('div:contains("The subject of the research data is required")').should('not.exist');
+        cy.contains('Earth and Environmental Sciences');
+        cy.contains('CC BY 4.0');
     });
 });
