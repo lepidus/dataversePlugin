@@ -47,6 +47,8 @@ class DatasetMetadataForm extends FormComponent
             ]));
         }
 
+        $selectedLicense = $dataset->getLicense() ?? $dataverseMetadata->getDefaultLicense();
+
         $this->addField(new FieldSelect('datasetSubject', [
             'label' => __('plugins.generic.dataverse.metadataForm.subject.label'),
             'isRequired' => true,
@@ -57,7 +59,7 @@ class DatasetMetadataForm extends FormComponent
             'label' => __('plugins.generic.dataverse.metadataForm.license.label'),
             'isRequired' => true,
             'options' => $this->mapLicensesForDisplay($dataverseLicenses),
-            'value' => $dataset->getLicense(),
+            'value' => $selectedLicense,
         ]));
     }
 

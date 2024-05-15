@@ -184,7 +184,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('Please provide the following details about the research data you are submitting');
         cy.contains('Research Data Subject');
         cy.contains('Research Data License');
-        //TODO: check if license is the default value for the Dataverse repository
+        cy.get('select[name="datasetLicense"]').should('have.value', 'CC0 1.0');
 
         advanceNSteps(1);
         cy.contains('h3', 'Research data metadata');
