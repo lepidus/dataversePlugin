@@ -1,4 +1,7 @@
-<div class="submissionWizard__reviewPanel">
+<div 
+    v-if="publication.dataStatementTypes && publication.dataStatementTypes.includes(pkp.const.DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED)"
+    class="submissionWizard__reviewPanel"
+>
     <div class="submissionWizard__reviewPanel__header">
         <h3 id="review-plugin-draft-dataset-files">
             {translate key="plugins.generic.dataverse.researchData"}

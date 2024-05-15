@@ -15,6 +15,7 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
     protected function registerHooks(): void
     {
         Hook::add('TemplateManager::display', [$this, 'addToEditorsStep']);
+        Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewStep']);
         // HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addDatasetMetadataFields'));
         // HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'readDatasetMetadataFields'));
     }
@@ -59,6 +60,19 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
         }, $steps);
 
         $templateMgr->setState(['steps' => $steps]);
+
+        return false;
+    }
+
+    public function addToReviewStep(string $hookName, array $params): bool
+    {
+        $step = $params[0]['step'];
+        $templateMgr = $params[1];
+        $output = &$params[2];
+
+        if ($step === 'editors') {
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review/datasetMetadata.tpl'));
+        }
 
         return false;
     }
