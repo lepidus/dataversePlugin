@@ -9,6 +9,7 @@ use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 
 class DatasetMetadataDispatcher extends DataverseDispatcher
 {
@@ -16,6 +17,7 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
     {
         Hook::add('TemplateManager::display', [$this, 'addToEditorsStep']);
         Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewStep']);
+        Hook::add('Submission::validateSubmit', [$this, 'validateSubmissionFields']);
         // HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addDatasetMetadataFields'));
         // HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'readDatasetMetadataFields'));
     }
@@ -39,7 +41,7 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
             return false;
         }
 
-        $submissionApiUrl = 'f';
+        $submissionApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'submissions/' . $submission->getId());
         $dataset = new Dataset();
         $dataset->setData('subject', $submission->getData('datasetSubject'));
         $dataset->setData('license', $submission->getData('datasetLicense'));
@@ -72,6 +74,23 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
 
         if ($step === 'editors') {
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review/datasetMetadata.tpl'));
+        }
+
+        return false;
+    }
+
+    public function validateSubmissionFields(string $hookName, array $params)
+    {
+        $errors = &$params[0];
+        $submission = $params[1];
+        $publication = $submission->getCurrentPublication();
+
+        $dataStatementTypes = $publication->getData('dataStatementTypes');
+
+        if (in_array(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
+            if (!$submission->getData('datasetSubject')) {
+                $errors['datasetSubject'] = [__('plugins.generic.dataverse.error.datasetSubjectRequired')];
+            }
         }
 
         return false;

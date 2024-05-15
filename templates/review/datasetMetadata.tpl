@@ -29,14 +29,12 @@
                 </template>
             </div>
         </div>
-    </div>
-    <div class="submissionWizard__reviewPanel__body">
         <div class="submissionWizard__reviewPanel__item">
             <h4 class="submissionWizard__reviewPanel__item__header">
                 {translate key="plugins.generic.dataverse.metadataForm.license.label"}
             </h4>
             <div class="submissionWizard__reviewPanel__item__value">
-                <template v-else>
+                <template>
                     {{ submission.datasetLicense }}
                 </template>
             </div>
