@@ -5,6 +5,7 @@ function addEventListeners() {
 	let dataStatementUrlsField = document.getElementById('dataStatement-dataStatementUrls-description').parentNode;
 	let dataStatementReasonField = document.querySelectorAll('[id^="dataStatement-dataStatementReason-description"')[0].parentNode;
 	let datasetFilesPanel = document.getElementById('datasetFiles').parentNode.parentNode;
+	let datasetMetadataPanel = document.evaluate("//h2[text()='Research data metadata']", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.parentNode.parentNode;
 
 	dataStatementUrlsField.hidden = !checkRepoAvailable.checked;
 	dataStatementReasonField.hidden = !checkPublicUnavailable.checked;
@@ -20,12 +21,15 @@ function addEventListeners() {
 	checkDataverseSubmitted.addEventListener('change', function() {
 		if (this.checked) {
 			datasetFilesPanel.style.display = '';
+			datasetMetadataPanel.style.display = '';
 		} else {
 			datasetFilesPanel.style.display = 'none';
+			datasetMetadataPanel.style.display = 'none';
 		}
 	});
 
 	datasetFilesPanel.style.display = (checkDataverseSubmitted.checked ? '' : 'none');
+	datasetMetadataPanel.style.display = (checkDataverseSubmitted.checked ? '' : 'none');
 }
 
 $(document).ready(addEventListeners);

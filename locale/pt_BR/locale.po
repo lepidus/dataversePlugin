@@ -86,6 +86,12 @@ msgstr "Sem dados de pesquisa"
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Adicione dados de pesquisa"
 
+msgid "plugins.generic.dataverse.datasetMetadata"
+msgstr "Metadados dos dados de pesquisa"
+
+msgid "plugins.generic.dataverse.datasetMetadata.description"
+msgstr "Por favor informe os seguintes detalhes sobre os dados de pesquisa que você está submetendo."
+
 msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
 msgstr "Arquivo \"{$filename}\" adicionado como dados de pesquisa."
 
@@ -112,8 +118,8 @@ msgstr "Para submeter dados de pesquisa é necessário enviar pelo menos um arqu
 "Certifique-se que você escolheu e enviou arquivos de dados de pesquisa no passo “Enviar Arquivos”."
 
 msgid "plugins.generic.dataverse.error.datasetSubjectRequired"
-msgstr "O assunto dos dados de pesquisa é obrigatório.<br>"
-"Certifique-se que você informou o assunto dos dados de pesquisa no passo 3 da submissão."
+msgstr "O assunto dos dados de pesquisa é obrigatório. "
+"Certifique-se que você informou o assunto dos dados de pesquisa no passo “Para os Editores”."
 
 msgid "plugins.generic.dataverse.error.depositFailedOnSubmission"
 msgstr "Erro ao depositar dados de pesquisa no Dataverse: {$error}<br>"

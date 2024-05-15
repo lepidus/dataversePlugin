@@ -83,6 +83,12 @@ msgstr "No research data"
 msgid "plugins.generic.dataverse.addResearchData"
 msgstr "Add research data"
 
+msgid "plugins.generic.dataverse.datasetMetadata"
+msgstr "Research data metadata"
+
+msgid "plugins.generic.dataverse.datasetMetadata.description"
+msgstr "Please provide the following details about the research data you are submitting."
+
 msgid  "plugins.generic.dataverse.log.researchDataFileAdded"
 msgstr "File \"{$filename}\" added as research data."
 
@@ -109,8 +115,8 @@ msgstr "To submit research data, it is necessary to send at least one file. "
 "Please ensure that you have chosen and submitted research data files in the “Upload Files” step."
 
 msgid "plugins.generic.dataverse.error.datasetSubjectRequired"
-msgstr "The subject of the research data is required.<br>"
-"Please ensure that you have chosen the subject of the research data in step 3 of the submission."
+msgstr "The subject of the research data is required. "
+"Please ensure that you have chosen the subject of the research data in the “For the Editors” step."
 
 msgid "plugins.generic.dataverse.error.depositFailedOnSubmission"
 msgstr "Error depositing research data to Dataverse: {$error}<br>"
