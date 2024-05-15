@@ -87,14 +87,31 @@ describe('Dataverse Plugin - Submission wizard features', function () {
             cy.get('.pkpNotification--warning').should('not.exist');
         });
     });
+    it('Shows dataset fields only when submission to Dataverse is chosen', function () {
+        cy.login('eostrom', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionData.title);
+
+        advanceNSteps(1);
+        cy.get('h2:contains("Research data")').should('not.be.visible');
+        advanceNSteps(2);
+        cy.get('h2:contains("Research data metadata")').should('not.be.visible');
+        advanceNSteps(1);
+        cy.get('h3:contains("Research data")').should('not.exist');
+        cy.get('h3:contains("Research data metadata")').should('not.exist');
+
+        cy.get('.pkpSteps__step__label:contains("Details")').click();
+        cy.get('input[name="dataStatementTypes"][value=3]').click();
+        advanceNSteps(1);
+        cy.contains('h2', 'Research data');
+        advanceNSteps(2);
+        cy.contains('h2', 'Research data metadata');
+        advanceNSteps(1);
+        cy.contains('h3', 'Research data');
+        cy.contains('h3', 'Research data metadata');
+    });
     it('Adds dataset files', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
-        advanceNSteps(1);
-
-        cy.get('h2:contains("Research data")').should('not.be.visible');
-        cy.get('.pkpSteps__step__label:contains("Details")').click();
-        cy.get('input[name="dataStatementTypes"][value=3]').click();
         advanceNSteps(1);
 
         cy.contains('h2', 'Research data');
@@ -162,13 +179,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
-        cy.get('input[name="dataStatementTypes"][value=3]').uncheck();
         advanceNSteps(3);
-        cy.get('h2:contains("Research data metadata")').should('not.be.visible');
-        cy.get('.pkpSteps__step__label:contains("Details")').click();
-        cy.get('input[name="dataStatementTypes"][value=3]').check();
-        advanceNSteps(3);
-
         cy.contains('h2', 'Research data metadata');
         cy.contains('Please provide the following details about the research data you are submitting');
         cy.contains('Research Data Subject');
