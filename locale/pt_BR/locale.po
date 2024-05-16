@@ -117,13 +117,9 @@ msgid "plugins.generic.dataverse.error.researchData.required"
 msgstr "Para submeter dados de pesquisa é necessário enviar pelo menos um arquivo. "
 "Certifique-se que você escolheu e enviou arquivos de dados de pesquisa no passo “Enviar Arquivos”."
 
-msgid "plugins.generic.dataverse.error.datasetSubjectRequired"
+msgid "plugins.generic.dataverse.error.datasetSubject.required"
 msgstr "O assunto dos dados de pesquisa é obrigatório. "
 "Certifique-se que você informou o assunto dos dados de pesquisa no passo “Para os Editores”."
-
-msgid "plugins.generic.dataverse.error.depositFailedOnSubmission"
-msgstr "Erro ao depositar dados de pesquisa no Dataverse: {$error}<br>"
-"Por favor, escolha outra opção de declaração de dados ou tente novamente mais tarde."
 
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro ao obter dados de pesquisa no Dataverse: {$error}"

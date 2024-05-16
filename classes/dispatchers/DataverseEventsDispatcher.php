@@ -18,7 +18,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         Hook::add('Dispatcher::dispatch', [$this, 'setupDataverseAPIHandlers']);
         Hook::add('Schema::get::submission', [$this, 'modifySubmissionSchema']);
         //Hook::add('LoadComponentHandler', [$this, 'setupDataverseHandlers']);
-        // HookRegistry::register('SubmissionHandler::saveSubmit', array($this, 'datasetDepositOnSubmission'));
         // HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
         // HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
         // HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
@@ -47,52 +46,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
                 'type' => 'integer',
             ]
         ];
-
-        return false;
-    }
-
-    public function datasetDepositOnSubmission(string $hookName, array $params): bool
-    {
-        $step = $params[0];
-        $submission = $params[1];
-        $stepForm = $params[2];
-
-        if ($step !== 4 || !$stepForm->validate()) {
-            return false;
-        }
-
-        $publication = $submission->getCurrentPublication();
-        $dataStatementTypes = $publication->getData('dataStatementTypes');
-        if (empty($dataStatementTypes) || !in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
-            return false;
-        }
-
-        import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
-        $datasetFactory = new SubmissionDatasetFactory($submission);
-        $dataset = $datasetFactory->getDataset();
-
-        if (empty($dataset->getFiles())) {
-            $stepForm->addError('researchDataRequired', __('plugins.generic.dataverse.error.researchDataRequired'));
-            $stepForm->addErrorField('researchDataRequired');
-            return false;
-        }
-
-        if (empty($dataset->getSubject())) {
-            $stepForm->addError('researchDataRequired', __('plugins.generic.dataverse.error.datasetSubjectRequired'));
-            $stepForm->addErrorField('researchDataRequired');
-            return false;
-        }
-
-        $datasetService = new DatasetService();
-        try {
-            $datasetService->deposit($submission, $dataset);
-        } catch (DataverseException $e) {
-            $stepForm->addError(
-                'depositError',
-                __('plugins.generic.dataverse.error.depositFailedOnSubmission', ['error' => $e->getMessage()])
-            );
-            $stepForm->addErrorField('depositError');
-        }
 
         return false;
     }
