@@ -21,7 +21,8 @@ class DatasetDepositOnSubmission
 
     public function handle(SubmissionSubmitted $event): void
     {
-        $publication = $event->submission->getCurrentPublication();
+        $submission = $event->submission;
+        $publication = $submission->getCurrentPublication();
         $dataStatementTypes = $publication->getData('dataStatementTypes');
 
         if (empty($dataStatementTypes) or !in_array(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
