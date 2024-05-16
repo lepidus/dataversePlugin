@@ -4,10 +4,6 @@ namespace APP\plugins\generic\dataverse\classes\observers\listeners;
 
 use Illuminate\Events\Dispatcher;
 use PKP\observers\events\SubmissionSubmitted;
-use APP\core\Application;
-use APP\log\event\SubmissionEventLogEntry;
-use PKP\core\Core;
-use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
@@ -43,16 +39,7 @@ class DatasetDepositOnSubmission
         try {
             $datasetService->deposit($submission, $dataset);
         } catch (DataverseException $e) {
-            $message = __('plugins.generic.dataverse.error.depositFailed', ['error' => $e->getMessage()]);
-            $depositErrorEntry = Repo::eventLog()->newDataObject([
-                'assocType' => Application::ASSOC_TYPE_SUBMISSION,
-                'assocId' => $submission->getId(),
-                'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_METADATA_UPDATE,
-                'message' => $message,
-                'isTranslated' => true,
-                'dateLogged' => Core::getCurrentDate(),
-            ]);
-            Repo::eventLog()->add($depositErrorEntry);
+            error_log('Dataverse API error: ' . $e->getMessage());
         }
     }
 }

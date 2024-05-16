@@ -1,15 +1,22 @@
 <?php
 
-import('plugins.generic.dataverse.classes.services.DataverseService');
-import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
-import('plugins.generic.dataverse.classes.entities.Dataset');
+namespace APP\plugins\generic\dataverse\classes\services;
+
+use APP\submission\Submission;
+use PKP\db\DAORegistry;
+use APP\log\event\SubmissionEventLogEntry;
+use APP\plugins\generic\dataverse\classes\services\DataverseService;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DatasetService extends DataverseService
 {
     public function deposit(Submission $submission, Dataset $dataset): void
     {
-        $request = Application::get()->getRequest();
-        $contextId = $request->getContext()->getId();
+        $contextId = $submission->getData('contextId');
 
         try {
             $dataverseClient = new DataverseClient();
@@ -23,7 +30,7 @@ class DatasetService extends DataverseService
                 );
             }
         } catch (DataverseException $e) {
-            $this->registerEventLog(
+            $this->registerAndNotifyError(
                 $submission,
                 'plugins.generic.dataverse.error.depositFailed',
                 ['error' => $e->getMessage()]
@@ -35,39 +42,33 @@ class DatasetService extends DataverseService
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
         $swordAPIBaseUrl = $configuration->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
 
-        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dataverseStudyDAO->newDataObject();
+        $study = Repo::dataverseStudy()->newDataObject();
         $study->setSubmissionId($submission->getId());
         $study->setPersistentId($datasetIdentifier->getPersistentId());
         $study->setEditUri($swordAPIBaseUrl . 'edit/study/' . $datasetIdentifier->getPersistentId());
         $study->setEditMediaUri($swordAPIBaseUrl . 'edit-media/study/' . $datasetIdentifier->getPersistentId());
         $study->setStatementUri($swordAPIBaseUrl . 'statement/study/' . $datasetIdentifier->getPersistentId());
         $study->setPersistentUri('https://doi.org/' . str_replace('doi:', '', $datasetIdentifier->getPersistentId()));
-        $dataverseStudyDAO->insertStudy($study);
+        Repo::dataverseStudy()->add($study);
 
         $publication = $submission->getCurrentPublication();
         $dataStatementTypes = $publication->getData('dataStatementTypes');
         if (empty($dataStatementTypes)) {
-            $dataStatementTypes = [DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED];
-        }
-        if (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
-            $dataStatementTypes[] = DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED;
+            $dataStatementTypes = [DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED];
+        } elseif (!in_array(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
+            $dataStatementTypes[] = DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED;
         }
 
-        $newPublication = Services::get('publication')->edit(
-            $publication,
-            ['dataStatementTypes' => $dataStatementTypes],
-            $request
-        );
+        Repo::publication()->edit($publication, ['dataStatementTypes' => $dataStatementTypes]);
 
         $this->registerEventLog(
             $submission,
             'plugins.generic.dataverse.log.researchDataDeposited',
             ['persistentId' => $datasetIdentifier->getPersistentId()],
-            SUBMISSION_LOG_SUBMISSION_SUBMIT
+            SubmissionEventLogEntry::SUBMISSION_LOG_SUBMISSION_SUBMIT
         );
 
-        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submission->getId());
+        Repo::draftDatasetFile()->deleteBySubmissionId($submission->getId());
     }
 
     public function update(array $data): void
