@@ -22,7 +22,7 @@
             <div class="submissionWizard__reviewPanel__item__value">
                 <notification v-if="errors.datasetSubject" type="warning">
                     <icon icon="exclamation-triangle" :inline="true"></icon>
-                    {translate key="plugins.generic.dataverse.error.datasetSubjectRequired"}
+                    {translate key="plugins.generic.dataverse.error.datasetSubject.required"}
                 </notification>
                 <template v-else>
                     {{ submission.datasetSubject }}

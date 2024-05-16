@@ -200,5 +200,12 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('div:contains("The subject of the research data is required")').should('not.exist');
         cy.contains('Earth and Environmental Sciences');
         cy.contains('CC BY 4.0');
+
+        cy.contains('button', 'Submit').click();
+        cy.get('.modal__panel:visible').within(() => {
+            cy.contains('button', 'Submit').click();
+        });
+        cy.waitJQuery();
+        cy.contains('h1', 'Submission complete');
     });
 });

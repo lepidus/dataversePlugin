@@ -87,7 +87,7 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
 
         if (in_array(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
             if (!$submission->getData('datasetSubject')) {
-                $errors['datasetSubject'] = [__('plugins.generic.dataverse.error.datasetSubjectRequired')];
+                $errors['datasetSubject'] = [__('plugins.generic.dataverse.error.datasetSubject.required')];
             }
         }
 

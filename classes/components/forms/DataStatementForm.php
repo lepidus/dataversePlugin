@@ -86,7 +86,7 @@ class DataStatementForm extends FormComponent
         $dataStatementTypes = $dataStatementService->getDataStatementTypes();
 
         if ($page == 'workflow') {
-            unset($dataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+            unset($dataStatementTypes[DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
         }
 
         return array_map(function ($value, $label) {
