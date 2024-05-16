@@ -2,14 +2,18 @@
 
 namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
+use PKP\plugins\Hook;
+use Illuminate\Support\Facades\Event;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileHandler;
-use PKP\plugins\Hook;
+use APP\plugins\generic\dataverse\classes\observers\listeners\DatasetDepositOnSubmission;
 
 class DataverseEventsDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
+        Event::subscribe(new DatasetDepositOnSubmission());
+
         Hook::add('Schema::get::draftDatasetFile', [$this, 'loadDraftDatasetFileSchema']);
         Hook::add('Dispatcher::dispatch', [$this, 'setupDataverseAPIHandlers']);
         Hook::add('Schema::get::submission', [$this, 'modifySubmissionSchema']);
