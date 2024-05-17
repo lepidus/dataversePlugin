@@ -62,15 +62,9 @@ class DataStatementTabDispatcher extends DataverseDispatcher
         $dataStatementForm = new DataStatementForm($saveFormUrl, $publication, 'workflow');
 
         $components = $templateMgr->getState('components');
-        $publicationFormIds = $templateMgr->getState('publicationFormIds');
-
         $components[$dataStatementForm->id] = $dataStatementForm->getConfig();
-        $publicationFormIds[] = $dataStatementForm->id;
 
-        $templateMgr->setState([
-            'components' => $components,
-            'publicationFormIds' => $publicationFormIds
-        ]);
+        $templateMgr->setState(['components' => $components]);
 
         return false;
     }
