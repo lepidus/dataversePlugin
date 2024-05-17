@@ -52,13 +52,13 @@ class DataversePlugin extends GenericPlugin
     {
         $remainingDispatcherClasses = [
             'DatasetInformationDispatcher',
-            'DataStatementTabDispatcher',
             'DatasetTabDispatcher',
             'DatasetReviewDispatcher',
         ];
 
         $dispatcherClasses = [
             'DataStatementDispatcher',
+            'DataStatementTabDispatcher',
             'DraftDatasetFilesDispatcher',
             'DatasetMetadataDispatcher',
             'DataverseEventsDispatcher'
