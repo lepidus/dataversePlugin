@@ -1,17 +1,19 @@
 <?php
 
-use PKP\components\forms\FormComponent;
+namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
-import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
-import('lib.pkp.classes.submission.SubmissionFile');
+use PKP\plugins\Hook;
+use APP\core\Application;
+use APP\template\TemplateManager;
+use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use PKP\components\forms\FormComponent;
 
 class DatasetTabDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('Template::Workflow::Publication', array($this, 'addResearchDataTab'));
-        HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
+        // Hook::add('Template::Workflow::Publication', [$this, 'addResearchDataTab']);
+        // Hook::add('TemplateManager::display', [$this, 'loadResourcesToWorkflow']);
     }
 
     private function getSubmissionStudy(int $submissionId): ?DataverseStudy
