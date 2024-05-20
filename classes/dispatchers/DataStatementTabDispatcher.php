@@ -29,20 +29,14 @@ class DataStatementTabDispatcher extends DataverseDispatcher
             return false;
         }
 
-        /*$templateMgr->addStyleSheet(
-            'dataStatementTab',
-            $this->plugin->getPluginFullPath() . '/styles/dataStatementTab.css',
-            ['contexts' => ['backend']]
-        );
-
         $templateMgr->addJavaScript(
             'dataStatementForm',
             $this->plugin->getPluginFullPath() . '/js/ui/components/DataStatementForm.js',
             [
-                'priority' => STYLE_SEQUENCE_LAST,
+                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
                 'contexts' => ['backend']
             ]
-        );*/
+        );
 
         $templateMgr->addJavaScript(
             'field-controlled-vocab-url',
