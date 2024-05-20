@@ -23,8 +23,17 @@ function addEventListeners() {
 		&& !currentUrl.includes('workflow')
 		&& !currentUrl.includes('authorDashboard')
 	) {
+		let panelSections = document.getElementsByClassName('panelSection');
 		let datasetFilesPanel = document.getElementById('datasetFiles').parentNode.parentNode;
-		let datasetMetadataPanel = document.evaluate("//h2[text()='Research data metadata']", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.parentNode.parentNode;
+		let datasetSubjectField = document.getElementById('datasetMetadata-datasetSubject-control'); 
+		let datasetMetadataPanel = null;
+
+		for (let panelSection of panelSections) {
+			if (panelSection.contains(datasetSubjectField)) {
+				datasetMetadataPanel = panelSection;
+				break;
+			}
+		}
 		
 		checkDataverseSubmitted.addEventListener('change', function() {
 			if (this.checked) {
