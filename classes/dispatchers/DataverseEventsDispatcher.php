@@ -5,6 +5,7 @@ namespace APP\plugins\generic\dataverse\classes\dispatchers;
 use PKP\plugins\Hook;
 use Illuminate\Support\Facades\Event;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
 use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileHandler;
 use APP\plugins\generic\dataverse\classes\observers\listeners\DatasetDepositOnSubmission;
 
@@ -353,12 +354,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return;
         }
 
-        // Later, on workflow features adaption
-        // if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
-        //     $handler = new DatasetHandler();
-        // } else
-
-        if (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
+        if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
+            $handler = new DatasetHandler();
+        } elseif (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
             $handler = new DraftDatasetFileHandler();
         }
 

@@ -1,87 +1,89 @@
 <?php
 
-import('lib.pkp.classes.handler.APIHandler');
-import('lib.pkp.classes.log.SubmissionLog');
-import('classes.log.SubmissionEventLogEntry');
-import('plugins.generic.dataverse.classes.entities.Dataset');
-import('plugins.generic.dataverse.classes.services.DatasetService');
-import('plugins.generic.dataverse.classes.services.DatasetFileService');
+namespace APP\plugins\generic\dataverse\api\v1\draftDatasetFiles;
+
+use PKP\handler\APIHandler;
+use PKP\security\Role;
+use PKP\security\authorization\PolicySet;
+use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\services\DatasetService;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DatasetHandler extends APIHandler
 {
     public function __construct()
     {
         $this->_handlerPath = 'datasets';
-        $roles = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
-        $this->_endpoints = array(
-            'GET' => array(
-                array(
+        $roles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_AUTHOR];
+        $this->_endpoints = [
+            'GET' => [
+                [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
-                    'handler' => array($this, 'get'),
+                    'handler' => [$this, 'get'],
                     'roles' => $roles
-                ),
-                array(
+                ],
+                [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/files',
-                    'handler' => array($this, 'getFiles'),
+                    'handler' => [$this, 'getFiles'],
                     'roles' => $roles
-                ),
-                array(
+                ],
+                [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
-                    'handler' => array($this, 'downloadDatasetFile'),
+                    'handler' => [$this, 'downloadDatasetFile'],
                     'roles' => $roles
-                ),
-                array(
+                ],
+                [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/citation',
-                    'handler' => array($this, 'getCitation'),
+                    'handler' => [$this, 'getCitation'],
                     'roles' => $roles
-                ),
-            ),
-            'POST' => array(
-                array(
+                ],
+            ],
+            'POST' => [
+                [
                     'pattern' => $this->getEndpointPattern(),
-                    'handler' => array($this, 'addDataset'),
+                    'handler' => [$this, 'addDataset'],
                     'roles' => $roles
-                ),
-                array(
+                ],
+                [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
-                    'handler' => array($this, 'addFile'),
+                    'handler' => [$this, 'addFile'],
                     'roles' => $roles
-                ),
-            ),
-            'PUT' => array(
-                array(
+                ],
+            ],
+            'PUT' => [
+                [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
-                    'handler' => array($this, 'edit'),
+                    'handler' => [$this, 'edit'],
                     'roles' => $roles
-                ),
-                array(
+                ],
+                [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/publish',
-                    'handler' => array($this, 'publishDataset'),
+                    'handler' => [$this, 'publishDataset'],
                     'roles' => $roles
-                ),
-            ),
-            'DELETE' => array(
-                array(
+                ],
+            ],
+            'DELETE' => [
+                [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/files',
-                    'handler' => array($this, 'deleteFile'),
+                    'handler' => [$this, 'deleteFile'],
                     'roles' => $roles
-                ),
-                array(
+                ],
+                [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
-                    'handler' => array($this, 'deleteDataset'),
+                    'handler' => [$this, 'deleteDataset'],
                     'roles' => $roles
-                ),
-            )
-        );
+                ]
+            ]
+        ];
         parent::__construct();
     }
 
     public function authorize($request, &$args, $roleAssignments)
     {
-        import('lib.pkp.classes.security.authorization.PolicySet');
-        $rolePolicy = new PolicySet(COMBINING_PERMIT_OVERRIDES);
+        $rolePolicy = new PolicySet(PolicySet::COMBINING_PERMIT_OVERRIDES);
 
-        import('lib.pkp.classes.security.authorization.RoleBasedHandlerOperationPolicy');
         foreach ($roleAssignments as $role => $operations) {
             $rolePolicy->addPolicy(new RoleBasedHandlerOperationPolicy($request, $role, $operations));
         }
@@ -92,7 +94,7 @@ class DatasetHandler extends APIHandler
 
     public function get($slimRequest, $response, $args)
     {
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudy($args['studyId']);
+        $study = Repo::dataverseStudy()->get($args['studyId']);
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
@@ -103,7 +105,7 @@ class DatasetHandler extends APIHandler
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
         } catch (DataverseException $e) {
             $request = $this->getRequest();
-            $submission = Services::get('submission')->get($study->getSubmissionId());
+            $submission = Repo::submission()->get($study->getSubmissionId());
             $error = $e->getMessage();
             $message = 'plugins.generic.dataverse.error.getFailed';
 
@@ -121,7 +123,7 @@ class DatasetHandler extends APIHandler
     public function edit($slimRequest, $response, $args)
     {
         $requestParams = $slimRequest->getParsedBody();
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudy($args['studyId']);
+        $study = Repo::dataverseStudy()->get($args['studyId']);
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
