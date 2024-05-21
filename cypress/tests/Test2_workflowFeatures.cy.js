@@ -62,7 +62,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetTab-button').click();
 
         cy.get('#datasetMetadata-datasetTitle-control').should('have.value', 'Replication data for: ' + submissionData.title);
-        cy.get('#datasetMetadata-datasetDescription-control').should('have.value', submissionData.abstract);
+        cy.getTinyMceContent('datasetMetadata-datasetDescription-control').should('include', submissionData.abstract);
         cy.get('#datasetMetadata-datasetKeywords-selected').within(() => {
             cy.contains(submissionData.keywords[0]);
             cy.contains(submissionData.keywords[1]);
@@ -71,7 +71,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC BY 4.0');
 
         cy.get('#datasetMetadata-datasetTitle-control').clear().type('Test metadata editing', {delay: 0});
-        cy.get('#datasetMetadata-datasetDescription-control').clear().type('new description', {delay: 0});
+        cy.setTinyMceContent('datasetMetadata-datasetDescription-control', 'new description');
         cy.get('#datasetMetadata-datasetKeywords-control').type(submissionData.keywords[2], {delay: 0});
         cy.wait(500);
 		cy.get('#datasetMetadata-datasetKeywords-control').type('{enter}', { delay: 0 });
@@ -81,7 +81,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('.pkpFormPage__status:contains("Saved")');
 
         cy.get('#datasetMetadata-datasetTitle-control').should('have.value', 'Test metadata editing');
-        cy.get('#datasetMetadata-datasetDescription-control').should('have.value', 'new description');
+        cy.getTinyMceContent('datasetMetadata-datasetDescription-control').should('include', 'new description');
         cy.get('#datasetMetadata-datasetKeywords-selected').within(() => {
             cy.contains(submissionData.keywords[2]);
         });
@@ -89,7 +89,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC0 1.0');
 
         cy.get('#datasetMetadata-datasetTitle-control').clear().type('Replication data for: ' + submissionData.title, {delay: 0});
-        cy.get('#datasetMetadata-datasetDescription-control').clear().type(submissionData.abstract, {delay: 0});
+        cy.getTinyMceContent('datasetMetadata-datasetDescription-control', submissionData.abstract);
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
         cy.get('button:visible:contains("Save")').click();
