@@ -32,7 +32,7 @@
         >
             <pkp-form v-bind="components.datasetMetadata" @set="set"></pkp-form>
         </tab>
-        <tab
+        {* <tab
             id="dataset_files"
             label={translate key="plugins.generic.dataverse.researchData.files"}
         >
@@ -87,9 +87,9 @@
                     </modal-content>
                 </modal>
             </div>
-        </tab>
+        </tab> *}
     </tabs>
-    <modal 
+    {* <modal 
         v-bind="MODAL_PROPS" 
         name="deleteDataset"
     >
@@ -101,5 +101,5 @@
             <pkp-form style="margin: -1rem" v-bind="components.deleteDataset" @set="set" @success="location.reload()">
             </pkp-form>
         </modal-content>
-    </modal>
+    </modal> *}
 </section>

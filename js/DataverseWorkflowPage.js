@@ -20,9 +20,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
 
         researchDataCount: function () {
-            if (this.dataset) {
+            /*if (this.dataset) {
                 return this.components.datasetFiles.items.length.toString();
-            }
+            }*/
             return '0';
         },
 
@@ -291,7 +291,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         if (this.dataset) {
             this.setDatasetForms(this.dataset);
         }
-        this.fileFormErrors = this.components.datasetFileForm.errors;
+        //this.fileFormErrors = this.components.datasetFileForm.errors;
     },
     watch: {
         dataset(newVal, oldVal) {

@@ -80,8 +80,8 @@ class DatasetService extends DataverseService
             $dataset->setData($name, $value);
         }
 
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getByPersistentId($dataset->getPersistentId());
-        $submission = Services::get('submission')->get($study->getSubmissionId());
+        $study = Repo::dataverseStudy()->getByPersistentId($dataset->getPersistentId());
+        $submission = Repo::submission()->get($study->getSubmissionId());
 
         try {
             $dataverseClient->getDatasetActions()->update($dataset);

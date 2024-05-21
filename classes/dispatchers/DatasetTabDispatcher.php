@@ -21,13 +21,13 @@ class DatasetTabDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        // Hook::add('Template::Workflow::Publication', [$this, 'addResearchDataTab']);
+        Hook::add('Template::Workflow::Publication', [$this, 'addResearchDataTab']);
         Hook::add('TemplateManager::display', [$this, 'loadResourcesToWorkflow']);
     }
 
     private function getSubmissionStudy(int $submissionId): ?DataverseStudy
     {
-        return Repo::dataverseStudy()->getBySubmissionId($submission->getId());
+        return Repo::dataverseStudy()->getBySubmissionId($submissionId);
     }
 
     public function addResearchDataTab(string $hookName, array $params): bool
@@ -35,7 +35,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $templateMgr = &$params[1];
         $output = &$params[2];
 
-        $submission = $templateMgr->get_template_vars('submission');
+        $submission = $templateMgr->getTemplateVars('submission');
 
         $content = $this->getDatasetTabContent($submission);
 
@@ -62,7 +62,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             return $this->plugin->getTemplateResource('datasetTab/datasetData.tpl');
         } catch (DataverseException $e) {
             if ($e->getCode() === 404) {
-                DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
+                Repo::dataverseStudy()->delete($study);
             }
 
             error_log('Dataverse API error: ' . $e->getMessage());
@@ -91,7 +91,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             ['contexts' => ['backend']]
         );
 
-        /*$templateMgr->addJavaScript(
+        $templateMgr->addJavaScript(
             'dataverseWorkflowPage',
             $this->plugin->getPluginFullPath() . '/js/DataverseWorkflowPage.js',
             [
@@ -102,7 +102,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $templateMgr->assign([
             'pageComponent' => 'DataverseWorkflowPage',
-        ]);*/
+        ]);
 
         $submission = $templateMgr->getTemplateVars('submission');
         $study = $this->getSubmissionStudy($submission->getId());

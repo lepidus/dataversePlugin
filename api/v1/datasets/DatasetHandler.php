@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\generic\dataverse\api\v1\draftDatasetFiles;
+namespace APP\plugins\generic\dataverse\api\v1\datasets;
 
 use PKP\handler\APIHandler;
 use PKP\security\Role;
@@ -265,8 +265,7 @@ class DatasetHandler extends APIHandler
 
     public function getCitation($slimRequest, $response, $args)
     {
-        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
+        $study = Repo::dataverseStudy()->get((int) $args['studyId']);
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
