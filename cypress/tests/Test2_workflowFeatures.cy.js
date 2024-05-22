@@ -95,7 +95,40 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('button:visible:contains("Save")').click();
         cy.get('.pkpFormPage__status:contains("Saved")');
     });
-    //Dataset files editing - Checks badge number here
+    it('Research data files editing in workflow', function () {
+        cy.login('eostrom', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionData.title);
+        
+        cy.get('#publication-button').click();
+        cy.get('#datasetTab-button').click();
+        cy.get('#dataset_files').click();
+
+		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
+        cy.get('#datasetTab-button .pkpBadge').contains('1');
+
+        cy.contains('button', 'Add research data').click();
+        cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
+				fileContent,
+				fileName: 'example.json',
+				mimeType: 'application/json',
+				encoding: 'base64',
+			});
+		});
+        cy.wait(1000);
+		cy.get('input[name="termsOfUse"]').check();
+		cy.get('form:visible button:contains("Save")').click();
+
+        cy.get('#datasetFiles').contains('example.json');
+        cy.get('#datasetTab-button .pkpBadge').contains('2');
+
+        cy.get('.listPanel__item:contains("example.json") button:contains("Delete")').click();
+		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
+        cy.waitJQuery();
+
+        cy.get('#datasetFiles').should('not.include.text', 'example.json');
+        cy.get('#datasetTab-button .pkpBadge').contains('2');
+    });
     //Dataset deletion
     //Dataset adding
     //Actions were written in submission's activity log
