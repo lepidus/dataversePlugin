@@ -93,4 +93,12 @@ class DatasetMetadataForm extends FormComponent
         }
         return $mappedLicenses;
     }
+
+    public function getConfig()
+    {
+        $config = parent::getConfig();
+        $config['primaryLocale'] = Locale::getLocale();
+
+        return $config;
+    }
 }
