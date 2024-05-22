@@ -4,6 +4,7 @@ namespace APP\plugins\generic\dataverse\api\v1\datasets;
 
 use PKP\handler\APIHandler;
 use PKP\security\Role;
+use PKP\facades\Locale;
 use PKP\security\authorization\PolicySet;
 use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
@@ -123,6 +124,7 @@ class DatasetHandler extends APIHandler
     public function edit($slimRequest, $response, $args)
     {
         $requestParams = $slimRequest->getParsedBody();
+        $locale = Locale::getLocale();
         $study = Repo::dataverseStudy()->get($args['studyId']);
 
         if (!$study) {
@@ -133,7 +135,7 @@ class DatasetHandler extends APIHandler
         $data['persistentId'] = $study->getPersistentId();
         $data['title'] = $requestParams['datasetTitle'];
         $data['description'] = $requestParams['datasetDescription'];
-        $data['keywords'] = (array) $requestParams['datasetKeywords'];
+        $data['keywords'] = $requestParams['datasetKeywords'][$locale];
         $data['subject'] = $requestParams['datasetSubject'];
         $data['license'] = $requestParams['datasetLicense'];
 

@@ -63,7 +63,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('#datasetMetadata-datasetTitle-control').should('have.value', 'Replication data for: ' + submissionData.title);
         cy.getTinyMceContent('datasetMetadata-datasetDescription-control').should('include', submissionData.abstract);
-        cy.get('#datasetMetadata-datasetKeywords-selected').within(() => {
+        cy.get('#datasetMetadata-datasetKeywords-selected-en').within(() => {
             cy.contains(submissionData.keywords[0]);
             cy.contains(submissionData.keywords[1]);
         });
@@ -72,9 +72,9 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('#datasetMetadata-datasetTitle-control').clear().type('Test metadata editing', {delay: 0});
         cy.setTinyMceContent('datasetMetadata-datasetDescription-control', 'new description');
-        cy.get('#datasetMetadata-datasetKeywords-control').type(submissionData.keywords[2], {delay: 0});
+        cy.get('#datasetMetadata-datasetKeywords-control-en').type(submissionData.keywords[2], {delay: 0});
         cy.wait(500);
-		cy.get('#datasetMetadata-datasetKeywords-control').type('{enter}', { delay: 0 });
+		cy.get('#datasetMetadata-datasetKeywords-control-en').type('{enter}', { delay: 0 });
         cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
         cy.get('button:visible:contains("Save")').click();
@@ -82,7 +82,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('#datasetMetadata-datasetTitle-control').should('have.value', 'Test metadata editing');
         cy.getTinyMceContent('datasetMetadata-datasetDescription-control').should('include', 'new description');
-        cy.get('#datasetMetadata-datasetKeywords-selected').within(() => {
+        cy.get('#datasetMetadata-datasetKeywords-selected-en').within(() => {
             cy.contains(submissionData.keywords[2]);
         });
         cy.get('#datasetMetadata-datasetSubject-control').should('have.value', 'Computer and Information Science');
