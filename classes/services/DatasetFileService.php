@@ -1,7 +1,15 @@
 <?php
 
-import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
-import('plugins.generic.dataverse.classes.services.DataverseService');
+namespace APP\plugins\generic\dataverse\classes\services;
+
+use APP\core\Application;
+use PKP\file\TemporaryFileManager;
+use PKP\log\event\SubmissionFileEventLogEntry;
+use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\services\DataverseService;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DatasetFileService extends DataverseService
 {
@@ -9,9 +17,8 @@ class DatasetFileService extends DataverseService
     {
         $request = Application::get()->getRequest();
         $user = $request->getUser();
-        $submission = Services::get('submission')->get($study->getSubmissionId());
+        $submission = Repo::submission()->get($study->getSubmissionId());
 
-        import('lib.pkp.classes.file.TemporaryFileManager');
         $temporaryFileManager = new TemporaryFileManager();
         $file = $temporaryFileManager->getFile($fileId, $user->getId());
 
@@ -38,13 +45,13 @@ class DatasetFileService extends DataverseService
             $submission,
             'plugins.generic.dataverse.log.researchDataFileAdded',
             ['filename' => $file->getOriginalFileName()],
-            SUBMISSION_LOG_FILE_UPLOAD
+            SubmissionFileEventLogEntry::SUBMISSION_LOG_FILE_UPLOAD
         );
     }
 
     public function delete(DataverseStudy $study, string $fileId, string $filename): void
     {
-        $submission = Services::get('submission')->get($study->getSubmissionId());
+        $submission = Repo::submission()->get($study->getSubmissionId());
 
         try {
             $dataverseClient = new DataverseClient();
@@ -65,7 +72,7 @@ class DatasetFileService extends DataverseService
             $submission,
             'plugins.generic.dataverse.log.researchDataFileDeleted',
             ['filename' => $filename],
-            SUBMISSION_LOG_FILE_UPLOAD
+            SubmissionFileEventLogEntry::SUBMISSION_LOG_FILE_UPLOAD
         );
     }
 }
