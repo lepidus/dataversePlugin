@@ -96,12 +96,12 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('.pkpFormPage__status:contains("Saved")');
     });
     it('Research data files editing in workflow', function () {
-        cy.login('eostrom', null, 'publicknowledge');
+        cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
-        cy.get('#dataset_files').click();
+        cy.get('#dataset_files-button').click();
 
 		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
         cy.get('#datasetTab-button .pkpBadge').contains('1');
@@ -127,7 +127,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.waitJQuery();
 
         cy.get('#datasetFiles').should('not.include.text', 'example.json');
-        cy.get('#datasetTab-button .pkpBadge').contains('2');
+        cy.get('#datasetTab-button .pkpBadge').contains('1');
     });
     //Dataset deletion
     //Dataset adding
