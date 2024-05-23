@@ -55,12 +55,12 @@ abstract class DataverseActions
         return $this->createNativeAPIURI('dataverses', ':root');
     }
 
-    public function nativeAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
+    public function nativeAPIRequest(string $method, string $uri, array $options = [], bool $returnResponse = true): ?DataverseResponse
     {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
 
         try {
-            $reponse = $this->client->request($method, $uri, $options);
+            $response = $this->client->request($method, $uri, $options);
         } catch (RequestException $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
@@ -77,10 +77,14 @@ abstract class DataverseActions
             throw new DataverseException($message, $code, $e);
         }
 
+        if (!$returnResponse) {
+            return null;
+        }
+
         return new DataverseResponse(
-            $reponse->getStatusCode(),
-            $reponse->getReasonPhrase(),
-            $reponse->getBody()
+            $response->getStatusCode(),
+            $response->getReasonPhrase(),
+            $response->getBody()
         );
     }
 
@@ -89,7 +93,7 @@ abstract class DataverseActions
         $options['auth'] = [$this->apiToken, ''];
 
         try {
-            $reponse = $this->client->request($method, $uri, $options);
+            $response = $this->client->request($method, $uri, $options);
         } catch (RequestException $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
@@ -103,9 +107,9 @@ abstract class DataverseActions
         }
 
         return new DataverseResponse(
-            $reponse->getStatusCode(),
-            $reponse->getReasonPhrase(),
-            $reponse->getBody()
+            $response->getStatusCode(),
+            $response->getReasonPhrase(),
+            $response->getBody()
         );
     }
 }
