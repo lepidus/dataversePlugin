@@ -96,7 +96,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('.pkpFormPage__status:contains("Saved")');
     });
     it('Research data files editing in workflow', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
+        cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
         cy.get('#publication-button').click();
@@ -128,6 +128,23 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('#datasetFiles').should('not.include.text', 'example.json');
         cy.get('#datasetTab-button .pkpBadge').contains('1');
+    });
+    it('Research data deletion in workflow', function () {
+        cy.login('eostrom', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionData.title);
+        
+        cy.get('#publication-button').click();
+        cy.get('#datasetTab-button').click();
+        
+        cy.contains('Delete research data').click();
+        cy.setTinyMceContent('deleteDataset-deleteMessage-control', 'Your research data has been deleted.');
+		cy.get('#deleteDataset-deleteMessage-control').click();
+		cy.contains('Delete and send email').click();
+		
+        cy.wait(2000);
+        cy.contains('No research data transferred.');
+        cy.get('#dataStatement-button').click();
+		cy.get('input[name="researchDataSubmitted"]').should('not.be.checked');
     });
     //Dataset deletion
     //Dataset adding
