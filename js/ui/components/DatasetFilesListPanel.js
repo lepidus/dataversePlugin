@@ -45,7 +45,7 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
                                     <pkp-button
                                         :disabled="isLoading"
                                         :isWarnable="true"
-                                        @click="openDeleteFileModal(item.id)"
+                                        @click="openDeleteFileModal(item.id, item.fileName)"
                                     >
                                         {{ __('common.delete') }}
                                     </pkp-button>
@@ -83,7 +83,10 @@ pkp.Vue.component('dataset-files-list-panel', {
         addFileModalTitle: {
             type: String,
         },
-        datasetFilesApiUrl: {
+        fileListUrl: {
+            type: String,
+        },
+        fileActionUrl: {
             type: String,
         },
         form: {
@@ -107,7 +110,7 @@ pkp.Vue.component('dataset-files-list-panel', {
             this.refreshItems();
             this.$modal.hide('addDatasetFileModal');
         },
-        openDeleteFileModal(fileId) {
+        openDeleteFileModal(fileId, fileName) {
             const datasetFile = Object.values(this.items).find(
                 (file) => file.id === fileId
             );
@@ -138,7 +141,7 @@ pkp.Vue.component('dataset-files-list-panel', {
 						callback: () => {
 							var self = this;
                             $.ajax({
-                                url: this.datasetFilesApiUrl + '&fileId=' + fileId,
+                                url: this.fileActionUrl + '?fileId=' + fileId + '&fileName=' + fileName,
                                 type: 'DELETE',
                                 headers: {
                                     'X-Csrf-Token': pkp.currentUser.csrfToken,
@@ -165,7 +168,7 @@ pkp.Vue.component('dataset-files-list-panel', {
             this.latestGetRequest = $.pkp.classes.Helper.uuid();
 
             $.ajax({
-				url: this.datasetFilesApiUrl,
+				url: this.fileListUrl,
 				type: 'GET',
 				_uuid: this.latestGetRequest,
 				error: function (response) {

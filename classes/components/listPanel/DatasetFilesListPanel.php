@@ -9,7 +9,8 @@ use APP\plugins\generic\dataverse\classes\components\forms\DraftDatasetFileForm;
 class DatasetFilesListPanel extends ListPanel
 {
     public $addFileLabel = '';
-    public $datasetFilesApiUrl = '';
+    public $fileListUrl = '';
+    public $fileActionUrl = '';
     public $isLoading = false;
     public $addFileModalTitle = '';
     public $title = '';
@@ -30,7 +31,8 @@ class DatasetFilesListPanel extends ListPanel
             $config,
             [
                 'addFileLabel' => $this->addFileLabel,
-                'datasetFilesApiUrl' => $this->datasetFilesApiUrl,
+                'fileListUrl' => $this->fileListUrl,
+                'fileActionUrl' => $this->fileActionUrl,
                 'addFileModalTitle' => $this->addFileModalTitle,
                 'title' => $this->title,
                 'form' => $form->getConfig(),
@@ -46,8 +48,13 @@ class DatasetFilesListPanel extends ListPanel
     private function getForm(): DraftDatasetFileForm
     {
         $request = Application::get()->getRequest();
-        $userId = $request->getUser()->getId();
-        $addFileUrl = $this->datasetFilesApiUrl . "&userId=$userId";
+        $addFileUrl = $this->fileActionUrl;
+
+        if (str_contains($this->fileActionUrl, '/draftDatasetFiles')) {
+            $submissionId = $this->submission->getId();
+            $userId = $request->getUser()->getId();
+            $addFileUrl .= "?submissionId=$submissionId&userId=$userId";
+        }
 
         return new DraftDatasetFileForm(
             $addFileUrl,
