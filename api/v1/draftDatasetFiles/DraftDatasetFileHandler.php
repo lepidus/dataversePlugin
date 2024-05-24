@@ -5,6 +5,7 @@ namespace APP\plugins\generic\dataverse\api\v1\draftDatasetFiles;
 use PKP\handler\APIHandler;
 use PKP\core\Core;
 use APP\core\Application;
+use PKP\security\Validation;
 use APP\core\Services;
 use PKP\file\TemporaryFileManager;
 use PKP\log\event\SubmissionFileEventLogEntry;
@@ -148,9 +149,12 @@ class DraftDatasetFileHandler extends APIHandler
 
     private function createFileEventLog($draftDatasetFile, $messageKey)
     {
+        $user = Application::get()->getRequest()->getUser();
+
         $eventLog = Repo::eventLog()->newDataObject([
             'assocType' => Application::ASSOC_TYPE_SUBMISSION,
             'assocId' => $draftDatasetFile->getSubmissionId(),
+            'userId' => Validation::loggedInAs() ?? $user->getId(),
             'eventType' => SubmissionFileEventLogEntry::SUBMISSION_LOG_FILE_UPLOAD,
             'message' => __($messageKey, ['filename' => $draftDatasetFile->getData('fileName')]),
             'isTranslated' => true,

@@ -172,7 +172,22 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.contains('h1', 'Research data');
     });
-    //Actions were written in submission's activity log
+    it('Check author actions were registered in activity log', function () {
+		cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionData.title);
+
+		cy.contains('Activity Log').click();
+		cy.get('#submissionHistoryGridContainer').within(() => {
+			cy.get('tr:contains(File "Data_detailing.pdf" added as research data.) td').should('contain', 'Catherine Kwantes');
+            cy.get('tr:contains(File "Raw_data.xlsx" added as research data.) td').should('contain', 'Catherine Kwantes');
+            cy.get('tr:contains(File "Data_detailing.pdf" deleted from research data.) td').should('contain', 'Catherine Kwantes');
+			cy.get('tr:contains(Research data deposited) td').should('contain', 'Catherine Kwantes');
+			cy.get('tr:contains(Research data metadata updated) td').should('contain', 'Catherine Kwantes');
+            cy.get('tr:contains(File "example.json" added as research data.) td').should('contain', 'Catherine Kwantes');
+			cy.get('tr:contains(File "example.json" deleted from research data.) td').should('contain', 'Catherine Kwantes');
+			cy.get('tr:contains(Research data deleted) td').should('contain', 'Catherine Kwantes');
+		});
+	});
     //Author can't perform actions without permissions granted
     //Checks options for publish dataset on submission publishing/posting - Editor
     //Checks can publish dataset after publishing (finally does it)

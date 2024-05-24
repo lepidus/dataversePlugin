@@ -6,6 +6,7 @@ use APP\submission\Submission;
 use APP\core\Application;
 use APP\log\event\SubmissionEventLogEntry;
 use PKP\core\Core;
+use PKP\security\Validation;
 use APP\notification\Notification;
 use APP\notification\NotificationManager;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
@@ -18,9 +19,12 @@ abstract class DataverseService
         array $params = [],
         int $type = null
     ): void {
+        $user = Application::get()->getRequest()->getUser();
+
         $eventLog = Repo::eventLog()->newDataObject([
             'assocType' => Application::ASSOC_TYPE_SUBMISSION,
             'assocId' => $submission->getId(),
+            'userId' => Validation::loggedInAs() ?? $user->getId(),
             'eventType' => $type ?? SubmissionEventLogEntry::SUBMISSION_LOG_METADATA_UPDATE,
             'message' => __($message, $params),
             'isTranslated' => true,

@@ -4,6 +4,7 @@ namespace APP\plugins\generic\dataverse\api\v1\datasets;
 
 use PKP\handler\APIHandler;
 use PKP\security\Role;
+use PKP\security\Validation;
 use PKP\facades\Locale;
 use PKP\security\authorization\PolicySet;
 use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
@@ -339,9 +340,12 @@ class DatasetHandler extends APIHandler
 
     private function createEventLog($study, $messageKey, $params)
     {
+        $user = Application::get()->getRequest()->getUser();
+
         $eventLog = Repo::eventLog()->newDataObject([
             'assocType' => Application::ASSOC_TYPE_SUBMISSION,
             'assocId' => $study->getSubmissionId(),
+            'userId' => Validation::loggedInAs() ?? $user->getId(),
             'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_METADATA_UPDATE,
             'message' => __($messageKey, $params),
             'isTranslated' => true,
