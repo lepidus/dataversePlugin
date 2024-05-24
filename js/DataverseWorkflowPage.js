@@ -125,10 +125,20 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             let form = { ...this.components.datasetMetadata };
             form.canSubmit =
                 this.canEditPublication &&
-                dataset.versionState !== 'RELEASED'
+                dataset.versionState !== 'RELEASED';
 
             this.components.datasetMetadata = {};
             this.components.datasetMetadata = form;
+        },
+
+        setDatasetFilesPanel(dataset) {
+            let filesPanel = { ...this.components.datasetFiles };
+            filesPanel.canChangeFiles = 
+                this.canEditPublication &&
+                dataset.versionState !== 'RELEASED';
+
+            this.components.datasetFiles = {};
+            this.components.datasetFiles = filesPanel;
         },
 
         setDatasetCitation() {
@@ -170,11 +180,13 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         this.setDatasetCitation();
         if (this.dataset) {
             this.setDatasetForms(this.dataset);
+            this.setDatasetFilesPanel(this.dataset);
         }
     },
     watch: {
         dataset(newVal, oldVal) {
             this.setDatasetForms(newVal);
+            this.setDatasetFilesPanel(newVal);
             this.setDatasetCitation();
         }
     },

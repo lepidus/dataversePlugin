@@ -17,7 +17,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 
     it('Data statement features are displayed in workflow tab', function () {
         if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-			cy.allowAuthorToEditPublication('dbarnes', null, 'Elinor Ostrom');
+			cy.changeAuthorEditPermissionOnPublication('dbarnes', null, 'Elinor Ostrom', 'publicknowledge', 'check');
 		}
         
         cy.login('eostrom', null, 'publicknowledge');
@@ -188,7 +188,27 @@ describe('Dataverse Plugin - Workflow features', function () {
 			cy.get('tr:contains(Research data deleted) td').should('contain', 'Elinor Ostrom');
 		});
 	});
-    //Author can't perform actions without permissions granted
+    it('Author can not perform actions without edit permission granted', function () {
+		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
+			cy.changeAuthorEditPermissionOnPublication('dbarnes', null, 'Elinor Ostrom', 'publicknowledge', 'uncheck');
+		}
+        
+        cy.login('eostrom', null, 'publicknowledge');
+        cy.findSubmission('myQueue', 'Test for dataset deletion');
+
+		cy.get('#publication-button').click();
+		cy.get('#datasetTab-button').click();
+
+		cy.contains('Delete research data').should('be.disabled');
+		cy.get('#dataset_metadata > form button[label="Save"]').should('be.disabled');
+
+		cy.get('#dataset_files-button').click();
+		cy.contains('Add research data').should('be.disabled');
+
+		cy.get('#datasetFiles .listPanel__item button:contains(Delete)').should('be.disabled');
+	});
+    //Editor can delete dataset
+    //Editor can upload research data in workflow
     //Checks options for publish dataset on submission publishing/posting - Editor
     //Checks can publish dataset after publishing (finally does it)
 });

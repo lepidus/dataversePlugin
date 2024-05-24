@@ -12,6 +12,7 @@ class DatasetFilesListPanel extends ListPanel
     public $fileListUrl = '';
     public $fileActionUrl = '';
     public $isLoading = false;
+    public $canChangeFiles = true;
     public $addFileModalTitle = '';
     public $title = '';
     private $submission;
@@ -35,6 +36,7 @@ class DatasetFilesListPanel extends ListPanel
                 'fileActionUrl' => $this->fileActionUrl,
                 'addFileModalTitle' => $this->addFileModalTitle,
                 'title' => $this->title,
+                'canChangeFiles' => $this->canChangeFiles,
                 'form' => $form->getConfig(),
                 'deleteFileTitle' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
                 'deleteFileMessage' => __('plugins.generic.dataverse.modal.confirmDelete'),

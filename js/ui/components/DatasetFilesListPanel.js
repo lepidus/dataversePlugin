@@ -7,6 +7,7 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
                     <spinner v-if="isLoading"></spinner>
                     <template slot="actions">
                         <pkp-button
+                            :disabled="isLoading || !canChangeFiles"
                             @click="openAddFileModal"
                         >
                             {{ addFileLabel }}
@@ -43,7 +44,7 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
                                 </div>
                                 <div class="listPanel__itemActions">
                                     <pkp-button
-                                        :disabled="isLoading"
+                                        :disabled="isLoading || !canChangeFiles"
                                         :isWarnable="true"
                                         @click="openDeleteFileModal(item.id, item.fileName)"
                                     >
@@ -89,6 +90,12 @@ pkp.Vue.component('dataset-files-list-panel', {
         fileActionUrl: {
             type: String,
         },
+        canChangeFiles: {
+			type: Boolean,
+			default() {
+				return true;
+			},
+		},
         form: {
 			type: Object,
 		},
