@@ -42,17 +42,12 @@
             ></dataset-files-list-panel>
         </tab>
     </tabs>
-    {* <modal 
-        v-bind="MODAL_PROPS" 
+    <modal 
         name="deleteDataset"
+        :title="deleteDatasetLabel"
+        :closeLabel="__('common.close')"
     >
-        <modal-content 
-            close-label="common.close"
-            modal-name="deleteDataset"
-            :title="deleteDatasetLabel"
-        >
-            <pkp-form style="margin: -1rem" v-bind="components.deleteDataset" @set="set" @success="location.reload()">
-            </pkp-form>
-        </modal-content>
-    </modal> *}
+        <pkp-form style="margin: -1rem" v-bind="components.deleteDataset" @set="set" @success="location.reload()">
+        </pkp-form>
+    </modal>
 </section>

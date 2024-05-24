@@ -198,7 +198,7 @@ class DatasetHandler extends APIHandler
         $locale = Locale::getLocale();
 
         $submissionId = $queryParams['submissionId'];
-        $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submissionId);
+        $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submissionId)->toArray();
 
         if (empty($draftDatasetFiles)) {
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.researchDataFile.error');

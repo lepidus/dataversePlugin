@@ -8,6 +8,7 @@ use APP\template\TemplateManager;
 use APP\submission\Submission;
 use PKP\db\DAORegistry;
 use PKP\security\Role;
+use PKP\facades\Locale;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
@@ -135,7 +136,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
-        $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId());
+        $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
 
         $datasetFiles = array_map(function ($draftDatasetFile) use ($fileActionApiUrl) {
             $fileVars = $draftDatasetFile->getAllData();
@@ -202,8 +203,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
             $this->initDatasetMetadataForm($templateMgr, $datasetApiUrl, 'PUT', $dataset);
             $this->initDatasetFilesList($templateMgr, $submission, $fileListApiUrl, $fileActionApiUrl, $datasetFiles);
 
-            // $deleteDatasetForm = $this->getDeleteDatasetForm($datasetApiUrl, $context);
-            // $this->addComponent($templateMgr, $deleteDatasetForm);
+            $deleteDatasetForm = $this->getDeleteDatasetForm($datasetApiUrl, $context);
+            $this->addComponent($templateMgr, $deleteDatasetForm);
 
             $templateMgr->setState([
                 'dataset' => $dataset->getAllData(),
@@ -256,23 +257,18 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $this->addComponent($templateMgr, $datasetFilesListPanel);
     }
 
-    public function getDeleteDatasetForm(
-        string $apiUrl,
-        Context $context,
-        array $locales
-    ): FormComponent {
-        import('lib.pkp.classes.mail.MailTemplate');
+    public function getDeleteDatasetForm($apiUrl, $context): FormComponent
+    {
+        // $mail = new MailTemplate('DATASET_DELETE_NOTIFICATION', null, $context, false);
+        // $mail->assignParams([
+        //     'submissionTitle' => htmlspecialchars($submission->getLocalizedFullTitle()),
+        //     'dataverseName' => $dataverseCollection->getName(),
+        //     'dataStatementUrl' => $datasetStatementUrl,
+        // ]);
+        // $mail->replaceParams();
 
-        $mail = new MailTemplate('DATASET_DELETE_NOTIFICATION', null, $context, false);
-        $mail->assignParams([
-            'submissionTitle' => htmlspecialchars($submission->getLocalizedFullTitle()),
-            'dataverseName' => $dataverseCollection->getName(),
-            'dataStatementUrl' => $datasetStatementUrl,
-        ]);
-        $mail->replaceParams();
-
+        $locales = $this->getFormLocales($context);
         $deleteDatasetForm = new FormComponent('deleteDataset', 'DELETE', $apiUrl, $locales);
-
         $deleteDatasetForm->addPage([
             'id' => 'default',
             'submitButton' => [
@@ -283,12 +279,23 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'pageId' => 'default',
         ])->addField(new \PKP\components\forms\FieldRichTextarea('deleteMessage', [
             'label' => __('plugins.generic.dataverse.researchData.delete.emailNotification'),
-            'value' => $mail->getBody(),
+            'value' => 'Batatinha quando nasce...',
             'groupId' => 'default'
         ]));
 
-
         return $deleteDatasetForm;
+    }
+
+    private function getFormLocales($context): array
+    {
+        $supportedFormLocales = $context->getSupportedFormLocales();
+        $localeNames = array_map(fn ($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
+
+        $formLocales = array_map(function ($localeKey) use ($localeNames) {
+            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+        }, $supportedFormLocales);
+
+        return $formLocales;
     }
 
     private function addComponent(TemplateManager $templateMgr, $component, $args = []): void

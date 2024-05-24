@@ -2,7 +2,7 @@
     <p>
 		{translate key="plugins.generic.dataverse.researchData.noResearchData"}
 	</p>
-    <pkp-button
+    {* <pkp-button
 		v-if="submission.status !== getConstant('STATUS_PUBLISHED')"
 		@click="$modal.show('uploadResearchData')"
 	>
@@ -75,5 +75,5 @@
 				<pkp-form style="margin: -1rem" v-bind="components.datasetMetadata" @set="set" @success="location.reload()"></pkp-form>
 			</div>
 		</modal-content>
-	</modal>
+	</modal> *}
 </section>

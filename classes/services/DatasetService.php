@@ -3,12 +3,15 @@
 namespace APP\plugins\generic\dataverse\classes\services;
 
 use APP\submission\Submission;
+use APP\core\Application;
 use PKP\db\DAORegistry;
+use PKP\security\Role;
 use APP\log\event\SubmissionEventLogEntry;
 use APP\plugins\generic\dataverse\classes\services\DataverseService;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 
@@ -102,7 +105,7 @@ class DatasetService extends DataverseService
 
     public function delete(DataverseStudy $study, ?string $deleteMessage): void
     {
-        $submission = Services::get('submission')->get($study->getSubmissionId());
+        $submission = Repo::submission()->get($study->getSubmissionId());
 
         try {
             $dataverseClient = new DataverseClient();
@@ -120,29 +123,26 @@ class DatasetService extends DataverseService
             return;
         }
 
-        DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
+        Repo::dataverseStudy()->delete($study);
 
         $publication = $submission->getCurrentPublication();
         $dataStatementTypes = $publication->getData('dataStatementTypes');
 
-        if (($key = array_search(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) !== false) {
+        if (($key = array_search(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) !== false) {
             unset($dataStatementTypes[$key]);
             sort($dataStatementTypes);
         }
 
-        $request = \Application::get()->getRequest();
-        $newPublication = Services::get('publication')->edit(
-            $publication,
-            ['dataStatementTypes' => $dataStatementTypes],
-            $request
-        );
+        Repo::publication()->edit($publication, ['dataStatementTypes' => $dataStatementTypes]);
 
+        $request = Application::get()->getRequest();
         $router = $request->getRouter();
         $handler = $router->getHandler();
-        $userRoles = (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
+        $userRoles = (array) $handler->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES);
 
-        if (in_array(ROLE_ID_MANAGER, $userRoles)) {
-            $this->sendEmailToDatasetAuthor($request, $dataset, $submission, $deleteMessage);
+        if (in_array(Role::ROLE_ID_MANAGER, $userRoles)) {
+            error_log('Aqui ele enviaria e-mail pro autor');
+            // $this->sendEmailToDatasetAuthor($request, $dataset, $submission, $deleteMessage);
         }
 
         $this->registerEventLog(
@@ -153,7 +153,7 @@ class DatasetService extends DataverseService
 
     public function publish(DataverseStudy $study): void
     {
-        $submission = Services::get('submission')->get($study->getSubmissionId());
+        $submission = Repo::submission()->get($study->getSubmissionId());
 
         try {
             $dataverseClient = new DataverseClient();
