@@ -210,7 +210,7 @@ class DatasetHandler extends APIHandler
         $dataset = $datasetFactory->getDataset();
         $dataset->setTitle($requestParams['datasetTitle']);
         $dataset->setDescription($requestParams['datasetDescription']);
-        $dataset->setKeywords($requestParams['datasetKeywords'][$locale]);
+        $dataset->setKeywords((array) $requestParams['datasetKeywords'][$locale]);
         $dataset->setSubject($requestParams['datasetSubject']);
         $dataset->setLicense($requestParams['datasetLicense']);
 

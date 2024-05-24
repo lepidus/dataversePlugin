@@ -144,7 +144,35 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#dataStatement-button').click();
 		cy.get('input[name="researchDataSubmitted"]').should('not.be.checked');
     });
-    //Dataset adding
+    it('Author can upload research data in workflow', function () {
+        cy.login('eostrom', null, 'publicknowledge');
+        cy.findSubmission('myQueue', 'Test for dataset deletion');
+        
+        cy.get('#publication-button').click();
+        cy.get('#datasetTab-button').click();
+
+        cy.contains('button', 'Upload research data').click();
+        cy.contains('button', 'Add research data').click();
+        cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
+				fileContent,
+				fileName: 'example.json',
+				mimeType: 'application/json',
+				encoding: 'base64',
+			});
+		});
+        cy.wait(1000);
+		cy.get('input[name="termsOfUse"]').check();
+		cy.get('form:visible button:contains("Save")').click();
+
+        cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
+        cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
+        cy.get('button:visible:contains("Save")').click();
+        cy.wait(2000);
+        cy.get('.modal__panel .pkpFormPage__status:contains("Saved")');
+
+        cy.contains('h1', 'Research data');
+    });
     //Actions were written in submission's activity log
     //Author can't perform actions without permissions granted
     //Checks options for publish dataset on submission publishing/posting - Editor
