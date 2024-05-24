@@ -129,7 +129,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetFiles').should('not.include.text', 'example.json');
         cy.get('#datasetTab-button .pkpBadge').contains('1');
     });
-    it('Research data deletion in workflow', function () {
+    it('Author can delete research data in workflow', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
@@ -137,16 +137,13 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetTab-button').click();
         
         cy.contains('Delete research data').click();
-        cy.setTinyMceContent('deleteDataset-deleteMessage-control', 'Your research data has been deleted.');
-		cy.get('#deleteDataset-deleteMessage-control').click();
-		cy.contains('Delete and send email').click();
+		cy.get('.modal__panel button:contains("Delete research data")').click();
+        cy.wait(3000);
 		
-        cy.wait(2000);
         cy.contains('No research data transferred.');
         cy.get('#dataStatement-button').click();
 		cy.get('input[name="researchDataSubmitted"]').should('not.be.checked');
     });
-    //Dataset deletion
     //Dataset adding
     //Actions were written in submission's activity log
     //Author can't perform actions without permissions granted

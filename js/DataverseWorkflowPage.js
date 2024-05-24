@@ -50,27 +50,32 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             if (this.canSendEmail) {
                 this.$modal.show('deleteDataset');
             } else {
-                self = this;
                 this.openDialog({
-                    cancelLabel: this.__('common.no'),
-                    modalName: 'delete',
+                    name: 'deleteDatasetAuthor',
                     title: this.deleteDatasetLabel,
                     message: this.confirmDeleteDatasetMessage,
-                    callback: () => {
-                        $.ajax({
-                            url: this.components.datasetMetadata.action,
-                            type: 'POST',
-                            headers: {
-                                'X-Csrf-Token': pkp.currentUser.csrfToken,
-                                'X-Http-Method-Override': 'DELETE',
-                            },
-                            error: this.ajaxErrorCallback,
-                            success: function (r) {
-                                self.$modal.hide('delete');
-                                location.reload();
-                            },
-                        });
-                    },
+                    actions: [
+                        {
+                            label: this.deleteDatasetLabel,
+                            isWarnable: true,
+                            callback: () => {
+                                let self = this;
+                                $.ajax({
+                                    url: this.components.datasetMetadata.action,
+                                    type: 'POST',
+                                    headers: {
+                                        'X-Csrf-Token': pkp.currentUser.csrfToken,
+                                        'X-Http-Method-Override': 'DELETE',
+                                    },
+                                    error: self.ajaxErrorCallback,
+                                    success: function (r) {
+                                        self.$modal.hide('deleteDatasetAuthor');
+                                        location.reload();
+                                    },
+                                });
+                            }
+                        }
+                    ]
                 });
             }
         },
