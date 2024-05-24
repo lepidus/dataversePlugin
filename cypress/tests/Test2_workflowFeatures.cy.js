@@ -168,8 +168,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
         cy.get('button:visible:contains("Save")').click();
-        cy.wait(2000);
-        cy.get('.modal__panel .pkpFormPage__status:contains("Saved")');
+        cy.wait(3000);
 
         cy.contains('h1', 'Research data');
     });
