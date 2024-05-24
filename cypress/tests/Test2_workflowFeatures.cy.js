@@ -194,7 +194,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		}
         
         cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', 'Test for dataset deletion');
+        cy.findSubmission('myQueue', submissionData.title);
 
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
