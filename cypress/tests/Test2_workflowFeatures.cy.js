@@ -207,8 +207,51 @@ describe('Dataverse Plugin - Workflow features', function () {
 
 		cy.get('#datasetFiles .listPanel__item button:contains(Delete)').should('be.disabled');
 	});
-    //Editor can delete dataset
-    //Editor can upload research data in workflow
+    it('Editor can delete research data in workflow', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submissionData.title);
+        
+        cy.get('#publication-button').click();
+        cy.get('#datasetTab-button').click();
+        
+        cy.contains('Delete research data').click();
+        cy.getTinyMceContent('deleteDataset-deleteMessage-control')
+            .should('include', 'The research data from the manuscript submission "' + submissionData.title + '" has been removed');
+		cy.get('.modal__panel button:contains("Delete and send email")').click();
+        cy.wait(3000);
+		
+        cy.contains('No research data transferred.');
+        cy.get('#dataStatement-button').click();
+		cy.get('input[name="researchDataSubmitted"]').should('not.be.checked');
+    });
+    it('Editor can upload research data in workflow', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submissionData.title);
+        
+        cy.get('#publication-button').click();
+        cy.get('#datasetTab-button').click();
+
+        cy.contains('button', 'Upload research data').click();
+        cy.contains('button', 'Add research data').click();
+        cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
+				fileContent,
+				fileName: 'example.json',
+				mimeType: 'application/json',
+				encoding: 'base64',
+			});
+		});
+        cy.wait(1000);
+		cy.get('input[name="termsOfUse"]').check();
+		cy.get('form:visible button:contains("Save")').click();
+
+        cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
+        cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
+        cy.get('button:visible:contains("Save")').click();
+        cy.wait(3000);
+
+        cy.contains('h1', 'Research data');
+    });
     //Checks options for publish dataset on submission publishing/posting - Editor
     //Checks can publish dataset after publishing (finally does it)
 });
