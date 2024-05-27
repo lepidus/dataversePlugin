@@ -1,3 +1,8 @@
+msgid "emails.datasetDeleteNotification.name"
+msgstr "Dataset deletion notification"
+
+msgid "emails.datasetDeleteNotification.description"
+msgstr "Email template used to notify the author about the research data deleting."
 
 msgid "emails.datasetDeleteNotification.subject"
 msgstr "Research data delete notification"
@@ -9,7 +14,3 @@ msgstr ""
 "One of the possible reasons for this is that the submitted files do not qualify as research data.<br />\n"
 "<br />\n"
 "Access the submission and review the data statement options in the <a href=\"{$dataStatementUrl}\"> Data Statement </a> tab."
-
-msgid "emails.datasetDeleteNotification.description"
-msgstr ""
-"Email template used to notify the author about the research data deleting."

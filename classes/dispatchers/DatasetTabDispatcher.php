@@ -203,7 +203,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
             $this->initDatasetMetadataForm($templateMgr, $datasetApiUrl, 'PUT', $dataset);
             $this->initDatasetFilesList($templateMgr, $submission, $fileListApiUrl, $fileActionApiUrl, $datasetFiles);
 
-            $deleteDatasetForm = $this->getDeleteDatasetForm($datasetApiUrl, $context);
+            $defaultEmailBody = $this->getDeleteDatasetEmailBody($submission, $dataverseCollection, $datasetStatementUrl);
+            $deleteDatasetForm = $this->getDeleteDatasetForm($context, $datasetApiUrl, $defaultEmailBody);
             $this->addComponent($templateMgr, $deleteDatasetForm);
 
             $templateMgr->setState([
@@ -257,18 +258,22 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $this->addComponent($templateMgr, $datasetFilesListPanel);
     }
 
-    public function getDeleteDatasetForm($apiUrl, $context): FormComponent
+    private function getDeleteDatasetEmailBody($submission, $dataverseCollection, $datasetStatementUrl): string
     {
-        // $mail = new MailTemplate('DATASET_DELETE_NOTIFICATION', null, $context, false);
-        // $mail->assignParams([
-        //     'submissionTitle' => htmlspecialchars($submission->getLocalizedFullTitle()),
-        //     'dataverseName' => $dataverseCollection->getName(),
-        //     'dataStatementUrl' => $datasetStatementUrl,
-        // ]);
-        // $mail->replaceParams();
+        return __(
+            'emails.datasetDeleteNotification.body',
+            [
+                'submissionTitle' => htmlspecialchars($submission->getLocalizedFullTitle()),
+                'dataverseName' => $dataverseCollection->getName(),
+                'dataStatementUrl' => $datasetStatementUrl,
+            ]
+        );
+    }
 
+    public function getDeleteDatasetForm($context, $datasetApiUrl, $defaultEmailBody): FormComponent
+    {
         $locales = $this->getFormLocales($context);
-        $deleteDatasetForm = new FormComponent('deleteDataset', 'DELETE', $apiUrl, $locales);
+        $deleteDatasetForm = new FormComponent('deleteDataset', 'DELETE', $datasetApiUrl, $locales);
         $deleteDatasetForm->addPage([
             'id' => 'default',
             'submitButton' => [
@@ -279,7 +284,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'pageId' => 'default',
         ])->addField(new \PKP\components\forms\FieldRichTextarea('deleteMessage', [
             'label' => __('plugins.generic.dataverse.researchData.delete.emailNotification'),
-            'value' => 'Batatinha quando nasce...',
+            'value' => $defaultEmailBody,
             'groupId' => 'default'
         ]));
 

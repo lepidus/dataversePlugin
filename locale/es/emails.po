@@ -1,3 +1,8 @@
+msgid "emails.datasetDeleteNotification.name"
+msgstr "Notificación de eliminación de los datos de investigación"
+
+msgid "emails.datasetDeleteNotification.description"
+msgstr "Plantilla de correo electrónico utilizada para notificar al autor sobre la eliminación de los datos de investigación."
 
 msgid "emails.datasetDeleteNotification.subject"
 msgstr "Notificación de eliminación de los datos de investigación"
@@ -9,7 +14,3 @@ msgstr ""
 "Una de las posibles causas de esto es que los archivos enviados no califican como datos de investigación.<br />\n"
 "<br />\n"
 "Accede al envío y revisa las opciones de declaración de datos en la pestaña <a href=\"{$dataStatementUrl}\"> Declaración de datos </a>."
-
-msgid "emails.datasetDeleteNotification.description"
-msgstr ""
-"Plantilla de correo electrónico utilizada para notificar al autor sobre la eliminación de los datos de investigación."
