@@ -81,29 +81,34 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
 
         openPublishDatasetModal() {
-            self = this;
             this.openDialog({
-                cancelLabel: this.__('common.no'),
-                modalName: 'publish',
+                name: 'publishDataset',
                 title: this.publishDatasetLabel,
                 message: this.confirmPublishDatasetMessage,
-                callback: () => {
-                    $.ajax({
-                        url: this.components.datasetMetadata.action + '/publish',
-                        type: 'POST',
-                        headers: {
-                            'X-Csrf-Token': pkp.currentUser.csrfToken,
-                            'X-Http-Method-Override': 'PUT',
-                        },
-                        error: this.ajaxErrorCallback,
-                        success: function (r) {
-                            setTimeout(() => {
-                                self.dataset = r;
-                            }, 2500);
-                            self.$modal.hide('publish');
-                        },
-                    });
-                },
+                actions: [
+                    {
+                        label: this.__('common.yes'),
+                        isWarnable: false,
+                        callback: () => {
+                            let self = this;
+                            $.ajax({
+                                url: this.components.datasetMetadata.action + '/publish',
+                                type: 'POST',
+                                headers: {
+                                    'X-Csrf-Token': pkp.currentUser.csrfToken,
+                                    'X-Http-Method-Override': 'PUT',
+                                },
+                                error: this.ajaxErrorCallback,
+                                success: function (r) {
+                                    setTimeout(() => {
+                                        self.dataset = r;
+                                    }, 2500);
+                                    self.$modal.hide('publishDataset');
+                                },
+                            });
+                        }
+                    }
+                ]
             });
         },
 

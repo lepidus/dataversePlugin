@@ -299,7 +299,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Editor publishes dataset after submission publishing', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('active', submissionData.title);
+        cy.findSubmission('archive', submissionData.title);
 
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
@@ -307,10 +307,9 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('button:contains("Publish research data")').click();
         
         const publishMsg = 'Do you really want to publish the research data related to this submission? This action cannot be undone.'
-			+ 'Before proceeding, make sure they are suitable for publication in '
-			+ dataverseServerName;
-		cy.get('div[data-modal="publish"]').contains(publishMsg);
-		cy.get('div[data-modal="publish"] button:contains("Yes")').click();
+			+ 'Before proceeding, make sure they are suitable for publication in ';
+		cy.get('div[data-modal="publishDataset"]').contains(publishMsg);
+		cy.get('div[data-modal="publishDataset"] button:contains("Yes")').click();
 		cy.wait(1000);
 
 		cy.get('.value > p').contains('V1');

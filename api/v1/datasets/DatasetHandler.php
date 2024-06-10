@@ -13,6 +13,7 @@ use APP\core\Application;
 use APP\log\event\SubmissionEventLogEntry;
 use PKP\core\Core;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
@@ -154,7 +155,7 @@ class DatasetHandler extends APIHandler
 
     public function publishDataset($slimRequest, $response, $args)
     {
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudy($args['studyId']);
+        $study = Repo::dataverseStudy()->get($args['studyId']);
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
