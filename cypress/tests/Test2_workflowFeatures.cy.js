@@ -252,6 +252,50 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.contains('h1', 'Research data');
     });
-    //Checks options for publish dataset on submission publishing/posting - Editor
+    it('Editor can publish dataset on submission publishing/posting', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submissionData.title);
+        
+        if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
+			cy.get('#workflow-button').click();
+            
+            cy.clickDecision('Send for Review');
+			cy.recordDecisionSendToReview('Send for Review', ['Elinor Ostrom'], []);
+			cy.assignReviewer('Julie Janssen');
+			
+            cy.clickDecision('Accept Submission');
+            cy.recordDecisionAcceptSubmission(['Elinor Ostrom'], [], []);
+            
+            cy.clickDecision('Send To Production');
+            cy.recordDecisionSendToProduction(['Elinor Ostrom'], []);
+			cy.isActiveStageTab('Production');
+			
+            cy.get('#publication-button').click();
+			cy.get('div#publication button:contains("Schedule For Publication")').click();
+			cy.wait(1000);
+			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
+			cy.get('div[id^="assign-"] button:contains("Save")').click();
+			cy.contains('All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?');
+		} else {
+			cy.get('#publication-button').click();
+			cy.get('div#publication button:contains("Post")').click();
+		}
+
+        cy.get('.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
+		cy.contains(/This submission contains deposited research data that is not yet public: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
+		cy.contains('In case you choose to publish them, make sure they are suitable for publication in');
+		cy.contains('Would you like to publish the research data?');
+
+		cy.get('input[name="shouldPublishResearchData"][value="1"]').parent().contains("Yes");
+		cy.get('input[name="shouldPublishResearchData"][value="0"]').parent().contains("No");
+		cy.get('input[name="shouldPublishResearchData"][value="1"]').should('not.be.checked');
+		cy.get('input[name="shouldPublishResearchData"][value="0"]').should('not.be.checked');
+
+        cy.get('input[name="shouldPublishResearchData"][value="0"]').click();
+        cy.get('.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
+        cy.wait(1000);
+
+        cy.get('.pkpPublication__statusPublished').should('have.text', 'Published');
+    });
     //Checks can publish dataset after publishing (finally does it)
 });
