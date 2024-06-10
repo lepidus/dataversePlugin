@@ -252,7 +252,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.contains('h1', 'Research data');
     });
-    it('Editor can publish dataset on submission publishing/posting', function () {
+    it('Editor can publish dataset on submission publishing', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('active', submissionData.title);
         
@@ -297,5 +297,26 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('.pkpPublication__statusPublished').should('have.text', 'Published');
     });
-    //Checks can publish dataset after publishing (finally does it)
+    it('Editor publishes dataset after submission publishing', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submissionData.title);
+
+        cy.get('#publication-button').click();
+        cy.get('#datasetTab-button').click();
+
+        cy.get('button:contains("Publish research data")').click();
+        
+        const publishMsg = 'Do you really want to publish the research data related to this submission? This action cannot be undone.'
+			+ 'Before proceeding, make sure they are suitable for publication in '
+			+ dataverseServerName;
+		cy.get('div[data-modal="publish"]').contains(publishMsg);
+		cy.get('div[data-modal="publish"] button:contains("Yes")').click();
+		cy.wait(1000);
+
+		cy.get('.value > p').contains('V1');
+		cy.contains('Publish research data').should('not.exist');
+		cy.get('button:contains("Delete research data")').should('be.disabled');
+		cy.get('button:contains("Add research data")').should('be.disabled');
+		cy.get('#dataset_metadata button:contains("Save")').should('be.disabled');
+    });
 });
