@@ -3,12 +3,22 @@
 namespace APP\plugins\generic\dataverse\classes\services;
 
 use APP\submission\Submission;
+use APP\core\Application;
+use PKP\core\Core;
+use APP\core\Request;
 use PKP\db\DAORegistry;
+use PKP\security\Role;
+use PKP\mail\Mailable;
+use Illuminate\Support\Facades\Mail;
+use APP\notification\Notification;
+use APP\notification\NotificationManager;
 use APP\log\event\SubmissionEventLogEntry;
+use PKP\log\SubmissionEmailLogEntry;
 use APP\plugins\generic\dataverse\classes\services\DataverseService;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 
@@ -80,8 +90,8 @@ class DatasetService extends DataverseService
             $dataset->setData($name, $value);
         }
 
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getByPersistentId($dataset->getPersistentId());
-        $submission = Services::get('submission')->get($study->getSubmissionId());
+        $study = Repo::dataverseStudy()->getByPersistentId($dataset->getPersistentId());
+        $submission = Repo::submission()->get($study->getSubmissionId());
 
         try {
             $dataverseClient->getDatasetActions()->update($dataset);
@@ -102,7 +112,7 @@ class DatasetService extends DataverseService
 
     public function delete(DataverseStudy $study, ?string $deleteMessage): void
     {
-        $submission = Services::get('submission')->get($study->getSubmissionId());
+        $submission = Repo::submission()->get($study->getSubmissionId());
 
         try {
             $dataverseClient = new DataverseClient();
@@ -120,28 +130,24 @@ class DatasetService extends DataverseService
             return;
         }
 
-        DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
+        Repo::dataverseStudy()->delete($study);
 
         $publication = $submission->getCurrentPublication();
         $dataStatementTypes = $publication->getData('dataStatementTypes');
 
-        if (($key = array_search(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) !== false) {
+        if (($key = array_search(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) !== false) {
             unset($dataStatementTypes[$key]);
             sort($dataStatementTypes);
         }
 
-        $request = \Application::get()->getRequest();
-        $newPublication = Services::get('publication')->edit(
-            $publication,
-            ['dataStatementTypes' => $dataStatementTypes],
-            $request
-        );
+        Repo::publication()->edit($publication, ['dataStatementTypes' => $dataStatementTypes]);
 
+        $request = Application::get()->getRequest();
         $router = $request->getRouter();
         $handler = $router->getHandler();
-        $userRoles = (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
+        $userRoles = (array) $handler->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES);
 
-        if (in_array(ROLE_ID_MANAGER, $userRoles)) {
+        if (in_array(Role::ROLE_ID_MANAGER, $userRoles)) {
             $this->sendEmailToDatasetAuthor($request, $dataset, $submission, $deleteMessage);
         }
 
@@ -153,7 +159,7 @@ class DatasetService extends DataverseService
 
     public function publish(DataverseStudy $study): void
     {
-        $submission = Services::get('submission')->get($study->getSubmissionId());
+        $submission = Repo::submission()->get($study->getSubmissionId());
 
         try {
             $dataverseClient = new DataverseClient();
@@ -189,62 +195,40 @@ class DatasetService extends DataverseService
         ?string $deleteMessage
     ): void {
         $context = $request->getContext();
-
-        $mailTemplate = 'DATASET_DELETE_NOTIFICATION';
         $datasetContact = $dataset->getContact();
+        $emailTemplate = Repo::emailTemplate()->getByKey(
+            $context->getId(),
+            'DATASET_DELETE_NOTIFICATION'
+        );
 
-        $mail = $this->getMailTemplate($mailTemplate, $context);
+        $email = new Mailable();
+        $email->from($context->getData('contactEmail'), $context->getData('contactName'));
+        $email->to([['name' => $datasetContact->getName(), 'email' => $datasetContact->getEmail()]]);
+        $email->subject($emailTemplate->getLocalizedData('subject'));
+        $email->body($deleteMessage);
 
-        $mail->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
-
-        $mail->setRecipients([[
-            'name' => $datasetContact->getName(),
-            'email' => $datasetContact->getEmail()
-        ]]);
-
-        $mail->setBody($deleteMessage);
-
-        if (!$mail->send()) {
-            import('classes.notification.NotificationManager');
+        try {
+            Mail::send($email);
+            $this->logEmail($request, $email, $submission);
+        } catch (\Exception $e) {
             $notificationMgr = new NotificationManager();
-            $notificationMgr->createTrivialNotification($request->getUser()->getId(), NOTIFICATION_TYPE_ERROR, array('contents' => __('email.compose.error')));
-        } else {
-            $this->logEmail($request, $mail, $submission);
+            $notificationMgr->createTrivialNotification(
+                $request->getUser()->getId(),
+                Notification::NOTIFICATION_TYPE_ERROR,
+                ['contents' => __('email.compose.error')]
+            );
         }
     }
 
-    private function getMailTemplate(string $emailKey, Context $context = null): MailTemplate
+    private function logEmail($request, $email, $submission): void
     {
-        import('lib.pkp.classes.mail.MailTemplate');
-        return new MailTemplate($emailKey, null, $context, false);
-    }
-
-    private function logEmail(?Request $request, MailTemplate $mail, Submission $submission): void
-    {
-        $mail->replaceParams();
-
-        import('lib.pkp.classes.log.SubmissionEmailLogEntry');
-        $logDao = DAORegistry::getDAO('SubmissionEmailLogDAO');
-        $entry = $logDao->newDataObject();
-
-        $entry->setEventType(SUBMISSION_EMAIL_EDITOR_NOTIFY_AUTHOR);
-        $entry->setAssocId($submission->getId());
-        $entry->setDateSent(Core::getCurrentDate());
-
-        if ($request) {
-            $user = $request->getUser();
-            $entry->setSenderId($user == null ? 0 : $user->getId());
-        } else {
-            $entry->setSenderId(0);
-        }
-
-        $entry->setSubject($mail->getSubject());
-        $entry->setBody($mail->getBody());
-        $entry->setFrom($mail->getFromString(false));
-        $entry->setRecipients($mail->getRecipientString());
-        $entry->setCcs($mail->getCcString());
-        $entry->setBccs($mail->getBccString());
-
-        $logEntryId = $logDao->insertObject($entry);
+        $user = ($request) ? $request->getUser() : null;
+        $submissionEmailLogDao = DAORegistry::getDAO('SubmissionEmailLogDAO');
+        $submissionEmailLogDao->logMailable(
+            SubmissionEmailLogEntry::SUBMISSION_EMAIL_EDITOR_NOTIFY_AUTHOR,
+            $email,
+            $submission,
+            $user
+        );
     }
 }

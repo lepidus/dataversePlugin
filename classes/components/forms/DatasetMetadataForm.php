@@ -18,12 +18,15 @@ class DatasetMetadataForm extends FormComponent
         $this->id = 'datasetMetadata';
         $this->action = $action;
         $this->method = $method;
-        $this->locales = $this->getFormLocales();
+        $this->locales = $this->mapCurrentLocale();
 
         $dataverseMetadata = new DataverseMetadata();
         $dataverseLicenses = $dataverseMetadata->getDataverseLicenses();
 
         if ($page == 'workflow') {
+            $mappedKeywords = (array) $dataset->getKeywords() ?? [];
+            $mappedKeywords = [Locale::getLocale() => $mappedKeywords];
+
             $this->addField(new FieldText('datasetTitle', [
                 'label' => __('plugins.generic.dataverse.metadataForm.title'),
                 'isRequired' => true,
@@ -41,9 +44,9 @@ class DatasetMetadataForm extends FormComponent
                 'label' => __('plugins.generic.dataverse.metadataForm.keyword'),
                 'tooltip' => __('manager.setup.metadata.keywords.description'),
                 'apiUrl' => $this->getVocabSuggestionUrlBase(),
+                'isMultilingual' => true,
                 'locales' => $this->locales,
-                'selected' => (array) $dataset->getKeywords() ?? [],
-                'value' => (array) $dataset->getKeywords() ?? []
+                'value' => $mappedKeywords
             ]));
         }
 
@@ -72,17 +75,14 @@ class DatasetMetadataForm extends FormComponent
         return $request->getDispatcher()->url($request, Application::ROUTE_API, $contextPath, 'vocabs', null, null, ['vocab' => 'submissionKeyword']);
     }
 
-    private function getFormLocales(): array
+    private function mapCurrentLocale(): array
     {
-        $context = Application::get()->getRequest()->getContext();
-        $supportedFormLocales = $context->getSupportedFormLocales();
+        $localeKey = Locale::getLocale();
         $localeNames = array_map(fn ($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
 
-        $formLocales = array_map(function ($localeKey) use ($localeNames) {
-            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-        }, $supportedFormLocales);
-
-        return $formLocales;
+        return [
+            ['key' => $localeKey, 'label' => $localeNames[$localeKey]]
+        ];
     }
 
     private function mapLicensesForDisplay(array $licenses): array
@@ -92,5 +92,13 @@ class DatasetMetadataForm extends FormComponent
             $mappedLicenses[] = ['label' => $license['name'], 'value' => $license['name']];
         }
         return $mappedLicenses;
+    }
+
+    public function getConfig()
+    {
+        $config = parent::getConfig();
+        $config['primaryLocale'] = Locale::getLocale();
+
+        return $config;
     }
 }

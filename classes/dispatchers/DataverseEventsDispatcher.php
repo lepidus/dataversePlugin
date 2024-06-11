@@ -3,10 +3,19 @@
 namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
 use PKP\plugins\Hook;
+use APP\core\Application;
+use PKP\db\DAORegistry;
+use PKP\components\forms\FormComponent;
 use Illuminate\Support\Facades\Event;
-use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
 use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileHandler;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\observers\listeners\DatasetDepositOnSubmission;
+use APP\plugins\generic\dataverse\classes\services\DatasetService;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 class DataverseEventsDispatcher extends DataverseDispatcher
 {
@@ -17,10 +26,10 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         Hook::add('Schema::get::draftDatasetFile', [$this, 'loadDraftDatasetFileSchema']);
         Hook::add('Dispatcher::dispatch', [$this, 'setupDataverseAPIHandlers']);
         Hook::add('Schema::get::submission', [$this, 'modifySubmissionSchema']);
+        Hook::add('Form::config::before', [$this, 'addDatasetPublishNoticeInPublishing']);
+        Hook::add('Publication::publish', [$this, 'publishDeposit'], Hook::SEQUENCE_CORE);
         //Hook::add('LoadComponentHandler', [$this, 'setupDataverseHandlers']);
-        // HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
         // HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
-        // HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
         // HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
         // HookRegistry::register('initiateexternalreviewform::display', array($this, 'addSelectDataFilesForReview'));
         // HookRegistry::register('initiateexternalreviewform::execute', array($this, 'saveSelectedDataFilesForReview'));
@@ -50,60 +59,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         return false;
     }
 
-    public function publishDeposit(string $hookName, array $params): void
-    {
-        $submission = $params[2];
-        $request = Application::get()->getRequest();
-
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
-        if ($configuration->getDatasetPublish() === DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
-            return;
-        }
-
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
-        if (is_null($study)) {
-            return;
-        }
-
-        $shouldPublish = $request->getUserVar('shouldPublishResearchData');
-        if (!is_null($shouldPublish) && $shouldPublish == 0) {
-            return;
-        }
-
-        $datasetService = new DatasetService();
-        $datasetService->publish($study);
-    }
-
-    public function publishInEditorAction(string $hookName, array $params): void
-    {
-        $submission = $params[0];
-        $decision = $params[1];
-        $request = Application::get()->getRequest();
-
-        if ($decision['decision'] !== SUBMISSION_EDITOR_DECISION_ACCEPT) {
-            return;
-        }
-
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
-        if ($configuration->getDatasetPublish() !== DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
-            return;
-        }
-
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
-        if (is_null($study)) {
-            return;
-        }
-
-        $shouldPublish = $request->getUserVar('shouldPublishResearchData');
-        if (!is_null($shouldPublish) && $shouldPublish == 0) {
-            return;
-        }
-
-        $datasetService = new DatasetService();
-        $datasetService->publish($study);
-    }
-
-    public function addDatasetPublishNoticeInPost(string $hookName, \PKP\components\forms\FormComponent $form): void
+    public function addDatasetPublishNoticeInPublishing(string $hookName, FormComponent $form): void
     {
         if ($form->id !== 'publish' || !empty($form->errors)) {
             return;
@@ -111,12 +67,12 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
         $contextId = $form->submissionContext->getId();
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
-        if ($configuration->getDatasetPublish() === DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
+        if ($configuration->getDatasetPublish() === DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
             return;
         }
 
         $submissionId = $form->publication->getData('submissionId');
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submissionId);
+        $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
         if (empty($study)) {
             return;
         }
@@ -161,6 +117,30 @@ class DataverseEventsDispatcher extends DataverseDispatcher
                 'groupId' => 'default',
             ]));
         }
+    }
+
+    public function publishDeposit(string $hookName, array $params): void
+    {
+        $submission = $params[2];
+        $request = Application::get()->getRequest();
+
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
+        if ($configuration->getDatasetPublish() === DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
+            return;
+        }
+
+        $study = Repo::dataverseStudy()->getBySubmissionId($submission->getId());
+        if (is_null($study)) {
+            return;
+        }
+
+        $shouldPublish = $request->getUserVar('shouldPublishResearchData');
+        if (!is_null($shouldPublish) && $shouldPublish == 0) {
+            return;
+        }
+
+        $datasetService = new DatasetService();
+        $datasetService->publish($study);
     }
 
     public function addDatasetPublishNoticeInEditorAction(string $hookName, array $params): ?string
@@ -223,6 +203,35 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $fbv->setForm(null);
 
         return $output;
+    }
+
+    public function publishInEditorAction(string $hookName, array $params): void
+    {
+        $submission = $params[0];
+        $decision = $params[1];
+        $request = Application::get()->getRequest();
+
+        if ($decision['decision'] !== SUBMISSION_EDITOR_DECISION_ACCEPT) {
+            return;
+        }
+
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
+        if ($configuration->getDatasetPublish() !== DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
+            return;
+        }
+
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
+        if (is_null($study)) {
+            return;
+        }
+
+        $shouldPublish = $request->getUserVar('shouldPublishResearchData');
+        if (!is_null($shouldPublish) && $shouldPublish == 0) {
+            return;
+        }
+
+        $datasetService = new DatasetService();
+        $datasetService->publish($study);
     }
 
     public function addSelectDataFilesForReview(string $hookName, array $params): ?string
@@ -353,12 +362,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return;
         }
 
-        // Later, on workflow features adaption
-        // if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
-        //     $handler = new DatasetHandler();
-        // } else
-
-        if (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
+        if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
+            $handler = new DatasetHandler();
+        } elseif (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
             $handler = new DraftDatasetFileHandler();
         }
 

@@ -1,24 +1,35 @@
 <?php
 
-use PKP\components\forms\FormComponent;
+namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
-import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
-import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
-import('lib.pkp.classes.submission.SubmissionFile');
+use PKP\plugins\Hook;
+use APP\core\Application;
+use APP\template\TemplateManager;
+use APP\submission\Submission;
+use PKP\db\DAORegistry;
+use PKP\security\Role;
+use PKP\facades\Locale;
+use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
+use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
+use PKP\components\forms\FormComponent;
 
 class DatasetTabDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('Template::Workflow::Publication', array($this, 'addResearchDataTab'));
-        HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
+        Hook::add('Template::Workflow::Publication', [$this, 'addResearchDataTab']);
+        Hook::add('TemplateManager::display', [$this, 'loadResourcesToWorkflow']);
     }
 
     private function getSubmissionStudy(int $submissionId): ?DataverseStudy
     {
-        $dataverseStudyDao = &DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $dataverseStudyDao->getStudyBySubmissionId($submissionId);
-        return $study;
+        return Repo::dataverseStudy()->getBySubmissionId($submissionId);
     }
 
     public function addResearchDataTab(string $hookName, array $params): bool
@@ -26,7 +37,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $templateMgr = &$params[1];
         $output = &$params[2];
 
-        $submission = $templateMgr->get_template_vars('submission');
+        $submission = $templateMgr->getTemplateVars('submission');
 
         $content = $this->getDatasetTabContent($submission);
 
@@ -53,7 +64,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             return $this->plugin->getTemplateResource('datasetTab/datasetData.tpl');
         } catch (DataverseException $e) {
             if ($e->getCode() === 404) {
-                DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
+                Repo::dataverseStudy()->delete($study);
             }
 
             error_log('Dataverse API error: ' . $e->getMessage());
@@ -86,7 +97,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'dataverseWorkflowPage',
             $this->plugin->getPluginFullPath() . '/js/DataverseWorkflowPage.js',
             [
-                'priority' => STYLE_SEQUENCE_LAST,
+                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
                 'contexts' => ['backend']
             ]
         );
@@ -95,7 +106,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'pageComponent' => 'DataverseWorkflowPage',
         ]);
 
-        $submission = $templateMgr->get_template_vars('submission');
+        $submission = $templateMgr->getTemplateVars('submission');
         $study = $this->getSubmissionStudy($submission->getId());
 
         if (is_null($study)) {
@@ -115,32 +126,27 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $context = $request->getContext();
         $user = $request->getUser();
 
-        $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
+        $metadataFormAction = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
+        $fileListApiUrl = $request
+            ->getDispatcher()
+            ->url($request, Application::ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
+        $fileActionApiUrl = $request
+            ->getDispatcher()
+            ->url($request, Application::ROUTE_API, $context->getPath(), 'draftDatasetFiles');
 
-        import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
+        $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
 
-        $fileListApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
-
-        $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
-
-        $items = array_map(function ($draftDatasetFile) {
-            return $draftDatasetFile->getAllData();
+        $datasetFiles = array_map(function ($draftDatasetFile) use ($fileActionApiUrl) {
+            $fileVars = $draftDatasetFile->getAllData();
+            $fileVars['downloadUrl'] = $fileActionApiUrl . '/' . $draftDatasetFile->getFileId() . '/download';
+            return $fileVars;
         }, $draftDatasetFiles);
-
-        ksort($items);
-
-        $params = [
-            'submissionId' => $submission->getId(),
-            'userId' => $user->getId()
-        ];
-
-        $fileFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, $params);
+        ksort($datasetFiles);
 
         $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
-        $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
-        $this->initDatasetFileForm($templateMgr, $fileFormAction);
+        $this->initDatasetFilesList($templateMgr, $submission, $fileListApiUrl, $fileActionApiUrl, $datasetFiles);
     }
 
     private function setupResearchDataUpdate(Submission $submission, DataverseStudy $study): void
@@ -150,14 +156,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $context = $request->getContext();
         $dispatcher = $request->getDispatcher();
         $router = $request->getRouter();
-        $userRoles = (array) $router->getHandler()->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
+        $userRoles = (array) $router->getHandler()->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES);
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($context->getId());
-
-        $supportedFormLocales = $context->getSupportedFormLocales();
-        $localeNames = AppLocale::getAllLocales();
-        $locales = array_map(function ($localeKey) use ($localeNames) {
-            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-        }, $supportedFormLocales);
 
         try {
             $dataverseClient = new DataverseClient();
@@ -167,28 +167,25 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
             $datasetApiUrl = $dispatcher->url(
                 $request,
-                ROUTE_API,
+                Application::ROUTE_API,
                 $context->getPath(),
                 'datasets/' . $study->getId()
             );
             $fileListApiUrl = $dispatcher->url(
                 $request,
-                ROUTE_API,
+                Application::ROUTE_API,
                 $context->getPath(),
-                'datasets/' . $study->getId() . '/files',
-                null,
-                null,
-                ['persistentId' => $study->getPersistentId()]
+                'datasets/' . $study->getId() . '/files'
             );
-            $fileFormAction = $dispatcher->url(
+            $fileActionApiUrl = $dispatcher->url(
                 $request,
-                ROUTE_API,
+                Application::ROUTE_API,
                 $context->getPath(),
                 'datasets/' . $study->getId() . '/file'
             );
             $datasetStatementUrl = $dispatcher->url(
                 $request,
-                ROUTE_PAGE,
+                Application::ROUTE_PAGE,
                 null,
                 'authorDashboard',
                 'submission',
@@ -197,24 +194,17 @@ class DatasetTabDispatcher extends DataverseDispatcher
                 '#publication/dataStatement'
             );
 
-            import('lib.pkp.classes.mail.MailTemplate');
-            $mail = new MailTemplate('DATASET_DELETE_NOTIFICATION', null, $context, false);
-            $mail->assignParams([
-                'submissionTitle' => htmlspecialchars($submission->getLocalizedFullTitle()),
-                'dataverseName' => $dataverseCollection->getName(),
-                'dataStatementUrl' => $datasetStatementUrl,
-            ]);
-            $mail->replaceParams();
-
-            $items = array_map(function (DatasetFile $datasetFile) {
-                return $datasetFile->getVars();
+            $datasetFiles = array_map(function ($datasetFile) use ($fileActionApiUrl) {
+                $fileVars = $datasetFile->getVars();
+                $fileVars['downloadUrl'] = $fileActionApiUrl . '?fileId=' . $datasetFile->getId() . '&fileName=' . $datasetFile->getFileName();
+                return $fileVars;
             }, $dataset->getFiles());
 
             $this->initDatasetMetadataForm($templateMgr, $datasetApiUrl, 'PUT', $dataset);
-            $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
-            $this->initDatasetFileForm($templateMgr, $fileFormAction);
+            $this->initDatasetFilesList($templateMgr, $submission, $fileListApiUrl, $fileActionApiUrl, $datasetFiles);
 
-            $deleteDatasetForm = $this->getDeleteDatasetForm($datasetApiUrl, $context, $locales, $mail);
+            $defaultEmailBody = $this->getDeleteDatasetEmailBody($submission, $dataverseCollection, $datasetStatementUrl);
+            $deleteDatasetForm = $this->getDeleteDatasetForm($context, $datasetApiUrl, $defaultEmailBody);
             $this->addComponent($templateMgr, $deleteDatasetForm);
 
             $templateMgr->setState([
@@ -226,82 +216,64 @@ class DatasetTabDispatcher extends DataverseDispatcher
                     'serverName' => $rootDataverseCollection->getName(),
                     'serverUrl' => $configuration->getDataverseServerUrl(),
                 ]),
-                'datasetCitationUrl' => $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
-                'canSendEmail' => in_array(ROLE_ID_MANAGER, $userRoles)
+                'datasetCitationUrl' => $dispatcher->url($request, Application::ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
+                'canSendEmail' => in_array(Role::ROLE_ID_MANAGER, $userRoles)
             ]);
         } catch (DataverseException $e) {
             error_log('Dataverse API error: ' . $e->getMessage());
         }
     }
 
-    private function initDatasetMetadataForm(PKPTemplateManager $templateMgr, string $action, string $method, Dataset $dataset): void
+    private function initDatasetMetadataForm(TemplateManager $templateMgr, string $action, string $method, Dataset $dataset): void
     {
-        $context = Application::get()->getRequest()->getContext();
-
-        $supportedFormLocales = $context->getSupportedFormLocales();
-        $localeNames = AppLocale::getAllLocales();
-        $locales = array_map(function ($localeKey) use ($localeNames) {
-            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-        }, $supportedFormLocales);
-
-        $this->plugin->import('classes.components.forms.DatasetMetadataForm');
-        $datasetMetadataForm = new DatasetMetadataForm($action, $method, $locales, $dataset);
-
+        $datasetMetadataForm = new DatasetMetadataForm($action, $method, $dataset, 'workflow');
         $this->addComponent($templateMgr, $datasetMetadataForm);
     }
 
-    private function initDatasetFilesList($templateMgr, $apiUrl, $items): void
+    private function initDatasetFilesList($templateMgr, $submission, $fileListApiUrl, $fileActionApiUrl, $datasetFiles): void
     {
-        $this->plugin->import('classes.components.listPanel.DatasetFilesListPanel');
+        $templateMgr->addJavaScript(
+            'dataset-files-list-panel',
+            $this->plugin->getPluginFullPath() . '/js/ui/components/DatasetFilesListPanel.js',
+            [
+                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
+                'contexts' => ['backend']
+            ]
+        );
+
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
             __('plugins.generic.dataverse.researchData.files'),
+            $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
-                'apiUrl' => $apiUrl,
-                'items' => $items,
+                'fileListUrl' => $fileListApiUrl,
+                'fileActionUrl' => $fileActionApiUrl,
+                'items' => $datasetFiles,
                 'modalTitle' => __('plugins.generic.dataverse.modal.addFile.title'),
                 'title' => __('plugins.generic.dataverse.researchData'),
             ]
         );
 
         $this->addComponent($templateMgr, $datasetFilesListPanel);
-
-        $templateMgr->setState([
-            'deleteDatasetFileLabel' => __('plugins.generic.dataverse.modal.deleteDatasetFile'),
-            'confirmDeleteMessage' => __('plugins.generic.dataverse.modal.confirmDelete')
-        ]);
     }
 
-    public function initDatasetFileForm($templateMgr, $apiUrl): void
+    private function getDeleteDatasetEmailBody($submission, $dataverseCollection, $datasetStatementUrl): string
     {
-        $request = Application::get()->getRequest();
-        $context = $request->getContext();
-
-        $this->plugin->import('classes.components.forms.DraftDatasetFileForm');
-        $draftDatasetFileForm = new DraftDatasetFileForm($apiUrl, $context);
-
-        $this->addComponent(
-            $templateMgr,
-            $draftDatasetFileForm,
+        return __(
+            'emails.datasetDeleteNotification.body',
             [
-                'errors' => [
-                    'termsOfUse' => [
-                        __('plugins.generic.dataverse.termsOfUse.error')
-                    ]
-                ]
+                'submissionTitle' => htmlspecialchars($submission->getLocalizedFullTitle()),
+                'dataverseName' => $dataverseCollection->getName(),
+                'dataStatementUrl' => $datasetStatementUrl,
             ]
         );
     }
 
-    public function getDeleteDatasetForm(
-        string $apiUrl,
-        Context $context,
-        array $locales,
-        MailTemplate $mail
-    ): FormComponent {
-        $deleteDatasetForm = new FormComponent('deleteDataset', 'DELETE', $apiUrl, $locales);
-
+    public function getDeleteDatasetForm($context, $datasetApiUrl, $defaultEmailBody): FormComponent
+    {
+        $locales = $this->getFormLocales($context);
+        $deleteDatasetForm = new FormComponent('deleteDataset', 'DELETE', $datasetApiUrl, $locales);
         $deleteDatasetForm->addPage([
             'id' => 'default',
             'submitButton' => [
@@ -312,15 +284,26 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'pageId' => 'default',
         ])->addField(new \PKP\components\forms\FieldRichTextarea('deleteMessage', [
             'label' => __('plugins.generic.dataverse.researchData.delete.emailNotification'),
-            'value' => $mail->getBody(),
+            'value' => $defaultEmailBody,
             'groupId' => 'default'
         ]));
-
 
         return $deleteDatasetForm;
     }
 
-    private function addComponent(PKPTemplateManager $templateMgr, $component, $args = []): void
+    private function getFormLocales($context): array
+    {
+        $supportedFormLocales = $context->getSupportedFormLocales();
+        $localeNames = array_map(fn ($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
+
+        $formLocales = array_map(function ($localeKey) use ($localeNames) {
+            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
+        }, $supportedFormLocales);
+
+        return $formLocales;
+    }
+
+    private function addComponent(TemplateManager $templateMgr, $component, $args = []): void
     {
         $workflowComponents = $templateMgr->getState('components');
         $workflowComponents[$component->id] = $component->getConfig();

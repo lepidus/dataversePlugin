@@ -46,133 +46,69 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         }
     },
     methods: {
-        checkTermsOfUse() {
-            $('input[name="termsOfUse"]').on('change', (e) => {
-                this.validateTermsOfUse($(e.target).is(':checked'));
-            });
-        },
-
-        fileFormSuccess(data) {
-            this.refreshItems();
-            this.$modal.hide('fileForm');
-        },
-
-        getFileDownloadUrl(item) {
-            return (
-                this.components.datasetFileForm.action +
-                `?fileId=${item.id}&filename=${item.fileName}`
-            );
-        },
-
-        openAddFileModal() {
-            this.components.datasetFileForm.fields.map((f) => (f.value = ''));
-
-            this.components.datasetFileForm.errors = this.fileFormErrors;
-
-            this.$modal.show('fileForm');
-        },
-
         openDeleteDatasetModal() {
             if (this.canSendEmail) {
                 this.$modal.show('deleteDataset');
             } else {
-                self = this;
                 this.openDialog({
-                    cancelLabel: this.__('common.no'),
-                    modalName: 'delete',
+                    name: 'deleteDatasetAuthor',
                     title: this.deleteDatasetLabel,
                     message: this.confirmDeleteDatasetMessage,
-                    callback: () => {
-                        $.ajax({
-                            url: this.components.datasetMetadata.action,
-                            type: 'POST',
-                            headers: {
-                                'X-Csrf-Token': pkp.currentUser.csrfToken,
-                                'X-Http-Method-Override': 'DELETE',
-                            },
-                            error: this.ajaxErrorCallback,
-                            success: function (r) {
-                                self.$modal.hide('delete');
-                                location.reload();
-                            },
-                        });
-                    },
+                    actions: [
+                        {
+                            label: this.deleteDatasetLabel,
+                            isWarnable: true,
+                            callback: () => {
+                                let self = this;
+                                $.ajax({
+                                    url: this.components.datasetMetadata.action,
+                                    type: 'POST',
+                                    headers: {
+                                        'X-Csrf-Token': pkp.currentUser.csrfToken,
+                                        'X-Http-Method-Override': 'DELETE',
+                                    },
+                                    error: self.ajaxErrorCallback,
+                                    success: function (r) {
+                                        self.$modal.hide('deleteDatasetAuthor');
+                                        location.reload();
+                                    },
+                                });
+                            }
+                        }
+                    ]
                 });
             }
-        },
-
-        openDeleteFileModal(id) {
-            const datasetFile = this.components.datasetFiles.items.find(
-                (d) => d.id === id
-            );
-            if (typeof datasetFile === 'undefined') {
-                this.openDialog({
-                    confirmLabel: this.__('common.ok'),
-                    modalName: 'unknownError',
-                    message: this.__('common.unknownError'),
-                    title: this.__('common.error'),
-                    callback: () => {
-                        this.$modal.hide('unknownError');
-                    },
-                });
-                return;
-            }
-            this.openDialog({
-                cancelLabel: this.__('common.no'),
-                modalName: 'delete',
-                title: this.deleteDatasetFileLabel,
-                message: this.replaceLocaleParams(this.confirmDeleteMessage, {
-                    title: datasetFile.fileName,
-                }),
-                callback: () => {
-                    var self = this;
-                    $.ajax({
-                        url:
-                            this.components.datasetFiles.apiUrl +
-                            '&fileId=' +
-                            id +
-                            '&filename=' +
-                            datasetFile.fileName,
-                        type: 'POST',
-                        headers: {
-                            'X-Csrf-Token': pkp.currentUser.csrfToken,
-                            'X-Http-Method-Override': 'DELETE',
-                        },
-                        error: self.ajaxErrorCallback,
-                        success: function (r) {
-                            self.refreshItems();
-                            self.$modal.hide('delete');
-                            self.setFocusIn(self.$el);
-                        },
-                    });
-                },
-            });
         },
 
         openPublishDatasetModal() {
-            self = this;
             this.openDialog({
-                cancelLabel: this.__('common.no'),
-                modalName: 'publish',
+                name: 'publishDataset',
                 title: this.publishDatasetLabel,
                 message: this.confirmPublishDatasetMessage,
-                callback: () => {
-                    $.ajax({
-                        url: this.components.datasetMetadata.action + '/publish',
-                        type: 'POST',
-                        headers: {
-                            'X-Csrf-Token': pkp.currentUser.csrfToken,
-                            'X-Http-Method-Override': 'PUT',
-                        },
-                        error: this.ajaxErrorCallback,
-                        success: function (r) {
-                            setTimeout(() => {
-                                self.dataset = r;
-                            }, 2500);
-                            self.$modal.hide('publish');
-                        },
-                    });
-                },
+                actions: [
+                    {
+                        label: this.__('common.yes'),
+                        isWarnable: false,
+                        callback: () => {
+                            let self = this;
+                            $.ajax({
+                                url: this.components.datasetMetadata.action + '/publish',
+                                type: 'POST',
+                                headers: {
+                                    'X-Csrf-Token': pkp.currentUser.csrfToken,
+                                    'X-Http-Method-Override': 'PUT',
+                                },
+                                error: this.ajaxErrorCallback,
+                                success: function (r) {
+                                    setTimeout(() => {
+                                        self.dataset = r;
+                                    }, 2500);
+                                    self.$modal.hide('publishDataset');
+                                },
+                            });
+                        }
+                    }
+                ]
             });
         },
 
@@ -190,44 +126,24 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             });
         },
 
-        refreshItems() {
-            var self = this;
-            this.isLoading = true;
-            this.latestGetRequest = $.pkp.classes.Helper.uuid();
-
-            $.ajax({
-                url: this.components.datasetFiles.apiUrl,
-                type: 'GET',
-                _uuid: this.latestGetRequest,
-                error: function (r) {
-                    if (self.latestGetRequest !== this._uuid) {
-                        return;
-                    }
-                    self.ajaxErrorCallback(r);
-                },
-                success: function (r) {
-                    if (self.latestGetRequest !== this._uuid) {
-                        return;
-                    }
-                    self.setItems(r.items);
-                },
-                complete() {
-                    if (self.latestGetRequest !== this._uuid) {
-                        return;
-                    }
-                    self.isLoading = false;
-                },
-            });
-        },
-
         setDatasetForms(dataset) {
             let form = { ...this.components.datasetMetadata };
             form.canSubmit =
                 this.canEditPublication &&
-                dataset.versionState !== 'RELEASED'
+                dataset.versionState !== 'RELEASED';
 
             this.components.datasetMetadata = {};
             this.components.datasetMetadata = form;
+        },
+
+        setDatasetFilesPanel(dataset) {
+            let filesPanel = { ...this.components.datasetFiles };
+            filesPanel.canChangeFiles = 
+                this.canEditPublication &&
+                dataset.versionState !== 'RELEASED';
+
+            this.components.datasetFiles = {};
+            this.components.datasetFiles = filesPanel;
         },
 
         setDatasetCitation() {
@@ -244,27 +160,6 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                     self.datasetCitation = r.citation;
                 },
             });
-        },
-
-        setItems(items) {
-            this.components.datasetFiles.items = items;
-        },
-
-        validateTermsOfUse(value) {
-            let newErrors = { ...this.components.datasetFileForm.errors };
-            if (!!value) {
-                if (!this.components.datasetFileForm.errors['termsOfUse']) {
-                    return;
-                }
-                delete newErrors['termsOfUse'];
-                this.components.datasetFileForm.errors = newErrors;
-            } else {
-                if (this.components.datasetFileForm.errors['termsOfUse']) {
-                    return;
-                }
-                newErrors['termsOfUse'] = this.fileFormErrors['termsOfUse'];
-                this.components.datasetFileForm.errors = newErrors;
-            }
         },
     },
     created() {
@@ -290,12 +185,13 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         this.setDatasetCitation();
         if (this.dataset) {
             this.setDatasetForms(this.dataset);
+            this.setDatasetFilesPanel(this.dataset);
         }
-        this.fileFormErrors = this.components.datasetFileForm.errors;
     },
     watch: {
         dataset(newVal, oldVal) {
             this.setDatasetForms(newVal);
+            this.setDatasetFilesPanel(newVal);
             this.setDatasetCitation();
         }
     },

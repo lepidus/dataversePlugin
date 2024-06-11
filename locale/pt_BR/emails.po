@@ -1,3 +1,8 @@
+msgid "emails.datasetDeleteNotification.name"
+msgstr "Notificação de exclusão dos dados de pesquisa"
+
+msgid "emails.datasetDeleteNotification.description"
+msgstr "Modelo de e-mail usado para notificar o autor sobre a exclusão dos dados de pesquisa."
 
 msgid "emails.datasetDeleteNotification.subject"
 msgstr "Notificação de exclusão dos dados de pesquisa"
@@ -9,7 +14,3 @@ msgstr ""
 "Uma das possíveis causas para isso é que os arquivos enviados não constituem como dados de pesquisa.<br />\n"
 "<br />\n"
 "Acesse a submissão e revise as opções de declaração de dados na aba <a href=\"{$dataStatementUrl}\"> Declaração de dados </a>."
-
-msgid "emails.datasetDeleteNotification.description"
-msgstr ""
-"Modelo de e-mail usado para notificar o autor sobre a exclusão dos dados de pesquisa."

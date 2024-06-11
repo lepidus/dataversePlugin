@@ -76,7 +76,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
         $options = ['sink' => Utils::tryFopen($filePath, 'w')];
 
-        $this->nativeAPIRequest('GET', $uri, $options);
+        $this->nativeAPIRequest('GET', $uri, $options, false);
 
         $fileManager = new FileManager();
         $fileManager->downloadByPath($filePath);

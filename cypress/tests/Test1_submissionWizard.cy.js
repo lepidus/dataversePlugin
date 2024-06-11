@@ -18,7 +18,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 			keywords: [
                 'mass public transport',
 				'sustainable cities',
-                'climate change'
 			]
 		}
 	});

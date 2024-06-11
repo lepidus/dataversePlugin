@@ -11,5 +11,11 @@
     -->
 
 <emails>
-  <email key="DATASET_DELETE_NOTIFICATION" can_edit="1" can_disable="0" subject="emails.datasetDeleteNotification.subject" description="emails.datasetDeleteNotification.description" body="emails.datasetDeleteNotification.body" />
+  <email
+    key="DATASET_DELETE_NOTIFICATION"
+    name="emails.datasetDeleteNotification.name"
+    description="emails.datasetDeleteNotification.description"
+    subject="emails.datasetDeleteNotification.subject"
+    body="emails.datasetDeleteNotification.body"
+  />
 </emails>
