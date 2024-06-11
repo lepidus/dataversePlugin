@@ -107,7 +107,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetTab-button .pkpBadge').contains('1');
 
         cy.contains('button', 'Add research data').click();
-        cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
+        cy.fixture('example.json', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
 				fileName: 'example.json',
@@ -153,7 +153,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.contains('button', 'Upload research data').click();
         cy.contains('button', 'Add research data').click();
-        cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
+        cy.fixture('example.json', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
 				fileName: 'example.json',
@@ -233,7 +233,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.contains('button', 'Upload research data').click();
         cy.contains('button', 'Add research data').click();
-        cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
+        cy.fixture('example.json', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
 				fileName: 'example.json',

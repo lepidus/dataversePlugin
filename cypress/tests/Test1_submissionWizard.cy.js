@@ -12,7 +12,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 
 	before(function () {
 		submissionData = {
-			section: 'Articles',
 			title: 'Sustainable Cities: Co-benefits of mass public transportation in climate change mitigation',
 			abstract: 'Mass public transportation can be used as a way to reduce greenhouse gases emissions.',
 			keywords: [
