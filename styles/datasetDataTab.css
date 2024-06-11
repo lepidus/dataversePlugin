@@ -1,30 +1,20 @@
-#datasetData, #datasetData .filesList {
+#datasetData {
     margin: 0px 0px 0px calc(-1px - 2rem);
     border: 1px solid #ddd;
     border-top: none;
 }
 
-#datasetData .value > p{
+#datasetData .value > p {
     padding: 0 2rem;
 }
 
 #datasetData .pkpTabs {
     margin: 0;
+    border-top: 1px solid #ddd;
 }
 
-#datasetData .pkpTabs::before {
-    content: "";
-    display: inherit;
-    border-bottom: 1px solid #ddd;
-    width: 100%;
-}
-
-#datasetData .filesList {
+#datasetData #dataset_files {
     padding: 2rem;
-}
-
-#draftDatasetFileGridContainer {
-    padding: 2rem 0;
 }
 
 #datasetTab .noResearchData {
@@ -38,46 +28,21 @@
     margin-top: 1rem;
 }
 
-div:not(:last-child) > .pkp_controllers_grid {
-    margin-bottom: 0;
-}
-
 .researchData {
     margin: 0 -2rem 0 calc(-2rem - 1px);
     border-bottom: 1px solid #ddd;
     border-left: 1px solid #ddd;
 }
 
-.researchData__header {
-    padding: 1rem;
-    border-bottom: 1px solid #ddd;
-
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.researchData__state {
-    flex: 1;
-}   
-
-.researchData__state strong,
-.researchData__state span {
-    font-size: .875rem;
-}
-
-.researchData__stateButton {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.researchData__stateButton .pkpDropdown__content {
-    min-width: 25rem;
-    max-width: 25rem;
-}
 .pkpPublication__tabs.pkpTabs--side .pkpTab .pkpForm.researchData__stateForm {
     margin: 0;
     border: none;
+}
+
+.pkpTabs--side .pkpTabs__buttons {
+    margin-bottom: 0;
+}
+
+#dataset_files-button {
+    margin-left: 0;
 }

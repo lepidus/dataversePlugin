@@ -25,7 +25,7 @@
     <span class="value">
         <p v-html="datasetCitation"></p>
     </span>
-    <tabs label="Dataset data">
+    <tabs label="Dataset data" :is-side-tabs='true'>
         <tab
             id="dataset_metadata"
             label={translate key="plugins.generic.dataverse.researchData.metadata"}
