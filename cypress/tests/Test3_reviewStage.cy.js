@@ -49,12 +49,12 @@ describe('Dataverse Plugin - Features around review stage', function () {
 			'genre': 'Article Text'
 		}]);
         cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'base64').then((fileContent) => {
+        cy.fixture('example.json', 'utf8').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
 				fileName: 'example.json',
 				mimeType: 'application/json',
-				encoding: 'base64',
+				encoding: 'utf8',
 			});
 		});
         cy.wait(1000);
