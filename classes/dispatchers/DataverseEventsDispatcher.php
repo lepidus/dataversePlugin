@@ -5,10 +5,13 @@ namespace APP\plugins\generic\dataverse\classes\dispatchers;
 use PKP\plugins\Hook;
 use APP\core\Application;
 use PKP\db\DAORegistry;
+use APP\decision\Decision;
+use PKP\decision\steps\Form;
 use PKP\components\forms\FormComponent;
 use Illuminate\Support\Facades\Event;
 use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
 use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileHandler;
+use APP\plugins\generic\dataverse\classes\components\forms\SelectDataFilesForReviewForm;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
@@ -28,10 +31,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         Hook::add('Schema::get::submission', [$this, 'modifySubmissionSchema']);
         Hook::add('Form::config::before', [$this, 'addDatasetPublishNoticeInPublishing']);
         Hook::add('Publication::publish', [$this, 'publishDeposit'], Hook::SEQUENCE_CORE);
+        Hook::add('TemplateManager::display', [$this, 'editSendForReviewDecision']);
+
         //Hook::add('LoadComponentHandler', [$this, 'setupDataverseHandlers']);
         // HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
         // HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
-        // HookRegistry::register('initiateexternalreviewform::display', array($this, 'addSelectDataFilesForReview'));
         // HookRegistry::register('initiateexternalreviewform::execute', array($this, 'saveSelectedDataFilesForReview'));
         // HookRegistry::register('Publication::edit', array($this, 'updateDatasetOnPublicationUpdate'));
     }
@@ -234,18 +238,24 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $datasetService->publish($study);
     }
 
-    public function addSelectDataFilesForReview(string $hookName, array $params): ?string
+    public function editSendForReviewDecision(string $hookName, array $params): void
     {
-        $form = &$params[0];
-        $output = &$params[1];
+        $templateMgr = $params[0];
+        $template = $params[1];
 
-        $request = PKPApplication::get()->getRequest();
-        $templateMgr = TemplateManager::getManager($request);
+        if ($template != 'decision/record.tpl') {
+            return;
+        }
 
-        $submissionId = $templateMgr->get_template_vars('submissionId');
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submissionId);
+        $decision = $templateMgr->getState('decision');
+        if ($decision != Decision::EXTERNAL_REVIEW) {
+            return;
+        }
+
+        $submission = $templateMgr->getTemplateVars('submission');
+        $study = Repo::dataverseStudy()->getBySubmissionId($submission->getId());
         if (empty($study)) {
-            return null;
+            return;
         }
 
         try {
@@ -254,31 +264,25 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             $datasetFiles = $dataverseClient->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
 
             if ($dataset->isPublished()) {
-                return null;
+                return;
             }
-
-            $templateMgr->assign('datasetFiles', $datasetFiles);
         } catch (DataverseException $e) {
             $templateMgr->assign([
                 'dataverseError' => 'Dataverse Error: ' . $e->getMessage(),
             ]);
         }
 
-        $templateOutput = $this->prepareFormToDisplay($templateMgr, $form, $request);
-        $pattern = '/<p>'.__('editor.submission.externalReviewDescription').'<\/p>/';
+        $decisionSteps = $templateMgr->getState('steps');
+        $selectDataFilesForm = new SelectDataFilesForReviewForm();
+        $decisionStepForm = new Form(
+            'selectDataFiles',
+            __('plugins.generic.dataverse.decision.selectDataFiles.name'),
+            __('plugins.generic.dataverse.decision.selectDataFiles.description'),
+            $selectDataFilesForm
+        );
+        $decisionSteps[] = $decisionStepForm->getState();
 
-        if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
-            $match = $matches[0][0];
-            $offset = $matches[0][1];
-            $output = substr($templateOutput, 0, $offset);
-            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('selectDataFilesForReview.tpl'));
-            $output .= substr($templateOutput, $offset);
-        }
-
-        $fbv = $templateMgr->getFBV();
-        $fbv->setForm(null);
-
-        return $output;
+        $templateMgr->setState(['steps' => $decisionSteps]);
     }
 
     public function saveSelectedDataFilesForReview(string $hookName, array $params)
