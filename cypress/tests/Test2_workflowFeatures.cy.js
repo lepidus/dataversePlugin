@@ -263,7 +263,7 @@ describe('Dataverse Plugin - Workflow features', function () {
             cy.contains('button', 'Skip this email').click();
             cy.contains('button', 'Continue').click();
 			cy.contains('button', 'Record Decision').click();
-            cy.contains('button', 'View Submission').click();
+            cy.get('a.pkpButton').contains('View Submission').click();
 			cy.assignReviewer('Julie Janssen');
 			
             cy.clickDecision('Accept Submission');
