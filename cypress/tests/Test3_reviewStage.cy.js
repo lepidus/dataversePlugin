@@ -101,10 +101,17 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.contains('button', 'Continue').click();
         cy.contains('h2', 'Select Data Files');
         cy.contains('This submission has deposited research data. Please, select which data files will be made available for reviewers to view');
-        // Actually select the files
+        cy.contains('span', 'example.json');
+        cy.contains('span', 'Raw_data.xlsx');
 
-        // cy.contains('button', 'Record Decision').click();
-        // cy.contains('button', 'View Submission').click();
+        cy.contains('span', 'Raw_data.xlsx').parent().within(() => {
+            cy.get('input').check();
+        });
+
+        cy.contains('button', 'Record Decision').click();
+        cy.get('a.pkpButton').contains('View Submission').click();
+        
+        cy.assignReviewer('Julie Janssen');
     });
     /*it('Selected data files are displayed for reviewers', function () {
 

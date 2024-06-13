@@ -273,7 +273,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         }
 
         $decisionSteps = $templateMgr->getState('steps');
-        $selectDataFilesForm = new SelectDataFilesForReviewForm();
+        $selectDataFilesForm = new SelectDataFilesForReviewForm($datasetFiles);
         $decisionStepForm = new Form(
             'selectDataFiles',
             __('plugins.generic.dataverse.decision.selectDataFiles.name'),
