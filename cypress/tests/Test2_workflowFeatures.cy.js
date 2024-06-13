@@ -260,7 +260,10 @@ describe('Dataverse Plugin - Workflow features', function () {
 			cy.get('#workflow-button').click();
             
             cy.clickDecision('Send for Review');
-			cy.recordDecisionSendToReview('Send for Review', ['Elinor Ostrom'], []);
+            cy.contains('button', 'Skip this email').click();
+            cy.contains('button', 'Continue').click();
+			cy.contains('button', 'Record Decision').click();
+            cy.contains('button', 'View Submission').click();
 			cy.assignReviewer('Julie Janssen');
 			
             cy.clickDecision('Accept Submission');
