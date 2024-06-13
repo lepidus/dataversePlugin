@@ -87,10 +87,26 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.waitJQuery();
         cy.contains('h1', 'Submission complete');
     });
-    /*it('Editor selects which data files will be available for reviewers', function () {
+    it('Editor selects which data files will be available for reviewers', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionData.title);
 
+        cy.get('#workflow-button').click();
+        cy.clickDecision('Send for Review');
+
+        cy.contains('h1', 'Send for Review');
+        cy.contains('h2', 'Notify Authors');
+        cy.contains('button', 'Skip this email').click();
+        cy.contains('h2', 'Select Files');
+        cy.contains('button', 'Continue').click();
+        cy.contains('h2', 'Select Data Files');
+        cy.contains('This submission has deposited research data. Please, select which data files will be made available for reviewers to view');
+        // Actually select the files
+
+        // cy.contains('button', 'Record Decision').click();
+        // cy.contains('button', 'View Submission').click();
     });
-    it('Selected data files are displayed for reviewers', function () {
+    /*it('Selected data files are displayed for reviewers', function () {
 
     });
     it('Configures plugin to publish research data in editor decision', function () {
