@@ -17,6 +17,7 @@ use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\observers\listeners\DatasetDepositOnSubmission;
+use APP\plugins\generic\dataverse\classes\observers\listeners\SelectedDataFilesForReview;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
@@ -25,6 +26,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     protected function registerHooks(): void
     {
         Event::subscribe(new DatasetDepositOnSubmission());
+        Event::subscribe(new SelectedDataFilesForReview());
 
         Hook::add('Schema::get::draftDatasetFile', [$this, 'loadDraftDatasetFileSchema']);
         Hook::add('Dispatcher::dispatch', [$this, 'setupDataverseAPIHandlers']);
@@ -36,7 +38,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         //Hook::add('LoadComponentHandler', [$this, 'setupDataverseHandlers']);
         // HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
         // HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
-        // HookRegistry::register('initiateexternalreviewform::execute', array($this, 'saveSelectedDataFilesForReview'));
         // HookRegistry::register('Publication::edit', array($this, 'updateDatasetOnPublicationUpdate'));
     }
 
@@ -283,23 +284,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $decisionSteps[] = $decisionStepForm->getState();
 
         $templateMgr->setState(['steps' => $decisionSteps]);
-    }
-
-    public function saveSelectedDataFilesForReview(string $hookName, array $params)
-    {
-        $form = &$params[0];
-        $submission = &$form->_submission;
-
-        $request = Application::get()->getRequest();
-        $selectedFiles = $request->getUserVar('selectedDataFilesForReview');
-
-        if (!is_null($selectedFiles)) {
-            $submission = Services::get('submission')->edit(
-                $submission,
-                ['selectedDataFilesForReview' => $selectedFiles],
-                $request
-            );
-        }
     }
 
     public function updateDatasetOnPublicationUpdate(string $hookName, array $args): bool

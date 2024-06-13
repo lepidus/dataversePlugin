@@ -22,6 +22,7 @@ class SelectDataFilesForReviewForm extends FormComponent
         $this->addField(new FieldOptions('selectedDataFilesForReview', [
             'label' => __('plugins.generic.dataverse.decision.selectDataFiles.name'),
             'options' => $datasetFilesOptions,
+            'value' => []
         ]));
     }
 }
