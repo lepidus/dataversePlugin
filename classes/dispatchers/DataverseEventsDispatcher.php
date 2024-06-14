@@ -19,6 +19,7 @@ use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\observers\listeners\DatasetDepositOnSubmission;
 use APP\plugins\generic\dataverse\classes\observers\listeners\SelectedDataFilesForReview;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
+use APP\plugins\generic\dataverse\controllers\grid\DatasetReviewGridHandler;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 class DataverseEventsDispatcher extends DataverseDispatcher
@@ -34,8 +35,8 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         Hook::add('Form::config::before', [$this, 'addDatasetPublishNoticeInPublishing']);
         Hook::add('Publication::publish', [$this, 'publishDeposit'], Hook::SEQUENCE_CORE);
         Hook::add('TemplateManager::display', [$this, 'editSendForReviewDecision']);
+        Hook::add('LoadComponentHandler', [$this, 'setupDataverseComponentHandlers']);
 
-        //Hook::add('LoadComponentHandler', [$this, 'setupDataverseHandlers']);
         // HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
         // HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
         // HookRegistry::register('Publication::edit', array($this, 'updateDatasetOnPublicationUpdate'));
@@ -380,13 +381,13 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         return false;
     }
 
-    public function setupDataverseHandlers($hookName, $params): bool
+    public function setupDataverseComponentHandlers($hookName, $params): bool
     {
         $component = &$params[0];
         $componentInstance = &$params[2];
 
-        if ($component == 'plugins.generic.dataverse.controllers.grid.DraftDatasetFileGridHandler') {
-            $componentInstance = new DraftDatasetFileGridHandler();
+        if ($component == 'plugins.generic.dataverse.controllers.grid.DatasetReviewGridHandler') {
+            $componentInstance = new DatasetReviewGridHandler();
             return true;
         }
         return false;

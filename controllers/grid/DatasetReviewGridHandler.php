@@ -1,7 +1,18 @@
 <?php
 
-import('lib.pkp.classes.controllers.grid.GridHandler');
-import('plugins.generic.dataverse.controllers.grid.DatasetReviewGridColumn');
+namespace APP\plugins\generic\dataverse\controllers\grid;
+
+use PKP\controllers\grid\GridHandler;
+use APP\core\Application;
+use PKP\security\Role;
+use APP\submission\Submission;
+use PKP\security\authorization\SubmissionAccessPolicy;
+use PKP\security\authorization\internal\WorkflowStageRequiredPolicy;
+use PKP\security\authorization\internal\ReviewAssignmentRequiredPolicy;
+use PKP\security\authorization\internal\ReviewRoundRequiredPolicy;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\controllers\grid\DatasetReviewGridColumn;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 class DatasetReviewGridHandler extends GridHandler
 {
@@ -11,14 +22,14 @@ class DatasetReviewGridHandler extends GridHandler
     {
         parent::__construct();
         $this->addRoleAssignment(
-            array(ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT, ROLE_ID_REVIEWER),
-            array('fetchGrid', 'fetchRow')
+            [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT, Role::ROLE_ID_REVIEWER],
+            ['fetchGrid', 'fetchRow']
         );
     }
 
     public function getSubmission(): Submission
     {
-        return $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
+        return $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
     }
 
     public function initialize($request, $args = null)
@@ -26,8 +37,7 @@ class DatasetReviewGridHandler extends GridHandler
         parent::initialize($request, $args);
 
         $submissionId = $this->getSubmission()->getId();
-        $dataverseStudyDao = DAORegistry::getDAO('DataverseStudyDAO');
-        $this->study = $dataverseStudyDao->getStudyBySubmissionId($submissionId);
+        $this->study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
 
         $this->setTitle('plugins.generic.dataverse.researchData');
         $this->addColumn(new DatasetReviewGridColumn($this->study));
@@ -37,17 +47,11 @@ class DatasetReviewGridHandler extends GridHandler
     public function authorize($request, &$args, $roleAssignments)
     {
         $context = $request->getContext();
-        import('lib.pkp.classes.security.authorization.SubmissionAccessPolicy');
         $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments, 'submissionId', !$context->getData('restrictReviewerFileAccess')));
 
         $stageId = $request->getUserVar('stageId');
-        import('lib.pkp.classes.security.authorization.internal.WorkflowStageRequiredPolicy');
         $this->addPolicy(new WorkflowStageRequiredPolicy($stageId));
-
-        import('lib.pkp.classes.security.authorization.internal.ReviewRoundRequiredPolicy');
         $this->addPolicy(new ReviewRoundRequiredPolicy($request, $args));
-
-        import('lib.pkp.classes.security.authorization.internal.ReviewAssignmentRequiredPolicy');
         $this->addPolicy(new ReviewAssignmentRequiredPolicy($request, $args, 'reviewAssignmentId'));
 
         return parent::authorize($request, $args, $roleAssignments);
