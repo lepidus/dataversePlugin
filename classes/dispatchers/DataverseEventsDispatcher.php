@@ -65,6 +65,25 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         return false;
     }
 
+    private function addDatasetPublishFieldsToForm(FormComponent $form, $params)
+    {
+        $form->addField(new \PKP\components\forms\FieldHTML('researchDataNotice', [
+            'label' => __('plugins.generic.dataverse.researchData'),
+            'description' => __("plugins.generic.dataverse.researchData.publishNotice", $params),
+            'groupId' => 'default'
+        ]))
+        ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
+            'label' => __('plugins.generic.dataverse.researchData.wouldLikeToPublish'),
+            'name' => 'shouldPublishResearchData',
+            'options' => [
+                ['value' => 1, 'label' => __('common.yes')],
+                ['value' => 0, 'label' => __('common.no')]
+            ],
+            'isRequired' => true,
+            'groupId' => 'default'
+        ]));
+    }
+
     public function addDatasetPublishNoticeInPublishing(string $hookName, FormComponent $form): void
     {
         if ($form->id !== 'publish' || !empty($form->errors)) {
@@ -98,21 +117,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
                 'serverUrl' => $configuration->getDataverseServerUrl(),
             ];
 
-            $form->addField(new \PKP\components\forms\FieldHTML('researchDataNotice', [
-                'label' => __('plugins.generic.dataverse.researchData'),
-                'description' => __("plugins.generic.dataverse.researchData.publishNotice", $params),
-                'groupId' => 'default'
-            ]))
-            ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
-                'label' => __('plugins.generic.dataverse.researchData.wouldLikeToPublish'),
-                'name' => 'shouldPublishResearchData',
-                'options' => [
-                    ['value' => 1, 'label' => __('common.yes')],
-                    ['value' => 0, 'label' => __('common.no')]
-                ],
-                'isRequired' => true,
-                'groupId' => 'default'
-            ]));
+            $this->addDatasetPublishFieldsToForm($form, $params);
         } catch (DataverseException $e) {
             $warningIconHtml = '<span class="fa fa-exclamation-triangle pkpIcon--inline"></span>';
             $noticeMsg = __('plugins.generic.dataverse.notice.cannotPublish', ['error' => $e->getMessage()]);
@@ -260,9 +265,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             $this->editSendForReviewDecision($templateMgr, $study);
         }
 
-        // if ($decision == Decision::ACCEPT) {
-        //     //$this->editAcceptDecision();
-        // }
+        if ($decision == Decision::ACCEPT) {
+            $this->editAcceptDecision($templateMgr, $study, $submission->getData('contextId'));
+        }
     }
 
     private function editSendForReviewDecision($templateMgr, $study)
@@ -279,6 +284,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             $templateMgr->assign([
                 'dataverseError' => 'Dataverse Error: ' . $e->getMessage(),
             ]);
+            return;
         }
 
         $decisionSteps = $templateMgr->getState('steps');
@@ -288,6 +294,45 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             __('plugins.generic.dataverse.decision.selectDataFiles.name'),
             __('plugins.generic.dataverse.decision.selectDataFiles.description'),
             $selectDataFilesForm
+        );
+        $decisionSteps[] = $decisionStepForm->getState();
+
+        $templateMgr->setState(['steps' => $decisionSteps]);
+    }
+
+    private function editAcceptDecision($templateMgr, $study, $contextId)
+    {
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+
+            if ($dataset->isPublished()) {
+                return;
+            }
+
+            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+            $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
+        } catch (DataverseException $e) {
+            $templateMgr->assign([
+                'dataverseError' => 'Dataverse Error: ' . $e->getMessage(),
+            ]);
+            return;
+        }
+
+        $params = [
+            'persistentUri' => $study->getPersistentUri(),
+            'serverName' => $rootDataverseCollection->getName(),
+            'serverUrl' => $configuration->getDataverseServerUrl(),
+        ];
+
+        $decisionSteps = $templateMgr->getState('steps');
+        $datasetPublishForm = new FormComponent('datasetPublish', '', FormComponent::ACTION_EMIT, []);
+        $this->addDatasetPublishFieldsToForm($datasetPublishForm, $params);
+        $decisionStepForm = new Form(
+            'researchDataPublishNotice',
+            __('plugins.generic.dataverse.researchData'),
+            '',
+            $datasetPublishForm
         );
         $decisionSteps[] = $decisionStepForm->getState();
 
