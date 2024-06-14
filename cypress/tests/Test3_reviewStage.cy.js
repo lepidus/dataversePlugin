@@ -123,10 +123,52 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		cy.contains('a', 'Raw_data.xlsx');
         cy.contains('a', 'example.json').should('not.exist');
     });
-    /*it('Configures plugin to publish research data in editor decision', function () {
+    it('Configures plugin to publish research data in editor decision', function () {
+        const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
 
+		cy.login('dbarnes', null, 'publicknowledge');
+		cy.contains('a', 'Website').click();
+
+		cy.waitJQuery();
+		cy.get('#plugins-button').click();
+		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
+		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
+
+		cy.get('input[name="datasetPublish"][value=1]').check({ force: true });
+		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
+		cy.get('div:contains("Your changes have been saved.")');
     });
     it('Research data is published on submission acceptance', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionData.title);
+
+        cy.get('#workflow-button').click();
+        cy.clickDecision('Accept Submission');
+
+        cy.contains('h1', 'Accept Submission');
+        cy.contains('h2', 'Notify Authors');
+        cy.contains('button', 'Skip this email').click();
+        cy.contains('h2', 'Select Files');
+        cy.contains('button', 'Continue').click();
+        cy.contains('h2', 'Research data');
+        cy.contains(/This submission contains deposited research data that is not yet public: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
+		cy.contains('In case you choose to publish them, make sure they are suitable for publication in');
+		cy.contains('Would you like to publish the research data?');
+
+        cy.contains('span', 'Yes').parent().within(() => {
+            cy.get('input').click();
+        });
+
+        cy.contains('button', 'Record Decision').click();
+        cy.get('a.pkpButton').contains('View Submission').click();
+
+        cy.get('#publication-button').click();
+        cy.get('#datasetTab-button').click();
         
-    });*/
+        cy.get('.value > p').contains('V1');
+		cy.contains('Publish research data').should('not.exist');
+		cy.get('button:contains("Delete research data")').should('be.disabled');
+		cy.get('button:contains("Add research data")').should('be.disabled');
+		cy.get('#dataset_metadata button:contains("Save")').should('be.disabled');
+    });
 });
