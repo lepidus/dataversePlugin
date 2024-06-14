@@ -113,10 +113,17 @@ describe('Dataverse Plugin - Features around review stage', function () {
         
         cy.assignReviewer('Julie Janssen');
     });
-    /*it('Selected data files are displayed for reviewers', function () {
+    it('Selected data files are displayed for reviewers', function () {
+        cy.login('jjanssen', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionData.title);
 
+        cy.contains('h1', 'Review:');
+        cy.contains('Data statement');
+		cy.contains('The research data has been submitted to the Dataverse de Exemplo Lepidus repository');
+		cy.contains('a', 'Raw_data.xlsx');
+        cy.contains('a', 'example.json').should('not.exist');
     });
-    it('Configures plugin to publish research data in editor decision', function () {
+    /*it('Configures plugin to publish research data in editor decision', function () {
 
     });
     it('Research data is published on submission acceptance', function () {
