@@ -34,7 +34,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         Hook::add('Schema::get::submission', [$this, 'modifySubmissionSchema']);
         Hook::add('Form::config::before', [$this, 'addDatasetPublishNoticeInPublishing']);
         Hook::add('Publication::publish', [$this, 'publishDeposit'], Hook::SEQUENCE_CORE);
-        Hook::add('TemplateManager::display', [$this, 'editSendForReviewDecision']);
+        Hook::add('TemplateManager::display', [$this, 'editDecisions']);
         Hook::add('LoadComponentHandler', [$this, 'setupDataverseComponentHandlers']);
 
         // HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
@@ -240,17 +240,12 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $datasetService->publish($study);
     }
 
-    public function editSendForReviewDecision(string $hookName, array $params): void
+    public function editDecisions(string $hookName, array $params): void
     {
         $templateMgr = $params[0];
         $template = $params[1];
 
         if ($template != 'decision/record.tpl') {
-            return;
-        }
-
-        $decision = $templateMgr->getState('decision');
-        if ($decision != Decision::EXTERNAL_REVIEW) {
             return;
         }
 
@@ -260,6 +255,18 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return;
         }
 
+        $decision = $templateMgr->getState('decision');
+        if ($decision == Decision::EXTERNAL_REVIEW) {
+            $this->editSendForReviewDecision($templateMgr, $study);
+        }
+
+        // if ($decision == Decision::ACCEPT) {
+        //     //$this->editAcceptDecision();
+        // }
+    }
+
+    private function editSendForReviewDecision($templateMgr, $study)
+    {
         try {
             $dataverseClient = new DataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
