@@ -155,7 +155,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		cy.contains('In case you choose to publish them, make sure they are suitable for publication in');
 		cy.contains('Would you like to publish the research data?');
 
-        cy.contains('span', 'Yes').parent().within(() => {
+        cy.contains('label', 'Yes').within(() => {
             cy.get('input').click();
         });
 
