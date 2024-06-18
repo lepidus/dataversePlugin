@@ -17,7 +17,7 @@ use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\observers\listeners\DatasetDepositOnSubmission;
-use APP\plugins\generic\dataverse\classes\observers\listeners\SelectedDataFilesForReview;
+use APP\plugins\generic\dataverse\classes\observers\listeners\ProcessDataverseDecisionsActions;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\controllers\grid\DatasetReviewGridHandler;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
@@ -27,7 +27,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     protected function registerHooks(): void
     {
         Event::subscribe(new DatasetDepositOnSubmission());
-        Event::subscribe(new SelectedDataFilesForReview());
+        Event::subscribe(new ProcessDataverseDecisionsActions());
 
         Hook::add('Schema::get::draftDatasetFile', [$this, 'loadDraftDatasetFileSchema']);
         Hook::add('Dispatcher::dispatch', [$this, 'setupDataverseAPIHandlers']);
@@ -37,8 +37,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         Hook::add('TemplateManager::display', [$this, 'editDecisions']);
         Hook::add('LoadComponentHandler', [$this, 'setupDataverseComponentHandlers']);
 
-        // HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
-        // HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
         // HookRegistry::register('Publication::edit', array($this, 'updateDatasetOnPublicationUpdate'));
     }
 
@@ -151,98 +149,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         }
 
         $datasetService = new DatasetService();
-        $datasetService->publish($study);
-    }
-
-    public function addDatasetPublishNoticeInEditorAction(string $hookName, array $params): ?string
-    {
-        $form = &$params[0];
-        $output = &$params[1];
-
-        $request = PKPApplication::get()->getRequest();
-        $context = $request->getContext();
-        $templateMgr = TemplateManager::getManager($request);
-
-        $submissionId = $templateMgr->get_template_vars('submissionId');
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submissionId);
-        if (empty($study)) {
-            return null;
-        }
-
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($context->getId());
-        if ($configuration->getDatasetPublish() !== DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
-            return null;
-        }
-
-        try {
-            $dataverseClient = new DataverseClient();
-            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
-
-            if ($dataset->isPublished()) {
-                return null;
-            }
-
-            $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
-            $params = [
-                'persistentUri' => $study->getPersistentUri(),
-                'serverName' => $rootDataverseCollection->getName(),
-                'serverUrl' => $configuration->getDataverseServerUrl(),
-            ];
-            $templateMgr->assign([
-                'researchDataNotice' => __('plugins.generic.dataverse.researchData.publishNotice', $params),
-                'canPublishResearchData' => true
-            ]);
-        } catch (DataverseException $e) {
-            $templateMgr->assign([
-                'researchDataNotice' => 'Dataverse Error: ' . $e->getMessage(),
-                'canPublishResearchData' => false
-            ]);
-        }
-
-        $templateOutput = $this->prepareFormToDisplay($templateMgr, $form, $request);
-        $pattern = '/<div[^>]+id="promoteForm-step2[^>]+>/';
-
-        if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
-            $match = $matches[0][0];
-            $offset = $matches[0][1];
-            $output = substr($templateOutput, 0, $offset + strlen($match));
-            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('editorActionPublish.tpl'));
-            $output .= substr($templateOutput, $offset + strlen($match));
-        }
-
-        $fbv = $templateMgr->getFBV();
-        $fbv->setForm(null);
-
-        return $output;
-    }
-
-    public function publishInEditorAction(string $hookName, array $params): void
-    {
-        $submission = $params[0];
-        $decision = $params[1];
-        $request = Application::get()->getRequest();
-
-        if ($decision['decision'] !== SUBMISSION_EDITOR_DECISION_ACCEPT) {
-            return;
-        }
-
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
-        if ($configuration->getDatasetPublish() !== DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
-            return;
-        }
-
-        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
-        if (is_null($study)) {
-            return;
-        }
-
-        $shouldPublish = $request->getUserVar('shouldPublishResearchData');
-        if (!is_null($shouldPublish) && $shouldPublish == 0) {
-            return;
-        }
-
-        $datasetService = new DatasetService();
-        $datasetService->publish($study);
+        $datasetService->publish($submission, $study);
     }
 
     public function editDecisions(string $hookName, array $params): void
