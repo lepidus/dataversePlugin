@@ -209,6 +209,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
     private function editAcceptDecision($templateMgr, $study, $contextId)
     {
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+        if ($configuration->getDatasetPublish() != DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
+            return;
+        }
+
         try {
             $dataverseClient = new DataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
@@ -217,7 +222,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
                 return;
             }
 
-            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
             $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
         } catch (DataverseException $e) {
             $templateMgr->assign([
