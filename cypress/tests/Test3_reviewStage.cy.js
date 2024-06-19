@@ -160,7 +160,8 @@ describe('Dataverse Plugin - Features around review stage', function () {
         });
 
         cy.contains('button', 'Record Decision').click();
-        cy.get('a.pkpButton').contains('View Submission').click();
+        cy.get('a.pkpButton').contains('View All Submissions').click();
+        cy.findSubmission('myQueue', submissionData.title);
 
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
