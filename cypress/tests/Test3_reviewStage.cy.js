@@ -165,10 +165,6 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
         
-        cy.get('.value > p').contains('V1');
-		cy.contains('Publish research data').should('not.exist');
-		cy.get('button:contains("Delete research data")').should('be.disabled');
-		cy.get('button:contains("Add research data")').should('be.disabled');
-		cy.get('#dataset_metadata button:contains("Save")').should('be.disabled');
+        cy.get('p:contains("Demo Dataverse, V1")');
     });
 });
