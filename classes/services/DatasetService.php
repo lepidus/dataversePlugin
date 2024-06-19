@@ -157,10 +157,8 @@ class DatasetService extends DataverseService
         );
     }
 
-    public function publish(DataverseStudy $study): void
+    public function publish(Submission $submission, DataverseStudy $study): void
     {
-        $submission = Repo::submission()->get($study->getSubmissionId());
-
         try {
             $dataverseClient = new DataverseClient();
 
@@ -180,11 +178,12 @@ class DatasetService extends DataverseService
             return;
         }
 
+        class_exists(SubmissionEventLogEntry::class); //Force define of SUBMISSION_LOG_ARTICLE_PUBLISH
         $this->registerEventLog(
             $submission,
             'plugins.generic.dataverse.log.researchDataPublished',
             [],
-            SUBMISSION_LOG_ARTICLE_PUBLISH
+            \SUBMISSION_LOG_ARTICLE_PUBLISH
         );
     }
 

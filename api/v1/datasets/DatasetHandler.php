@@ -41,7 +41,7 @@ class DatasetHandler extends APIHandler
                 [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
                     'handler' => [$this, 'downloadDatasetFile'],
-                    'roles' => $roles
+                    'roles' => [...$roles, Role::ROLE_ID_REVIEWER]
                 ],
                 [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/citation',
@@ -264,7 +264,7 @@ class DatasetHandler extends APIHandler
 
         $items = array_map(function ($datasetFile) use ($fileActionApiUrl) {
             $fileVars = $datasetFile->getVars();
-            $fileVars['downloadUrl'] = $fileActionApiUrl . '?fileId=' . $datasetFile->getId() . '&filename=' . $datasetFile->getFileName();
+            $fileVars['downloadUrl'] = $fileActionApiUrl . '?fileId=' . $datasetFile->getId() . '&fileName=' . $datasetFile->getFileName();
             return $fileVars;
         }, $datasetFiles);
 

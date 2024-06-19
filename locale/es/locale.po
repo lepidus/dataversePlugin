@@ -174,7 +174,10 @@ msgstr ""
 "¿Realmente deseas publicar los datos de investigación relacionados con este envío? Esta acción no se puede deshacer.<br>"
 "Antes de continuar, asegúrate de que sean adecuados para su publicación en <a href=\"{$serverUrl}\" target=\"_new\">{$serverName}</a>.<br>"
 
-msgid "plugins.generic.dataverse.review.selectDataFiles"
+msgid "plugins.generic.dataverse.decision.selectDataFiles.name"
+msgstr "Seleccionar archivos de datos"
+
+msgid "plugins.generic.dataverse.decision.selectDataFiles.description"
 msgstr "Este envío ha depositado datos de investigación. Seleccione qué archivos de datos estarán disponibles para que los revisores los vean."
 
 msgid "api.draftDatasetFile.404.drafDatasetFileNotFound"
