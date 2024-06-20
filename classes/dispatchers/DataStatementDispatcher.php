@@ -22,8 +22,8 @@ class DataStatementDispatcher extends DataverseDispatcher
         Hook::add('Publication::edit', [$this, 'dataStatementEditingCheck']);
         Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewStep']);
         Hook::add('Submission::validateSubmit', [$this, 'validateSubmissionFields']);
-        // Hook::add('Templates::Preprint::Details', [$this, 'viewDataStatement']);
-        // Hook::add('Templates::Article::Details', [$this, 'viewDataStatement']);
+        Hook::add('Templates::Preprint::Details', [$this, 'viewDataStatement']);
+        Hook::add('Templates::Article::Details', [$this, 'viewDataStatement']);
     }
 
     public function addDataStatementResourcesToBackend(string $hookName): void
@@ -290,9 +290,10 @@ class DataStatementDispatcher extends DataverseDispatcher
 
         $dataStatementService = new DataStatementService();
         $allDataStatementTypes = $dataStatementService->getDataStatementTypes();
-        unset($allDataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+        unset($allDataStatementTypes[DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
 
-        $templateMgr->assign('allDataStatementTypes', $allDataStatementTypes);
+        $templateMgr->assign('dataStatementConsts', $dataStatementService->getConstantsForTemplates());
+        $templateMgr->assign('dataStatementMessages', $allDataStatementTypes);
 
         $output .= $templateMgr->fetch($this->plugin->getTemplateResource('listDataStatement.tpl'));
 
