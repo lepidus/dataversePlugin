@@ -79,6 +79,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.get('select[name="datasetSubject"]').select('Arts and Humanities');
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
         cy.contains('button', 'Continue').click();
+        cy.wait(500);
 
         cy.contains('button', 'Submit').click();
         cy.get('.modal__panel:visible').within(() => {
