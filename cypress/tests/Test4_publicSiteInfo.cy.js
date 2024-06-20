@@ -28,7 +28,7 @@ describe('Dataverse Plugin - Information displayed in public site', function () 
         
         cy.get('#workflow-button').click();
         cy.clickDecision('Send To Production');
-        cy.recordDecisionSendToProduction(['Elinor Ostrom'], []);
+        cy.recordDecisionSendToProduction(['Catherine Kwantes'], []);
         cy.isActiveStageTab('Production');
 
         cy.get('#publication-button').click();
