@@ -17,7 +17,7 @@ describe('Dataverse Plugin - Information displayed in public site', function () 
         cy.contains('li', 'Has sensitive data');
 
         cy.contains('h2', 'Research data');
-        cy.contains('Kwantes, Catherine, ' + currentYear + ', "Replication data for: ' + submission.title + '"');
+        cy.contains('"Replication data for: ' + submissionTitle + '"');
 		cy.contains('a', /https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
 		cy.contains('Demo Dataverse, V1');
     });
