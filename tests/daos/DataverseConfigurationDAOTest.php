@@ -31,9 +31,9 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
         $dataverseUrl = 'https://demo.dataverse.org/dataverse/example';
         $apiToken = 'randomToken';
         $termsOfUse = [
-            'en_US' => 'https://test.dataverse.org/terms-of-use/en_US',
+            'en' => 'https://test.dataverse.org/terms-of-use/en',
             'pt_BR' => 'https://test.dataverse.org/terms-of-use/pt_BR',
-            'es_ES' => ''
+            'es' => ''
         ];
 
         $configuration = $this->dataverseConfigurationDAO->newDataObject();

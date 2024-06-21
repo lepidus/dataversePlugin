@@ -189,7 +189,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		});
 	});
     it('Author can not perform actions without edit permission granted', function () {
-		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
+		if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
 			cy.changeAuthorEditPermissionOnPublication('dbarnes', null, 'Elinor Ostrom', 'publicknowledge', 'uncheck');
 		}
         
