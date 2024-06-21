@@ -271,32 +271,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         return false;
     }
 
-    private function prepareFormToDisplay($templateMgr, $form, $request): string
-    {
-        $context = $request->getContext();
-        $templateMgr->setCacheability(CACHEABILITY_NO_STORE);
-
-        $fbv = $templateMgr->getFBV();
-        $fbv->setForm($form);
-
-        $templateMgr->assign(array_merge($form->_data, [
-            'isError' => !$form->isValid(),
-            'errors' => $form->getErrorsArray(),
-            'formLocales' => $form->supportedLocales,
-            'formLocale' => $form->getDefaultFormLocale(),
-        ]));
-
-        if (!$templateMgr->getTemplateVars('primaryLocale')) {
-            $templateMgr->assign([
-                'primaryLocale' => $context
-                    ? $context->getPrimaryLocale()
-                    : (Config::getVar('general', 'installed') ? $request->getSite()->getPrimaryLocale() : null),
-            ]);
-        }
-
-        return $templateMgr->fetch($form->_template);
-    }
-
     public function setupDataverseAPIHandlers(string $hookname, array $params): void
     {
         $request = $params[0];
