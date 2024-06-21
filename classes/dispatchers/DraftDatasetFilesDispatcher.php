@@ -151,7 +151,10 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
         $dataStatementTypes = $publication->getData('dataStatementTypes');
 
-        if (in_array(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) {
+        if (
+            !empty($dataStatementTypes)
+            && in_array(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)
+        ) {
             $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
 
             if (empty($draftDatasetFiles)) {

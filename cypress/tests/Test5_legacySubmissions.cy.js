@@ -80,6 +80,16 @@ describe('Dataverse Plugin - Legacy submissions', function () {
         cy.contains('button', 'Continue').click();
 		cy.wait(500);
 
+		cy.contains('It is required to inform the declaration of the data statement');
+		
+		cy.get('.pkpSteps__step__label:contains("Details")').click();
+		cy.get('input[name="dataStatementTypes"][value=1]').click();
+		cy.contains('button', 'Continue').click();
+        cy.contains('button', 'Continue').click();
+		cy.contains('button', 'Continue').click();
+        cy.contains('button', 'Continue').click();
+		cy.wait(500);
+
 		cy.contains('button', 'Submit').click();
         cy.get('.modal__panel:visible').within(() => {
             cy.contains('button', 'Submit').click();
