@@ -11,6 +11,7 @@ use PKP\components\forms\FormComponent;
 use Illuminate\Support\Facades\Event;
 use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
 use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileHandler;
+use APP\plugins\generic\dataverse\classes\APACitation;
 use APP\plugins\generic\dataverse\classes\components\forms\SelectDataFilesForReviewForm;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
@@ -36,8 +37,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         Hook::add('Publication::publish', [$this, 'publishDeposit'], Hook::SEQUENCE_CORE);
         Hook::add('TemplateManager::display', [$this, 'editDecisions']);
         Hook::add('LoadComponentHandler', [$this, 'setupDataverseComponentHandlers']);
-
-        // HookRegistry::register('Publication::edit', array($this, 'updateDatasetOnPublicationUpdate'));
+        Hook::add('Publication::edit', [$this, 'updateDatasetOnPublicationUpdate']);
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -250,28 +250,20 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $templateMgr->setState(['steps' => $decisionSteps]);
     }
 
-    public function updateDatasetOnPublicationUpdate(string $hookName, array $args): bool
+    public function updateDatasetOnPublicationUpdate(string $hookName, array $params): bool
     {
-        $publication = &$args[0];
+        $publication = &$params[0];
+        $submission = Repo::submission()->get($publication->getData('submissionId'));
         $data = [];
 
-        $publicationDAO = DAORegistry::getDAO('PublicationDAO');
-        $publicationDAO->updateObject($publication);
-
-        $submission = Services::get('submission')->get($publication->getData('submissionId'));
-
-        $studyDAO = DAORegistry::getDAO('DataverseStudyDAO');
-        $study = $studyDAO->getStudyBySubmissionId($submission->getId());
-
+        $study = Repo::dataverseStudy()->getBySubmissionId($submission->getId());
         if (!$study) {
             return false;
         }
 
-        import('plugins.generic.dataverse.classes.APACitation');
         $apaCitation = new APACitation();
-
         $data['persistentId'] = $study->getPersistentId();
-        $data['pubCitation'] = $apaCitation->getFormattedCitationBySubmission($submission);
+        $data['pubCitation'] = $apaCitation->getFormattedCitationBySubmission($submission, $publication);
 
         $datasetService = new DatasetService();
         $datasetService->update($data);

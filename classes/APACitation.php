@@ -4,6 +4,7 @@ namespace APP\plugins\generic\dataverse\classes;
 
 use DateTime;
 use APP\submission\Submission;
+use APP\publication\Publication;
 use APP\author\Author;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
@@ -18,12 +19,15 @@ class APACitation
         return str_replace($study->getPersistentUri(), $href, strip_tags($study->getDataCitation()));
     }
 
-    public function getFormattedCitationBySubmission(Submission $submission): string
+    public function getFormattedCitationBySubmission(Submission $submission, ?Publication $publication = null): string
     {
+        if (is_null($publication)) {
+            $publication = $submission->getCurrentPublication();
+        }
+
         $this->locale = $submission->getData('locale');
         $journalDao = DAORegistry::getDAO('JournalDAO');
         $journal = $journalDao->getById($submission->getData('contextId'));
-        $publication = $submission->getCurrentPublication();
         $authors =  $publication->getData('authors')->toArray();
         $submittedDate = new DateTime($submission->getData('dateSubmitted'));
 
