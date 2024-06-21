@@ -15,6 +15,7 @@
 namespace APP\plugins\generic\dataverse;
 
 use PKP\plugins\GenericPlugin;
+use PKP\plugins\PluginRegistry;
 use APP\core\Application;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
@@ -24,6 +25,7 @@ use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\migrations\DataverseMigration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
 use APP\plugins\generic\dataverse\DataverseSettingsForm;
+use APP\plugins\generic\dataverse\report\DataverseReportPlugin;
 
 class DataversePlugin extends GenericPlugin
 {
@@ -42,7 +44,7 @@ class DataversePlugin extends GenericPlugin
 
         if(!is_null($context) and $dataverseConfigurationDAO->hasConfiguration($context->getId())) {
             $this->loadDispatcherClasses();
-            //PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
+            PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
         }
 
         return $success;
@@ -79,7 +81,6 @@ class DataversePlugin extends GenericPlugin
 
     public function getReportPlugin()
     {
-        $this->import('report.DataverseReportPlugin');
         return new DataverseReportPlugin();
     }
 

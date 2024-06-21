@@ -8,10 +8,10 @@ It is a work in progress, the current version is a MVP for OPS and OJS.
 
 The latest release of this plugin is compatible with the following PKP applications:
 
-* OPS 3.3.0
-* OJS 3.3.0
+* OPS 3.4.0
+* OJS 3.4.0
 
-Using PHP between 7.3 and 8.1.
+Using PHP 8.1 or later.
 
 ## Plugin Download
 
@@ -49,7 +49,7 @@ After filling in the fields, just confirm the action by clicking `Save`. The plu
 
 ### Use
 
-A "Research Data" deposit dialog is shown in step 2 of the Submission proccess.
+A "Research Data" deposit dialog is shown in the "Files" step of the Submission proccess.
 
 Authors, moderators, editors or managers can also edit the dataset, before publication, on the Research Data tab of the submission.
 
@@ -92,19 +92,19 @@ Creates a `cypress.env.json` file in root of the PKP Application directory, with
 
 Next, to execute the Cypress tests run the following command from root of the PKP Appplication directory:
 ```
-npx cypress run --config integrationFolder=plugins/generic/dataverse/cypress/tests
+npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
 ```
 
 For execute the tests with the Cypress UI, run:
 ```
-npx cypress open --config integrationFolder=plugins/generic/dataverse/cypress/tests
+npx cypress open --config specPattern=plugins/generic/dataverse/cypress/tests
 ```
-Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en_US` for passing into the tests.
+Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en` for passing into the tests.
 
 # License
 
 __This plugin is licensed under the GNU General Public License v3.0__
 
-__Copyright (c) 2021-2023 Lepidus Tecnologia__
+__Copyright (c) 2021-2024 Lepidus Tecnologia__
 
-__Copyright (c) 2021-2023 SciELO__
+__Copyright (c) 2021-2024 SciELO__

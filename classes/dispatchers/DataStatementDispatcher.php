@@ -145,68 +145,6 @@ class DataStatementDispatcher extends DataverseDispatcher
         return false;
     }
 
-    private function isValidStepForm(int $step, &$stepForm): bool
-    {
-        if ($step !== 1 || !$stepForm->validate()) {
-            return false;
-        }
-
-        if (empty($stepForm->getData('dataStatementTypes'))) {
-            $stepForm->addError(
-                'dataStatementTypes',
-                __('plugins.generic.dataverse.dataStatement.required')
-            );
-            $stepForm->addErrorField('dataStatementTypes');
-            return false;
-        }
-
-        if (in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $stepForm->getData('dataStatementTypes'))) {
-            if(empty($stepForm->getData('keywords')['dataStatementUrls'])) {
-                $stepForm->addError(
-                    'dataStatementUrls',
-                    __('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')
-                );
-                $stepForm->addErrorField('dataStatementUrls');
-                return false;
-            } else {
-                foreach($stepForm->getData('keywords')['dataStatementUrls'] as $dataStatementUrl) {
-                    if(!$this->inputIsURL($dataStatementUrl)) {
-                        $stepForm->addError(
-                            'dataStatementUrls',
-                            __('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')
-                        );
-                        $stepForm->addErrorField('dataStatementUrls');
-                        $stepForm->setData('keywords', null);
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private function createDataStatementParams($stepForm): array
-    {
-        $dataStatementTypes = $stepForm->getData('dataStatementTypes');
-        $dataStatementUrls = null;
-        $dataStatementReason = null;
-
-        if (in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)) {
-            $dataStatementUrls = $stepForm->getData('keywords')['dataStatementUrls'];
-        }
-
-        if (in_array(DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE, $dataStatementTypes)) {
-            $dataStatementReason = $stepForm->getData('dataStatementReason');
-        }
-
-        return [
-            'dataStatementTypes' => $dataStatementTypes,
-            'dataStatementUrls' => $dataStatementUrls,
-            'dataStatementReason' => $dataStatementReason
-        ];
-    }
-
     public function dataStatementEditingCheck(string $hookName, array $params): bool
     {
         $publication = &$params[0];
