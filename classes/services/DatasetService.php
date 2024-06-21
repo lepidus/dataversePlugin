@@ -86,6 +86,10 @@ class DatasetService extends DataverseService
         $dataverseClient = new DataverseClient();
         $dataset = $dataverseClient->getDatasetActions()->get($data['persistentId']);
 
+        if ($dataset->isPublished()) {
+            return;
+        }
+
         foreach($data as $name => $value) {
             $dataset->setData($name, $value);
         }
