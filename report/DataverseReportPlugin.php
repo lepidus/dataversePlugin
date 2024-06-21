@@ -1,7 +1,11 @@
 <?php
 
-import('lib.pkp.classes.plugins.ReportPlugin');
-import('plugins.generic.dataverse.report.services.queryBuilders.DataverseReportQueryBuilder');
+namespace APP\plugins\generic\dataverse\report;
+
+use PKP\plugins\ReportPlugin;
+use PKP\config\Config;
+use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
+use APP\plugins\generic\dataverse\report\services\DataverseReportService;
 
 class DataverseReportPlugin extends ReportPlugin
 {
@@ -33,7 +37,6 @@ class DataverseReportPlugin extends ReportPlugin
     {
         $context = $request->getContext();
 
-        import('plugins.generic.dataverse.report.services.DataverseReportService');
         $reportService = new DataverseReportService();
 
         $overview = $reportService->getOverview($context->getId());
