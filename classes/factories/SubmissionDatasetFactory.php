@@ -91,7 +91,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $submissionUser = Application::get()->getRequest()->getUser();
         $userName = $submissionUser->getFullName(false, true);
 
-        $context = DAORegistry::getDAO('JournalDAO')->getById($this->submission->getContextId());
+        $context = Application::getContextDAO()->getById($this->submission->getContextId());
         $contextName = $context->getLocalizedName();
 
         return $userName . ' (via ' . $contextName . ')';
