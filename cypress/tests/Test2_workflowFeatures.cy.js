@@ -321,4 +321,22 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('button:contains("Add research data")').should('be.disabled');
 		cy.get('#dataset_metadata button:contains("Save")').should('be.disabled');
     });
+    it('Publishing of submission new version do not publish dataset', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('archive', submissionData.title);
+
+        cy.get('#publication-button').click();
+        cy.contains('button', 'Create New Version').click();
+        cy.get('.modal__panel button:contains("Yes")').click();
+        cy.wait(1000);
+
+        cy.get('.pkpPublication__version:contains("2")');
+        cy.contains('Would you like to publish the research data?').should('not.exist');
+        cy.get('.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
+        cy.wait(1000);
+
+        cy.get('.pkpPublication__statusPublished').should('have.text', 'Published');
+        cy.get('#datasetTab-button').click();
+        cy.get('.value > p').contains('Demo Dataverse, V1');
+    });
 });
