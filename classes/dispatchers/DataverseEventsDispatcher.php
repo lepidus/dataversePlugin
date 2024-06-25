@@ -88,13 +88,18 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return;
         }
 
+        $publication = $form->publication;
+        if ($publication->getData('version') > 1) {
+            return;
+        }
+
         $contextId = $form->submissionContext->getId();
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
         if ($configuration->getDatasetPublish() === DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
             return;
         }
 
-        $submissionId = $form->publication->getData('submissionId');
+        $submissionId = $publication->getData('submissionId');
         $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
         if (empty($study)) {
             return;
@@ -130,8 +135,13 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
     public function publishDeposit(string $hookName, array $params): void
     {
+        $publication = $params[0];
         $submission = $params[2];
         $request = Application::get()->getRequest();
+
+        if ($publication->getData('version') > 1) {
+            return;
+        }
 
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
         if ($configuration->getDatasetPublish() === DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
