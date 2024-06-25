@@ -182,12 +182,11 @@ class DatasetService extends DataverseService
             return;
         }
 
-        class_exists(SubmissionEventLogEntry::class); //Force define of SUBMISSION_LOG_ARTICLE_PUBLISH
         $this->registerEventLog(
             $submission,
             'plugins.generic.dataverse.log.researchDataPublished',
             [],
-            \SUBMISSION_LOG_ARTICLE_PUBLISH
+            SubmissionEventLogEntry::SUBMISSION_LOG_METADATA_PUBLISH
         );
     }
 

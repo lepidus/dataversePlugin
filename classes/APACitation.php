@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\dataverse\classes;
 
 use DateTime;
+use APP\core\Application;
 use APP\submission\Submission;
 use APP\publication\Publication;
 use APP\author\Author;
@@ -26,15 +27,14 @@ class APACitation
         }
 
         $this->locale = $submission->getData('locale');
-        $journalDao = DAORegistry::getDAO('JournalDAO');
-        $journal = $journalDao->getById($submission->getData('contextId'));
+        $context = Application::getContextDAO()->getById($submission->getData('contextId'));
         $authors =  $publication->getData('authors')->toArray();
         $submittedDate = new DateTime($submission->getData('dateSubmitted'));
 
         $submissionCitation = $this->createAuthorsCitationAPA($authors) . ' ';
         $submissionCitation .= '(' . date_format($submittedDate, 'Y') . '). ';
         $submissionCitation .= '<em>' . $publication->getLocalizedTitle($this->locale) . '</em>. ';
-        $submissionCitation .= $journal->getLocalizedName();
+        $submissionCitation .= $context->getLocalizedName();
 
         return $submissionCitation;
     }

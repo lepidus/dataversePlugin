@@ -278,6 +278,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 			cy.wait(1000);
 			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
 			cy.get('div[id^="assign-"] button:contains("Save")').click();
+            cy.wait(500);
 			cy.contains('All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?');
 		} else {
 			cy.get('#publication-button').click();
@@ -307,7 +308,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
-        cy.get('button:contains("Publish research data")').click();
+        cy.contains('button', 'Publish research data').click();
         
         const publishMsg = 'Do you really want to publish the research data related to this submission? This action cannot be undone.'
 			+ 'Before proceeding, make sure they are suitable for publication in ';
@@ -320,5 +321,24 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('button:contains("Delete research data")').should('be.disabled');
 		cy.get('button:contains("Add research data")').should('be.disabled');
 		cy.get('#dataset_metadata button:contains("Save")').should('be.disabled');
+    });
+    it('Publishing of submission new version do not publish dataset', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('archive', submissionData.title);
+
+        cy.get('#publication-button').click();
+        cy.contains('button', 'Create New Version').click();
+        cy.get('.modal__panel button:contains("Yes")').click();
+        cy.wait(1000);
+
+        cy.get('.pkpPublication__version:contains("2")');
+        cy.contains('button', 'Publish').click();
+        cy.contains('Would you like to publish the research data?').should('not.exist');
+        cy.get('.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
+        cy.wait(1000);
+
+        cy.get('.pkpPublication__statusPublished').should('have.text', 'Published');
+        cy.get('#datasetTab-button').click();
+        cy.get('.value > p').contains('Demo Dataverse, V1');
     });
 });

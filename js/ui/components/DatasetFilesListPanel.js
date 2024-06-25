@@ -60,10 +60,15 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
     </div>
 `);
 
+let SubmissionWizardPage = pkp.controllers.SubmissionWizardPage;
+if (!SubmissionWizardPage.hasOwnProperty('components')) {
+    SubmissionWizardPage = SubmissionWizardPage.extends;
+}
+
 const ListPanel = pkp.controllers.Container.components.ListPanel;
-const Modal = pkp.controllers.SubmissionWizardPage.components.Modal;
-const ajaxError = pkp.controllers.SubmissionWizardPage.mixins[0];
-const dialog = pkp.controllers.SubmissionWizardPage.mixins[2];
+const Modal = SubmissionWizardPage.components.Modal;
+const ajaxError = SubmissionWizardPage.mixins[0];
+const dialog = SubmissionWizardPage.mixins[2];
 
 pkp.Vue.component('dataset-files-list-panel', {
     name: 'DatasetFilesListPanel',
