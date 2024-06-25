@@ -331,6 +331,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.wait(1000);
 
         cy.get('.pkpPublication__version:contains("2")');
+        cy.contains('button', 'Publish').click();
         cy.contains('Would you like to publish the research data?').should('not.exist');
         cy.get('.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
         cy.wait(1000);
