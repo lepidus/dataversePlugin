@@ -278,6 +278,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 			cy.wait(1000);
 			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
 			cy.get('div[id^="assign-"] button:contains("Save")').click();
+            cy.wait(500);
 			cy.contains('All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?');
 		} else {
 			cy.get('#publication-button').click();
@@ -307,7 +308,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
-        cy.get('button:contains("Publish research data")').click();
+        cy.contains('button', 'Publish research data').click();
         
         const publishMsg = 'Do you really want to publish the research data related to this submission? This action cannot be undone.'
 			+ 'Before proceeding, make sure they are suitable for publication in ';
