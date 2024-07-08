@@ -6,5 +6,5 @@ include:
     ref: main
     file:
       - 'templates/groups/pkp_plugin.yml'
-      - 'templates/groups/ojs_3_4_plugins_unit_tests_model.yml'
-      - 'templates/groups/ojs_3_4_plugins_cypress_tests_model.yml'
+      - 'templates/groups/ojs/unit_tests.yml'
+      - 'templates/groups/ojs/cypress_tests.yml'
