@@ -31,14 +31,14 @@ class DatasetReviewDispatcher extends DataverseDispatcher
         $templateMgr->assign([
             'allDataStatementTypes' => $this->getDataStatementTypes(),
             'publication' => $submission->getCurrentPublication(),
-            'revieStepPattern' => $mapStepPattern[$hookName]
+            'reviewStepPattern' => $mapStepPattern[$hookName]
         ]);
         $templateMgr->registerFilter("output", [$this, 'addResearchDataToReviewStepFilter']);
     }
 
     public function addResearchDataToReviewStepFilter($output, $templateMgr)
     {
-        $reviewStepPattern = $templateMgr->getTemplateVars('revieStepPattern');
+        $reviewStepPattern = $templateMgr->getTemplateVars('reviewStepPattern');
         $step = $templateMgr->getTemplateVars('step');
 
         if (
