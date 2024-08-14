@@ -29,6 +29,12 @@ class DataStatementDispatcher extends DataverseDispatcher
     public function addDataStatementResourcesToBackend(string $hookName): void
     {
         $request = Application::get()->getRequest();
+        $backendPagesToInsert = ['submission', 'workflow', 'authorDashboard', 'reviewer'];
+
+        if (!in_array($request->getRequestedPage(), $backendPagesToInsert)) {
+            return;
+        }
+
         $templateMgr = TemplateManager::getManager($request);
         $dataStatementService = new DataStatementService();
         $templateMgr->setConstants($dataStatementService->getConstantsForTemplates());
@@ -37,8 +43,6 @@ class DataStatementDispatcher extends DataverseDispatcher
         $templateMgr->setLocaleKeys([
             'validator.active_url'
         ]);
-
-        return;
     }
 
     public function addDataStatementResources(string $hookName, array $params): bool
