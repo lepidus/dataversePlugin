@@ -53,7 +53,7 @@ class DataStatementService
             $dataverseClient = new DataverseClient();
             $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
             $this->dataverseName = $dataverseCollection->getName();
-            
+
             return $this->dataverseName;
         } catch (DataverseException $e) {
             error_log('Dataverse API error: ' . $e->getMessage());
