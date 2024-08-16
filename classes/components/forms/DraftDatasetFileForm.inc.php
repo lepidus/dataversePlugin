@@ -55,8 +55,9 @@ class DraftDatasetFileForm extends FormComponent
                 'dataverseName' => $dataverseCollection->getName(),
                 'termsOfUseURL' => $termsOfUse
             ];
-        } catch (\Exception $e) {
+        } catch (DataverseException $e) {
             error_log('Dataverse API error: ' . $e->getMessage());
+            return [];
         }
     }
 }

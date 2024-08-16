@@ -8,6 +8,8 @@ define('DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE', 0x000000005);
 
 class DataStatementService
 {
+    private $dataverseName;
+
     public function getDataStatementTypes(): array
     {
         $dataverseName = $this->getDataverseName();
@@ -27,11 +29,17 @@ class DataStatementService
 
     public function getDataverseName(): ?string
     {
+        if ($this->dataverseName) {
+            return $this->dataverseName;
+        }
+
         try {
             import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
             $dataverseClient = new DataverseClient();
             $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
-            return $dataverseCollection->getName();
+            $this->dataverseName = $dataverseCollection->getName();
+
+            return $this->dataverseName;
         } catch (DataverseException $e) {
             error_log('Dataverse API error: ' . $e->getMessage());
             return null;

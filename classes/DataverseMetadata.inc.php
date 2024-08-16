@@ -66,19 +66,19 @@ class DataverseMetadata
         ];
     }
 
-    public function getDataverseLicenses(): array
+    public function getDataverseLicenses(): ?array
     {
         $configuration = $this->getDataverseConfiguration();
         $licensesUrl = $configuration->getDataverseServerUrl() . '/api/licenses';
         $response = json_decode(file_get_contents($licensesUrl), true);
-        $this->dataverseLicenses = $response['data'];
+        $this->dataverseLicenses = $response['data'] ?? [];
 
         return $this->dataverseLicenses;
     }
 
-    public function getDefaultLicense(): string
+    public function getDefaultLicense(): ?string
     {
-        if(is_null($this->dataverseLicenses)) {
+        if(empty($this->dataverseLicenses)) {
             $this->getDataverseLicenses();
         }
 
@@ -87,6 +87,8 @@ class DataverseMetadata
                 return $license['name'];
             }
         }
+
+        return null;
     }
 
     private function getDataverseConfiguration(): DataverseConfiguration

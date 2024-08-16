@@ -1,6 +1,6 @@
 <?php
 
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TransferException;
 
 import('plugins.generic.dataverse.classes.entities.DataverseResponse');
 import('plugins.generic.dataverse.classes.exception.DataverseException');
@@ -60,11 +60,11 @@ abstract class DataverseActions
 
         try {
             $reponse = $this->client->request($method, $uri, $options);
-        } catch (RequestException $e) {
+        } catch (TransferException $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
 
-            if ($e->hasResponse()) {
+            if (method_exists($e, 'hasResponse') and $e->hasResponse()) {
                 $response = $e->getResponse();
                 $code = $response->getStatusCode();
 
@@ -89,7 +89,7 @@ abstract class DataverseActions
 
         try {
             $reponse = $this->client->request($method, $uri, $options);
-        } catch (RequestException $e) {
+        } catch (TransferException $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
 

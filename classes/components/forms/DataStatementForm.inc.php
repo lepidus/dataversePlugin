@@ -19,14 +19,9 @@ class DataStatementForm extends FormComponent
         $this->action = $action;
         $this->locales = $locales;
 
-        $dataStatementTypes = $this->getDataStatementTypes();
-
-        $dataStatementOptions = array_map(function ($value, $label) {
-            return [
-                'value' => $value,
-                'label' => $label,
-            ];
-        }, array_keys($dataStatementTypes), array_values($dataStatementTypes));
+        $dataStatementService = new DataStatementService();
+        $dataStatementOptions = $this->getDataStatementOptions($dataStatementService);
+        $dataverseName = $dataStatementService->getDataverseName();
 
         $request = Application::get()->getRequest();
         $contextPath = $request->getContext()->getPath();
@@ -58,7 +53,7 @@ class DataStatementForm extends FormComponent
                 [
                     'value' => true,
                     'label' => __('plugins.generic.dataverse.dataStatement.researchDataSubmitted', [
-                        'dataverseName' => $this->getDataverseName(),
+                        'dataverseName' => $dataverseName,
                     ]),
                     'disabled' => true,
                 ],
@@ -67,22 +62,20 @@ class DataStatementForm extends FormComponent
         ]));
     }
 
-    private function getDataStatementTypes(): array
+    private function getDataStatementOptions(): array
     {
         $dataStatementService = new DataStatementService();
         $dataStatementTypes = $dataStatementService->getDataStatementTypes();
         unset($dataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
 
-        return $dataStatementTypes;
-    }
+        $dataStatementOptions = array_map(function ($value, $label) {
+            return [
+                'value' => $value,
+                'label' => $label,
+            ];
+        }, array_keys($dataStatementTypes), array_values($dataStatementTypes));
 
-    private function getDataverseName(): string
-    {
-        import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
-        $dataverseClient = new DataverseClient();
-        $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
-
-        return $dataverseCollection->getName();
+        return $dataStatementOptions;
     }
 
     private function hasDataset(Publication $publication): bool
