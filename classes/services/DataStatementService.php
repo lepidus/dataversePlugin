@@ -13,6 +13,8 @@ class DataStatementService
     public const DATA_STATEMENT_TYPE_ON_DEMAND = 0x000000004;
     public const DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE = 0x000000005;
 
+    private $dataverseName;
+
     public function getDataStatementTypes(): array
     {
         $dataverseName = $this->getDataverseName();
@@ -43,10 +45,16 @@ class DataStatementService
 
     public function getDataverseName(): ?string
     {
+        if ($this->dataverseName) {
+            return $this->dataverseName;
+        }
+
         try {
             $dataverseClient = new DataverseClient();
             $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
-            return $dataverseCollection->getName();
+            $this->dataverseName = $dataverseCollection->getName();
+
+            return $this->dataverseName;
         } catch (DataverseException $e) {
             error_log('Dataverse API error: ' . $e->getMessage());
             return null;

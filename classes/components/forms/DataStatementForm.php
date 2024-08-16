@@ -25,7 +25,10 @@ class DataStatementForm extends FormComponent
 
         $this->action = $action;
         $this->locales = $this->getFormLocales($context);
-        $dataStatementOptions = $this->getDataStatementOptions($page);
+
+        $dataStatementService = new DataStatementService();
+        $dataStatementOptions = $this->getDataStatementOptions($dataStatementService, $page);
+        $dataverseName = $dataStatementService->getDataverseName();
 
         $vocabApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'vocabs');
 
@@ -58,7 +61,7 @@ class DataStatementForm extends FormComponent
                     [
                         'value' => true,
                         'label' => __('plugins.generic.dataverse.dataStatement.researchDataSubmitted', [
-                            'dataverseName' => $this->getDataverseName(),
+                            'dataverseName' => $dataverseName,
                         ]),
                         'disabled' => true,
                     ],
@@ -80,9 +83,8 @@ class DataStatementForm extends FormComponent
         return $formLocales;
     }
 
-    private function getDataStatementOptions($page): array
+    private function getDataStatementOptions($dataStatementService, $page): array
     {
-        $dataStatementService = new DataStatementService();
         $dataStatementTypes = $dataStatementService->getDataStatementTypes();
 
         if ($page == 'workflow') {
@@ -95,14 +97,6 @@ class DataStatementForm extends FormComponent
                 'label' => $label,
             ];
         }, array_keys($dataStatementTypes), array_values($dataStatementTypes));
-    }
-
-    private function getDataverseName(): string
-    {
-        $dataverseClient = new DataverseClient();
-        $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
-
-        return $dataverseCollection->getName();
     }
 
     private function hasDataset($publication): bool

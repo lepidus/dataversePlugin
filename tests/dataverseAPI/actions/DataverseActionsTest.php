@@ -5,6 +5,7 @@ use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ConnectException;
 use PKP\tests\PKPTestCase;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
@@ -96,7 +97,7 @@ class DataverseActionsTest extends PKPTestCase
         $this->assertEquals('{"foo": "bar"}', $response->getBody());
     }
 
-    public function testRequestErrorWithoutResponseThrownDataverseException(): void
+    public function testRequestErrorWithoutResponseThrowsDataverseException(): void
     {
         $mockHandler = new MockHandler([
             new RequestException(
@@ -115,7 +116,26 @@ class DataverseActionsTest extends PKPTestCase
         $actions->nativeAPIRequest('GET', 'test');
     }
 
-    public function testRequestErrorWithResponseThrownDataverseException(): void
+    public function testConnectionErrorThrowsDataverseException(): void
+    {
+        $mockHandler = new MockHandler([
+            new ConnectException(
+                'Failed to connect to Dataverse',
+                new Request('GET', 'test')
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
+            ->getMockForAbstractClass();
+
+        $this->expectException(DataverseException::class);
+        $this->expectExceptionMessage('Failed to connect to Dataverse');
+        $actions->nativeAPIRequest('GET', 'test');
+    }
+
+    public function testRequestErrorWithResponseThrowsDataverseException(): void
     {
         $mockHandler = new MockHandler([
             new RequestException(
@@ -136,7 +156,7 @@ class DataverseActionsTest extends PKPTestCase
         $actions->nativeAPIRequest('GET', 'test');
     }
 
-    public function testRequestErrorWithResponseBodyEmptyThrownDataverseException(): void
+    public function testRequestErrorWithResponseBodyEmptyThrowsDataverseException(): void
     {
         $mockHandler = new MockHandler([
             new RequestException(

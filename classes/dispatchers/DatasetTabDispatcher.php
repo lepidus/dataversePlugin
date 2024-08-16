@@ -12,6 +12,7 @@ use PKP\facades\Locale;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;

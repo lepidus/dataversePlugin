@@ -9,6 +9,7 @@ use APP\core\Application;
 use PKP\facades\Locale;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 
 class DraftDatasetFileForm extends FormComponent
 {
@@ -58,8 +59,9 @@ class DraftDatasetFileForm extends FormComponent
                 'dataverseName' => $dataverseCollection->getName(),
                 'termsOfUseURL' => $termsOfUse
             ];
-        } catch (\Exception $e) {
+        } catch (DataverseException $e) {
             error_log('Dataverse API error: ' . $e->getMessage());
+            return [];
         }
     }
 }

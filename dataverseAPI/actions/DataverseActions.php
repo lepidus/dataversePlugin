@@ -4,7 +4,7 @@ namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
 use APP\core\Application;
 use PKP\db\DAORegistry;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TransferException;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
@@ -61,11 +61,11 @@ abstract class DataverseActions
 
         try {
             $response = $this->client->request($method, $uri, $options);
-        } catch (RequestException $e) {
+        } catch (TransferException $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
 
-            if ($e->hasResponse()) {
+            if (method_exists($e, 'hasResponse') and $e->hasResponse()) {
                 $response = $e->getResponse();
                 $code = $response->getStatusCode();
 
@@ -94,11 +94,11 @@ abstract class DataverseActions
 
         try {
             $response = $this->client->request($method, $uri, $options);
-        } catch (RequestException $e) {
+        } catch (TransferException $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
 
-            if ($e->hasResponse()) {
+            if (method_exists($e, 'hasResponse') and $e->hasResponse()) {
                 $response = $e->getResponse();
                 $code = $response->getStatusCode();
                 $message = $response->getReasonPhrase();
