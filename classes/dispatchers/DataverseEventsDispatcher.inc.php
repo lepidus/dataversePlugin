@@ -399,6 +399,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         } elseif (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
             $this->plugin->import('api.v1.draftDatasetFiles.DraftDatasetFileHandler');
             $handler = new DraftDatasetFileHandler();
+        } elseif (str_contains($request->getRequestPath(), 'api/v1/dataverse')) {
+            $this->plugin->import('api.v1.dataverse.DataverseHandler');
+            $handler = new DataverseHandler();
         }
 
         if (!isset($handler)) {
