@@ -59,7 +59,7 @@ abstract class DataverseActions
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
 
         try {
-            $reponse = $this->client->request($method, $uri, $options);
+            $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
@@ -77,9 +77,9 @@ abstract class DataverseActions
         }
 
         return new DataverseResponse(
-            $reponse->getStatusCode(),
-            $reponse->getReasonPhrase(),
-            $reponse->getBody()
+            $response->getStatusCode(),
+            $response->getReasonPhrase(),
+            $response->getBody()
         );
     }
 
@@ -88,7 +88,7 @@ abstract class DataverseActions
         $options['auth'] = [$this->apiToken, ''];
 
         try {
-            $reponse = $this->client->request($method, $uri, $options);
+            $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
@@ -102,9 +102,9 @@ abstract class DataverseActions
         }
 
         return new DataverseResponse(
-            $reponse->getStatusCode(),
-            $reponse->getReasonPhrase(),
-            $reponse->getBody()
+            $response->getStatusCode(),
+            $response->getReasonPhrase(),
+            $response->getBody()
         );
     }
 }
