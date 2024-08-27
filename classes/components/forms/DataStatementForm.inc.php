@@ -11,7 +11,6 @@ define('FORM_DATA_STATEMENT', 'dataStatement');
 class DataStatementForm extends FormComponent
 {
     public $id = FORM_DATA_STATEMENT;
-
     public $method = 'PUT';
 
     public function __construct($action, $locales, $publication)
@@ -62,11 +61,9 @@ class DataStatementForm extends FormComponent
         ]));
     }
 
-    private function getDataStatementOptions(): array
+    private function getDataStatementOptions($dataStatementService): array
     {
-        $dataStatementService = new DataStatementService();
-        $dataStatementTypes = $dataStatementService->getDataStatementTypes();
-        unset($dataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+        $dataStatementTypes = $dataStatementService->getDataStatementTypes(false);
 
         $dataStatementOptions = array_map(function ($value, $label) {
             return [
