@@ -18,12 +18,11 @@ class DataStatementForm extends FormComponent
         $this->action = $action;
         $this->locales = $locales;
 
-        $dataStatementService = new DataStatementService();
-        $dataStatementOptions = $this->getDataStatementOptions($dataStatementService);
-        $dataverseName = $dataStatementService->getDataverseName();
+        $dataStatementOptions = $this->getDataStatementOptions();
 
         $request = Application::get()->getRequest();
         $contextPath = $request->getContext()->getPath();
+        $this->dataversePluginApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $contextPath, 'dataverse');
         $vocabApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $contextPath, 'vocabs');
 
         import('plugins.generic.dataverse.classes.components.forms.FieldControlledVocabUrl');
@@ -52,7 +51,7 @@ class DataStatementForm extends FormComponent
                 [
                     'value' => true,
                     'label' => __('plugins.generic.dataverse.dataStatement.researchDataSubmitted', [
-                        'dataverseName' => $dataverseName,
+                        'dataverseName' => '',
                     ]),
                     'disabled' => true,
                 ],
@@ -61,8 +60,23 @@ class DataStatementForm extends FormComponent
         ]));
     }
 
-    private function getDataStatementOptions($dataStatementService): array
+    public function getConfig()
     {
+        $config = parent::getConfig();
+
+        $config = array_merge(
+            $config,
+            [
+                'dataversePluginApiUrl' => $this->dataversePluginApiUrl
+            ]
+        );
+
+        return $config;
+    }
+
+    private function getDataStatementOptions(): array
+    {
+        $dataStatementService = new DataStatementService();
         $dataStatementTypes = $dataStatementService->getDataStatementTypes(false);
 
         $dataStatementOptions = array_map(function ($value, $label) {
