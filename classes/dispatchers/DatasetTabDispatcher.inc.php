@@ -26,8 +26,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $templateMgr = &$params[1];
         $output = &$params[2];
 
-        $submission = $templateMgr->get_template_vars('submission');
-
+        $submission = $templateMgr->getTemplateVars('submission');
         $content = $this->getDatasetTabContent($submission);
 
         $output .= sprintf(
@@ -47,21 +46,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             return $this->plugin->getTemplateResource('datasetTab/noResearchData.tpl');
         }
 
-        $dataverseClient = new DataverseClient();
-        try {
-            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
-            return $this->plugin->getTemplateResource('datasetTab/datasetData.tpl');
-        } catch (DataverseException $e) {
-            if ($e->getCode() === 404) {
-                DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
-            }
-
-            error_log('Dataverse API error: ' . $e->getMessage());
-
-            $templateMgr = TemplateManager::getManager(Application::get()->getRequest());
-            $templateMgr->assign('errorMessage', $e->getMessage());
-            return $this->plugin->getTemplateResource('datasetTab/researchDataError.tpl');
-        }
+        return $this->plugin->getTemplateResource('datasetTab/datasetData.tpl');
     }
 
     public function loadResourcesToWorkflow(string $hookName, array $params): bool
