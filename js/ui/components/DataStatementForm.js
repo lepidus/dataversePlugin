@@ -49,37 +49,32 @@ pkp.Vue.component('data-statement-form', {
 			this.$emit('set', this.id, { fields: newFields.filter(this.shouldShowField) });
 			this.removeError(name, localeKey);
 		},
-		getDataverseName() {
-			let dataverseName = '';
-			$.ajax({
-                url: this.dataversePluginApiUrl + '/dataverseName',
-                type: 'GET',
-				async: false,
-                error: function (r) {
-                    dataverseName = '';
-                },
-                success: function (r) {
-                    dataverseName = r.dataverseName;
-                },
-            });
-
-			return dataverseName;
-		},
 		updateDataSubmittedField() {
-			let dataverseName = this.getDataverseName();
-			let researchDataSubmittedField = null;
-			
-			for (let field of this.allFields) {
-				if (field.name == 'researchDataSubmitted') {
-					researchDataSubmittedField = field;
-					break;
-				}
-			}
+			let self = this;
+			$.ajax({
+				url: self.dataversePluginApiUrl + '/dataverseName',
+				type: 'GET',
+				error: function (r) {
+					return;
+				},
+				success: function (r) {
+					let dataverseName = r.dataverseName;
 
-			let newFieldLabel = researchDataSubmittedField.options[0].label;
-			newFieldLabel = newFieldLabel.replace(/<strong><\/strong>/, `<strong>${dataverseName}</strong>`);
+					let researchDataSubmittedField = null;
 
-			researchDataSubmittedField.options[0].label = newFieldLabel;
+					for (let field of self.allFields) {
+						if (field.name == 'researchDataSubmitted') {
+							researchDataSubmittedField = field;
+							break;
+						}
+					}
+
+					let newFieldLabel = researchDataSubmittedField.options[0].label;
+					newFieldLabel = newFieldLabel.replace(/<strong><\/strong>/, `<strong>${dataverseName}</strong>`);
+
+					researchDataSubmittedField.options[0].label = newFieldLabel;
+				},
+			});
 		}
 	},
 	mounted() {
