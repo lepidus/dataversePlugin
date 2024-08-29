@@ -22,6 +22,15 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         return $this->createDataverseCollection($response);
     }
 
+    public function getLicenses(): array
+    {
+        $uri = $this->createNativeAPIURI('licenses');
+        $response = $this->nativeAPIRequest('GET', $uri);
+        $licenses = json_decode($response->getBody(), true);
+
+        return $licenses['data'] ?? [];
+    }
+
     public function publish(): void
     {
         $uri = $this->getCurrentDataverseURI() . '/actions/:publish';
