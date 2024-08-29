@@ -16,6 +16,11 @@ class DataverseHandler extends APIHandler
                     'handler' => array($this, 'getDataverseName'),
                     'roles' => $roles
                 ),
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/rootDataverseName',
+                    'handler' => array($this, 'getRootDataverseName'),
+                    'roles' => $roles
+                ),
             ),
         );
         parent::__construct();
@@ -44,7 +49,21 @@ class DataverseHandler extends APIHandler
 
             return $response->withJson(['dataverseName' => $dataverseName], 200);
         } catch (DataverseException $e) {
-            error_log('Dataverse API error: ' . $e->getMessage());
+            error_log('Dataverse API error while getting dataverse name: ' . $e->getMessage());
+            return $response->withStatus($e->getCode());
+        }
+    }
+
+    public function getRootDataverseName($slimRequest, $response, $args)
+    {
+        try {
+            $dataverseClient = new DataverseClient();
+            $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
+            $rootDataverseName = $rootDataverseCollection->getName();
+
+            return $response->withJson(['rootDataverseName' => $rootDataverseName], 200);
+        } catch (DataverseException $e) {
+            error_log('Dataverse API error while getting root name: ' . $e->getMessage());
             return $response->withStatus($e->getCode());
         }
     }

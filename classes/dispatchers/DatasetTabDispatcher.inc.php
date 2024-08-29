@@ -146,9 +146,14 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         try {
             $dataverseClient = new DataverseClient();
-            $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
             $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
 
+            $dataversePluginApiUrl = $dispatcher->url(
+                $request,
+                ROUTE_API,
+                $context->getPath(),
+                'dataverse'
+            );
             $datasetApiUrl = $dispatcher->url(
                 $request,
                 ROUTE_API,
@@ -198,11 +203,11 @@ class DatasetTabDispatcher extends DataverseDispatcher
             $this->addComponent($templateMgr, $deleteDatasetForm);
 
             $templateMgr->setState([
+                'dataversePluginApiUrl' => $dataversePluginApiUrl,
                 'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
                 'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
                 'publishDatasetLabel' => __('plugins.generic.dataverse.researchData.publish'),
                 'confirmPublishDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetPublish', [
-                    'serverName' => $rootDataverseCollection->getName(),
                     'serverUrl' => $configuration->getDataverseServerUrl(),
                 ]),
                 'datasetCitationUrl' => $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
