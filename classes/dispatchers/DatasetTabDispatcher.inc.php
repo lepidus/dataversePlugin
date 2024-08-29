@@ -146,7 +146,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         try {
             $dataverseClient = new DataverseClient();
-            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
             $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
             $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
 
@@ -191,7 +190,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             ]);
             $mail->replaceParams();
 
-            $this->initDatasetMetadataForm($templateMgr, $datasetApiUrl, 'PUT', $dataset);
+            $this->initDatasetMetadataForm($templateMgr, $datasetApiUrl, 'PUT');
             $this->initDatasetFilesList($templateMgr, $fileListApiUrl, []);
             $this->initDatasetFileForm($templateMgr, $fileFormAction);
 
@@ -214,7 +213,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         }
     }
 
-    private function initDatasetMetadataForm(PKPTemplateManager $templateMgr, string $action, string $method, Dataset $dataset): void
+    private function initDatasetMetadataForm(PKPTemplateManager $templateMgr, string $action, string $method, ?Dataset $dataset = null): void
     {
         $context = Application::get()->getRequest()->getContext();
 

@@ -223,8 +223,21 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             });
         },
 
-        setDatasetForms(dataset) {
+        updateDatasetMetadataForm(dataset) {
             let form = { ...this.components.datasetMetadata };
+            
+            for (let field of form.fields) {
+                let datasetFieldName = field.name.replace(/^dataset/, '').toLowerCase();
+                field.value = this.dataset[datasetFieldName];
+
+                if (datasetFieldName == 'keywords') {
+                    let selectedKeywords = [];
+                    for (let keyword of this.dataset[datasetFieldName]) {
+                        selectedKeywords.push({'label': keyword, 'value': keyword});
+                    }
+                    field.selected = selectedKeywords;
+                }
+            }
             form.canSubmit =
                 this.canEditPublication &&
                 dataset.versionState !== 'RELEASED'
@@ -233,7 +246,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             this.components.datasetMetadata = form;
         },
 
-        setDatasetCitation() {
+        updateDatasetCitation() {
             if (!this.datasetCitationUrl) {
                 return;
             }
@@ -290,20 +303,14 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }
         });
 
-        this.setDatasetCitation();
-        if (this.dataset) {
-            this.setDatasetForms(this.dataset);
-        }
-        this.fileFormErrors = this.components.datasetFileForm.errors;
-    },
-    mounted() {
         this.refreshDataset();
         this.refreshDatasetFiles();
+        this.fileFormErrors = this.components.datasetFileForm.errors;
     },
     watch: {
         dataset(newVal, oldVal) {
-            this.setDatasetForms(newVal);
-            this.setDatasetCitation();
+            this.updateDatasetMetadataForm(newVal);
+            this.updateDatasetCitation();
         }
     },
 });
