@@ -80,7 +80,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'pageComponent' => 'DataverseWorkflowPage',
         ]);
 
-        $submission = $templateMgr->get_template_vars('submission');
+        $submission = $templateMgr->getTemplateVars('submission');
         $study = $this->getSubmissionStudy($submission->getId());
 
         if (is_null($study)) {
@@ -191,19 +191,14 @@ class DatasetTabDispatcher extends DataverseDispatcher
             ]);
             $mail->replaceParams();
 
-            $items = array_map(function (DatasetFile $datasetFile) {
-                return $datasetFile->getVars();
-            }, $dataset->getFiles());
-
             $this->initDatasetMetadataForm($templateMgr, $datasetApiUrl, 'PUT', $dataset);
-            $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
+            $this->initDatasetFilesList($templateMgr, $fileListApiUrl, []);
             $this->initDatasetFileForm($templateMgr, $fileFormAction);
 
             $deleteDatasetForm = $this->getDeleteDatasetForm($datasetApiUrl, $context, $locales, $mail);
             $this->addComponent($templateMgr, $deleteDatasetForm);
 
             $templateMgr->setState([
-                'dataset' => $dataset->getAllData(),
                 'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
                 'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
                 'publishDatasetLabel' => __('plugins.generic.dataverse.researchData.publish'),

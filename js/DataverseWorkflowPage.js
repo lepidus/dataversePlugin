@@ -6,6 +6,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             datasetCitation: '',
             datasetCitationUrl: null,
             fileFormErrors: [],
+            datasetIsLoading: true,
             isLoading: false,
             latestGetRequest: '',
         };
@@ -53,7 +54,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
 
         fileFormSuccess(data) {
-            this.refreshItems();
+            this.refreshDatasetFiles();
             this.$modal.hide('fileForm');
         },
 
@@ -140,7 +141,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         },
                         error: self.ajaxErrorCallback,
                         success: function (r) {
-                            self.refreshItems();
+                            self.refreshDatasetFiles();
                             self.$modal.hide('delete');
                             self.setFocusIn(self.$el);
                         },
@@ -178,11 +179,13 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 
         refreshDataset() {
             const self = this;
+            this.datasetIsLoading = true;
             $.ajax({
                 url: this.components.datasetMetadata.action,
                 type: 'GET',
                 success(r) {
                     self.dataset = r;
+                    self.datasetIsLoading = false;
                 },
                 error(r) {
                     self.ajaxErrorCallback(r);
@@ -190,9 +193,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             });
         },
 
-        refreshItems() {
+        refreshDatasetFiles() {
             var self = this;
-            this.isLoading = true;
+            this.components.datasetFiles.isLoading = true;
             this.latestGetRequest = $.pkp.classes.Helper.uuid();
 
             $.ajax({
@@ -209,13 +212,13 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                     if (self.latestGetRequest !== this._uuid) {
                         return;
                     }
-                    self.setItems(r.items);
+                    self.setDatasetFiles(r.items);
                 },
                 complete() {
                     if (self.latestGetRequest !== this._uuid) {
                         return;
                     }
-                    self.isLoading = false;
+                    self.components.datasetFiles.isLoading = false;
                 },
             });
         },
@@ -235,7 +238,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 return;
             }
             var self = this;
-            this.datasetCitation = 'loading...';
+            this.datasetCitation = this.__('common.loading') + '...';
             $.ajax({
                 url: self.datasetCitationUrl,
                 type: 'GET',
@@ -246,7 +249,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             });
         },
 
-        setItems(items) {
+        setDatasetFiles(items) {
             this.components.datasetFiles.items = items;
         },
 
@@ -292,6 +295,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             this.setDatasetForms(this.dataset);
         }
         this.fileFormErrors = this.components.datasetFileForm.errors;
+    },
+    mounted() {
+        this.refreshDataset();
+        this.refreshDatasetFiles();
     },
     watch: {
         dataset(newVal, oldVal) {
