@@ -4,6 +4,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         return {
             dataversePluginApiUrl: null,
             rootDataverseName: '',
+            dataverseName: '',
             dataset: null,
             datasetCitation: '',
             datasetCitationUrl: null,
@@ -194,6 +195,23 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 			});
         },
 
+        getDataverseName() {
+            let self = this;
+			$.ajax({
+				url: self.dataversePluginApiUrl + '/dataverseName',
+				type: 'GET',
+				error: function (r) {
+					self.ajaxErrorCallback(r);
+				},
+				success: function (r) {
+					self.dataverseName = r.dataverseName;
+                    let deleteDatasetForm = self.components.deleteDataset;
+                    let deleteMessageField = deleteDatasetForm.fields[0];
+                    deleteMessageField.value = deleteMessageField.value.replace('{$dataverseName}', self.dataverseName);
+				},
+			});
+        },
+
         refreshDataset() {
             const self = this;
             this.datasetIsLoading = true;
@@ -321,6 +339,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         });
 
         this.getRootDataverseName();
+        this.getDataverseName();
         this.refreshDataset();
         this.refreshDatasetFiles();
         this.fileFormErrors = this.components.datasetFileForm.errors;
