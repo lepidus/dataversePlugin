@@ -205,9 +205,14 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 				},
 				success: function (r) {
 					self.dataverseName = r.dataverseName;
+                    
                     let deleteDatasetForm = self.components.deleteDataset;
                     let deleteMessageField = deleteDatasetForm.fields[0];
                     deleteMessageField.value = deleteMessageField.value.replace('{$dataverseName}', self.dataverseName);
+
+                    let datasetFileForm = self.components.datasetFileForm;
+                    let termsOfUseFieldOption = datasetFileForm.fields[1].options[0];
+                    termsOfUseFieldOption.label = termsOfUseFieldOption.label.replace('{$dataverseName}', self.dataverseName);
 				},
 			});
         },

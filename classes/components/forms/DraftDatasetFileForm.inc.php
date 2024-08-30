@@ -42,22 +42,11 @@ class DraftDatasetFileForm extends FormComponent
     private function getTermsOfUseData($contextId)
     {
         $locale = AppLocale::getLocale();
-
-        import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
-        $dataverseClient = new DataverseClient();
-
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+        $termsOfUse = $configuration->getLocalizedData('termsOfUse', $locale);
 
-        try {
-            $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
-            $termsOfUse = $configuration->getLocalizedData('termsOfUse', $locale);
-            return [
-                'dataverseName' => $dataverseCollection->getName(),
-                'termsOfUseURL' => $termsOfUse
-            ];
-        } catch (DataverseException $e) {
-            error_log('Dataverse API error: ' . $e->getMessage());
-            return [];
-        }
+        return [
+            'termsOfUseURL' => $termsOfUse
+        ];
     }
 }
