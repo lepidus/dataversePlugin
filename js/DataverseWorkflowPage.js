@@ -5,6 +5,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             dataversePluginApiUrl: null,
             rootDataverseName: '',
             dataverseName: '',
+            dataverseLicenses: [],
             dataset: null,
             datasetCitation: '',
             datasetCitationUrl: null,
@@ -217,6 +218,26 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 			});
         },
 
+        getDataverseLicenses() {
+            let self = this;
+			$.ajax({
+				url: self.dataversePluginApiUrl + '/licenses',
+				type: 'GET',
+				error: function (r) {
+					self.ajaxErrorCallback(r);
+				},
+				success: function (r) {
+                    let datasetMetadataForm = self.components.datasetMetadata;
+
+                    for (let license of r.licenses) {
+                        self.dataverseLicenses.push({'label': license.name, 'value': license.name});
+                    }
+
+                    datasetMetadataForm.fields[4].options = self.dataverseLicenses;
+				},
+			});
+        },
+
         refreshDataset() {
             const self = this;
             this.datasetIsLoading = true;
@@ -345,6 +366,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 
         this.getRootDataverseName();
         this.getDataverseName();
+        this.getDataverseLicenses();
         this.refreshDataset();
         this.refreshDatasetFiles();
         this.fileFormErrors = this.components.datasetFileForm.errors;

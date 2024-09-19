@@ -21,6 +21,11 @@ class DataverseHandler extends APIHandler
                     'handler' => array($this, 'getRootDataverseName'),
                     'roles' => $roles
                 ),
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/licenses',
+                    'handler' => array($this, 'getDataverseLicenses'),
+                    'roles' => $roles
+                ),
             ),
         );
         parent::__construct();
@@ -64,6 +69,19 @@ class DataverseHandler extends APIHandler
             return $response->withJson(['rootDataverseName' => $rootDataverseName], 200);
         } catch (DataverseException $e) {
             error_log('Dataverse API error while getting root name: ' . $e->getMessage());
+            return $response->withStatus($e->getCode());
+        }
+    }
+
+    public function getDataverseLicenses($slimRequest, $response, $args)
+    {
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataverseLicenses = $dataverseClient->getDataverseCollectionActions()->getLicenses();
+
+            return $response->withJson(['licenses' => $dataverseLicenses], 200);
+        } catch (DataverseException $e) {
+            error_log('Dataverse API error while getting licenses: ' . $e->getMessage());
             return $response->withStatus($e->getCode());
         }
     }
