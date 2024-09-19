@@ -21,8 +21,6 @@ class DatasetMetadataForm extends FormComponent
         $this->locales = $locales;
 
         $dataverseMetadata = new DataverseMetadata();
-        $dataverseLicenses = $dataverseMetadata->getDataverseLicenses();
-
         $datasetMetadata = $this->getDatasetMetadata($dataset);
 
         $this->addField(new FieldText('datasetTitle', [
@@ -55,7 +53,7 @@ class DatasetMetadataForm extends FormComponent
         ->addField(new FieldSelect('datasetLicense', [
             'label' => __('plugins.generic.dataverse.metadataForm.license.label'),
             'isRequired' => true,
-            'options' => $this->mapLicensesForDisplay($dataverseLicenses),
+            'options' => [],
             'value' => $datasetMetadata['license'],
         ]));
     }
@@ -86,14 +84,5 @@ class DatasetMetadataForm extends FormComponent
         $request = Application::get()->getRequest();
         $contextPath = $request->getContext()->getPath();
         return $request->getDispatcher()->url($request, ROUTE_API, $contextPath, 'vocabs', null, null, ['vocab' => 'submissionKeyword']);
-    }
-
-    private function mapLicensesForDisplay(array $licenses): array
-    {
-        $mappedLicenses = [];
-        foreach($licenses as $license) {
-            $mappedLicenses[] = ['label' => $license['name'], 'value' => $license['name']];
-        }
-        return $mappedLicenses;
     }
 }
