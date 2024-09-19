@@ -10,6 +10,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             datasetCitation: '',
             datasetCitationUrl: null,
             fileFormErrors: [],
+            hasDepositedDataset: false,
             datasetIsLoading: true,
             isLoading: false,
             latestGetRequest: '',
@@ -201,9 +202,11 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 				success: function (r) {
 					self.dataverseName = r.dataverseName;
                     
-                    let deleteDatasetForm = self.components.deleteDataset;
-                    let deleteMessageField = deleteDatasetForm.fields[0];
-                    deleteMessageField.value = deleteMessageField.value.replace('{$dataverseName}', self.dataverseName);
+                    if (self.hasDepositedDataset) {
+                        let deleteDatasetForm = self.components.deleteDataset;
+                        let deleteMessageField = deleteDatasetForm.fields[0];
+                        deleteMessageField.value = deleteMessageField.value.replace('{$dataverseName}', self.dataverseName);
+                    }
 
                     let datasetFileForm = self.components.datasetFileForm;
                     let termsOfUseFieldOption = datasetFileForm.fields[1].options[0];
@@ -352,7 +355,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }
         });
 
-        this.getRootDataverseName();
+        if (this.hasDepositedDataset) {
+            this.getRootDataverseName();
+        }
+
         this.getDataverseName();
         this.getDataverseLicenses();
         this.refreshDataset();

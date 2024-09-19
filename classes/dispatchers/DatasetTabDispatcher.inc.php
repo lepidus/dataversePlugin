@@ -122,10 +122,16 @@ class DatasetTabDispatcher extends DataverseDispatcher
         ];
 
         $fileFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, $params);
+        $dataversePluginApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'dataverse');
 
         $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
         $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
         $this->initDatasetFileForm($templateMgr, $fileFormAction);
+
+        $templateMgr->setState([
+            'dataversePluginApiUrl' => $dataversePluginApiUrl,
+            'hasDepositedDataset' => false
+        ]);
     }
 
     private function setupResearchDataUpdate(Submission $submission, DataverseStudy $study): void
@@ -206,7 +212,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
                 'serverUrl' => $configuration->getDataverseServerUrl(),
             ]),
             'datasetCitationUrl' => $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
-            'canSendEmail' => in_array(ROLE_ID_MANAGER, $userRoles)
+            'canSendEmail' => in_array(ROLE_ID_MANAGER, $userRoles),
+            'hasDepositedDataset' => true
         ]);
     }
 
