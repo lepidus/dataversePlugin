@@ -186,9 +186,6 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 			$.ajax({
 				url: self.dataversePluginApiUrl + '/rootDataverseName',
 				type: 'GET',
-				error: function (r) {
-					self.ajaxErrorCallback(r);
-				},
 				success: function (r) {
 					self.rootDataverseName = r.rootDataverseName;
                     self.confirmPublishDatasetMessage = self.confirmPublishDatasetMessage.replace('{$serverName}', self.rootDataverseName);
@@ -201,9 +198,6 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 			$.ajax({
 				url: self.dataversePluginApiUrl + '/dataverseName',
 				type: 'GET',
-				error: function (r) {
-					self.ajaxErrorCallback(r);
-				},
 				success: function (r) {
 					self.dataverseName = r.dataverseName;
                     
@@ -223,9 +217,6 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 			$.ajax({
 				url: self.dataversePluginApiUrl + '/licenses',
 				type: 'GET',
-				error: function (r) {
-					self.ajaxErrorCallback(r);
-				},
 				success: function (r) {
                     let datasetMetadataForm = self.components.datasetMetadata;
 
@@ -247,9 +238,6 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 success(r) {
                     self.dataset = r;
                     self.datasetIsLoading = false;
-                },
-                error(r) {
-                    self.ajaxErrorCallback(r);
                 }
             });
         },
