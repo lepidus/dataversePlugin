@@ -212,6 +212,13 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                     let datasetFileForm = self.components.datasetFileForm;
                     let termsOfUseFieldOption = datasetFileForm.fields[1].options[0];
                     termsOfUseFieldOption.label = termsOfUseFieldOption.label.replace('{$dataverseName}', self.dataverseName);
+
+                    let dataStatementForm = self.components.dataStatement;
+                    let researchDataSubmittedField = dataStatementForm.fields[1];
+                    let newOptionLabel = researchDataSubmittedField.options[0].label;
+					newOptionLabel = newOptionLabel.replace(/<strong><\/strong>/, `<strong>${self.dataverseName}</strong>`);
+
+					researchDataSubmittedField.options[0].label = newOptionLabel;
 				},
 			});
         },
