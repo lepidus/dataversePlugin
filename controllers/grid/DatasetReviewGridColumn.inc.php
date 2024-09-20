@@ -18,7 +18,7 @@ class DatasetReviewGridColumn extends GridColumn
     {
         $cellActions = parent::getCellActions($request, $row, $position);
 
-        if(!is_null($this->study)) {
+        if (!is_null($this->study)) {
             $datasetFile = $row->getData();
 
             $context = $request->getContext();

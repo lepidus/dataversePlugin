@@ -26,7 +26,7 @@ class DataversePlugin extends GenericPlugin
         $context = Application::get()->getRequest()->getContext();
         $this->registerDAOClasses();
 
-        if(!is_null($context) and $dataverseConfigurationDAO->hasConfiguration($context->getId())) {
+        if (!is_null($context) and $dataverseConfigurationDAO->hasConfiguration($context->getId())) {
             $this->loadDispatcherClasses();
             PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
         }

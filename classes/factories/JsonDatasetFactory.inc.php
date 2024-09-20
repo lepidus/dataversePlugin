@@ -26,7 +26,7 @@ class JsonDatasetFactory extends DatasetFactory
 
         //We use only the license name (instead of name and uri) to
         //maintain compatibility with previous versions of Dataverse
-        if(isset($datasetVersion->license->name)) {
+        if (isset($datasetVersion->license->name)) {
             $props['license'] = $datasetVersion->license->name;
         }
 

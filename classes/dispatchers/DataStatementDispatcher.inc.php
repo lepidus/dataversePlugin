@@ -157,7 +157,7 @@ class DataStatementDispatcher extends DataverseDispatcher
         }
 
         if (in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $stepForm->getData('dataStatementTypes'))) {
-            if(empty($stepForm->getData('keywords')['dataStatementUrls'])) {
+            if (empty($stepForm->getData('keywords')['dataStatementUrls'])) {
                 $stepForm->addError(
                     'dataStatementUrls',
                     __('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')
@@ -165,8 +165,8 @@ class DataStatementDispatcher extends DataverseDispatcher
                 $stepForm->addErrorField('dataStatementUrls');
                 return false;
             } else {
-                foreach($stepForm->getData('keywords')['dataStatementUrls'] as $dataStatementUrl) {
-                    if(!$this->inputIsURL($dataStatementUrl)) {
+                foreach ($stepForm->getData('keywords')['dataStatementUrls'] as $dataStatementUrl) {
+                    if (!$this->inputIsURL($dataStatementUrl)) {
                         $stepForm->addError(
                             'dataStatementUrls',
                             __('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')

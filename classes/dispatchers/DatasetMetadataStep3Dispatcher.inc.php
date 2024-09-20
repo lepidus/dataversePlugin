@@ -46,7 +46,7 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
     private function mapLicensesForStep3Display(array $licenses): array
     {
         $mappedLicenses = [];
-        foreach($licenses as $license) {
+        foreach ($licenses as $license) {
             $mappedLicenses[$license['name']] = $license['name'];
         }
         return $mappedLicenses;
@@ -61,7 +61,7 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
         $subject = $form->getData('datasetSubject');
         $license = $form->getData('datasetLicense');
 
-        if(is_null($subject)) {
+        if (is_null($subject)) {
             return false;
         }
 
