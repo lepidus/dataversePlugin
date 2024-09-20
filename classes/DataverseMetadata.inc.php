@@ -78,12 +78,12 @@ class DataverseMetadata
 
     public function getDefaultLicense(): ?string
     {
-        if(empty($this->dataverseLicenses)) {
+        if (empty($this->dataverseLicenses)) {
             $this->getDataverseLicenses();
         }
 
-        foreach($this->dataverseLicenses as $license) {
-            if($license['isDefault']) {
+        foreach ($this->dataverseLicenses as $license) {
+            if ($license['isDefault']) {
                 return $license['name'];
             }
         }
