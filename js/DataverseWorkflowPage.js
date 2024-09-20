@@ -376,14 +376,14 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             this.updateDatasetCitation();
         },
         flagMounted(newVal, oldVal) {
-            if (this.hasDepositedDataset) {
-                this.getRootDataverseName();
-            }
-    
             this.getDataverseName();
             this.getDataverseLicenses();
-            this.refreshDataset();
-            this.refreshDatasetFiles();
+
+            if (this.hasDepositedDataset) {
+                this.getRootDataverseName();
+                this.refreshDataset();
+                this.refreshDatasetFiles();
+            }
         }
     },
 });

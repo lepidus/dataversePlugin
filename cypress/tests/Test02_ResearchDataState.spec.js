@@ -93,11 +93,13 @@ describe('Research data state', function () {
 		}
 
 		cy.login('eostrom', null, 'publicknowledge');
-
 		cy.get('.pkpButton:visible:contains("View")').first().click();
 
 		cy.get('#publication-button').click();
 		cy.get('#dataStatement-button').click();
+
+		cy.intercept('GET', '**/api/v1/dataverse/licenses*').as('getLicenses');
+        cy.wait('@getLicenses');
 
 		cy.get('input[name="dataStatementTypes"][value="2"]').should('be.checked');
 		cy.get('input[name="dataStatementTypes"][value="5"]').should('be.checked');
@@ -127,6 +129,9 @@ describe('Research data state', function () {
 
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
+
+		cy.intercept('GET', '**/api/v1/datasets*').as('getDataset');
+        cy.wait('@getDataset');
 
 		cy.get('button:contains("Upload research data")').click();
 		cy.contains('Add research data').click();
