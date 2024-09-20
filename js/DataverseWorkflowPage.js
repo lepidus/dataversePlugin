@@ -14,6 +14,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             datasetIsLoading: true,
             isLoading: false,
             latestGetRequest: '',
+            flagMounted: false
         };
     },
     computed: {
@@ -277,7 +278,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 
         updateDatasetMetadataForm(dataset) {
             let form = { ...this.components.datasetMetadata };
-            
+
             for (let field of form.fields) {
                 let datasetFieldName = field.name.replace(/^dataset/, '').toLowerCase();
                 field.value = this.dataset[datasetFieldName];
@@ -355,20 +356,27 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }
         });
 
-        if (this.hasDepositedDataset) {
-            this.getRootDataverseName();
-        }
-
-        this.getDataverseName();
-        this.getDataverseLicenses();
-        this.refreshDataset();
-        this.refreshDatasetFiles();
         this.fileFormErrors = this.components.datasetFileForm.errors;
+    },
+    mounted() {
+        setTimeout(() => {
+            this.flagMounted = true;
+        }, 2500);
     },
     watch: {
         dataset(newVal, oldVal) {
             this.updateDatasetMetadataForm(newVal);
             this.updateDatasetCitation();
+        },
+        flagMounted(newVal, oldVal) {
+            if (this.hasDepositedDataset) {
+                this.getRootDataverseName();
+            }
+    
+            this.getDataverseName();
+            this.getDataverseLicenses();
+            this.refreshDataset();
+            this.refreshDatasetFiles();
         }
     },
 });
