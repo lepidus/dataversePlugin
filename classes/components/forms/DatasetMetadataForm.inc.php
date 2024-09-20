@@ -68,7 +68,7 @@ class DatasetMetadataForm extends FormComponent
     private function mapLicensesForDisplay(array $licenses): array
     {
         $mappedLicenses = [];
-        foreach($licenses as $license) {
+        foreach ($licenses as $license) {
             $mappedLicenses[] = ['label' => $license['name'], 'value' => $license['name']];
         }
         return $mappedLicenses;
