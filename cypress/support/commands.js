@@ -28,7 +28,7 @@ Cypress.Commands.add('waitDatasetTabLoading', function(tabToLeave) {
 	cy.get('#datasetTab-button').click();
 
 	cy.contains('h1', 'Research data', {timeout:10000});
-	cy.contains('DRAFT VERSION', {timeout:10000});
+	cy.contains('#datasetData .value', 'Demo Dataverse, ', {timeout:10000});
 
 	cy.get('#' + tabToLeave + '-button').click();
 });
