@@ -98,7 +98,6 @@ describe('Research data state', function () {
 		cy.get('#publication-button').click();
 		cy.get('#dataStatement-button').click();
 
-
 		cy.get('input[name="dataStatementTypes"][value="2"]').should('be.checked');
 		cy.get('input[name="dataStatementTypes"][value="5"]').should('be.checked');
 
@@ -125,9 +124,10 @@ describe('Research data state', function () {
 		cy.get('#active-button').click();
 		cy.get('.pkpButton:visible:contains("View")').first().click();
 
-		cy.get('#publication-button').click();
+		cy.waitDataStatementTabLoading();
+		cy.wait(2000);
+		
 		cy.get('#datasetTab-button').click();
-
 		cy.get('button:contains("Upload research data")').click();
 		cy.contains('Add research data').click();
 		cy.wait(1000);
@@ -144,20 +144,24 @@ describe('Research data state', function () {
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC BY 4.0');
 		cy.get('#datasetTab form button').contains('Save').click();
-		cy.waitJQuery();
-		cy.contains('h1', 'Research data');
+		cy.get('#datasetTab [role="status"]').contains('Saved');
+
+		cy.waitDatasetTabLoading('workflow');
 
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
-			cy.get('#workflow-button').click();
 			cy.sendToReview();
+			cy.waitDatasetTabLoading('workflow');
 			cy.assignReviewer('Julie Janssen');
 			cy.recordEditorialDecision('Accept Submission');
 			cy.recordEditorialDecision('Send To Production');
 			cy.get('li.ui-state-active a:contains("Production")');
-			cy.get('button[id="publication-button"]').click();
+			cy.get('#publication-button').click();
 			cy.get('div#publication button:contains("Schedule For Publication")').click();
 			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
 			cy.get('div[id^="assign-"] button:contains("Save")').click();
+			cy.get('div[id^="assign-"] [role="status"]').contains('Saved');
+			cy.reload();
+			cy.get('div#publication button:contains("Schedule For Publication")').click();
 			cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
 			cy.get('div.pkpWorkflow__publishModal button:contains("Publish")').click();
 		} else {

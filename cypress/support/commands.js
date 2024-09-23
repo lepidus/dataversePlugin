@@ -17,3 +17,18 @@ Cypress.Commands.add('findSubmission', function(tab, title) {
             cy.get('.pkpButton:contains("View")').click();
         });
 });
+Cypress.Commands.add('waitDataStatementTabLoading', function() {
+	cy.get('#publication-button').click();
+	cy.get('#dataStatement-button').click();
+
+	cy.contains('Dataverse de Exemplo Lepidus repository', {timeout:10000});
+});
+Cypress.Commands.add('waitDatasetTabLoading', function(tabToLeave) {
+	cy.get('#publication-button').click();
+	cy.get('#datasetTab-button').click();
+
+	cy.contains('h1', 'Research data', {timeout:10000});
+	cy.contains('DRAFT VERSION', {timeout:10000});
+
+	cy.get('#' + tabToLeave + '-button').click();
+});

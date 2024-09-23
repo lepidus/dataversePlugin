@@ -3,7 +3,8 @@ pkp.Vue.component('data-statement-form', {
 	extends: pkp.controllers.Container.components.PkpForm,
 	data() {
 		return {
-			allFields: null
+			allFields: null,
+			flagMounted: false
 		};
 	},
 	props: {
@@ -48,11 +49,46 @@ pkp.Vue.component('data-statement-form', {
 			});
 			this.$emit('set', this.id, { fields: newFields.filter(this.shouldShowField) });
 			this.removeError(name, localeKey);
+		},
+		updateDataSubmittedField() {
+			let self = this;
+			$.ajax({
+				url: self.dataversePluginApiUrl + '/dataverseName',
+				type: 'GET',
+				error: function (r) {
+					return;
+				},
+				success: function (r) {
+					let dataverseName = r.dataverseName;
+
+					let researchDataSubmittedField = null;
+
+					for (let field of self.allFields) {
+						if (field.name == 'researchDataSubmitted') {
+							researchDataSubmittedField = field;
+							break;
+						}
+					}
+
+					let newFieldLabel = researchDataSubmittedField.options[0].label;
+					newFieldLabel = newFieldLabel.replace(/<strong><\/strong>/, `<strong>${dataverseName}</strong>`);
+
+					researchDataSubmittedField.options[0].label = newFieldLabel;
+				},
+			});
 		}
 	},
 	mounted() {
 		this.allFields = this.fields;
 		const newFields = this.allFields.filter(this.shouldShowField);
 		this.$emit('set', this.id, { fields: newFields });
+		setTimeout(() => {
+            this.flagMounted = true;
+        }, 2500);
 	},
+	watch: {
+        flagMounted(newVal, oldVal) {
+			this.updateDataSubmittedField();
+		}
+	}
 });
