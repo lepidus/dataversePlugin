@@ -485,7 +485,7 @@ describe('Research data deposit', function () {
 			cy.get('li.ui-state-active a:contains("Production")');
 			cy.get('#publication-button').click();
 			cy.get('div#publication button:contains("Schedule For Publication")').click();
-			cy.wait(1000);
+			cy.wait(2000);
 			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
 			cy.get('div[id^="assign-"] button:contains("Save")').click();
 			cy.get('div[id^="assign-"] [role="status"]').contains('Saved');
