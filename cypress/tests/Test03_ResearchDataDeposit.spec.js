@@ -280,7 +280,7 @@ describe('Research data deposit', function () {
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC0 1.0');
 		cy.get('#datasetTab form button').contains('Save').click();
-		cy.get('.pkpFormPage__status:contains("Saved")', {timeout:10000});
+		cy.get('#datasetTab [role="status"]').contains('Saved');
 		cy.wait(1000);
 		
 		cy.waitDatasetTabLoading('datasetTab');
@@ -381,7 +381,7 @@ describe('Research data deposit', function () {
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC BY 4.0');
 		cy.get('#datasetTab form button').contains('Save').click();
-		cy.get('.pkpFormPage__status:contains("Saved")', {timeout:10000});
+		cy.get('#datasetTab [role="status"]').contains('Saved');
 		cy.wait(1000);
 		
 		cy.waitDatasetTabLoading('datasetTab');
