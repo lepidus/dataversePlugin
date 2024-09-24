@@ -163,7 +163,7 @@ describe('Research data deposit', function () {
 		cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC BY 4.0');
 		cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').click();
-		cy.get('#datasetTab [role="status"]').contains('Saved');
+		cy.contains('span', 'Saved');
 
 		cy.get('#datasetData .value').contains('The Power of Computer Vision: Advances, Applications and Challenges');
 	});
@@ -279,9 +279,8 @@ describe('Research data deposit', function () {
 		cy.get('input[name="datasetTitle"]').should('have.value', 'Replication data for: ' + submission.title);
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC0 1.0');
-		cy.get('#datasetTab form button').contains('Save').click();
-		cy.get('#datasetTab [role="status"]').contains('Saved', {timeout:15000});
-		cy.wait(1000);
+		cy.get('#datasetTab form button:contains("Save")').click();
+		cy.contains('span', 'Saved');
 		
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.get('#datasetData .value').should('contain', 'Kwantes, Catherine, ' + currentYear + ', "Replication data for: ' + submission.title + '"');
@@ -307,7 +306,7 @@ describe('Research data deposit', function () {
 		cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC0 1.0');
 		cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').click();
-		cy.get('#datasetTab [role="status"]').contains('Saved');
+		cy.contains('span', 'Saved');
 
 		cy.get('#datasetData .value').contains('The Power of Computer Vision: Advances, Applications and Challenges');
 	});
@@ -381,8 +380,7 @@ describe('Research data deposit', function () {
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC BY 4.0');
 		cy.get('#datasetTab form button').contains('Save').click();
-		cy.get('#datasetTab [role="status"]').contains('Saved', {timeout:15000});
-		cy.wait(1000);
+		cy.contains('span', 'Saved');
 		
 		cy.waitDatasetTabLoading('datasetTab');
 
