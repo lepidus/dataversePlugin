@@ -14,7 +14,7 @@ abstract class DataverseActions
     protected $client;
     protected $cacheManager;
 
-    protected const ONE_HOUR_SECONDS = 60 * 60;
+    protected const ONE_DAY_SECONDS = 24 * 60 * 60;
 
     public function __construct(
         DataverseConfiguration $configuration = null,

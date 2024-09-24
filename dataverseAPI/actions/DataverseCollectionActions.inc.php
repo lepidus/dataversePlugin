@@ -17,7 +17,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         $dataverseCollection = $cache->getContents();
         $currentCacheTime = time() - $cache->getCacheTime();
 
-        if (is_null($dataverseCollection) || $currentCacheTime > (2 * self::ONE_HOUR_SECONDS)) {
+        if (is_null($dataverseCollection) || $currentCacheTime > self::ONE_DAY_SECONDS) {
             $cache->flush();
 
             $uri = $this->getCurrentDataverseURI();
@@ -32,19 +32,50 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
     public function getRoot(): DataverseCollection
     {
-        $uri = $this->getRootDataverseURI();
-        $response = $this->nativeAPIRequest('GET', $uri);
+        $cache = $this->cacheManager->getFileCache(
+            $this->contextId,
+            'root_dataverse_collection',
+            [$this, 'cacheDismiss']
+        );
 
-        return $this->createDataverseCollection($response);
+        $rootDataverseCollection = $cache->getContents();
+        $currentCacheTime = time() - $cache->getCacheTime();
+
+        if (is_null($rootDataverseCollection) || $currentCacheTime > self::ONE_DAY_SECONDS) {
+            $cache->flush();
+
+            $uri = $this->getRootDataverseURI();
+            $response = $this->nativeAPIRequest('GET', $uri);
+            $rootDataverseCollection = $this->createDataverseCollection($response);
+
+            $cache->setEntireCache($rootDataverseCollection);
+        }
+
+        return $rootDataverseCollection;
     }
 
     public function getLicenses(): array
     {
-        $uri = $this->createNativeAPIURI('licenses');
-        $response = $this->nativeAPIRequest('GET', $uri);
-        $licenses = json_decode($response->getBody(), true);
+        $cache = $this->cacheManager->getFileCache(
+            $this->contextId,
+            'dataverse_licenses',
+            [$this, 'cacheDismiss']
+        );
 
-        return $licenses['data'] ?? [];
+        $dataverseLicenses = $cache->getContents();
+        $currentCacheTime = time() - $cache->getCacheTime();
+
+        if (is_null($dataverseLicenses) || $currentCacheTime > self::ONE_DAY_SECONDS) {
+            $cache->flush();
+
+            $uri = $this->createNativeAPIURI('licenses');
+            $response = $this->nativeAPIRequest('GET', $uri);
+            $dataverseLicenses = json_decode($response->getBody(), true);
+
+            $cache->setEntireCache($dataverseLicenses);
+        }
+
+        return $dataverseLicenses['data'] ?? [];
     }
 
     public function publish(): void
