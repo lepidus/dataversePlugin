@@ -91,4 +91,12 @@ class DataverseCollection extends DataObject
     {
         $this->setData('creationDate', $creationDate);
     }
+
+    public static function __set_state($dump)
+    {
+        $collectionObj = new DataverseCollection();
+        $collectionObj->setAllData($dump['_data']);
+
+        return $collectionObj;
+    }
 }

@@ -1,5 +1,7 @@
 <?php
 
+import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+
 class DataverseMetadata
 {
     private $dataverseLicenses;
@@ -68,12 +70,15 @@ class DataverseMetadata
 
     public function getDataverseLicenses(): ?array
     {
-        $configuration = $this->getDataverseConfiguration();
-        $licensesUrl = $configuration->getDataverseServerUrl() . '/api/licenses';
-        $response = json_decode(file_get_contents($licensesUrl), true);
-        $this->dataverseLicenses = $response['data'] ?? [];
+        try {
+            $dataverseClient = new DataverseClient();
+            $this->dataverseLicenses = $dataverseClient->getDataverseCollectionActions()->getLicenses();
 
-        return $this->dataverseLicenses;
+            return $this->dataverseLicenses;
+        } catch (DataverseException $e) {
+            error_log('Dataverse API error (licenses): ' . $e->getMessage());
+            return [];
+        }
     }
 
     public function getDefaultLicense(): ?string

@@ -11,7 +11,6 @@ define('FORM_DATA_STATEMENT', 'dataStatement');
 class DataStatementForm extends FormComponent
 {
     public $id = FORM_DATA_STATEMENT;
-
     public $method = 'PUT';
 
     public function __construct($action, $locales, $publication)
@@ -19,12 +18,11 @@ class DataStatementForm extends FormComponent
         $this->action = $action;
         $this->locales = $locales;
 
-        $dataStatementService = new DataStatementService();
-        $dataStatementOptions = $this->getDataStatementOptions($dataStatementService);
-        $dataverseName = $dataStatementService->getDataverseName();
+        $dataStatementOptions = $this->getDataStatementOptions();
 
         $request = Application::get()->getRequest();
         $contextPath = $request->getContext()->getPath();
+        $this->dataversePluginApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $contextPath, 'dataverse');
         $vocabApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $contextPath, 'vocabs');
 
         import('plugins.generic.dataverse.classes.components.forms.FieldControlledVocabUrl');
@@ -53,7 +51,7 @@ class DataStatementForm extends FormComponent
                 [
                     'value' => true,
                     'label' => __('plugins.generic.dataverse.dataStatement.researchDataSubmitted', [
-                        'dataverseName' => $dataverseName,
+                        'dataverseName' => '',
                     ]),
                     'disabled' => true,
                 ],
@@ -62,11 +60,24 @@ class DataStatementForm extends FormComponent
         ]));
     }
 
+    public function getConfig()
+    {
+        $config = parent::getConfig();
+
+        $config = array_merge(
+            $config,
+            [
+                'dataversePluginApiUrl' => $this->dataversePluginApiUrl
+            ]
+        );
+
+        return $config;
+    }
+
     private function getDataStatementOptions(): array
     {
         $dataStatementService = new DataStatementService();
-        $dataStatementTypes = $dataStatementService->getDataStatementTypes();
-        unset($dataStatementTypes[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+        $dataStatementTypes = $dataStatementService->getDataStatementTypes(false);
 
         $dataStatementOptions = array_map(function ($value, $label) {
             return [

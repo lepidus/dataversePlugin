@@ -21,12 +21,12 @@ class DatasetMetadataForm extends FormComponent
         $this->locales = $locales;
 
         $dataverseMetadata = new DataverseMetadata();
-        $dataverseLicenses = $dataverseMetadata->getDataverseLicenses();
+        $datasetMetadata = $this->getDatasetMetadata($dataset);
 
         $this->addField(new FieldText('datasetTitle', [
             'label' => __('plugins.generic.dataverse.metadataForm.title'),
             'isRequired' => true,
-            'value' => $dataset->getTitle(),
+            'value' => $datasetMetadata['title'],
             'size' => 'large',
         ]))
         ->addField(new FieldRichTextarea('datasetDescription', [
@@ -34,28 +34,49 @@ class DatasetMetadataForm extends FormComponent
             'isRequired' => true,
             'toolbar' => 'bold italic superscript subscript | link | blockquote bullist numlist | image | code',
             'plugins' => 'paste,link,lists,image,code',
-            'value' => $dataset->getDescription()
+            'value' => $datasetMetadata['description']
         ]))
         ->addField(new FieldControlledVocab('datasetKeywords', [
             'label' => __('plugins.generic.dataverse.metadataForm.keyword'),
             'tooltip' => __('manager.setup.metadata.keywords.description'),
             'apiUrl' => $this->getVocabSuggestionUrlBase(),
             'locales' => $this->locales,
-            'selected' => (array) $dataset->getKeywords() ?? [],
-            'value' => (array) $dataset->getKeywords() ?? []
+            'selected' => $datasetMetadata['keywords'],
+            'value' => $datasetMetadata['keywords']
         ]))
         ->addField(new FieldSelect('datasetSubject', [
             'label' => __('plugins.generic.dataverse.metadataForm.subject.label'),
             'isRequired' => true,
             'options' => $dataverseMetadata->getDataverseSubjects(),
-            'value' => $dataset->getSubject(),
+            'value' => $datasetMetadata['subject'],
         ]))
         ->addField(new FieldSelect('datasetLicense', [
             'label' => __('plugins.generic.dataverse.metadataForm.license.label'),
             'isRequired' => true,
-            'options' => $this->mapLicensesForDisplay($dataverseLicenses),
-            'value' => $dataset->getLicense(),
+            'options' => [],
+            'value' => $datasetMetadata['license'],
         ]));
+    }
+
+    private function getDatasetMetadata($dataset)
+    {
+        if (is_null($dataset)) {
+            return [
+                'title' => '',
+                'description' => '',
+                'keywords' => [],
+                'subject' => '',
+                'license' => ''
+            ];
+        }
+
+        return [
+            'title' => $dataset->getTitle(),
+            'description' => $dataset->getDescription(),
+            'keywords' => (array) $dataset->getKeywords() ?? [],
+            'subject' => $dataset->getSubject(),
+            'license' => $dataset->getLicense()
+        ];
     }
 
     private function getVocabSuggestionUrlBase()
@@ -63,14 +84,5 @@ class DatasetMetadataForm extends FormComponent
         $request = Application::get()->getRequest();
         $contextPath = $request->getContext()->getPath();
         return $request->getDispatcher()->url($request, ROUTE_API, $contextPath, 'vocabs', null, null, ['vocab' => 'submissionKeyword']);
-    }
-
-    private function mapLicensesForDisplay(array $licenses): array
-    {
-        $mappedLicenses = [];
-        foreach ($licenses as $license) {
-            $mappedLicenses[] = ['label' => $license['name'], 'value' => $license['name']];
-        }
-        return $mappedLicenses;
     }
 }

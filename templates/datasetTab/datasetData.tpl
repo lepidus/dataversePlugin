@@ -1,4 +1,8 @@
-<section id="datasetData" class="item datasetData -pkpClearfix">
+<span v-if="datasetIsLoading">
+    <spinner></spinner>
+    {{ __('common.loading')}} ...
+</span>
+<section v-if="!datasetIsLoading" id="datasetData" class="item datasetData -pkpClearfix">
     <pkp-header>
         <h1>
             {translate key="plugins.generic.dataverse.researchData"}
@@ -51,7 +55,7 @@
                             </pkp-button>
                         </template>
                     </pkp-header>
-                    <template v-slot:item="item">
+                    <template v-if="!components.datasetFiles.isLoading" v-slot:item="item">
                         <div class="listPanel__itemSummary">
                             <div class="listPanel__itemIdentity">
                                 <div class="listPanel__itemTitle">

@@ -7,21 +7,22 @@ import('plugins.generic.dataverse.classes.exception.DataverseException');
 
 abstract class DataverseActions
 {
+    protected $contextId;
     protected $serverURL;
-
     protected $apiToken;
-
     protected $dataverseAlias;
-
     protected $client;
+    protected $cacheManager;
+
+    protected const ONE_DAY_SECONDS = 24 * 60 * 60;
 
     public function __construct(
         DataverseConfiguration $configuration = null,
         \GuzzleHttp\Client $client = null
     ) {
         if (is_null($configuration)) {
-            $contextId = Application::get()->getRequest()->getContext()->getId();
-            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+            $this->contextId = Application::get()->getRequest()->getContext()->getId();
+            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($this->contextId);
         }
 
         if (is_null($client)) {
@@ -32,6 +33,7 @@ abstract class DataverseActions
         $this->apiToken = $configuration->getAPIToken();
         $this->dataverseAlias = $configuration->getDataverseCollection();
         $this->client = $client;
+        $this->cacheManager = CacheManager::getManager();
     }
 
     public function createNativeAPIURI(string ...$pathParams): string
@@ -59,7 +61,7 @@ abstract class DataverseActions
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
 
         try {
-            $reponse = $this->client->request($method, $uri, $options);
+            $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
@@ -77,9 +79,9 @@ abstract class DataverseActions
         }
 
         return new DataverseResponse(
-            $reponse->getStatusCode(),
-            $reponse->getReasonPhrase(),
-            $reponse->getBody()
+            $response->getStatusCode(),
+            $response->getReasonPhrase(),
+            $response->getBody()
         );
     }
 
@@ -88,7 +90,7 @@ abstract class DataverseActions
         $options['auth'] = [$this->apiToken, ''];
 
         try {
-            $reponse = $this->client->request($method, $uri, $options);
+            $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
@@ -102,9 +104,14 @@ abstract class DataverseActions
         }
 
         return new DataverseResponse(
-            $reponse->getStatusCode(),
-            $reponse->getReasonPhrase(),
-            $reponse->getBody()
+            $response->getStatusCode(),
+            $response->getReasonPhrase(),
+            $response->getBody()
         );
+    }
+
+    public function cacheDismiss()
+    {
+        return null;
     }
 }

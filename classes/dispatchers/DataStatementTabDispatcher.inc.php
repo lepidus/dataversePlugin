@@ -7,12 +7,12 @@ class DataStatementTabDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        HookRegistry::register('TemplateManager::setupBackendPage', [$this, 'addDataStatementResourcesToFrontend']);
+        HookRegistry::register('TemplateManager::setupBackendPage', [$this, 'addDataStatementResourcesToBackend']);
         HookRegistry::register('TemplateManager::display', [$this, 'addDataStatementTabResources']);
         HookRegistry::register('Template::Workflow::Publication', [$this, 'addDataStatementTab']);
     }
 
-    public function addDataStatementResourcesToFrontend(string $hookName): void
+    public function addDataStatementResourcesToBackend(string $hookName): void
     {
         import('plugins.generic.dataverse.classes.services.DataStatementService');
         $request = \Application::get()->getRequest();

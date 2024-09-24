@@ -114,12 +114,12 @@ describe('Research data deposit', function () {
 		cy.get('h2:contains("Submission complete")');
 
 		cy.contains('Review this submission').click();
-		cy.get('button[aria-controls="publication"]').click();
+		cy.get('#publication-button').click();
 
-		cy.get('button[aria-controls="dataStatement"]').click();
+		cy.get('#dataStatement-button').click();
 		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('be.checked');
 
-		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.waitDatasetTabLoading('datasetTab');
 		cy.get('#datasetData .value').should('contain', 'Kwantes, Catherine, ' + currentYear + ', "Replication data for: ' + submission.title + '"');
 		cy.get('#datasetData .value p').then((citation) => {
 			dataverseServerName = citation.text().split(', ')[5];
@@ -131,8 +131,7 @@ describe('Research data deposit', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
 		cy.get('.pkpButton:visible:contains("View")').first().click();
 
-		cy.get('#publication-button').click();
-		cy.get('#datasetTab-button').click();
+		cy.waitDatasetTabLoading('datasetTab');
 
 		cy.contains('Delete research data').should('be.disabled');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
@@ -150,8 +149,7 @@ describe('Research data deposit', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
 		cy.get('.pkpButton:visible:contains("View")').first().click();
 
-		cy.get('#publication-button').click();
-		cy.get('#datasetTab-button').click();
+		cy.waitDatasetTabLoading('datasetTab');
 
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').clear();
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').type('The Power of Computer Vision: Advances, Applications and Challenges', { delay: 0 });
@@ -174,8 +172,7 @@ describe('Research data deposit', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
 		cy.get('.pkpButton:visible:contains("View")').first().click();
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.waitDatasetTabLoading('datasetTab');
 		cy.get('button[aria-controls="dataset_files"]').click();
 
 		cy.get('button').contains('Add research data').click();
@@ -205,8 +202,7 @@ describe('Research data deposit', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
 		cy.get('.pkpButton:visible:contains("View")').first().click();
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.waitDatasetTabLoading('datasetTab');
 		cy.contains('Delete research data').click();
 		cy.get('[data-modal="delete"] button').contains('Yes').click();
 		cy.contains('No research data transferred.');
@@ -241,7 +237,10 @@ describe('Research data deposit', function () {
 			cy.wait(1000);
 			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
 			cy.get('div[id^="assign-"] button:contains("Save")').click();
-			cy.get('div:contains("All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?")');
+			cy.get('div[id^="assign-"] [role="status"]').contains('Saved');
+			cy.reload();
+			cy.get('div#publication button:contains("Schedule For Publication")').click();
+			cy.get('div:contains("All publication requirements have been met. This will be published immediately ")');
 
 		} else {
 			cy.get('#publication-button').click();
@@ -257,6 +256,10 @@ describe('Research data deposit', function () {
 		cy.get('div[data-modal="confirmUnpublish"] button:contains("Unpublish"), div[data-modal="confirmUnpublish"] button:contains("Unpost")').click();
 		cy.wait(1000);
 
+		cy.waitDataStatementTabLoading();
+		cy.wait(2000);
+
+		cy.get('#datasetTab-button').click();
 		cy.get('button').contains('Upload research data').click();
 		cy.wait(1000);
 		cy.contains('Add research data').click();
@@ -277,8 +280,9 @@ describe('Research data deposit', function () {
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC0 1.0');
 		cy.get('#datasetTab form button').contains('Save').click();
-		cy.contains('h1', 'Research data');
-
+		cy.wait(7000);
+		
+		cy.waitDatasetTabLoading('datasetTab');
 		cy.get('#datasetData .value').should('contain', 'Kwantes, Catherine, ' + currentYear + ', "Replication data for: ' + submission.title + '"');
 
 		cy.get('button[aria-controls="dataStatement"]').click();
@@ -288,8 +292,7 @@ describe('Research data deposit', function () {
 	it('Check editor can edit research data metadata', function () {
 		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.waitDatasetTabLoading('datasetTab');
 
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').clear();
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').type('The Power of Computer Vision: Advances, Applications and Challenges', { delay: 0 });
@@ -311,8 +314,7 @@ describe('Research data deposit', function () {
 	it('Check editor can edit research data files', function () {
 		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.waitDatasetTabLoading('datasetTab');
 		cy.get('button[aria-controls="dataset_files"]').click();
 
 		cy.get('button').contains('Add research data').click();
@@ -340,8 +342,7 @@ describe('Research data deposit', function () {
 	it('Check editor can delete research data', function () {
 		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.waitDatasetTabLoading('datasetTab');
 		cy.contains('Delete research data').click();
 		cy.setTinyMceContent('deleteDataset-deleteMessage-control', 'Your research data has been deleted.');
 		cy.get('#deleteDataset-deleteMessage-control').click();
@@ -355,8 +356,10 @@ describe('Research data deposit', function () {
 	it('Check editor can publish research data', function () {
 		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
+		cy.waitDataStatementTabLoading();
+		cy.wait(2000);
+
+		cy.get('#datasetTab-button').click();
 
 		cy.get('button').contains('Upload research data').click();
 		cy.wait(1000);
@@ -377,7 +380,9 @@ describe('Research data deposit', function () {
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC BY 4.0');
 		cy.get('#datasetTab form button').contains('Save').click();
-		cy.contains('h1', 'Research data');
+		cy.wait(7000);
+		
+		cy.waitDatasetTabLoading('datasetTab');
 
 		cy.get('div#publication button:contains("Schedule For Publication"), div#publication button:contains("Post")').click();
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
@@ -393,11 +398,10 @@ describe('Research data deposit', function () {
 		cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
-		cy.get('button').contains('Delete research data').should('be.disabled');
+		cy.waitDatasetTabLoading('datasetTab');
+		cy.contains('button', 'Delete research data').should('be.disabled');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
-		cy.get('button').contains('Add research data').should('be.disabled');
+		cy.contains('button', 'Add research data').should('be.disabled');
 		cy.get('#datasetFiles .listPanel__item .listPanel__itemActions button').should('be.disabled');
 
 		cy.contains('View').click();
@@ -469,20 +473,25 @@ describe('Research data deposit', function () {
 
 		cy.logout();
 
-		cy.findSubmissionAsEditor('dbarnes', null, 'Montgomerie');
+		cy.login('dbarnes', null, 'publicknowledge');
+		cy.findSubmission('active', 'Submission with research data');
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
-			cy.get('button[aria-controls="workflow"]').click();
+			cy.get('#workflow-button').click();
 			cy.sendToReview();
+			cy.waitDatasetTabLoading('workflow');
 			cy.assignReviewer('Julie Janssen');
 			cy.recordEditorialDecision('Accept Submission');
 			cy.recordEditorialDecision('Send To Production');
 			cy.get('li.ui-state-active a:contains("Production")');
-			cy.get('button[id="publication-button"]').click();
+			cy.get('#publication-button').click();
 			cy.get('div#publication button:contains("Schedule For Publication")').click();
-			cy.wait(1000);
+			cy.wait(2000);
 			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
 			cy.get('div[id^="assign-"] button:contains("Save")').click();
-			cy.get('div:contains("All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?")');
+			cy.get('div[id^="assign-"] [role="status"]').contains('Saved');
+			cy.reload();
+			cy.get('div#publication button:contains("Schedule For Publication")').click();
+			cy.get('div:contains("All publication requirements have been met. This will be published immediately ")');
 
 		} else {
 			cy.get('#publication-button').click();
@@ -491,9 +500,8 @@ describe('Research data deposit', function () {
 		cy.get('input[name="shouldPublishResearchData"][value="0"]').click();
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
 
-		cy.get('button[aria-controls="publication"]').click();
-		cy.get('button[aria-controls="datasetTab"]').click();
-		cy.get('button').contains('Publish research data').click();
+		cy.waitDatasetTabLoading('datasetTab');
+		cy.contains('button', 'Publish research data').click();
 
 		const publishMsg = 'Do you really want to publish the research data related to this submission? This action cannot be undone.'
 			+ 'Before proceeding, make sure they are suitable for publication in '
