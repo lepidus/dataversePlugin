@@ -478,6 +478,7 @@ describe('Research data deposit', function () {
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
 			cy.get('#workflow-button').click();
 			cy.sendToReview();
+			cy.waitDatasetTabLoading('workflow');
 			cy.assignReviewer('Julie Janssen');
 			cy.recordEditorialDecision('Accept Submission');
 			cy.recordEditorialDecision('Send To Production');
