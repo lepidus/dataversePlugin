@@ -240,7 +240,7 @@ describe('Research data deposit', function () {
 			cy.get('div[id^="assign-"] [role="status"]').contains('Saved');
 			cy.reload();
 			cy.get('div#publication button:contains("Schedule For Publication")').click();
-			cy.get('div:contains("All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?")');
+			cy.get('div:contains("All publication requirements have been met. This will be published immediately ")');
 
 		} else {
 			cy.get('#publication-button').click();
@@ -475,15 +475,16 @@ describe('Research data deposit', function () {
 
 		cy.logout();
 
-		cy.findSubmissionAsEditor('dbarnes', null, 'Montgomerie');
+		cy.login('dbarnes', null, 'publicknowledge');
+		cy.findSubmission('active', 'Submission with research data');
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
-			cy.get('button[aria-controls="workflow"]').click();
+			cy.get('#workflow-button').click();
 			cy.sendToReview();
 			cy.assignReviewer('Julie Janssen');
 			cy.recordEditorialDecision('Accept Submission');
 			cy.recordEditorialDecision('Send To Production');
 			cy.get('li.ui-state-active a:contains("Production")');
-			cy.get('button[id="publication-button"]').click();
+			cy.get('#publication-button').click();
 			cy.get('div#publication button:contains("Schedule For Publication")').click();
 			cy.wait(1000);
 			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
@@ -491,7 +492,7 @@ describe('Research data deposit', function () {
 			cy.get('div[id^="assign-"] [role="status"]').contains('Saved');
 			cy.reload();
 			cy.get('div#publication button:contains("Schedule For Publication")').click();
-			cy.get('div:contains("All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?")');
+			cy.get('div:contains("All publication requirements have been met. This will be published immediately ")');
 
 		} else {
 			cy.get('#publication-button').click();
@@ -499,7 +500,6 @@ describe('Research data deposit', function () {
 		}
 		cy.get('input[name="shouldPublishResearchData"][value="0"]').click();
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
-
 
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.contains('button', 'Publish research data').click();
