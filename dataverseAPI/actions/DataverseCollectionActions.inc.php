@@ -8,10 +8,26 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 {
     public function get(): DataverseCollection
     {
-        $uri = $this->getCurrentDataverseURI();
-        $response = $this->nativeAPIRequest('GET', $uri);
+        $cache = $this->cacheManager->getFileCache(
+            $this->contextId,
+            'dataverse_collection',
+            [$this, 'cacheDismiss']
+        );
 
-        return $this->createDataverseCollection($response);
+        $dataverseCollection = $cache->getContents();
+        $currentCacheTime = time() - $cache->getCacheTime();
+
+        if (is_null($dataverseCollection) || $currentCacheTime > (2 * self::ONE_HOUR_SECONDS)) {
+            $cache->flush();
+
+            $uri = $this->getCurrentDataverseURI();
+            $response = $this->nativeAPIRequest('GET', $uri);
+            $dataverseCollection = $this->createDataverseCollection($response);
+
+            $cache->setEntireCache($dataverseCollection);
+        }
+
+        return $dataverseCollection;
     }
 
     public function getRoot(): DataverseCollection

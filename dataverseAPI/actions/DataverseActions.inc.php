@@ -7,21 +7,22 @@ import('plugins.generic.dataverse.classes.exception.DataverseException');
 
 abstract class DataverseActions
 {
+    protected $contextId;
     protected $serverURL;
-
     protected $apiToken;
-
     protected $dataverseAlias;
-
     protected $client;
+    protected $cacheManager;
+
+    protected const ONE_HOUR_SECONDS = 60 * 60;
 
     public function __construct(
         DataverseConfiguration $configuration = null,
         \GuzzleHttp\Client $client = null
     ) {
         if (is_null($configuration)) {
-            $contextId = Application::get()->getRequest()->getContext()->getId();
-            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+            $this->contextId = Application::get()->getRequest()->getContext()->getId();
+            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($this->contextId);
         }
 
         if (is_null($client)) {
@@ -32,6 +33,7 @@ abstract class DataverseActions
         $this->apiToken = $configuration->getAPIToken();
         $this->dataverseAlias = $configuration->getDataverseCollection();
         $this->client = $client;
+        $this->cacheManager = CacheManager::getManager();
     }
 
     public function createNativeAPIURI(string ...$pathParams): string
@@ -106,5 +108,10 @@ abstract class DataverseActions
             $response->getReasonPhrase(),
             $response->getBody()
         );
+    }
+
+    public function cacheDismiss()
+    {
+        return null;
     }
 }
