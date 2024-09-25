@@ -113,8 +113,10 @@ class DatasetHandler extends APIHandler
             $dataverseClient = new DataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
         } catch (DataverseException $e) {
-            $request = $this->getRequest();
-            $submission = Repo::submission()->get($study->getSubmissionId());
+            if ($e->getCode() === 404) {
+                DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
+            }
+
             $error = $e->getMessage();
             $message = 'plugins.generic.dataverse.error.getFailed';
 

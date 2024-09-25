@@ -10,6 +10,7 @@ use PKP\decision\steps\Form;
 use PKP\components\forms\FormComponent;
 use Illuminate\Support\Facades\Event;
 use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
+use APP\plugins\generic\dataverse\api\v1\dataverse\DataverseHandler;
 use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileHandler;
 use APP\plugins\generic\dataverse\classes\APACitation;
 use APP\plugins\generic\dataverse\classes\components\forms\SelectDataFilesForReviewForm;
@@ -292,6 +293,8 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
         if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
             $handler = new DatasetHandler();
+        } elseif (str_contains($request->getRequestPath(), 'api/v1/dataverse')) {
+            $handler = new DataverseHandler();
         } elseif (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
             $handler = new DraftDatasetFileHandler();
         }
