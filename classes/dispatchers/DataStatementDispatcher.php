@@ -158,11 +158,11 @@ class DataStatementDispatcher extends DataverseDispatcher
             return false;
         }
 
-        if(!in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, $fields['dataStatementTypes'])) {
+        if (!in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, $fields['dataStatementTypes'])) {
             $publication->unsetData('dataStatementUrls');
         }
 
-        if(!in_array(DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE, $fields['dataStatementTypes'])) {
+        if (!in_array(DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE, $fields['dataStatementTypes'])) {
             $publication->unsetData('dataStatementReason');
         }
 
@@ -204,11 +204,11 @@ class DataStatementDispatcher extends DataverseDispatcher
         }
 
         if (in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)) {
-            if(!$dataStatementUrls) {
+            if (!$dataStatementUrls) {
                 $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')];
             } else {
                 foreach ($dataStatementUrls as $url) {
-                    if(!$this->inputIsURL($url)) {
+                    if (!$this->inputIsURL($url)) {
                         $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')];
                         break;
                     }

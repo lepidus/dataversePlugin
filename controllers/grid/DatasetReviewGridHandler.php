@@ -61,14 +61,14 @@ class DatasetReviewGridHandler extends GridHandler
     {
         $rowsData = [];
 
-        if(!is_null($this->study)) {
+        if (!is_null($this->study)) {
             $dataverseClient = new DataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($this->study->getPersistentId());
             $submission = $this->getSubmission();
             $selectedDataFilesForReview = $submission->getData('selectedDataFilesForReview');
 
             foreach ($dataset->getFiles() as $datasetFile) {
-                if(in_array($datasetFile->getId(), $selectedDataFilesForReview)) {
+                if (in_array($datasetFile->getId(), $selectedDataFilesForReview)) {
                     $rowsData[$datasetFile->getId()] = $datasetFile;
                 }
             }

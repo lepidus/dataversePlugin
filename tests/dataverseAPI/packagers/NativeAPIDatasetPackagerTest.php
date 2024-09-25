@@ -1,7 +1,6 @@
 <?php
 
 use PKP\tests\PKPTestCase;
-
 use APP\plugins\generic\dataverse\dataverseAPI\packagers\NativeAPIDatasetPackager;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;

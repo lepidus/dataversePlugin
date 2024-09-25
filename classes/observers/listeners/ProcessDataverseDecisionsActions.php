@@ -29,7 +29,7 @@ class ProcessDataverseDecisionsActions
                 break;
             }
             if ($action['id'] == 'researchDataPublishNotice') {
-                if($action['shouldPublishResearchData']) {
+                if ($action['shouldPublishResearchData']) {
                     $this->publishResearchData($submission);
                 }
                 break;

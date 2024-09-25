@@ -90,7 +90,7 @@ class DatasetService extends DataverseService
             return;
         }
 
-        foreach($data as $name => $value) {
+        foreach ($data as $name => $value) {
             $dataset->setData($name, $value);
         }
 

@@ -37,7 +37,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
     {
         $datasetData = $this->dataset->getAllData();
 
-        if(isset($datasetData['license'])) {
+        if (isset($datasetData['license'])) {
             $this->datasetLicense = $datasetData['license'];
         }
 
@@ -170,12 +170,12 @@ class NativeAPIDatasetPackager extends DatasetPackager
 
         //We use only the license name (instead of name and uri) to
         //maintain compatibility with previous versions of Dataverse
-        if(!is_null($this->datasetLicense)) {
+        if (!is_null($this->datasetLicense)) {
             $datasetContent['license'] = $this->datasetLicense;
         }
         $datasetContent['metadataBlocks']['citation']['fields'] = $this->getDatasetMetadata();
 
-        if(is_null($this->dataset->getPersistentId())) {
+        if (is_null($this->dataset->getPersistentId())) {
             $datasetContent = ['datasetVersion' => $datasetContent];
         }
 
