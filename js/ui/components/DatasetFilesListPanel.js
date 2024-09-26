@@ -79,7 +79,8 @@ pkp.Vue.component('dataset-files-list-panel', {
     mixins: [ajaxError, dialog],
     data() {
         return {
-            isLoading: false,
+            flagMounted: false,
+            isLoading: false
         }
     },
     props: {
@@ -207,5 +208,15 @@ pkp.Vue.component('dataset-files-list-panel', {
     },
     render: function (h) {
         return datasetFilesListTemplate.render.call(this, h);
+    },
+    mounted() {
+        setTimeout(() => {
+            this.flagMounted = true;
+        }, 2500);
+    },
+    watch: {
+        flagMounted(newVal, oldVal) {
+            this.refreshItems();
+        }
     }
 });
