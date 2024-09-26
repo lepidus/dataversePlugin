@@ -1,3 +1,56 @@
+pkp.Vue.component('data-statement-form', {
+	name: 'DataStatementForm',
+	extends: pkp.controllers.Container.components.PkpForm,
+	data() {
+		return {
+			flagMounted: false
+		};
+	},
+	props: {
+		dataversePluginApiUrl: {
+			type: String
+		}
+	},
+	methods: {
+		updateDataSubmittedField() {
+			let self = this;
+			$.ajax({
+				url: self.dataversePluginApiUrl + '/dataverseName',
+				type: 'GET',
+				error: function (r) {
+					return;
+				},
+				success: function (r) {
+					let dataverseName = r.dataverseName;
+					let researchDataSubmittedField = null;
+
+					for (let field of self.fields) {
+						if (field.name == 'researchDataSubmitted') {
+							researchDataSubmittedField = field;
+							break;
+						}
+					}
+
+					let newFieldLabel = researchDataSubmittedField.options[0].label;
+					newFieldLabel = newFieldLabel.replace(/<strong><\/strong>/, `<strong>${dataverseName}</strong>`);
+
+					researchDataSubmittedField.options[0].label = newFieldLabel;
+				},
+			});
+		}
+	},
+	mounted() {
+		setTimeout(() => {
+            this.flagMounted = true;
+        }, 2500);
+	},
+	watch: {
+        flagMounted(newVal, oldVal) {
+			this.updateDataSubmittedField();
+		}
+	}
+});
+
 function addEventListeners() {
 	let checkRepoAvailable = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE + '"]')[0];
 	let checkPublicUnavailable = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE + '"]')[0];

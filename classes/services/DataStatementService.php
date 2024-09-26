@@ -15,9 +15,8 @@ class DataStatementService
 
     private $dataverseName;
 
-    public function getDataStatementTypes(): array
+    public function getDataStatementTypes($includeSubmittedType = true): array
     {
-        $dataverseName = $this->getDataverseName();
         $types = [
             self::DATA_STATEMENT_TYPE_IN_MANUSCRIPT => __('plugins.generic.dataverse.dataStatement.inManuscript'),
             self::DATA_STATEMENT_TYPE_REPO_AVAILABLE => __('plugins.generic.dataverse.dataStatement.repoAvailable'),
@@ -25,8 +24,11 @@ class DataStatementService
             self::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE => __('plugins.generic.dataverse.dataStatement.publiclyUnavailable')
         ];
 
-        if (!is_null($dataverseName)) {
-            $types[self::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED] = __('plugins.generic.dataverse.dataStatement.submissionDeposit', ['dataverseName' => $dataverseName]);
+        if ($includeSubmittedType) {
+            $this->getDataverseName();
+            if (!is_null($this->dataverseName)) {
+                $types[self::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED] = __('plugins.generic.dataverse.dataStatement.submissionDeposit', ['dataverseName' => $this->dataverseName]);
+            }
         }
 
         return $types;
