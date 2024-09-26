@@ -21,16 +21,14 @@ class DatasetMetadataForm extends FormComponent
         $this->locales = $this->mapCurrentLocale();
 
         $dataverseMetadata = new DataverseMetadata();
-        $dataverseLicenses = $dataverseMetadata->getDataverseLicenses();
+        $dataverseLicenses = ($page == 'submission' ? $dataverseMetadata->getDataverseLicenses() : []);
+        $datasetMetadata = $this->getDatasetMetadata($dataset);
 
         if ($page == 'workflow') {
-            $mappedKeywords = (array) $dataset->getKeywords() ?? [];
-            $mappedKeywords = [Locale::getLocale() => $mappedKeywords];
-
             $this->addField(new FieldText('datasetTitle', [
                 'label' => __('plugins.generic.dataverse.metadataForm.title'),
                 'isRequired' => true,
-                'value' => $dataset->getTitle(),
+                'value' => $datasetMetadata['title'],
                 'size' => 'large',
             ]))
             ->addField(new FieldRichTextarea('datasetDescription', [
@@ -38,7 +36,7 @@ class DatasetMetadataForm extends FormComponent
                 'isRequired' => true,
                 'toolbar' => 'bold italic superscript subscript | link | blockquote bullist numlist | image | code',
                 'plugins' => 'paste,link,lists,image,code',
-                'value' => $dataset->getDescription()
+                'value' => $datasetMetadata['description']
             ]))
             ->addField(new FieldControlledVocab('datasetKeywords', [
                 'label' => __('plugins.generic.dataverse.metadataForm.keyword'),
@@ -46,26 +44,48 @@ class DatasetMetadataForm extends FormComponent
                 'apiUrl' => $this->getVocabSuggestionUrlBase(),
                 'isMultilingual' => true,
                 'locales' => $this->locales,
-                'value' => $mappedKeywords
+                'value' => $datasetMetadata['keywords']
             ]));
         }
-
-        $selectedLicense = $dataset->getLicense() ?? $dataverseMetadata->getDefaultLicense();
 
         $this->addField(new FieldSelect('datasetSubject', [
             'label' => __('plugins.generic.dataverse.metadataForm.subject.label'),
             'description' => ($page == 'submission' ? __('plugins.generic.dataverse.metadataForm.subject.description') : ''),
             'isRequired' => true,
             'options' => $dataverseMetadata->getDataverseSubjects(),
-            'value' => $dataset->getSubject(),
+            'value' => $datasetMetadata['subject'],
         ]))
         ->addField(new FieldSelect('datasetLicense', [
             'label' => __('plugins.generic.dataverse.metadataForm.license.label'),
             'description' => ($page == 'submission' ? __('plugins.generic.dataverse.metadataForm.license.description') : ''),
             'isRequired' => true,
             'options' => $this->mapLicensesForDisplay($dataverseLicenses),
-            'value' => $selectedLicense,
+            'value' => $datasetMetadata['license'],
         ]));
+    }
+
+    private function getDatasetMetadata($dataset)
+    {
+        if (is_null($dataset)) {
+            return [
+                'title' => '',
+                'description' => '',
+                'keywords' => [],
+                'subject' => '',
+                'license' => ''
+            ];
+        }
+
+        $mappedKeywords = (array) $dataset->getKeywords() ?? [];
+        $mappedKeywords = [Locale::getLocale() => $mappedKeywords];
+
+        return [
+            'title' => $dataset->getTitle(),
+            'description' => $dataset->getDescription(),
+            'keywords' => $mappedKeywords,
+            'subject' => $dataset->getSubject(),
+            'license' => $dataset->getLicense()
+        ];
     }
 
     private function getVocabSuggestionUrlBase()
