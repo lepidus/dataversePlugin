@@ -261,7 +261,6 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
     },
     watch: {
         dataset(newVal, oldVal) {
-            console.log('banzai');
             this.updateDatasetMetadataForm(newVal);
             this.setDatasetFilesPanel(newVal);
             this.updateDatasetCitation();

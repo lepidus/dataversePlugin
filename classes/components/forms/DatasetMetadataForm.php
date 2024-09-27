@@ -20,11 +20,11 @@ class DatasetMetadataForm extends FormComponent
         $this->method = $method;
         $this->locales = $this->mapCurrentLocale();
 
+        $dataverseMetadata = new DataverseMetadata();
         $dataverseLicenses = [];
         $datasetMetadata = $this->getDatasetMetadata($dataset);
 
         if ($page == 'submission') {
-            $dataverseMetadata = new DataverseMetadata();
             $dataverseLicenses = $dataverseMetadata->getDataverseLicenses();
 
             if (empty($datasetMetadata['license'])) {

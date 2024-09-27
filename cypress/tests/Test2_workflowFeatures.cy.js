@@ -23,6 +23,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
+        cy.waitDataStatementTabLoading();
+
         cy.get('#publication-button').click();
         cy.contains('button', 'Data statement').click();
 
@@ -58,6 +60,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
+        cy.waitDatasetTabLoading();
+
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
