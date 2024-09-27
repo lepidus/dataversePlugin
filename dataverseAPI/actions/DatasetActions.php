@@ -23,11 +23,14 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         return $datasetFactory->getDataset();
     }
 
-    public function getCitation(string $persistentId): string
+    public function getCitation(string $persistentId, ?bool $datasetIsPublished): string
     {
-        $dataset = $this->get($persistentId);
+        if (is_null($datasetIsPublished)) {
+            $dataset = $this->get($persistentId);
+            $datasetIsPublished = $dataset->isPublished();
+        }
 
-        if ($dataset->isPublished()) {
+        if ($datasetIsPublished) {
             $args = '?exporter=dataverse_json&persistentId=' . $persistentId;
             $uri = $this->createNativeAPIURI('datasets', 'export' . $args);
             $response = $this->nativeAPIRequest('GET', $uri);

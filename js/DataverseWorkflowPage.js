@@ -223,6 +223,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             this.datasetCitation = this.__('common.loading') + '...';
             $.ajax({
                 url: self.datasetCitationUrl,
+                data: {
+                    datasetIsPublished: (self.datasetIsPublished ? 1 : 0)
+                },
                 type: 'GET',
                 error: self.ajaxErrorCallback,
                 success: (r) => {
@@ -258,6 +261,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
     },
     watch: {
         dataset(newVal, oldVal) {
+            console.log('banzai');
             this.updateDatasetMetadataForm(newVal);
             this.setDatasetFilesPanel(newVal);
             this.updateDatasetCitation();
