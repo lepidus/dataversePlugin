@@ -90,6 +90,9 @@ pkp.Vue.component('dataset-files-list-panel', {
         addFileModalTitle: {
             type: String,
         },
+        dataversePluginApiUrl: {
+            type: String,
+        },
         fileListUrl: {
             type: String,
         },
@@ -205,6 +208,18 @@ pkp.Vue.component('dataset-files-list-panel', {
 				},
 			});
         },
+        getDataverseName() {
+            let self = this;
+			$.ajax({
+				url: self.dataversePluginApiUrl + '/dataverseName',
+				type: 'GET',
+				success: function (r) {
+                    let datasetFileForm = self.form;
+                    let termsOfUseFieldOption = datasetFileForm.fields[1].options[0];
+                    termsOfUseFieldOption.label = termsOfUseFieldOption.label.replace('{$dataverseName}', r.dataverseName);
+				},
+			});
+        }
     },
     render: function (h) {
         return datasetFilesListTemplate.render.call(this, h);
@@ -217,6 +232,7 @@ pkp.Vue.component('dataset-files-list-panel', {
     watch: {
         flagMounted(newVal, oldVal) {
             this.refreshItems();
+            this.getDataverseName();
         }
     }
 });

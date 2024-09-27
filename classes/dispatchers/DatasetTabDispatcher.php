@@ -134,7 +134,12 @@ class DatasetTabDispatcher extends DataverseDispatcher
         ksort($datasetFiles);
 
         $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
-        $this->initDatasetFilesList($templateMgr, $submission, $fileListApiUrl, $fileActionApiUrl, $datasetFiles);
+        $this->initDatasetFilesList($templateMgr, $submission, [
+            'dataversePluginApiUrl' => $dataversePluginApiUrl,
+            'fileListApiUrl' => $fileListApiUrl,
+            'fileActionApiUrl' => $fileActionApiUrl,
+            'files' => $datasetFiles
+        ]);
 
         $templateMgr->setState([
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
@@ -188,7 +193,12 @@ class DatasetTabDispatcher extends DataverseDispatcher
         );
 
         $this->initDatasetMetadataForm($templateMgr, $datasetApiUrl, 'PUT');
-        $this->initDatasetFilesList($templateMgr, $submission, $fileListApiUrl, $fileActionApiUrl, []);
+        $this->initDatasetFilesList($templateMgr, $submission, [
+            'dataversePluginApiUrl' => $dataversePluginApiUrl,
+            'fileListApiUrl' => $fileListApiUrl,
+            'fileActionApiUrl' => $fileActionApiUrl,
+            'files' => []
+        ]);
 
         $defaultEmailBody = $this->getDeleteDatasetEmailBody($submission, $datasetStatementUrl);
         $deleteDatasetForm = $this->getDeleteDatasetForm($context, $datasetApiUrl, $defaultEmailBody);
@@ -214,7 +224,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $this->addComponent($templateMgr, $datasetMetadataForm);
     }
 
-    private function initDatasetFilesList($templateMgr, $submission, $fileListApiUrl, $fileActionApiUrl, $datasetFiles): void
+    private function initDatasetFilesList($templateMgr, $submission, $args): void
     {
         $templateMgr->addJavaScript(
             'dataset-files-list-panel',
@@ -231,9 +241,10 @@ class DatasetTabDispatcher extends DataverseDispatcher
             $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
-                'fileListUrl' => $fileListApiUrl,
-                'fileActionUrl' => $fileActionApiUrl,
-                'items' => $datasetFiles,
+                'dataversePluginApiUrl' => $args['dataversePluginApiUrl'],
+                'fileListUrl' => $args['fileListApiUrl'],
+                'fileActionUrl' => $args['fileActionApiUrl'],
+                'items' => $args['files'],
                 'modalTitle' => __('plugins.generic.dataverse.modal.addFile.title'),
                 'title' => __('plugins.generic.dataverse.researchData'),
             ]
