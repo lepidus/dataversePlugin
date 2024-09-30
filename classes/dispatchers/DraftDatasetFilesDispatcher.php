@@ -74,12 +74,16 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     private function addDatasetFilesList($templateMgr, $request, $submission): void
     {
         $items = $this->getDatasetFiles($request, $submission->getId());
+        $context = $request->getContext();
+        $dataversePluginApiUrl = $request
+            ->getDispatcher()
+            ->url($request, Application::ROUTE_API, $context->getPath(), 'dataverse');
         $fileListApiUrl = $request
             ->getDispatcher()
-            ->url($request, Application::ROUTE_API, $request->getContext()->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
+            ->url($request, Application::ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
         $fileActionApiUrl = $request
             ->getDispatcher()
-            ->url($request, Application::ROUTE_API, $request->getContext()->getPath(), 'draftDatasetFiles');
+            ->url($request, Application::ROUTE_API, $context->getPath(), 'draftDatasetFiles');
 
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
@@ -87,6 +91,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
+                'dataversePluginApiUrl' => $dataversePluginApiUrl,
                 'fileListUrl' => $fileListApiUrl,
                 'fileActionUrl' => $fileActionApiUrl,
                 'items' => $items,

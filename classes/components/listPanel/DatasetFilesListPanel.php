@@ -9,6 +9,7 @@ use APP\plugins\generic\dataverse\classes\components\forms\DraftDatasetFileForm;
 class DatasetFilesListPanel extends ListPanel
 {
     public $addFileLabel = '';
+    public $dataversePluginApiUrl = '';
     public $fileListUrl = '';
     public $fileActionUrl = '';
     public $isLoading = false;
@@ -32,6 +33,7 @@ class DatasetFilesListPanel extends ListPanel
             $config,
             [
                 'addFileLabel' => $this->addFileLabel,
+                'dataversePluginApiUrl' => $this->dataversePluginApiUrl,
                 'fileListUrl' => $this->fileListUrl,
                 'fileActionUrl' => $this->fileActionUrl,
                 'addFileModalTitle' => $this->addFileModalTitle,

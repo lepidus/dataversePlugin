@@ -79,7 +79,8 @@ pkp.Vue.component('dataset-files-list-panel', {
     mixins: [ajaxError, dialog],
     data() {
         return {
-            isLoading: false,
+            flagMounted: false,
+            isLoading: false
         }
     },
     props: {
@@ -87,6 +88,9 @@ pkp.Vue.component('dataset-files-list-panel', {
             type: String,
         },
         addFileModalTitle: {
+            type: String,
+        },
+        dataversePluginApiUrl: {
             type: String,
         },
         fileListUrl: {
@@ -204,8 +208,31 @@ pkp.Vue.component('dataset-files-list-panel', {
 				},
 			});
         },
+        getDataverseName() {
+            let self = this;
+			$.ajax({
+				url: self.dataversePluginApiUrl + '/dataverseName',
+				type: 'GET',
+				success: function (r) {
+                    let datasetFileForm = self.form;
+                    let termsOfUseFieldOption = datasetFileForm.fields[1].options[0];
+                    termsOfUseFieldOption.label = termsOfUseFieldOption.label.replace('{$dataverseName}', r.dataverseName);
+				},
+			});
+        }
     },
     render: function (h) {
         return datasetFilesListTemplate.render.call(this, h);
+    },
+    mounted() {
+        setTimeout(() => {
+            this.flagMounted = true;
+        }, 2500);
+    },
+    watch: {
+        flagMounted(newVal, oldVal) {
+            this.refreshItems();
+            this.getDataverseName();
+        }
     }
 });

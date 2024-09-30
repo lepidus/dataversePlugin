@@ -5,6 +5,7 @@ namespace APP\plugins\generic\dataverse\classes;
 use APP\core\Application;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 class DataverseMetadata
 {
@@ -74,12 +75,15 @@ class DataverseMetadata
 
     public function getDataverseLicenses(): ?array
     {
-        $configuration = $this->getDataverseConfiguration();
-        $licensesUrl = $configuration->getDataverseServerUrl() . '/api/licenses';
-        $response = json_decode(file_get_contents($licensesUrl), true);
-        $this->dataverseLicenses = $response['data'] ?? [];
+        try {
+            $dataverseClient = new DataverseClient();
+            $this->dataverseLicenses = $dataverseClient->getDataverseCollectionActions()->getLicenses();
 
-        return $this->dataverseLicenses;
+            return $this->dataverseLicenses;
+        } catch (DataverseException $e) {
+            error_log('Dataverse API error (licenses): ' . $e->getMessage());
+            return [];
+        }
     }
 
     public function getDefaultLicense(): ?string

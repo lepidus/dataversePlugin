@@ -2,12 +2,19 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
     name: 'DataverseWorkflowPage',
     data() {
         return {
+            dataversePluginApiUrl: null,
+            rootDataverseName: '',
+            dataverseName: '',
+            dataverseLicenses: [],
             dataset: null,
             datasetCitation: '',
             datasetCitationUrl: null,
             fileFormErrors: [],
+            hasDepositedDataset: false,
+            datasetIsLoading: true,
             isLoading: false,
             latestGetRequest: '',
+            flagMounted: false
         };
     },
     computed: {
@@ -112,22 +119,89 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             });
         },
 
+        getRootDataverseName() {
+            let self = this;
+			$.ajax({
+				url: self.dataversePluginApiUrl + '/rootDataverseName',
+				type: 'GET',
+				success: function (r) {
+					self.rootDataverseName = r.rootDataverseName;
+                    self.confirmPublishDatasetMessage = self.confirmPublishDatasetMessage.replace('{$serverName}', self.rootDataverseName);
+				},
+			});
+        },
+
+        getDataverseName() {
+            let self = this;
+			$.ajax({
+				url: self.dataversePluginApiUrl + '/dataverseName',
+				type: 'GET',
+				success: function (r) {
+					self.dataverseName = r.dataverseName;
+                    
+                    if (self.hasDepositedDataset) {
+                        let deleteDatasetForm = self.components.deleteDataset;
+                        let deleteMessageField = deleteDatasetForm.fields[0];
+                        deleteMessageField.value = deleteMessageField.value.replace('{$dataverseName}', self.dataverseName);
+                    }
+				},
+			});
+        },
+
+        getDataverseLicenses() {
+            let self = this;
+			$.ajax({
+				url: self.dataversePluginApiUrl + '/licenses',
+				type: 'GET',
+				success: function (r) {
+                    let datasetMetadataForm = self.components.datasetMetadata;
+
+                    for (let license of r.licenses) {
+                        self.dataverseLicenses.push({'label': license.name, 'value': license.name});
+                    }
+
+                    datasetMetadataForm.fields[4].options = self.dataverseLicenses;
+				},
+			});
+        },
+
         refreshDataset() {
             const self = this;
+            this.datasetIsLoading = true;
             $.ajax({
                 url: this.components.datasetMetadata.action,
                 type: 'GET',
                 success(r) {
                     self.dataset = r;
-                },
-                error(r) {
-                    self.ajaxErrorCallback(r);
+                    self.datasetIsLoading = false;
                 }
             });
         },
 
-        setDatasetForms(dataset) {
+        updateDatasetMetadataForm(dataset) {
             let form = { ...this.components.datasetMetadata };
+
+            for (let field of form.fields) {
+                let datasetFieldName = field.name.replace(/^dataset/, '').toLowerCase();
+
+                if (this.dataset.hasOwnProperty(datasetFieldName)) {
+                    field.value = this.dataset[datasetFieldName];
+
+                    if (datasetFieldName == 'keywords') {
+                        let selectedKeywords = [];
+
+                        for (let keyword of this.dataset[datasetFieldName]) {
+                            selectedKeywords.push({'label': keyword, 'value': keyword});
+                        }
+
+                        field.selected = {};
+                        field.selected[form.primaryLocale] = selectedKeywords;
+                        field.value = {};
+                        field.value[form.primaryLocale] = this.dataset[datasetFieldName];
+                    }
+                }
+            }
+
             form.canSubmit =
                 this.canEditPublication &&
                 dataset.versionState !== 'RELEASED';
@@ -146,14 +220,17 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             this.components.datasetFiles = filesPanel;
         },
 
-        setDatasetCitation() {
+        updateDatasetCitation() {
             if (!this.datasetCitationUrl) {
                 return;
             }
             var self = this;
-            this.datasetCitation = 'loading...';
+            this.datasetCitation = this.__('common.loading') + '...';
             $.ajax({
                 url: self.datasetCitationUrl,
+                data: {
+                    datasetIsPublished: (self.datasetIsPublished ? 1 : 0)
+                },
                 type: 'GET',
                 error: self.ajaxErrorCallback,
                 success: (r) => {
@@ -181,18 +258,26 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 }, 2500);
             }
         });
-
-        this.setDatasetCitation();
-        if (this.dataset) {
-            this.setDatasetForms(this.dataset);
-            this.setDatasetFilesPanel(this.dataset);
-        }
+    },
+    mounted() {
+        setTimeout(() => {
+            this.flagMounted = true;
+        }, 2500);
     },
     watch: {
         dataset(newVal, oldVal) {
-            this.setDatasetForms(newVal);
+            this.updateDatasetMetadataForm(newVal);
             this.setDatasetFilesPanel(newVal);
-            this.setDatasetCitation();
+            this.updateDatasetCitation();
+        },
+        flagMounted(newVal, oldVal) {
+            this.getDataverseName();
+            this.getDataverseLicenses();
+
+            if (this.hasDepositedDataset) {
+                this.getRootDataverseName();
+                this.refreshDataset();
+            }
         }
     },
 });

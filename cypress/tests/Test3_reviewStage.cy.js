@@ -143,6 +143,8 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
 
+        cy.waitDatasetTabLoading();
+
         cy.get('#workflow-button').click();
         cy.clickDecision('Accept Submission');
 
@@ -161,12 +163,16 @@ describe('Dataverse Plugin - Features around review stage', function () {
         });
 
         cy.contains('button', 'Record Decision').click();
+        cy.wait(1000);
+        cy.contains('has been accepted for publication and sent to the copyediting stage');
         cy.get('a.pkpButton').contains('View All Submissions').click();
         cy.findSubmission('myQueue', submissionData.title);
 
+        cy.waitDatasetTabLoading();
+
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
-        
+
         cy.get('p:contains("Demo Dataverse, V1")');
     });
 });

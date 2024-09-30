@@ -120,10 +120,7 @@ class DatasetService extends DataverseService
 
         try {
             $dataverseClient = new DataverseClient();
-
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
-            $dataverseName = $dataverseClient->getDataverseCollectionActions()->get()->getName();
-
             $dataverseClient->getDatasetActions()->delete($dataset->getPersistentId());
         } catch (DataverseException $e) {
             $this->registerAndNotifyError(

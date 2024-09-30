@@ -113,8 +113,10 @@ class DatasetHandler extends APIHandler
             $dataverseClient = new DataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
         } catch (DataverseException $e) {
-            $request = $this->getRequest();
-            $submission = Repo::submission()->get($study->getSubmissionId());
+            if ($e->getCode() === 404) {
+                DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
+            }
+
             $error = $e->getMessage();
             $message = 'plugins.generic.dataverse.error.getFailed';
 
@@ -281,9 +283,12 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
+        $queryParams = $slimRequest->getQueryParams();
+        $datasetIsPublished = (bool) $queryParams['datasetIsPublished'];
+
         try {
             $dataverseClient = new DataverseClient();
-            $citation = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId());
+            $citation = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId(), $datasetIsPublished);
         } catch (DataverseException $e) {
             error_log('Error getting citation: ' . $e->getMessage());
             return $response->withStatus($e->getCode())->withJsonError('api.error.researchDataCitationNotFound');

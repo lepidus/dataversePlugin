@@ -4,6 +4,7 @@ namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
 use APP\core\Application;
 use PKP\db\DAORegistry;
+use PKP\cache\CacheManager;
 use GuzzleHttp\Exception\TransferException;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
@@ -11,18 +12,22 @@ use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfig
 
 abstract class DataverseActions
 {
+    protected $contextId;
     protected $serverURL;
     protected $apiToken;
     protected $dataverseAlias;
     protected $client;
+    protected $cacheManager;
+
+    protected const ONE_DAY_SECONDS = 24 * 60 * 60;
 
     public function __construct(
         DataverseConfiguration $configuration = null,
         \GuzzleHttp\Client $client = null
     ) {
         if (is_null($configuration)) {
-            $contextId = Application::get()->getRequest()->getContext()->getId();
-            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+            $this->contextId = Application::get()->getRequest()->getContext()->getId();
+            $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($this->contextId);
         }
 
         if (is_null($client)) {
@@ -33,6 +38,7 @@ abstract class DataverseActions
         $this->apiToken = $configuration->getAPIToken();
         $this->dataverseAlias = $configuration->getDataverseCollection();
         $this->client = $client;
+        $this->cacheManager = CacheManager::getManager();
     }
 
     public function createNativeAPIURI(string ...$pathParams): string
@@ -111,5 +117,10 @@ abstract class DataverseActions
             $response->getReasonPhrase(),
             $response->getBody()
         );
+    }
+
+    public function cacheDismiss()
+    {
+        return null;
     }
 }
