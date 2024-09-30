@@ -26,10 +26,10 @@ Cypress.Commands.add('findSubmission', function(tab, title) {
 
 Cypress.Commands.add('waitDataStatementTabLoading', function () {
 	cy.intercept('GET', '**/api/v1/dataverse/dataverseName*').as('getDataverseNameRequest');
-	cy.wait('@getDataverseNameRequest');
+	cy.wait('@getDataverseNameRequest', {timeout:10000});
 });
 
 Cypress.Commands.add('waitDatasetTabLoading', function () {
 	cy.intercept('GET', /\/api\/v1\/datasets\/\d+\/citation/).as('getDatasetRequest');
-	cy.wait('@getDatasetRequest');
+	cy.wait('@getDatasetRequest', {timeout:10000});
 });

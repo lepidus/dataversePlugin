@@ -102,7 +102,9 @@ describe('Dataverse Plugin - Workflow features', function () {
     it('Research data files editing in workflow', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
-        
+
+        cy.waitDatasetTabLoading();
+
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
         cy.get('#dataset_files-button').click();
@@ -137,6 +139,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
+        cy.waitDatasetTabLoading();
+
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
         
@@ -152,6 +156,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
+        cy.waitDataStatementTabLoading();
+
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
@@ -172,8 +178,9 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
         cy.get('button:visible:contains("Save")').click();
-        cy.wait(3000);
+        cy.wait(7000);
 
+        cy.waitDatasetTabLoading();
         cy.contains('h1', 'Research data');
     });
     it('Check author actions were registered in activity log', function () {
@@ -200,6 +207,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
 
+        cy.waitDatasetTabLoading();
+
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
 
@@ -214,7 +223,9 @@ describe('Dataverse Plugin - Workflow features', function () {
     it('Editor can delete research data in workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('active', submissionData.title);
-        
+
+        cy.waitDatasetTabLoading();
+
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
         
@@ -222,7 +233,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.getTinyMceContent('deleteDataset-deleteMessage-control')
             .should('include', 'The research data from the manuscript submission "' + submissionData.title + '" has been removed');
 		cy.get('.modal__panel button:contains("Delete and send email")').click();
-        cy.wait(3000);
+        cy.wait(5000);
 		
         cy.contains('No research data transferred.');
         cy.get('#dataStatement-button').click();
@@ -231,7 +242,9 @@ describe('Dataverse Plugin - Workflow features', function () {
     it('Editor can upload research data in workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('active', submissionData.title);
-        
+
+        cy.waitDataStatementTabLoading();
+
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
@@ -252,14 +265,17 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
         cy.get('button:visible:contains("Save")').click();
-        cy.wait(3000);
+        cy.wait(7000);
 
+        cy.waitDatasetTabLoading();
         cy.contains('h1', 'Research data');
     });
     it('Editor can publish dataset on submission publishing', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('active', submissionData.title);
         
+        cy.waitDatasetTabLoading();
+
         if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
 			cy.get('#workflow-button').click();
             
@@ -282,7 +298,10 @@ describe('Dataverse Plugin - Workflow features', function () {
 			cy.wait(1000);
 			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
 			cy.get('div[id^="assign-"] button:contains("Save")').click();
-            cy.wait(500);
+            cy.wait(1000);
+            cy.get('div[id^="assign-"] [role="status"]').contains('Saved');
+            cy.reload();
+            cy.get('div#publication button:contains("Schedule For Publication")').click();
 			cy.contains('All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?');
 		} else {
 			cy.get('#publication-button').click();
@@ -309,6 +328,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('archive', submissionData.title);
 
+        cy.waitDatasetTabLoading();
+
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
@@ -318,7 +339,9 @@ describe('Dataverse Plugin - Workflow features', function () {
 			+ 'Before proceeding, make sure they are suitable for publication in ';
 		cy.get('div[data-modal="publishDataset"]').contains(publishMsg);
 		cy.get('div[data-modal="publishDataset"] button:contains("Yes")').click();
-		cy.wait(1000);
+		cy.wait(3000);
+
+        cy.waitDatasetTabLoading();
 
 		cy.get('.value > p').contains('V1');
 		cy.contains('Publish research data').should('not.exist');
@@ -329,6 +352,8 @@ describe('Dataverse Plugin - Workflow features', function () {
     it('Publishing of submission new version do not publish dataset', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('archive', submissionData.title);
+
+        cy.waitDatasetTabLoading();
 
         cy.get('#publication-button').click();
         cy.contains('button', 'Create New Version').click();
