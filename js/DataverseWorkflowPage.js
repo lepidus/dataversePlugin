@@ -183,16 +183,21 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 
             for (let field of form.fields) {
                 let datasetFieldName = field.name.replace(/^dataset/, '').toLowerCase();
-                
+
                 if (this.dataset.hasOwnProperty(datasetFieldName)) {
                     field.value = this.dataset[datasetFieldName];
-    
+
                     if (datasetFieldName == 'keywords') {
                         let selectedKeywords = [];
+
                         for (let keyword of this.dataset[datasetFieldName]) {
                             selectedKeywords.push({'label': keyword, 'value': keyword});
                         }
-                        field.selected = selectedKeywords;
+
+                        field.selected = {};
+                        field.selected[form.primaryLocale] = selectedKeywords;
+                        field.value = {};
+                        field.value[form.primaryLocale] = this.dataset[datasetFieldName];
                     }
                 }
             }

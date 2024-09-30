@@ -78,7 +78,7 @@ class DatasetMetadataForm extends FormComponent
             return [
                 'title' => '',
                 'description' => '',
-                'keywords' => [],
+                'keywords' => [Locale::getLocale() => []],
                 'subject' => '',
                 'license' => ''
             ];
