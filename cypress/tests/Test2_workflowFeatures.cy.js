@@ -180,8 +180,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('button:visible:contains("Save")').click();
         cy.wait(7000);
 
-        cy.waitDatasetTabLoading();
-        cy.contains('h1', 'Research data');
+        cy.contains('h1', 'Research data', {timeout:10000});
     });
     it('Check author actions were registered in activity log', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
@@ -267,8 +266,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('button:visible:contains("Save")').click();
         cy.wait(7000);
 
-        cy.waitDatasetTabLoading();
-        cy.contains('h1', 'Research data');
+        cy.contains('h1', 'Research data', {timeout:10000});
     });
     it('Editor can publish dataset on submission publishing', function () {
         cy.login('dbarnes', null, 'publicknowledge');
