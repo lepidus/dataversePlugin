@@ -48,7 +48,7 @@ describe('Dataverse Plugin - Information displayed in public site', function () 
         cy.get('.pkpHeader__actions a:contains("View")').click();
         
         cy.contains('h2', 'Data statement').should('not.exist');
-        cy.contains('h2', 'Research data');
+        cy.contains('h2', 'Research data').focus();
         cy.contains('"Replication data for: ' + secondSubmissionTitle + '"');
 		cy.contains('a', /https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
 		cy.contains('Demo Dataverse, V1');

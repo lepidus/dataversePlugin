@@ -170,6 +170,8 @@ describe('Dataverse Plugin - Features around review stage', function () {
 
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
+
+        cy.get('#publication-button').focus();
         
         cy.get('p:contains("Demo Dataverse, V1")');
     });
