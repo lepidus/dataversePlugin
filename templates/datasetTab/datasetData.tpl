@@ -7,7 +7,7 @@
         <h1>
             {translate key="plugins.generic.dataverse.researchData"}
         </h1>
-        <template v-if="!datasetIsLoading" slot="actions">
+        <template slot="actions">
             <pkp-button
                 @click="openDeleteDatasetModal"
                 :is-warnable="true"
@@ -45,7 +45,7 @@
                     <pkp-header slot="header">
                         <h2>{{ components.datasetFiles.title }}</h2>
                         <spinner v-if="components.datasetFiles.isLoading"></spinner>
-                        <template v-if="!datasetIsLoading" slot="actions">
+                        <template slot="actions">
                             <pkp-button 
                                 ref="fileModalButton"
                                 @click="openAddFileModal"
