@@ -143,6 +143,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $templateMgr->setState([
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
+            'loadingCitationMsg' => __('plugins.generic.dataverse.metadataForm.loadingDatasetCitation'),
             'hasDepositedDataset' => false
         ]);
     }
@@ -212,6 +213,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'confirmPublishDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetPublish', [
                 'serverUrl' => $configuration->getDataverseServerUrl(),
             ]),
+            'loadingCitationMsg' => __('plugins.generic.dataverse.metadataForm.loadingDatasetCitation'),
             'datasetCitationUrl' => $dispatcher->url($request, Application::ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
             'canSendEmail' => in_array(Role::ROLE_ID_MANAGER, $userRoles),
             'hasDepositedDataset' => true

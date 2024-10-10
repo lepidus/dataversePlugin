@@ -1,8 +1,8 @@
 <span v-if="datasetIsLoading">
     <spinner></spinner>
-    {{ __('common.loading')}} ...
+    {translate key="plugins.generic.dataverse.metadataForm.loadingDataset"}
 </span>
-<section v-if="!datasetIsLoading" id="datasetData" class="item datasetData -pkpClearfix">
+<section id="datasetData" class="item datasetData -pkpClearfix">
     <pkp-header>
         <h1>
             {translate key="plugins.generic.dataverse.researchData"}

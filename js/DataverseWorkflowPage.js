@@ -23,6 +23,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
 
         datasetIsPublished: function () {
+            if (this.datasetIsLoading) {
+                return true;
+            }
+
             return this.dataset.versionState === 'RELEASED';
         },
 
@@ -225,7 +229,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 return;
             }
             var self = this;
-            this.datasetCitation = this.__('common.loading') + '...';
+            this.datasetCitation = this.loadingCitationMsg;
             $.ajax({
                 url: self.datasetCitationUrl,
                 data: {

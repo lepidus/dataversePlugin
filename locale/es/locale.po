@@ -220,6 +220,12 @@ msgstr "Publicar datos de investigación"
 msgid "plugins.generic.dataverse.dataset.titlePrefix"
 msgstr "Datos de réplica: "
 
+msgid "plugins.generic.dataverse.metadataForm.loadingDataset"
+msgstr "Cargando información de los datos de investigación..."
+
+msgid "plugins.generic.dataverse.metadataForm.loadingDatasetCitation"
+msgstr "Cargando citación..."
+
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Título"
 
