@@ -24,7 +24,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 
         datasetIsPublished: function () {
             if (this.datasetIsLoading) {
-                return false;
+                return true;
             }
 
             return this.dataset.versionState === 'RELEASED';
