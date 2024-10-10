@@ -307,7 +307,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 return;
             }
             var self = this;
-            this.datasetCitation = this.__('common.loading') + '...';
+            this.datasetCitation = this.loadingCitationMsg;
             $.ajax({
                 url: self.datasetCitationUrl,
                 type: 'GET',

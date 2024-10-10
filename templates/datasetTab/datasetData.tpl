@@ -1,13 +1,13 @@
 <span v-if="datasetIsLoading">
     <spinner></spinner>
-    {{ __('common.loading')}} ...
+    {translate key="plugins.generic.dataverse.metadataForm.loadingDataset"}
 </span>
-<section v-if="!datasetIsLoading" id="datasetData" class="item datasetData -pkpClearfix">
+<section id="datasetData" class="item datasetData -pkpClearfix">
     <pkp-header>
         <h1>
             {translate key="plugins.generic.dataverse.researchData"}
         </h1>
-        <template slot="actions">
+        <template v-if="!datasetIsLoading" slot="actions">
             <pkp-button
                 @click="openDeleteDatasetModal"
                 :is-warnable="true"
@@ -45,7 +45,7 @@
                     <pkp-header slot="header">
                         <h2>{{ components.datasetFiles.title }}</h2>
                         <spinner v-if="components.datasetFiles.isLoading"></spinner>
-                        <template slot="actions">
+                        <template v-if="!datasetIsLoading" slot="actions">
                             <pkp-button 
                                 ref="fileModalButton"
                                 @click="openAddFileModal"

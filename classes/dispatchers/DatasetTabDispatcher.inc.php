@@ -211,6 +211,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'confirmPublishDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetPublish', [
                 'serverUrl' => $configuration->getDataverseServerUrl(),
             ]),
+            'loadingCitationMsg' => __('plugins.generic.dataverse.metadataForm.loadingDatasetCitation'),
             'datasetCitationUrl' => $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
             'canSendEmail' => in_array(ROLE_ID_MANAGER, $userRoles),
             'hasDepositedDataset' => true
