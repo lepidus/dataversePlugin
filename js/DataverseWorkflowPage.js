@@ -23,8 +23,8 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
 
         datasetIsPublished: function () {
-            if (this.datasetIsLoading) {
-                return true;
+            if (this.datasetIsLoading || this.dataset == null) {
+                return false;
             }
 
             return this.dataset.versionState === 'RELEASED';
