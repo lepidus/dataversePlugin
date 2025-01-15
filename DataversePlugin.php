@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file plugins/generic/dataverse/DataversePlugin.inc.php
  *
