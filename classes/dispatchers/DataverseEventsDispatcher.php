@@ -39,6 +39,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         Hook::add('TemplateManager::display', [$this, 'editDecisions']);
         Hook::add('LoadComponentHandler', [$this, 'setupDataverseComponentHandlers']);
         Hook::add('Publication::edit', [$this, 'updateDatasetOnPublicationUpdate']);
+        Hook::add('AcronPlugin::parseCronTab', [$this, 'addDataverseTasksToCrontab']);
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -333,5 +334,12 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return true;
         }
         return false;
+    }
+
+    public function addDataverseTasksToCrontab($hookName, $params)
+    {
+        $taskFilesPath = &$params[0];
+        $taskFilesPath[] = $this->plugin->getPluginPath() . DIRECTORY_SEPARATOR . 'scheduledTasks.xml';
+        return Hook::CONTINUE;
     }
 }
