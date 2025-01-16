@@ -14,7 +14,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
     public function executeActions()
     {
         $dataverseClient = new DataverseClient();
-        $tokenExpirationDate = '2025-01-17';//$dataverseClient->getDataverseCollectionActions()->getApiTokenExpirationDate();
+        $tokenExpirationDate = $dataverseClient->getDataverseCollectionActions()->getApiTokenExpirationDate();
 
         if (empty($tokenExpirationDate)) {
             return false;
@@ -43,12 +43,52 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
             'DATAVERSE_TOKEN_EXPIRATION'
         );
 
+        $admin = $this->getAdminUser($context->getId());
+        if (!$admin) {
+            return;
+        }
+
         $email = new Mailable();
         $email->from($context->getData('contactEmail'), $context->getData('contactName'));
-        $email->to([['name' => '?', 'email' => '?']]);
+        $email->to([['name' => $admin->getFullName(), 'email' => $admin->getEmail()]]);
         $email->subject($emailTemplate->getLocalizedData('subject'));
         $email->body($emailTemplate->getLocalizedData('body'));
 
         Mail::send($email);
+    }
+
+    private function getAdminUser($contextId)
+    {
+        $applicationName = Application::get()->getName();
+        $adminEnAbbrev = ($applicationName == 'ojs2' ? 'jm' : 'psm');
+
+        $adminUserGroup = $this->getUserGroupByAbbrev($contextId, $adminEnAbbrev);
+        if (!$adminUserGroup) {
+            return null;
+        }
+
+        $adminUsers = Repo::user()->getCollector()
+            ->filterByUserGroupIds([$adminUserGroup->getId()])
+            ->getMany()
+            ->toArray();
+
+        return array_shift($adminUsers);
+    }
+
+    private function getUserGroupByAbbrev(int $contextId, string $abbrev)
+    {
+        $contextUserGroups = Repo::userGroup()->getCollector()
+            ->filterByContextIds([$contextId])
+            ->getMany();
+
+        foreach ($contextUserGroups as $userGroup) {
+            $userGroupAbbrev = strtolower($userGroup->getData('abbrev', 'en'));
+
+            if ($userGroupAbbrev === $abbrev) {
+                return $userGroup;
+            }
+        }
+
+        return null;
     }
 }
