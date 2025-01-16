@@ -19,10 +19,10 @@
     body="emails.datasetDeleteNotification.body"
   />
   <email
-    key="DATAVERSE_API_KEY_EXPIRATION"
-    name="emails.dataverseApiKeyExpiration.name"
-    description="emails.dataverseApiKeyExpiration.description"
-    subject="emails.dataverseApiKeyExpiration.subject"
-    body="emails.dataverseApiKeyExpiration.body"
+    key="DATAVERSE_TOKEN_EXPIRATION"
+    name="emails.dataverseTokenExpiration.name"
+    description="emails.dataverseTokenExpiration.description"
+    subject="emails.dataverseTokenExpiration.subject"
+    body="emails.dataverseTokenExpiration.body"
   />
 </emails>

@@ -15,16 +15,16 @@ msgstr ""
 "<br />\n"
 "Accede al envío y revisa las opciones de declaración de datos en la pestaña <a href=\"{$dataStatementUrl}\"> Declaración de datos </a>."
 
-msgid "emails.dataverseApiKeyExpiration.name"
+msgid "emails.dataverseTokenExpiration.name"
 msgstr "Expiración de la clave API de Dataverse"
 
-msgid "emails.dataverseApiKeyExpiration.description"
+msgid "emails.dataverseTokenExpiration.description"
 msgstr "Plantilla de correo electrónico para notificar al administrador sobre la expiración de la clave API de Dataverse"
 
-msgid "emails.dataverseApiKeyExpiration.subject"
+msgid "emails.dataverseTokenExpiration.subject"
 msgstr "Expiración de la clave API de Dataverse"
 
-msgid "emails.dataverseApiKeyExpiration.body"
+msgid "emails.dataverseTokenExpiration.body"
 msgstr ""
 "Estimado/a administrador/a de {$contextName}<br />\n"
 "<br />\n"
