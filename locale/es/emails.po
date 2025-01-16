@@ -14,3 +14,23 @@ msgstr ""
 "Una de las posibles causas de esto es que los archivos enviados no califican como datos de investigación.<br />\n"
 "<br />\n"
 "Accede al envío y revisa las opciones de declaración de datos en la pestaña <a href=\"{$dataStatementUrl}\"> Declaración de datos </a>."
+
+msgid "emails.dataverseApiKeyExpiration.name"
+msgstr "Expiración de la clave API de Dataverse"
+
+msgid "emails.dataverseApiKeyExpiration.description"
+msgstr "Plantilla de correo electrónico para notificar al administrador sobre la expiración de la clave API de Dataverse"
+
+msgid "emails.dataverseApiKeyExpiration.subject"
+msgstr "Expiración de la clave API de Dataverse"
+
+msgid "emails.dataverseApiKeyExpiration.body"
+msgstr ""
+"Estimado/a administrador/a de {$contextName}<br />\n"
+"<br />\n"
+"El token que permite la integración entre {$contextName} y {$dataverseName} expirará en {$keyExpirationDate}.<br />\n"
+"<br />\n"
+"Para garantizar que la integración entre las plataformas siga funcionando correctamente, asegúrese de generar un nuevo token"
+" y actualizarlo en la configuración del módulo Dataverse antes de {$keyExpirationDate}.<br />\n"
+"<br />\n"
+"Si tiene alguna duda, póngase en contacto con el equipo de asistencia técnica que mantiene las plataformas.<br />\n"
