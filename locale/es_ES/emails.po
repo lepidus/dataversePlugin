@@ -1,4 +1,3 @@
-
 msgid "emails.datasetDeleteNotification.subject"
 msgstr "Notificación de eliminación de los datos de investigación"
 
@@ -13,3 +12,24 @@ msgstr ""
 msgid "emails.datasetDeleteNotification.description"
 msgstr ""
 "Plantilla de correo electrónico utilizada para notificar al autor sobre la eliminación de los datos de investigación."
+
+
+msgid "emails.dataverseTokenExpiration.name"
+msgstr "Expiración de la clave API de Dataverse"
+
+msgid "emails.dataverseTokenExpiration.description"
+msgstr "Plantilla de correo electrónico para notificar al administrador sobre la expiración de la clave API de Dataverse"
+
+msgid "emails.dataverseTokenExpiration.subject"
+msgstr "Expiración de la clave API de Dataverse"
+
+msgid "emails.dataverseTokenExpiration.body"
+msgstr ""
+"Estimado/a administrador/a de <em>{$contextName}</em><br />\n"
+"<br />\n"
+"El token que permite la integración entre <em>{$contextName}</em> y el repositorio Dataverse <em>{$dataverseName}</em> expirará en {$keyExpirationDate}.<br />\n"
+"<br />\n"
+"Para garantizar que la integración entre las plataformas siga funcionando correctamente, asegúrese de generar un nuevo token"
+" y actualizarlo en la configuración del módulo Dataverse antes de {$keyExpirationDate}.<br />\n"
+"<br />\n"
+"Si tiene alguna duda, póngase en contacto con el equipo de asistencia técnica que mantiene las plataformas.<br />\n"
