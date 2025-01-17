@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE scheduled_tasks SYSTEM "../../../lib/pkp/dtd/scheduledTasks.dtd">
+
+<scheduled_tasks>
+	<task class="plugins.generic.dataverse.classes.tasks.NotifyDataverseTokenExpiration">
+		<descr>Notify the administrator when the Dataverse Token is close to expiration</descr>
+		<frequency hour="3"/>
+	</task>
+</scheduled_tasks>

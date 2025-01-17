@@ -78,6 +78,18 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         return $dataverseLicenses['data'] ?? [];
     }
 
+    public function getApiTokenExpirationDate(): string
+    {
+        $uri = $this->createNativeAPIURI('users', 'token');
+        $response = $this->nativeAPIRequest('GET', $uri);
+        $decodedResponse = json_decode($response->getBody(), true);
+
+        $message = $decodedResponse['data']['message'];
+        preg_match('/expires on (\d{4}-\d{2}-\d{2})/', $message, $matches);
+
+        return $matches[1] ?? '';
+    }
+
     public function publish(): void
     {
         $uri = $this->getCurrentDataverseURI() . '/actions/:publish';
