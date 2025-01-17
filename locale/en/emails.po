@@ -14,3 +14,23 @@ msgstr ""
 "One of the possible reasons for this is that the submitted files do not qualify as research data.<br />\n"
 "<br />\n"
 "Access the submission and review the data statement options in the <a href=\"{$dataStatementUrl}\"> Data Statement </a> tab."
+
+msgid "emails.dataverseTokenExpiration.name"
+msgstr "Dataverse API Key Expiration"
+
+msgid "emails.dataverseTokenExpiration.description"
+msgstr "Email template to notify the administrator about the Dataverse API key expiration"
+
+msgid "emails.dataverseTokenExpiration.subject"
+msgstr "Dataverse API Key Expiration"
+
+msgid "emails.dataverseTokenExpiration.body"
+msgstr ""
+"Dear Administrator of <em>{$contextName}</em><br />\n"
+"<br />\n"
+"The token that enables integration between <em>{$contextName}</em> and the Dataverse repository <em>{$dataverseName}</em> will expire in {$keyExpirationDate}.<br />\n"
+"<br />\n"
+"To ensure that the integration between the platforms continues to work correctly, make sure to generate a new token"
+" and update it in the Dataverse plugin settings before {$keyExpirationDate}.<br />\n"
+"<br />\n"
+"If you have any questions, please contact the technical support team that maintains the platforms.<br />\n"
