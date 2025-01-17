@@ -27,7 +27,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
             $momentDate = date('Y-m-d', strtotime($tokenExpirationDate . " -$moment"));
 
             if ($today == $momentDate) {
-                $this->sendNotificationEmail();
+                $this->sendNotificationEmail($dataverseClient, $tokenExpirationDate);
                 break;
             }
         }
@@ -35,7 +35,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         return true;
     }
 
-    private function sendNotificationEmail()
+    private function sendNotificationEmail($dataverseClient, $tokenExpirationDate)
     {
         $context = Application::get()->getRequest()->getContext();
         $emailTemplate = Repo::emailTemplate()->getByKey(
@@ -52,7 +52,14 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         $email->from($context->getData('contactEmail'), $context->getData('contactName'));
         $email->to([['name' => $admin->getFullName(), 'email' => $admin->getEmail()]]);
         $email->subject($emailTemplate->getLocalizedData('subject'));
-        $email->body($emailTemplate->getLocalizedData('body'));
+
+        $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
+        $emailBody = __('emails.dataverseTokenExpiration.body', [
+            'contextName' => $context->getLocalizedName(),
+            'dataverseName' => $dataverseCollection->getName(),
+            'keyExpirationDate' => $tokenExpirationDate
+        ]);
+        $email->body($emailBody);
 
         Mail::send($email);
     }
