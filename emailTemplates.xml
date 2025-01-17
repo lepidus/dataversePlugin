@@ -11,5 +11,21 @@
     -->
 
 <emails>
-  <email key="DATASET_DELETE_NOTIFICATION" can_edit="1" can_disable="0" subject="emails.datasetDeleteNotification.subject" description="emails.datasetDeleteNotification.description" body="emails.datasetDeleteNotification.body" />
+  <email
+    key="DATASET_DELETE_NOTIFICATION"
+    can_edit="1"
+    can_disable="0"
+    subject="emails.datasetDeleteNotification.subject"
+    description="emails.datasetDeleteNotification.description"
+    body="emails.datasetDeleteNotification.body"
+  />
+  <email
+    key="DATAVERSE_TOKEN_EXPIRATION"
+    can_edit="1"
+    can_disable="0"
+    name="emails.dataverseTokenExpiration.name"
+    description="emails.dataverseTokenExpiration.description"
+    subject="emails.dataverseTokenExpiration.subject"
+    body="emails.dataverseTokenExpiration.body"
+  />
 </emails>
