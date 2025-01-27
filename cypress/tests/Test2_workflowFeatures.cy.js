@@ -110,7 +110,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#dataset_files-button').click();
 
 		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
-        cy.get('#datasetTab-button .pkpBadge').contains('1');
+        cy.get('#datasetFiles').contains('a', 'README.pdf');
+        cy.get('#datasetTab-button .pkpBadge').contains('2');
 
         cy.contains('button', 'Add research data').click();
         cy.fixture('example.json', 'utf8').then((fileContent) => {
