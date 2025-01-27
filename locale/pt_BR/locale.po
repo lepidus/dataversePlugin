@@ -121,6 +121,9 @@ msgid "plugins.generic.dataverse.error.datasetSubject.required"
 msgstr "O assunto dos dados de pesquisa é obrigatório. "
 "Certifique-se que você informou o assunto dos dados de pesquisa no passo “Para os Editores”."
 
+msgid "plugins.generic.dataverse.error.readmeFile.required"
+msgstr "É obrigatório o envio de um arquivo README que acompanhe os arquivos de dados de pesquisa"
+
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro ao obter dados de pesquisa no Dataverse: {$error}"
 

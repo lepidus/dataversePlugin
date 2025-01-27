@@ -118,6 +118,9 @@ msgid "plugins.generic.dataverse.error.datasetSubject.required"
 msgstr "The subject of the research data is required. "
 "Please ensure that you have chosen the subject of the research data in the “For the Editors” step."
 
+msgid "plugins.generic.dataverse.error.readmeFile.required"
+msgstr "It is mandatory to send a README file to accompany the research data files"
+
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Error getting research data to Dataverse: {$error}"
 

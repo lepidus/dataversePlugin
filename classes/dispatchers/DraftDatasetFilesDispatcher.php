@@ -164,15 +164,17 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
             if (empty($draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.researchData.required')];
-            } elseif ($this->validateGalleyContainsResearchData($submission, $draftDatasetFiles)) {
+            } elseif ($this->galleyContainsResearchData($submission, $draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.notification.galleyContainsResearchData')];
+            } elseif (!$this->researchDataHasReadme($submission, $draftDatasetFiles)) {
+                $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.readmeFile.required')];
             }
         }
 
         return false;
     }
 
-    private function validateGalleyContainsResearchData($submission, $draftDatasetFiles): bool
+    private function galleyContainsResearchData($submission, $draftDatasetFiles): bool
     {
         $submissionFiles = Repo::submissionFile()
             ->getCollector()
@@ -194,5 +196,27 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
         $validator = new DraftDatasetFilesValidator();
         return $validator->galleyContainsResearchData($submissionFiles, $datasetFiles);
+    }
+
+    private function researchDataHasReadme($submission, $draftDatasetFiles)
+    {
+        $temporaryFileManager = new TemporaryFileManager();
+
+        foreach ($draftDatasetFiles as $file) {
+            $tempFile = $temporaryFileManager->getFile(
+                $file->getData('fileId'),
+                $file->getData('userId')
+            );
+            $fileName = strtolower($file->getFileName());
+            $fileType = $tempFile->getData('filetype');
+
+            if (str_contains($fileName, 'readme')
+                && ($fileType == 'application/pdf' || $fileType == 'text/plain')
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
