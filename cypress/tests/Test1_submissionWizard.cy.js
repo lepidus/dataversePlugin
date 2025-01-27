@@ -117,7 +117,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         advanceNSteps(3);
         cy.contains('h3', 'Research data');
         cy.contains("To submit research data, it is necessary to send at least one file");
-        
+
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
         cy.uploadSubmissionFiles([{
 			'file': 'dummy.pdf',
@@ -156,6 +156,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
 
         advanceNSteps(3);
+        cy.get('div:contains("To submit research data, it is necessary to send at least one file")').should('not.exist');
         cy.contains('Research data and galley have the same file');
         cy.contains('a', 'Data_detailing.pdf');
         cy.contains('a', 'Raw_data.xlsx');
@@ -169,8 +170,29 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         
         advanceNSteps(3);
         cy.get('a:contains("Data_detailing.pdf")').should('not.exist');
-        cy.get('div:contains("To submit research data, it is necessary to send at least one file")').should('not.exist');
         cy.get('div:contains("Research data and galley have the same file")').should('not.exist');
+        cy.contains('It is mandatory to send a README file to accompany the research data files');
+        cy.contains('a', 'Raw_data.xlsx');
+
+        cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
+        cy.contains('button', 'Add research data').click();
+        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
+				fileContent,
+				fileName: 'README.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.wait(1000);
+		cy.get('input[name="termsOfUse"]').check();
+		cy.get('form:visible button:contains("Save")').click();
+		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
+        cy.get('#datasetFiles').contains('a', 'README.pdf');
+
+        advanceNSteps(3);
+        cy.get('div:contains("It is mandatory to send a README file to accompany the research data files")').should('not.exist');
+        cy.contains('a', 'README.pdf');
         cy.contains('a', 'Raw_data.xlsx');
     });
     it('Adds dataset metadata', function () {
