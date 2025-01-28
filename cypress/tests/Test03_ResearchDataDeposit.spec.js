@@ -106,6 +106,30 @@ describe('Research data deposit', function () {
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
 		cy.wait(1000);
+		cy.get('button').contains('Finish Submission').click();
+		cy.wait(1000);
+		cy.get('button.pkpModalConfirmButton').click();
+		cy.get('div:contains("It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files")');
+
+		cy.get('#submitTabs a:contains("2. Upload Submission")').click();
+		cy.wait(1000);
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', { encoding: 'base64' }).then((fileContent) => {
+			cy.get('#uploadForm input[type=file]')
+				.upload({
+					fileContent,
+					fileName: 'README.pdf',
+					mimeType: 'application/pdf',
+					encoding: 'base64',
+				});
+		});
+		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('#uploadForm button').contains('OK').click();
+		cy.get('#submitStep2Form button.submitFormButton').click();
+
+		cy.wait(1000);
 		cy.get('form[id=submitStep4Form] button:contains("Finish Submission")').click();
 		cy.wait(1000);
 		cy.get('button.pkpModalConfirmButton').click();
@@ -188,14 +212,14 @@ describe('Research data deposit', function () {
 		cy.get('form:visible button:contains("Save")').click();
 		cy.waitJQuery();
 		cy.get('#datasetFiles .listPanel__items').contains('Submissão de dados.pdf');
-		cy.get('#datasetTab-button .pkpBadge').contains('2');
+		cy.get('#datasetTab-button .pkpBadge').contains('3');
 
 		cy.get('.listPanel__item:contains(Submissão de dados.pdf) button:contains(Delete)').click();
 		cy.get('#datasetFiles .listPanel__items').contains('Submissão de dados.pdf');
 		cy.get('.modal:visible button:contains(Yes)').click();
 		cy.waitJQuery();
 		cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'Submissão de dados.pdf');
-		cy.get('#datasetTab-button .pkpBadge').contains('1');
+		cy.get('#datasetTab-button .pkpBadge').contains('2');
 	});
 
 	it('Check author can delete research data', function () {
@@ -329,14 +353,14 @@ describe('Research data deposit', function () {
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('[data-modal="fileForm"] button:contains("Save")').click();
 		cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
-		cy.get('#datasetTab-button .pkpBadge').contains('2');
+		cy.get('#datasetTab-button .pkpBadge').contains('3');
 
 		cy.get('.listPanel__item:contains(samples.pdf) button:contains(Delete)').click();
 		cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
 		cy.get('[data-modal="delete"] button:contains(Yes)').click();
 		cy.waitJQuery();
 		cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'samples.pdf');
-		cy.get('#datasetTab-button .pkpBadge').contains('1');
+		cy.get('#datasetTab-button .pkpBadge').contains('2');
 	});
 
 	it('Check editor can delete research data', function () {

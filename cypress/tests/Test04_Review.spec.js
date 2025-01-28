@@ -49,8 +49,10 @@ describe('Research data on review', function () {
 		
 		addResearchDataFile('dummy.pdf', submission.researchDataFileNames[0]);
 		addResearchDataFile('dummy.zip', submission.researchDataFileNames[1]);
+		addResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'README.pdf');
 		cy.contains(submission.researchDataFileNames[0]);
 		cy.contains(submission.researchDataFileNames[1]);
+		cy.contains('README.pdf');
 
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
@@ -104,5 +106,6 @@ describe('Research data on review', function () {
 		cy.contains('Data statement');
 		cy.contains('The research data has been submitted to the Dataverse de Exemplo Lepidus repository');
 		cy.get('a:contains("' + submission.researchDataFileNames[0] + '")');
+		cy.get('a:contains("README.pdf")');
 	});
 });
