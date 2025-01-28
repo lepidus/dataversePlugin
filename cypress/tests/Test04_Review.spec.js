@@ -87,6 +87,7 @@ describe('Research data on review', function () {
 		cy.get('#selectDataFilesForReview').contains('This submission has deposited research data. Please, select which data files will be made available for reviewers to view.');
 		cy.get('input[name^="selectedDataFilesForReview"]').should('be.checked');
 		cy.get('input[name^="selectedDataFilesForReview"]').eq(1).uncheck();
+		cy.get('input[name^="selectedDataFilesForReview"]').eq(2).uncheck();
 
 		cy.get('#initiateReview').contains('Send to Review').click();
 
