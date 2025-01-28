@@ -113,6 +113,9 @@ msgid "plugins.generic.dataverse.error.datasetSubjectRequired"
 msgstr "El asunto de los datos de investigación es obligatorio.<br>"
 "Asegúrate de haber seleccionado el asunto de los datos de investigación en el paso 3 del envío."
 
+msgid "plugins.generic.dataverse.error.readmeFileRequired"
+msgstr "Es obligatorio enviar un archivo README, en formato PDF o TXT, que acompañe a los archivos de datos de la investigación"
+
 msgid "plugins.generic.dataverse.error.depositFailedOnSubmission"
 msgstr "Error al depositar los datos de investigación en Dataverse: {$error}<br>"
 "Por favor, elija otra opción de declaración de datos o intente nuevamente más tarde."

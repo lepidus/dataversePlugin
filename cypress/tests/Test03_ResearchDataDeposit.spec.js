@@ -87,6 +87,24 @@ describe('Research data deposit', function () {
 		cy.location('search').then(search => {
 			submission.id = parseInt(search.split('=')[1], 10);
 		});
+		
+		cy.get('#submitStep2Form button.submitFormButton').click();
+		cy.get('div:contains("It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files")');
+
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', { encoding: 'base64' }).then((fileContent) => {
+			cy.get('#uploadForm input[type=file]')
+				.upload({
+					fileContent,
+					fileName: 'README.pdf',
+					mimeType: 'application/pdf',
+					encoding: 'base64',
+				});
+		});
+		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('#uploadForm button').contains('OK').click();
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.wait(1000);
@@ -104,30 +122,6 @@ describe('Research data deposit', function () {
 		cy.get('select[id^="datasetLicense"').should('have.value', 'CC0 1.0');
 		cy.get('select[id^="datasetLicense"').select('CC BY 4.0');
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
-
-		cy.wait(1000);
-		cy.get('button').contains('Finish Submission').click();
-		cy.wait(1000);
-		cy.get('button.pkpModalConfirmButton').click();
-		cy.get('div:contains("It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files")');
-
-		cy.get('#submitTabs a:contains("2. Upload Submission")').click();
-		cy.wait(1000);
-		cy.contains('Add research data').click();
-		cy.wait(1000);
-		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', { encoding: 'base64' }).then((fileContent) => {
-			cy.get('#uploadForm input[type=file]')
-				.upload({
-					fileContent,
-					fileName: 'README.pdf',
-					mimeType: 'application/pdf',
-					encoding: 'base64',
-				});
-		});
-		cy.wait(200);
-		cy.get('input[name="termsOfUse"').check();
-		cy.get('#uploadForm button').contains('OK').click();
-		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.wait(1000);
 		cy.get('form[id=submitStep4Form] button:contains("Finish Submission")').click();
