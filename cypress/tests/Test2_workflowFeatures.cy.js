@@ -110,7 +110,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#dataset_files-button').click();
 
 		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
-        cy.get('#datasetTab-button .pkpBadge').contains('1');
+        cy.get('#datasetFiles').contains('a', 'README.pdf');
+        cy.get('#datasetTab-button .pkpBadge').contains('2');
 
         cy.contains('button', 'Add research data').click();
         cy.fixture('example.json', 'utf8').then((fileContent) => {
@@ -126,14 +127,14 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('form:visible button:contains("Save")').click();
 
         cy.get('#datasetFiles').contains('example.json');
-        cy.get('#datasetTab-button .pkpBadge').contains('2');
+        cy.get('#datasetTab-button .pkpBadge').contains('3');
 
         cy.get('.listPanel__item:contains("example.json") button:contains("Delete")').click();
 		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
         cy.waitJQuery();
 
         cy.get('#datasetFiles').should('not.include.text', 'example.json');
-        cy.get('#datasetTab-button .pkpBadge').contains('1');
+        cy.get('#datasetTab-button .pkpBadge').contains('2');
     });
     it('Author can delete research data in workflow', function () {
         cy.login('eostrom', null, 'publicknowledge');
