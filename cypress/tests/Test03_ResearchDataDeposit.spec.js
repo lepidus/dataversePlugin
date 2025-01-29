@@ -537,11 +537,11 @@ describe('Research data deposit', function () {
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.contains('button', 'Publish research data').click();
 
-		const publishMsg = 'Do you really want to publish the research data related to this submission? This action cannot be undone.'
-			+ 'Before proceeding, make sure they are suitable for publication in '
-			+ dataverseServerName;
-		cy.get('div[data-modal="publish"]').contains(publishMsg);
-		cy.get('div[data-modal="publish"] button').contains('Yes').click();
+		cy.get('div[data-modal="publish"]').within(() => {
+			cy.contains('Do you really want to publish the research data related to this submission? This action cannot be undone.');
+			cy.contains('Before proceeding, make sure they are suitable for publication in');
+			cy.contains('button', 'Yes').click();
+		});
 		cy.wait(1000);
 
 		cy.get('.value > p').contains('V1');
