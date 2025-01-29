@@ -546,6 +546,7 @@ describe('Research data deposit', function () {
 		cy.wait(7000);
 		cy.waitDatasetTabLoading('datasetTab');
 
+		cy.contains('h1', 'Research data').focus();
 		cy.get('.value > p').contains('V1');
 		cy.get('button').contains('Publish research data').should('not.exist');
 		cy.get('button').contains('Delete research data').should('be.disabled');
