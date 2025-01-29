@@ -415,6 +415,7 @@ describe('Research data deposit', function () {
 
 		cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
+		cy.wait(3000);
 
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.contains('button', 'Delete research data').should('be.disabled');
@@ -542,7 +543,8 @@ describe('Research data deposit', function () {
 			cy.contains('Before proceeding, make sure they are suitable for publication in');
 			cy.contains('button', 'Yes').click();
 		});
-		cy.wait(1000);
+		cy.contains('Load citation');
+		cy.waitDatasetTabLoading('datasetTab');
 
 		cy.get('.value > p').contains('V1');
 		cy.get('button').contains('Publish research data').should('not.exist');
