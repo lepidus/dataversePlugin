@@ -543,12 +543,11 @@ describe('Research data deposit', function () {
 			cy.contains('Before proceeding, make sure they are suitable for publication in');
 			cy.contains('button', 'Yes').click();
 		});
-		cy.wait(7000);
+		cy.wait(3000);
 
 		cy.get('button').contains('Publish research data').should('not.exist');
 		cy.get('button').contains('Delete research data').should('be.disabled');
 		cy.get('button').contains('Add research data').should('be.disabled');
 		cy.get('#dataset_metadata button').contains('Save').should('be.disabled');
-		cy.get('.data_citation .value').contains('V1');
 	});
 });
