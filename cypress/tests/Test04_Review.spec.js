@@ -27,7 +27,7 @@ describe('Research data on review', function () {
 		submission = {
 			id: 0,
 			section: 'Articles',
-			title: 'The Rise of the Machine Empire',
+			title: 'Machine Empire and Society',
 			abstract: 'An example abstract.',
 			keywords: ['Modern History'],
 			researchDataFileNames : ['discarded_robots.csv', 'robots_spy_missions.csv']

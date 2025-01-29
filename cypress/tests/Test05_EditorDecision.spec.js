@@ -10,7 +10,7 @@ describe('Research data publishing in editor decision', function () {
 		submission = {
 			id: 0,
 			section: 'Articles',
-			title: 'The Rise of the Machine Empire',
+			title: 'The second Machine Empire',
 			abstract: 'An example abstract.',
 			keywords: ['Modern History'],
 		}

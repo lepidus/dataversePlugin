@@ -545,7 +545,7 @@ describe('Research data deposit', function () {
 		});
 		cy.wait(7000);
 
-		cy.get('.value > p').contains('V1');
+		cy.get('.data_citation .value').contains('V1');
 		cy.get('button').contains('Publish research data').should('not.exist');
 		cy.get('button').contains('Delete research data').should('be.disabled');
 		cy.get('button').contains('Add research data').should('be.disabled');
