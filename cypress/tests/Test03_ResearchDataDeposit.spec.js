@@ -543,7 +543,7 @@ describe('Research data deposit', function () {
 			cy.contains('Before proceeding, make sure they are suitable for publication in');
 			cy.contains('button', 'Yes').click();
 		});
-		cy.wait(3000);
+		cy.wait(7000);
 		cy.waitDatasetTabLoading('datasetTab');
 
 		cy.get('.value > p').contains('V1');
