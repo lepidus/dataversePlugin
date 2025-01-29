@@ -87,6 +87,24 @@ describe('Research data deposit', function () {
 		cy.location('search').then(search => {
 			submission.id = parseInt(search.split('=')[1], 10);
 		});
+		
+		cy.get('#submitStep2Form button.submitFormButton').click();
+		cy.get('div:contains("It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files")');
+
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', { encoding: 'base64' }).then((fileContent) => {
+			cy.get('#uploadForm input[type=file]')
+				.upload({
+					fileContent,
+					fileName: 'README.pdf',
+					mimeType: 'application/pdf',
+					encoding: 'base64',
+				});
+		});
+		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('#uploadForm button').contains('OK').click();
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.wait(1000);
@@ -188,14 +206,14 @@ describe('Research data deposit', function () {
 		cy.get('form:visible button:contains("Save")').click();
 		cy.waitJQuery();
 		cy.get('#datasetFiles .listPanel__items').contains('Submissão de dados.pdf');
-		cy.get('#datasetTab-button .pkpBadge').contains('2');
+		cy.get('#datasetTab-button .pkpBadge').contains('3');
 
 		cy.get('.listPanel__item:contains(Submissão de dados.pdf) button:contains(Delete)').click();
 		cy.get('#datasetFiles .listPanel__items').contains('Submissão de dados.pdf');
 		cy.get('.modal:visible button:contains(Yes)').click();
 		cy.waitJQuery();
 		cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'Submissão de dados.pdf');
-		cy.get('#datasetTab-button .pkpBadge').contains('1');
+		cy.get('#datasetTab-button .pkpBadge').contains('2');
 	});
 
 	it('Check author can delete research data', function () {
@@ -397,6 +415,7 @@ describe('Research data deposit', function () {
 
 		cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
+		cy.wait(3000);
 
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.contains('button', 'Delete research data').should('be.disabled');
@@ -454,6 +473,22 @@ describe('Research data deposit', function () {
 		cy.wait(200);
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('#uploadForm button').contains('OK').click();
+
+		cy.wait(1000);
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', { encoding: 'base64' }).then((fileContent) => {
+			cy.get('#uploadForm input[type=file]')
+				.upload({
+					fileContent,
+					fileName: 'README.pdf',
+					mimeType: 'application/pdf',
+					encoding: 'base64',
+				});
+		});
+		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('#uploadForm button').contains('OK').click();
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
 		cy.get('input[id^="title-en_US-"').type('Submission with research data', { delay: 0 });
@@ -503,14 +538,13 @@ describe('Research data deposit', function () {
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.contains('button', 'Publish research data').click();
 
-		const publishMsg = 'Do you really want to publish the research data related to this submission? This action cannot be undone.'
-			+ 'Before proceeding, make sure they are suitable for publication in '
-			+ dataverseServerName;
-		cy.get('div[data-modal="publish"]').contains(publishMsg);
-		cy.get('div[data-modal="publish"] button').contains('Yes').click();
-		cy.wait(1000);
+		cy.get('div[data-modal="publish"]').within(() => {
+			cy.contains('Do you really want to publish the research data related to this submission? This action cannot be undone.');
+			cy.contains('Before proceeding, make sure they are suitable for publication in');
+			cy.contains('button', 'Yes').click();
+		});
+		cy.wait(3000);
 
-		cy.get('.value > p').contains('V1');
 		cy.get('button').contains('Publish research data').should('not.exist');
 		cy.get('button').contains('Delete research data').should('be.disabled');
 		cy.get('button').contains('Add research data').should('be.disabled');

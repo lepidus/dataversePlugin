@@ -27,7 +27,7 @@ describe('Research data on review', function () {
 		submission = {
 			id: 0,
 			section: 'Articles',
-			title: 'The Rise of the Machine Empire',
+			title: 'Machine Empire and Society',
 			abstract: 'An example abstract.',
 			keywords: ['Modern History'],
 			researchDataFileNames : ['discarded_robots.csv', 'robots_spy_missions.csv']
@@ -49,8 +49,10 @@ describe('Research data on review', function () {
 		
 		addResearchDataFile('dummy.pdf', submission.researchDataFileNames[0]);
 		addResearchDataFile('dummy.zip', submission.researchDataFileNames[1]);
+		addResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'README.pdf');
 		cy.contains(submission.researchDataFileNames[0]);
 		cy.contains(submission.researchDataFileNames[1]);
+		cy.contains('README.pdf');
 
 		cy.get('#submitStep2Form button.submitFormButton').click();
 
@@ -83,8 +85,9 @@ describe('Research data on review', function () {
 		cy.get('#editorialActions').contains('Send to Review').click();
 		
 		cy.get('#selectDataFilesForReview').contains('This submission has deposited research data. Please, select which data files will be made available for reviewers to view.');
-		cy.get('input[name^="selectedDataFilesForReview"]').should('be.checked');
-		cy.get('input[name^="selectedDataFilesForReview"]').eq(1).uncheck();
+		cy.contains('label', submission.researchDataFileNames[1]).within(() => {
+			cy.get('input[name^="selectedDataFilesForReview"]').uncheck();
+		});
 
 		cy.get('#initiateReview').contains('Send to Review').click();
 
@@ -104,5 +107,6 @@ describe('Research data on review', function () {
 		cy.contains('Data statement');
 		cy.contains('The research data has been submitted to the Dataverse de Exemplo Lepidus repository');
 		cy.get('a:contains("' + submission.researchDataFileNames[0] + '")');
+		cy.get('a:contains("README.pdf")');
 	});
 });

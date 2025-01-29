@@ -10,7 +10,7 @@ describe('Research data publishing in editor decision', function () {
 		submission = {
 			id: 0,
 			section: 'Articles',
-			title: 'The Rise of the Machine Empire',
+			title: 'The second Machine Empire',
 			abstract: 'An example abstract.',
 			keywords: ['Modern History'],
 		}
@@ -63,6 +63,22 @@ describe('Research data publishing in editor decision', function () {
 		cy.get('label:contains(Terms of Use) strong').then($strong => {
 			dataverseName = $strong.text();
 		});
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('#uploadForm button').contains('OK').click();
+		cy.wait(1000);
+
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', { encoding: 'base64' }).then((fileContent) => {
+			cy.get('#uploadForm input[type=file]')
+				.upload({
+					fileContent,
+					fileName: 'README.pdf',
+					mimeType: 'application/pdf',
+					encoding: 'base64',
+				});
+		});
+		cy.wait(200);
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('#uploadForm button').contains('OK').click();
 		cy.get('#submitStep2Form button.submitFormButton').click();

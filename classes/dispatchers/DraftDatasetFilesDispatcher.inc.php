@@ -1,5 +1,6 @@
 <?php
 
+import('lib.pkp.classes.file.TemporaryFileManager');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.services.DataStatementService');
 
@@ -54,6 +55,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         if (!empty($publication->getData('dataStatementTypes'))) {
             $this->validateResearchDataFileRequired($form);
             $this->validateGalleyContainsResearchData($form);
+            $this->validateResearchDataReadme($form);
         }
     }
 
@@ -87,7 +89,6 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
         $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($form->submission->getId());
 
-        import('lib.pkp.classes.file.TemporaryFileManager');
         $datasetFiles = array_map(function (DraftDatasetFile $draftFile) {
             $temporaryFileManager = new TemporaryFileManager();
             return $temporaryFileManager->getFile(
@@ -102,5 +103,35 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.notification.galleyContainsResearchData"));
             $form->addErrorField('dataverseStep2ValidationError');
         }
+    }
+
+    private function validateResearchDataReadme(SubmissionSubmitStep2Form $form): void
+    {
+        $publication = $form->submission->getCurrentPublication();
+        if (!in_array(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $publication->getData('dataStatementTypes'))) {
+            return;
+        }
+
+        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+        $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($form->submission->getId());
+        $temporaryFileManager = new TemporaryFileManager();
+
+        foreach ($draftDatasetFiles as $file) {
+            $tempFile = $temporaryFileManager->getFile(
+                $file->getData('fileId'),
+                $file->getData('userId')
+            );
+            $fileName = strtolower($file->getFileName());
+            $fileType = $tempFile->getData('filetype');
+
+            if (str_contains($fileName, 'readme')
+                && ($fileType == 'application/pdf' || $fileType == 'text/plain')
+            ) {
+                return;
+            }
+        }
+
+        $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.error.readmeFileRequired"));
+        $form->addErrorField('dataverseStep2ValidationError');
     }
 }
