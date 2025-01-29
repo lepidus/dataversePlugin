@@ -473,6 +473,7 @@ describe('Research data deposit', function () {
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('#uploadForm button').contains('OK').click();
 
+		cy.wait(1000);
 		cy.contains('Add research data').click();
 		cy.wait(1000);
 		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', { encoding: 'base64' }).then((fileContent) => {
