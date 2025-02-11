@@ -25,6 +25,7 @@ class DataverseConfigurationDAO
     {
         $numSettingsFound = DB::table('plugin_settings')
             ->where('plugin_name', 'dataverseplugin')
+            ->where('context_id', $contextId)
             ->whereIn('setting_name', ['dataverseUrl', 'apiToken', 'termsOfUse'])
             ->count();
         $minNumSettings = 3;

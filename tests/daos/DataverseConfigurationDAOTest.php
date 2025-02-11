@@ -35,11 +35,17 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
             'pt_BR' => 'https://test.dataverse.org/terms-of-use/pt_BR',
             'es' => ''
         ];
+        $additionalInstructions = [
+            'en' => 'https://support.dataverse.harvard.edu/getting-started',
+            'pt_BR' => 'https://support.dataverse.harvard.edu/getting-started',
+            'es' => ''
+        ];
 
         $configuration = $this->dataverseConfigurationDAO->newDataObject();
         $configuration->setData('dataverseUrl', $dataverseUrl);
         $configuration->setData('apiToken', $apiToken);
         $configuration->setData('termsOfUse', $termsOfUse);
+        $configuration->setData('additionalInstructions', $additionalInstructions);
 
         return $configuration;
     }
