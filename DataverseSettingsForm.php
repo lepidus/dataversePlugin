@@ -54,13 +54,6 @@ class DataverseSettingsForm extends Form
             'plugins.generic.dataverse.settings.dataverseUrlNotValid',
             [$this, 'validateConfiguration']
         ));
-        $this->addCheck(new FormValidatorCustom(
-            $this,
-            'additionalInstructions',
-            FormValidator::FORM_VALIDATOR_REQUIRED_VALUE,
-            'plugins.generic.dataverse.settings.dataverseUrlNotValid',
-            [$this, 'validateConfiguration']
-        ));
         $this->addCheck(new FormValidatorPost($this));
 
         if (Application::get()->getName() == 'ojs2') {
