@@ -6,6 +6,7 @@ use PKP\plugins\Hook;
 use APP\core\Application;
 use APP\template\TemplateManager;
 use PKP\file\TemporaryFileManager;
+use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
@@ -50,16 +51,22 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             return false;
         }
 
+        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
+        $configuration = $configurationDAO->get($context->getId());
+        $additionalInstructionsUrl = $configuration->getLocalizedData('additionalInstructions');
         $this->addDatasetFilesList($templateMgr, $request, $submission);
         $addGalleyLabel = __('submission.upload.uploadFiles');
 
         $steps = $templateMgr->getState('steps');
-        $steps = array_map(function ($step) use ($addGalleyLabel) {
+        $steps = array_map(function ($step) use ($addGalleyLabel, $additionalInstructionsUrl) {
             if ($step['id'] === 'files') {
                 $step['sections'][] = [
                     'id' => 'datasetFiles',
                     'name' => __('plugins.generic.dataverse.researchData'),
-                    'description' => __('plugins.generic.dataverse.researchDataDescription', ['addGalleyLabel' => $addGalleyLabel]),
+                    'description' => __('plugins.generic.dataverse.researchDataDescription', [
+                        'addGalleyLabel' => $addGalleyLabel,
+                        'additionalInstructionsUrl' => $additionalInstructionsUrl
+                    ]),
                     'type' => 'datasetFiles',
                 ];
             }
