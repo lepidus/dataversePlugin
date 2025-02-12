@@ -88,7 +88,8 @@ Creates a `cypress.env.json` file in root of the PKP Application directory, with
     "baseUrl": "http://localhost:8000",
     "dataverseUrl": "https://demo.dataverse.org/dataverse/myDataverseAlias",
     "dataverseApiToken": "abcd-abcd-abcd-abcd-abcdefghijkl",
-    "dataverseTermsOfUse": "https://dataverse.org/best-practices/harvard-dataverse-general-terms-use"
+    "dataverseTermsOfUse": "https://dataverse.org/best-practices/harvard-dataverse-general-terms-use",
+    "dataverseAdditionalInstructions": "Additional instructions about research data submission:"
 }
 ```
 

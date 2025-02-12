@@ -100,7 +100,9 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('.pkpSteps__step__label:contains("Details")').click();
         cy.get('input[name="dataStatementTypes"][value=3]').click();
         advanceNSteps(1);
+
         cy.contains('h2', 'Research data');
+        cy.contains('Additional instructions about research data submission');
         advanceNSteps(2);
         cy.contains('h2', 'Research data metadata');
         advanceNSteps(1);

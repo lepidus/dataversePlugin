@@ -35,11 +35,17 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
             'pt_BR' => 'https://test.dataverse.org/terms-of-use/pt_BR',
             'es' => ''
         ];
+        $additionalInstructions = [
+            'en' => '<p>Additional instructions about research data submission<\/p>',
+            'pt_BR' => '<p>Instruções adicionais sobre submissão de dados de pesquisa<\/p>',
+            'es' => '<p>Instrucciones adicionales para la presentación de datos de pesquisa<\/p>'
+        ];
 
         $configuration = $this->dataverseConfigurationDAO->newDataObject();
         $configuration->setData('dataverseUrl', $dataverseUrl);
         $configuration->setData('apiToken', $apiToken);
         $configuration->setData('termsOfUse', $termsOfUse);
+        $configuration->setData('additionalInstructions', $additionalInstructions);
 
         return $configuration;
     }

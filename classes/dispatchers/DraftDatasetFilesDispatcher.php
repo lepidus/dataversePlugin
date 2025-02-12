@@ -6,6 +6,7 @@ use PKP\plugins\Hook;
 use APP\core\Application;
 use APP\template\TemplateManager;
 use PKP\file\TemporaryFileManager;
+use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
@@ -59,7 +60,9 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
                 $step['sections'][] = [
                     'id' => 'datasetFiles',
                     'name' => __('plugins.generic.dataverse.researchData'),
-                    'description' => __('plugins.generic.dataverse.researchDataDescription', ['addGalleyLabel' => $addGalleyLabel]),
+                    'description' => __('plugins.generic.dataverse.researchDataDescription', [
+                        'addGalleyLabel' => $addGalleyLabel,
+                    ]),
                     'type' => 'datasetFiles',
                 ];
             }
@@ -85,12 +88,17 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             ->getDispatcher()
             ->url($request, Application::ROUTE_API, $context->getPath(), 'draftDatasetFiles');
 
+        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
+        $configuration = $configurationDAO->get($context->getId());
+        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
+
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
             __('plugins.generic.dataverse.researchData.files'),
             $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
+                'additionalInstructions' => $additionalInstructions,
                 'dataversePluginApiUrl' => $dataversePluginApiUrl,
                 'fileListUrl' => $fileListApiUrl,
                 'fileActionUrl' => $fileActionApiUrl,
