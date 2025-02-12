@@ -237,12 +237,17 @@ class DatasetTabDispatcher extends DataverseDispatcher
             ]
         );
 
+        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
+        $configuration = $configurationDAO->get($submission->getData('contextId'));
+        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
+
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
             __('plugins.generic.dataverse.researchData.files'),
             $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
+                'additionalInstructions' => $additionalInstructions,
                 'dataversePluginApiUrl' => $args['dataversePluginApiUrl'],
                 'fileListUrl' => $args['fileListApiUrl'],
                 'fileActionUrl' => $args['fileActionApiUrl'],
