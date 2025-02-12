@@ -63,6 +63,7 @@ const datasetFilesListTemplate = pkp.Vue.compile(`
             id="dataverseAdditionalInstructions"
             v-if="additionalInstructions"
             v-html="additionalInstructions"
+            style="margin-top: 1.5rem;line-height: 1.5rem;font-size: 0.875rem;"
         ></div>
     </div>
 `);
