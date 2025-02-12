@@ -36,9 +36,9 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
             'es' => ''
         ];
         $additionalInstructions = [
-            'en' => 'https://support.dataverse.harvard.edu/getting-started',
-            'pt_BR' => 'https://support.dataverse.harvard.edu/getting-started',
-            'es' => ''
+            'en' => '<p>Additional instructions about research data submission<\/p>',
+            'pt_BR' => '<p>Instruções adicionais sobre submissão de dados de pesquisa<\/p>',
+            'es' => '<p>Instrucciones adicionales para la presentación de datos de pesquisa<\/p>'
         ];
 
         $configuration = $this->dataverseConfigurationDAO->newDataObject();

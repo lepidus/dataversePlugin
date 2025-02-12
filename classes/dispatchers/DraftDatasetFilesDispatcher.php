@@ -53,19 +53,18 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
         $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
         $configuration = $configurationDAO->get($context->getId());
-        $additionalInstructionsUrl = $configuration->getLocalizedData('additionalInstructions');
+        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
         $this->addDatasetFilesList($templateMgr, $request, $submission);
         $addGalleyLabel = __('submission.upload.uploadFiles');
 
         $steps = $templateMgr->getState('steps');
-        $steps = array_map(function ($step) use ($addGalleyLabel, $additionalInstructionsUrl) {
+        $steps = array_map(function ($step) use ($addGalleyLabel) {
             if ($step['id'] === 'files') {
                 $step['sections'][] = [
                     'id' => 'datasetFiles',
                     'name' => __('plugins.generic.dataverse.researchData'),
                     'description' => __('plugins.generic.dataverse.researchDataDescription', [
                         'addGalleyLabel' => $addGalleyLabel,
-                        'additionalInstructionsUrl' => $additionalInstructionsUrl
                     ]),
                     'type' => 'datasetFiles',
                 ];

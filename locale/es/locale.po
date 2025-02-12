@@ -49,7 +49,7 @@ msgid "plugins.generic.dataverse.settings.additionalInstructions"
 msgstr "Instrucciones Adicionales"
 
 msgid "plugins.generic.dataverse.settings.additionalInstructionsDescription"
-msgstr "URL para instrucciones adicionales para los usuarios que depositan datos de investigación en el repositorio."
+msgstr "Instrucciones adicionales para los usuarios que depositan datos de investigación en el repositorio."
 
 msgid "plugins.generic.dataverse.settings.datasetPublish"
 msgstr "Publicar datos de investigación"
@@ -78,8 +78,7 @@ msgstr "Ingrese una clave API para Dataverse."
 msgid "plugins.generic.dataverse.researchDataDescription"
 msgstr "Utilice este campo sólo para enviar datos de investigación. "
 "No utilice este campo para enviar su manuscrito o la lista de referencias bibliográficas de su manuscrito. "
-"El archivo del manuscrito sólo debe enviarse en el área “{$addGalleyLabel}” anterior.<br>"
-"Para obtener más información sobre el envío de datos de investigación, consulte nuestras <a href=\"{$additionalInstructionsUrl}\">Instrucciones Adicionales</a>."
+"El archivo del manuscrito sólo debe enviarse en el área “{$addGalleyLabel}” anterior."
 
 msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
 msgstr "Datos de investigación y galerada tienen el mismo archivo. Asegúrese de que los archivos se agreguen en la sección correspondiente."
