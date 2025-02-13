@@ -9,4 +9,8 @@
 {/capture}
 {load_url_in_div id="draftDatasetFileGridContainer"|uniqid url=$draftDatasetFileGridUrl}
 {capture assign=addGalleyLabel}{translate key="submission.layout.galleys"}{/capture}
-<label class="description">{translate key="plugins.generic.dataverse.researchDataDescription" addGalleyLabel=$addGalleyLabel}</label>
+{if $dataverseAdditionalInstructions}
+    <div id="dataverseAdditionalInstructions" style="margin-top: 1.5rem;line-height: 1.5rem;font-size: 0.875rem;">
+        {$dataverseAdditionalInstructions}
+    </div>
+{/if}

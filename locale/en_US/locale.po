@@ -72,9 +72,6 @@ msgstr "Can't connect to Dataverse."
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Please enter a API token."
 
-msgid "plugins.generic.dataverse.researchDataDescription"
-msgstr "Use this field only for submitting research data. To send the manuscript, use “{$addGalleyLabel}”"
-
 msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
 msgstr "Research data and galley have the same file. Make sure the files are added in the proper section."
 

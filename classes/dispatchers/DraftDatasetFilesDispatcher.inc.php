@@ -35,6 +35,12 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             return $output;
         }
 
+        $contextId = $request->getContext()->getId();
+        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
+        $configuration = $configurationDAO->get($contextId);
+        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
+        $templateMgr->assign('dataverseAdditionalInstructions', $additionalInstructions);
+
         $templateOutput = $templateMgr->fetch($form->_template);
         $pattern = '/<div[^>]+class="section formButtons form_buttons[^>]+>/';
         if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
