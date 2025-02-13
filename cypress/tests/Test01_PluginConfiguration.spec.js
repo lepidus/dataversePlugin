@@ -47,6 +47,10 @@ describe('Plugin configuration', function () {
 		cy.get('input[name=dataverseUrl]').focus().clear().type(Cypress.env('dataverseUrl'));
 		cy.get('input[name=apiToken]').focus().clear().type('invalidToken');
 		cy.get('input[name="termsOfUse[en_US]"]').focus().clear().type(Cypress.env('dataverseTermsOfUse'));
+		cy.get('textarea[id^="additionalInstructions-en_US"').then((node) => {
+			cy.setTinyMceContent(node.attr('id'), 'Additional instructions about research data submission');
+		});
+		cy.contains('span', 'Additional Instructions').click();
 
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.contains("Can't connect to Dataverse");
