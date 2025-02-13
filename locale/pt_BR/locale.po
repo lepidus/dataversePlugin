@@ -45,6 +45,12 @@ msgstr "Termos de Uso"
 msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
 msgstr "URL para os termos de uso que os usuários devem concordar antes de depositar os dados de pesquisa no repositório."
 
+msgid "plugins.generic.dataverse.settings.additionalInstructions"
+msgstr "Instruções Adicionais"
+
+msgid "plugins.generic.dataverse.settings.additionalInstructionsDescription"
+msgstr "Instruções adicionais para os usuários que forem depositar dados de pesquisa no repositório."
+
 msgid "plugins.generic.dataverse.settings.datasetPublish"
 msgstr "Publicar dados de pesquisa"
 
@@ -68,9 +74,6 @@ msgstr "Impossível conectar ao Dataverse."
 
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Informe uma chave de API para Dataverse."
-
-msgid "plugins.generic.dataverse.researchDataDescription"
-msgstr "Use esse campo apenas para submeter dados de pesquisa. Para enviar o manuscrito, utilize “{$addGalleyLabel}”"
 
 msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
 msgstr "Dados de pesquisa e composição final possuem o mesmo arquivo. Certifique-se de que os arquivos sejam adicionados na seção apropriada."

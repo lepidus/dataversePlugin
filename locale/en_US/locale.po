@@ -42,6 +42,12 @@ msgstr "Terms of Use"
 msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
 msgstr "URL for the terms of use that users must agree to before depositing research data into the repository."
 
+msgid "plugins.generic.dataverse.settings.additionalInstructions"
+msgstr "Additional Instructions"
+
+msgid "plugins.generic.dataverse.settings.additionalInstructionsDescription"
+msgstr "Additional instructions for users who are depositing research data into the repository."
+
 msgid "plugins.generic.dataverse.settings.datasetPublish"
 msgstr "Research data publish"
 
@@ -65,9 +71,6 @@ msgstr "Can't connect to Dataverse."
 
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Please enter a API token."
-
-msgid "plugins.generic.dataverse.researchDataDescription"
-msgstr "Use this field only for submitting research data. To send the manuscript, use “{$addGalleyLabel}”"
 
 msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
 msgstr "Research data and galley have the same file. Make sure the files are added in the proper section."
