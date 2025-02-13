@@ -61,6 +61,7 @@ describe('Research data deposit', function () {
 
 		cy.get('#submitTabs a:contains("2. Upload Submission")').click();
 		cy.wait(1000);
+		cy.contains('Additional instructions about research data submission');
 		cy.get('#submitStep2Form button.submitFormButton').click();
 		cy.get('div:contains("Research data is required. Please ensure that you have chosen and uploaded research data.")');
 
@@ -192,7 +193,8 @@ describe('Research data deposit', function () {
 
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.get('button[aria-controls="dataset_files"]').click();
-
+		
+		cy.contains('Additional instructions about research data submission');
 		cy.get('button').contains('Add research data').click();
 		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').upload({
