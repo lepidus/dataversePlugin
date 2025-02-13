@@ -8,6 +8,13 @@ class DataverseSettingsForm extends Form
 {
     private $plugin;
     private $contextId;
+    private const CONFIG_VARS = [
+        'dataverseUrl' => 'string',
+        'apiToken' => 'string',
+        'termsOfUse' => 'object',
+        'additionalInstructions' => 'object',
+        'datasetPublish' => 'int'
+    ];
 
     public function __construct(Plugin $plugin, int $contextId)
     {
@@ -59,7 +66,7 @@ class DataverseSettingsForm extends Form
 
     public function readInputData(): void
     {
-        $this->readUserVars(array('dataverseUrl', 'apiToken', 'termsOfUse', 'datasetPublish'));
+        $this->readUserVars(array_keys(self::CONFIG_VARS));
         $this->setData('dataverseUrl', $this->normalizeURI($this->getData('dataverseUrl')));
     }
 
@@ -80,10 +87,9 @@ class DataverseSettingsForm extends Form
 
     public function execute(...$functionArgs)
     {
-        $this->plugin->updateSetting($this->contextId, 'dataverseUrl', $this->getData('dataverseUrl'), 'string');
-        $this->plugin->updateSetting($this->contextId, 'apiToken', $this->getData('apiToken'), 'string');
-        $this->plugin->updateSetting($this->contextId, 'termsOfUse', $this->getData('termsOfUse'));
-        $this->plugin->updateSetting($this->contextId, 'datasetPublish', (int) $this->getData('datasetPublish'));
+        foreach (self::CONFIG_VARS as $configVar => $type) {
+            $this->plugin->updateSetting($this->contextId, $configVar, $this->getData($configVar), $type);
+        }
         parent::execute(...$functionArgs);
     }
 

@@ -35,6 +35,9 @@
 		{fbvFormSection label="plugins.generic.dataverse.settings.termsOfUse" required=true}
 			{fbvElement type="url" id="termsOfUse" label="plugins.generic.dataverse.settings.termsOfUseDescription" multilingual=true value=$termsOfUse size=$fbvStyles.size.MEDIUM}
 		{/fbvFormSection}
+		{fbvFormSection label="plugins.generic.dataverse.settings.additionalInstructions"}
+			{fbvElement type="textarea" id="additionalInstructions" label="plugins.generic.dataverse.settings.additionalInstructionsDescription" multilingual=true rich=true value=$additionalInstructions}
+		{/fbvFormSection}
 
 		{if $application === 'ojs2'}
 			{fbvFormSection

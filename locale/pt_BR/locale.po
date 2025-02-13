@@ -45,6 +45,12 @@ msgstr "Termos de Uso"
 msgid "plugins.generic.dataverse.settings.termsOfUseDescription"
 msgstr "URL para os termos de uso que os usuários devem concordar antes de depositar os dados de pesquisa no repositório."
 
+msgid "plugins.generic.dataverse.settings.additionalInstructions"
+msgstr "Instruções Adicionais"
+
+msgid "plugins.generic.dataverse.settings.additionalInstructionsDescription"
+msgstr "Instruções adicionais para os usuários que forem depositar dados de pesquisa no repositório."
+
 msgid "plugins.generic.dataverse.settings.datasetPublish"
 msgstr "Publicar dados de pesquisa"
 
