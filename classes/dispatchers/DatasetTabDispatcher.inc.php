@@ -27,26 +27,25 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $output = &$params[2];
 
         $submission = $templateMgr->getTemplateVars('submission');
-        $content = $this->getDatasetTabContent($submission);
+        $study = $this->getSubmissionStudy($submission->getId());
+        $tabTemplate = $this->plugin->getTemplateResource('datasetTab/noResearchData.tpl');
+
+        if (!is_null($study)) {
+            $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
+            $configuration = $configurationDAO->get($submission->getData('contextId'));
+            $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
+
+            $templateMgr->assign('dataverseAdditionalInstructions', $additionalInstructions);
+            $tabTemplate = $this->plugin->getTemplateResource('datasetTab/datasetData.tpl');
+        }
 
         $output .= sprintf(
             '<tab id="datasetTab" label="%s" :badge="researchDataCount">%s</tab>',
             __("plugins.generic.dataverse.researchData"),
-            $templateMgr->fetch($content)
+            $templateMgr->fetch($tabTemplate)
         );
 
         return false;
-    }
-
-    private function getDatasetTabContent(Submission $submission): string
-    {
-        $study = $this->getSubmissionStudy($submission->getId());
-
-        if (is_null($study)) {
-            return $this->plugin->getTemplateResource('datasetTab/noResearchData.tpl');
-        }
-
-        return $this->plugin->getTemplateResource('datasetTab/datasetData.tpl');
     }
 
     public function loadResourcesToWorkflow(string $hookName, array $params): bool
