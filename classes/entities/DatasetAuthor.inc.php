@@ -2,7 +2,7 @@
 
 class DatasetAuthor extends DataObject
 {
-    public function __construct(string $name, ?string $affiliation = null, ?string $identifier = null)
+    public function __construct(string $name, ?string $affiliation = null, ?array $identifier = null)
     {
         $this->setData('name', $name);
         $this->setData('affiliation', $affiliation);
@@ -29,12 +29,12 @@ class DatasetAuthor extends DataObject
         return $this->getData('affiliation');
     }
 
-    public function setIdentifier(?string $identifier): void
+    public function setIdentifier(?array $identifier): void
     {
         $this->setData('identifier', $identifier);
     }
 
-    public function getIdentifier(): ?string
+    public function getIdentifier(): ?array
     {
         return $this->getData('identifier');
     }

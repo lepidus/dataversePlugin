@@ -43,7 +43,7 @@ class JsonDatasetFactory extends DatasetFactory
                                 $author->authorAffiliation->value
                                 : null,
                             isset($author->authorIdentifier->value) ?
-                                $author->authorIdentifier->value
+                                ['type' => 'orcid', 'value' => $author->authorIdentifier->value]
                                 : null
                         );
                     }, $metadata->value);
