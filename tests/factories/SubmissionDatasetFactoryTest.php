@@ -166,7 +166,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $datasetAuthor = new DatasetAuthor(
             $this->author->getFullName(false, true),
             $this->author->getLocalizedData('affiliation'),
-            DatasetAuthor::IDENTIFIER_TYPE_ORCID,
+            DatasetAuthor::IDENTIFIER_SCHEME_ORCID,
             explode('https://orcid.org/', $this->author->getOrcid())[1]
         );
         $datasetContact = new DatasetContact(

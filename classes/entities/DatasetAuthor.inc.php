@@ -2,13 +2,13 @@
 
 class DatasetAuthor extends DataObject
 {
-    public const IDENTIFIER_TYPE_ORCID = 'ORCID';
+    public const IDENTIFIER_SCHEME_ORCID = 'ORCID';
 
-    public function __construct(string $name, ?string $affiliation, ?string $identifierType, ?string $identifier)
+    public function __construct(string $name, ?string $affiliation, ?string $identifierScheme, ?string $identifier)
     {
         $this->setData('name', $name);
         $this->setData('affiliation', $affiliation);
-        $this->setData('identifierType', $identifierType);
+        $this->setData('identifierScheme', $identifierScheme);
         $this->setData('identifier', $identifier);
     }
 
@@ -42,8 +42,8 @@ class DatasetAuthor extends DataObject
         return $this->getData('identifier');
     }
 
-    public function getIdentifierType(): ?string
+    public function getIdentifierScheme(): ?string
     {
-        return $this->getData('identifierType');
+        return $this->getData('identifierScheme');
     }
 }

@@ -20,7 +20,7 @@ class JsonDatasetFactoryTest extends PKPTestCase
         $this->assertEquals('Test, Author', $dataset->getAuthors()[0]->getName());
         $this->assertEquals('Dataverse', $dataset->getAuthors()[0]->getAffiliation());
         $this->assertEquals('0000-0000-0000-0000', $dataset->getAuthors()[0]->getIdentifier());
-        $this->assertEquals('ORCID', $dataset->getAuthors()[0]->getIdentifierType());
+        $this->assertEquals('ORCID', $dataset->getAuthors()[0]->getIdentifierScheme());
         $this->assertEquals('Test, Contact', $dataset->getContact()->getName());
         $this->assertEquals('test@example.com', $dataset->getContact()->getEmail());
         $this->assertEquals('Dataverse', $dataset->getContact()->getAffiliation());
