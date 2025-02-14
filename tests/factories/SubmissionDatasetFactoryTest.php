@@ -163,11 +163,11 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $factory = new SubmissionDatasetFactory($this->submission);
         $dataset = $factory->getDataset();
 
-        $authorOrcidNumbers = explode('https://orcid.org/', $this->author->getOrcid())[1];
         $datasetAuthor = new DatasetAuthor(
             $this->author->getFullName(false, true),
             $this->author->getLocalizedData('affiliation'),
-            ['type' => 'orcid', 'value' => $authorOrcidNumbers]
+            DatasetAuthor::IDENTIFIER_TYPE_ORCID,
+            explode('https://orcid.org/', $this->author->getOrcid())[1]
         );
         $datasetContact = new DatasetContact(
             $this->author->getFullName(false, true),

@@ -38,11 +38,11 @@ class SubmissionDatasetFactory extends DatasetFactory
 
     private function createDatasetAuthor(Author $author): DatasetAuthor
     {
-        $authorOrcidNumber = $this->getAuthorOrcidNumber($author->getOrcid());
         return new DatasetAuthor(
             $author->getFullName(false, true),
             $author->getLocalizedData('affiliation'),
-            $authorOrcidNumber ? ['type' => 'orcid', 'value' => $authorOrcidNumber] : null
+            DatasetAuthor::IDENTIFIER_TYPE_ORCID,
+            $this->getAuthorOrcidNumber($author->getOrcid())
         );
     }
 

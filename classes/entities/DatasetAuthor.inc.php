@@ -2,10 +2,13 @@
 
 class DatasetAuthor extends DataObject
 {
-    public function __construct(string $name, ?string $affiliation = null, ?array $identifier = null)
+    public const IDENTIFIER_TYPE_ORCID = 'ORCID';
+
+    public function __construct(string $name, ?string $affiliation, ?string $identifierType, ?string $identifier)
     {
         $this->setData('name', $name);
         $this->setData('affiliation', $affiliation);
+        $this->setData('identifierType', $identifierType);
         $this->setData('identifier', $identifier);
     }
 
@@ -29,13 +32,18 @@ class DatasetAuthor extends DataObject
         return $this->getData('affiliation');
     }
 
-    public function setIdentifier(?array $identifier): void
+    public function setIdentifier(?string $identifier): void
     {
         $this->setData('identifier', $identifier);
     }
 
-    public function getIdentifier(): ?array
+    public function getIdentifier(): ?string
     {
         return $this->getData('identifier');
+    }
+
+    public function getIdentifierType(): ?string
+    {
+        return $this->getData('identifierType');
     }
 }
