@@ -42,6 +42,9 @@ class JsonDatasetFactory extends DatasetFactory
                             isset($author->authorAffiliation->value) ?
                                 $author->authorAffiliation->value
                                 : null,
+                            isset($author->authorIdentifierScheme->value) ?
+                                $author->authorIdentifierScheme->value
+                                : null,
                             isset($author->authorIdentifier->value) ?
                                 $author->authorIdentifier->value
                                 : null

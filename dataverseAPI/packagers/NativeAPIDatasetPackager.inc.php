@@ -147,11 +147,13 @@ class NativeAPIDatasetPackager extends DatasetPackager
             if (is_null($value)) {
                 continue;
             }
+
+            $metadataTypeClass = $attr == 'identifierScheme' ? 'controlledVocabulary' : 'primitive';
             $metadataValue = array_merge($metadataValue, [
                 $metadataField['typeName'] . ucfirst($attr) => [
                     'typeName' =>  $metadataField['typeName'] . ucfirst($attr),
                     'multiple' => false,
-                    'typeClass' => 'primitive',
+                    'typeClass' => $metadataTypeClass,
                     'value' => $value
                 ]
             ]);
