@@ -97,6 +97,7 @@ describe('Research data publishing in editor decision', function () {
 		cy.waitJQuery();
 		cy.get('#submitStep4Form button.submitFormButton').click();
 		cy.get('button.pkpModalConfirmButton').click();
+		cy.wait(5000);
 
 		cy.waitJQuery();
 		cy.get('h2:contains("Submission complete")');
