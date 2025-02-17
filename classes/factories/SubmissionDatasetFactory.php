@@ -59,6 +59,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         return new DatasetAuthor(
             $author->getFullName(false, true),
             $author->getLocalizedData('affiliation'),
+            DatasetAuthor::IDENTIFIER_SCHEME_ORCID,
             $this->getAuthorOrcidNumber($author->getOrcid())
         );
     }

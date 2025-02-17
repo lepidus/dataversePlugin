@@ -50,6 +50,12 @@
                     "typeClass": "primitive",
                     "value": "Dataverse"
                   },
+                  "authorIdentifierScheme": {
+                    "typeName": "authorIdentifier",
+                    "multiple": false,
+                    "typeClass": "controlledVocabulary",
+                    "value": "ORCID"
+                  },
                   "authorIdentifier": {
                     "typeName": "authorIdentifier",
                     "multiple": false,
