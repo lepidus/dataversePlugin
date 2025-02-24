@@ -295,6 +295,12 @@ msgstr "This submission contains deposited research data that is not yet public:
 msgid "plugins.generic.dataverse.researchData.wouldLikeToPublish"
 msgstr "Would you like to publish the research data?"
 
+msgid "plugins.generic.dataverse.researchData.deleteNotice"
+msgstr "This submission contains deposited research data: <a href=\"{$persistentUri}\">{$persistentUri}</a>. "
+
+msgid "plugins.generic.dataverse.researchData.wouldLikeToDelete"
+msgstr "Would you like to delete the research data?"
+
 msgid "plugins.generic.dataverse.dataStatement.title"
 msgstr "Data statement"
 
