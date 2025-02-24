@@ -1,6 +1,5 @@
 describe('Research data publishing in editor decision', function () {
 	let submission;
-	let dataverseServerName;
 
 	before(function () {
 		if (Cypress.env('contextTitles').en_US !== 'Journal of Public Knowledge') {
@@ -102,9 +101,66 @@ describe('Research data publishing in editor decision', function () {
 		cy.waitJQuery();
 		cy.get('h2:contains("Submission complete")');
 	});
+	it('Deletes research data on submission declining', function () {
+		cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submission.title);
 
+		cy.contains('a', 'Decline Submission').click();
+		cy.contains(/This submission contains deposited research data: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
+		cy.contains('Would you like to delete the research data?');
+		
+		cy.get('input[name="shouldDeleteResearchData"][value="1"]').parent().contains("Yes");
+		cy.get('input[name="shouldDeleteResearchData"][value="0"]').parent().contains("No");
+		cy.get('input[name="shouldDeleteResearchData"][value="1"]').should('not.be.checked');
+		cy.get('input[name="shouldDeleteResearchData"][value="0"]').should('not.be.checked');
+		
+		cy.get('input[name="shouldDeleteResearchData"][value="1"]').click();
+		cy.contains('button', 'Record Editorial Decision').click();
+		cy.contains('.pkpBadge', 'Declined');
+
+		cy.get('#publication-button').click();
+		cy.get('#datasetTab-button').click();
+		cy.contains('No research data transferred.');
+	});
+	it('Reverts declining and adds research data again', function () {
+		cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submission.title);
+
+		cy.contains('button', 'Change decision').click();
+		cy.contains('a', 'Revert Decline').click();
+		cy.contains('button', 'Revert Decline').click();
+		cy.contains('.pkpBadge', 'Declined').should('not.exist');
+		
+		cy.get('#publication-button').click();
+		cy.get('#datasetTab-button').click();
+
+		cy.get('button').contains('Upload research data').click();
+		cy.wait(1000);
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
+			cy.get('[data-modal="fileForm"] input[type=file]').upload({
+				fileContent,
+				fileName: 'Data Table.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
+		cy.wait(200);
+		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
+		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC0 1.0');
+		cy.get('#datasetTab form button').contains('Save').click();
+		cy.wait(7000);
+
+		cy.waitDatasetTabLoading('datasetTab');
+		cy.get('#datasetTab-button .pkpBadge').contains('1');
+	});
 	it('Check research data is published in editor decision', function () {
-		cy.findSubmissionAsEditor('dbarnes', null, 'Woods');
+		cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submission.title);
 
 		cy.get('ul.pkp_workflow_decisions:visible a:contains("Accept and Skip Review")', { timeout: 30000 }).click();
 		cy.get('button:contains("Next:")').click();
