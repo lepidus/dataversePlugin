@@ -132,7 +132,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             $decision['decision'] == SUBMISSION_EDITOR_DECISION_DECLINE
             || $decision['decision'] == SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE
         ) {
-            $this->declineInDeclineDecision($submission, $request);
+            $this->deleteInDeclineDecision($submission, $request);
         }
     }
 
@@ -157,7 +157,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $datasetService->publish($study);
     }
 
-    private function declineInDeclineDecision($submission, $request)
+    private function deleteInDeclineDecision($submission, $request)
     {
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
         if (is_null($study)) {
