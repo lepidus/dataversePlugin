@@ -121,7 +121,7 @@ describe('Research data publishing in editor decision', function () {
 	});
 	it('Reverts declining and adds research data again', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('active', submission.title);
+        cy.findSubmission('archive', submission.title);
 
 		cy.contains('button', 'Change decision').click();
 		cy.contains('a', 'Revert Decline').click();
