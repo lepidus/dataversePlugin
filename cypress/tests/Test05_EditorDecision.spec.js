@@ -1,3 +1,5 @@
+import '../support/commands.js';
+
 describe('Research data publishing in editor decision', function () {
 	let submission;
 
@@ -33,7 +35,6 @@ describe('Research data publishing in editor decision', function () {
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('div:contains("Your changes have been saved.")');
 	});
-
 	it('Makes a new submission with research data', function () {
 		cy.login('zwoods', null, 'publicknowledge');
 
@@ -96,7 +97,7 @@ describe('Research data publishing in editor decision', function () {
 		cy.waitJQuery();
 		cy.get('#submitStep4Form button.submitFormButton').click();
 		cy.get('button.pkpModalConfirmButton').click();
-		cy.wait(5000);
+		cy.wait(7000);
 
 		cy.waitJQuery();
 		cy.get('h2:contains("Submission complete")');

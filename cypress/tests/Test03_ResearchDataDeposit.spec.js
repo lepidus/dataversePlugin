@@ -1,6 +1,5 @@
 import '../support/commands.js';
 
-
 describe('Research data deposit', function () {
 	const currentYear = new Date().getFullYear();
 	let submission;
