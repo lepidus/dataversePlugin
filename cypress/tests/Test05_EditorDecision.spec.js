@@ -59,10 +59,6 @@ describe('Research data publishing in editor decision', function () {
 					encoding: 'base64',
 				});
 		});
-		cy.get('#uploadForm button').contains('OK').click();
-		cy.get('label:contains(Terms of Use) strong').then($strong => {
-			dataverseName = $strong.text();
-		});
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('#uploadForm button').contains('OK').click();
 		cy.wait(1000);
