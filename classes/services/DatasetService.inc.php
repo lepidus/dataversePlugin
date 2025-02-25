@@ -140,7 +140,7 @@ class DatasetService extends DataverseService
         $handler = $router->getHandler();
         $userRoles = (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
 
-        if (in_array(ROLE_ID_MANAGER, $userRoles)) {
+        if (in_array(ROLE_ID_MANAGER, $userRoles) && $deleteMessage) {
             $this->sendEmailToDatasetAuthor($request, $dataset, $submission, $deleteMessage);
         }
 

@@ -15,8 +15,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDataverseAPIHandlers'));
         HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
-        HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
-        // deleteOnEditorAction
+        HookRegistry::register('EditorAction::recordDecision', array($this, 'addActionsInEditorAction'));
         HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
         HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
         HookRegistry::register('sendreviewsform::display', array($this, 'addDatasetDeleteNoticeInEditorAction'));
@@ -119,16 +118,26 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $datasetService->publish($study);
     }
 
-    public function publishInEditorAction(string $hookName, array $params): void
+    public function addActionsInEditorAction(string $hookName, array $params): void
     {
         $submission = $params[0];
         $decision = $params[1];
         $request = Application::get()->getRequest();
 
-        if ($decision['decision'] !== SUBMISSION_EDITOR_DECISION_ACCEPT) {
-            return;
+        if ($decision['decision'] == SUBMISSION_EDITOR_DECISION_ACCEPT) {
+            $this->publishInAcceptDecision($submission, $request);
         }
 
+        if (
+            $decision['decision'] == SUBMISSION_EDITOR_DECISION_DECLINE
+            || $decision['decision'] == SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE
+        ) {
+            $this->declineInDeclineDecision($submission, $request);
+        }
+    }
+
+    private function publishInAcceptDecision($submission, $request)
+    {
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
         if ($configuration->getDatasetPublish() !== DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
             return;
@@ -146,6 +155,22 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
         $datasetService = new DatasetService();
         $datasetService->publish($study);
+    }
+
+    private function declineInDeclineDecision($submission, $request)
+    {
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
+        if (is_null($study)) {
+            return;
+        }
+
+        $shouldDelete = $request->getUserVar('shouldDeleteResearchData');
+        if (!is_null($shouldDelete) && $shouldDelete == 0) {
+            return;
+        }
+
+        $datasetService = new DatasetService();
+        $datasetService->delete($study, null);
     }
 
     public function addDatasetPublishNoticeInPost(string $hookName, \PKP\components\forms\FormComponent $form): void
