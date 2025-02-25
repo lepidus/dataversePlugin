@@ -15,9 +15,10 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDataverseAPIHandlers'));
         HookRegistry::register('Publication::publish', array($this, 'publishDeposit'), HOOK_SEQUENCE_CORE);
-        HookRegistry::register('EditorAction::recordDecision', array($this, 'publishInEditorAction'));
+        HookRegistry::register('EditorAction::recordDecision', array($this, 'addActionsInEditorAction'));
         HookRegistry::register('Form::config::before', array($this, 'addDatasetPublishNoticeInPost'));
         HookRegistry::register('promoteform::display', array($this, 'addDatasetPublishNoticeInEditorAction'));
+        HookRegistry::register('sendreviewsform::display', array($this, 'addDatasetDeleteNoticeInEditorAction'));
         HookRegistry::register('initiateexternalreviewform::display', array($this, 'addSelectDataFilesForReview'));
         HookRegistry::register('initiateexternalreviewform::execute', array($this, 'saveSelectedDataFilesForReview'));
         HookRegistry::register('Publication::edit', array($this, 'updateDatasetOnPublicationUpdate'));
@@ -117,16 +118,26 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $datasetService->publish($study);
     }
 
-    public function publishInEditorAction(string $hookName, array $params): void
+    public function addActionsInEditorAction(string $hookName, array $params): void
     {
         $submission = $params[0];
         $decision = $params[1];
         $request = Application::get()->getRequest();
 
-        if ($decision['decision'] !== SUBMISSION_EDITOR_DECISION_ACCEPT) {
-            return;
+        if ($decision['decision'] == SUBMISSION_EDITOR_DECISION_ACCEPT) {
+            $this->publishInAcceptDecision($submission, $request);
         }
 
+        if (
+            $decision['decision'] == SUBMISSION_EDITOR_DECISION_DECLINE
+            || $decision['decision'] == SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE
+        ) {
+            $this->deleteInDeclineDecision($submission, $request);
+        }
+    }
+
+    private function publishInAcceptDecision($submission, $request)
+    {
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
         if ($configuration->getDatasetPublish() !== DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
             return;
@@ -144,6 +155,22 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
         $datasetService = new DatasetService();
         $datasetService->publish($study);
+    }
+
+    private function deleteInDeclineDecision($submission, $request)
+    {
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
+        if (is_null($study)) {
+            return;
+        }
+
+        $shouldDelete = $request->getUserVar('shouldDeleteResearchData');
+        if (!is_null($shouldDelete) && $shouldDelete == 0) {
+            return;
+        }
+
+        $datasetService = new DatasetService();
+        $datasetService->delete($study, null);
     }
 
     public function addDatasetPublishNoticeInPost(string $hookName, \PKP\components\forms\FormComponent $form): void
@@ -211,11 +238,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $form = &$params[0];
         $output = &$params[1];
 
-        $request = PKPApplication::get()->getRequest();
+        $request = Application::get()->getRequest();
         $context = $request->getContext();
         $templateMgr = TemplateManager::getManager($request);
 
-        $submissionId = $templateMgr->get_template_vars('submissionId');
+        $submissionId = $templateMgr->getTemplateVars('submissionId');
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submissionId);
         if (empty($study)) {
             return null;
@@ -260,6 +287,50 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             $output = substr($templateOutput, 0, $offset + strlen($match));
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('editorActionPublish.tpl'));
             $output .= substr($templateOutput, $offset + strlen($match));
+        }
+
+        $fbv = $templateMgr->getFBV();
+        $fbv->setForm(null);
+
+        return $output;
+    }
+
+    public function addDatasetDeleteNoticeInEditorAction(string $hookName, array $params)
+    {
+        $form = &$params[0];
+        $output = &$params[1];
+
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $templateMgr = TemplateManager::getManager($request);
+
+        $submissionId = $templateMgr->getTemplateVars('submissionId');
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submissionId);
+        if (empty($study)) {
+            return null;
+        }
+
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+
+            if ($dataset->isPublished()) {
+                return null;
+            }
+
+            $templateMgr->assign('persistenUri', $study->getPersistentUri());
+        } catch (DataverseException $e) {
+            error_log('Dataverse error while adding deletion notice: ' . $e->getMessage());
+        }
+
+        $templateOutput = $this->prepareFormToDisplay($templateMgr, $form, $request);
+        $pattern = '/<div[^>]+class="section[^>]+formButton[^>]+form_buttons/';
+
+        if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
+            $offset = $matches[0][1];
+            $output = substr($templateOutput, 0, $offset);
+            $output .= $templateMgr->fetch($this->plugin->getTemplateResource('editorActionDelete.tpl'));
+            $output .= substr($templateOutput, $offset);
         }
 
         $fbv = $templateMgr->getFBV();

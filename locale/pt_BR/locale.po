@@ -298,6 +298,12 @@ msgstr "Esta submissão possui dados de pesquisa depositados que ainda não est�
 msgid "plugins.generic.dataverse.researchData.wouldLikeToPublish"
 msgstr "Gostaria de publicar os dados de pesquisa?"
 
+msgid "plugins.generic.dataverse.researchData.deleteNotice"
+msgstr "Esta submissão possui dados de pesquisa depositados: <a href=\"{$persistentUri}\">{$persistentUri}</a>. "
+
+msgid "plugins.generic.dataverse.researchData.wouldLikeToDelete"
+msgstr "Gostaria de excluir os dados de pesquisa?"
+
 msgid "plugins.generic.dataverse.dataStatement.title"
 msgstr "Declaração de dados"
 
