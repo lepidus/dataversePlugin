@@ -220,7 +220,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		cy.get('button:visible:contains("Save")').click();
 		cy.wait(7000);
 
-        cy.waitDatasetTabLoading('datasetTab');
+        cy.waitDatasetTabLoading();
 		cy.get('#datasetTab-button .pkpBadge').contains('1');
     });
     it('Research data is published on submission acceptance', function () {
