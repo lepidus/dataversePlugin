@@ -153,9 +153,74 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
 		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
 
-		cy.get('input[name="datasetPublish"][value=1]').check({ force: true });
-		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
-		cy.get('div:contains("Your changes have been saved.")');
+		cy.get('input[name="datasetPublish"][value=1]').focus().check();
+		cy.get('#dataverseConfigurationForm button:contains("OK")').click();
+		cy.contains('Your changes have been saved');
+    });
+    it('Deletes research data on submission declining', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submissionData.title);
+
+        cy.clickDecision('Decline Submission');
+        cy.contains('h1', 'Decline Submission');
+        cy.contains('h2', 'Notify Authors');
+        cy.contains('button', 'Skip this email').click();
+        cy.contains('h2', 'Research data');
+        cy.contains(/This submission contains deposited research data: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
+		cy.contains('Would you like to delete the research data?');
+        cy.contains('label', 'Yes').within(() => {
+            cy.get('input').click();
+        });
+
+        cy.contains('button', 'Record Decision').click();
+        cy.wait(1000);
+        cy.contains('has been declined and sent to the archives');
+        cy.get('a.pkpButton').contains('View All Submissions').click();
+        
+        cy.findSubmission('archive', submissionData.title);
+        cy.contains('.pkpBadge', 'Declined');
+        cy.get('#publication-button').click();
+        cy.get('#datasetTab-button').click();
+        cy.contains('No research data transferred');
+    });
+    it('Reverts declining and adds research data again', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('archive', submissionData.title);
+
+        cy.contains('button', 'Change decision').click();
+		cy.clickDecision('Revert Decline');
+        cy.contains('h1', 'Revert Decline');
+        cy.contains('h2', 'Notify Authors');
+        cy.contains('button', 'Skip this email').click();
+        cy.contains('button', 'Record Decision').click();
+        cy.wait(1000);
+        
+        cy.contains('is now an active submission in the review stage');
+        cy.get('a.pkpButton').contains('View All Submissions').click();
+
+        cy.findSubmission('active', submissionData.title);
+        cy.get('#publication-button').click();
+		cy.get('#datasetTab-button').click();
+
+		cy.contains('button', 'Upload research data').click();
+        cy.contains('button', 'Add research data').click();
+		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
+				fileContent,
+				fileName: 'Data Table.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.wait(1000);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('form:visible button:contains("Save")').click();
+		cy.get('#datasetMetadata-datasetSubject-control').select('Other');
+		cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
+		cy.get('button:visible:contains("Save")').click();
+		cy.wait(7000);
+
+        cy.contains('h1', 'Research data', {timeout:10000});
     });
     it('Research data is published on submission acceptance', function () {
         cy.login('dbarnes', null, 'publicknowledge');
