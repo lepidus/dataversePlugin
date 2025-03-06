@@ -154,8 +154,8 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
 
 		cy.get('input[name="datasetPublish"][value=1]').check({ force: true });
-		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
-		cy.get('div:contains("Your changes have been saved.")');
+		cy.get('#dataverseConfigurationForm button:contains("OK")').click();
+		cy.contains('Your changes have been saved');
     });
     it('Deletes research data on submission declining', function () {
         cy.login('dbarnes', null, 'publicknowledge');
@@ -202,10 +202,10 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
 
-		cy.get('button').contains('Upload research data').click();
-		cy.contains('Add research data').click();
+		cy.contains('button', 'Upload research data').click();
+        cy.contains('button', 'Add research data').click();
 		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
-			cy.get('[data-modal="fileForm"] input[type=file]').upload({
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
 				fileName: 'Data Table.pdf',
 				mimeType: 'application/pdf',
@@ -214,9 +214,9 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		});
 		cy.wait(1000);
 		cy.get('input[name="termsOfUse"').check();
-		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
-		cy.get('#datasetMetadata-datasetSubject-control"').select('Other');
-		cy.get('#datasetMetadata-datasetLicense-control"').select('CC0 1.0');
+		cy.get('form:visible button:contains("Save")').click();
+		cy.get('#datasetMetadata-datasetSubject-control').select('Other');
+		cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
 		cy.get('button:visible:contains("Save")').click();
 		cy.wait(7000);
 
