@@ -84,6 +84,28 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         ]));
     }
 
+    private function getDatasetDeleteNoticeForm($persistentUri)
+    {
+        $datasetDeleteNoticeForm = new FormComponent('datasetDelete', '', FormComponent::ACTION_EMIT, []);
+        $datasetDeleteNoticeForm->addField(new \PKP\components\forms\FieldHTML('researchDataNotice', [
+            'label' => __('plugins.generic.dataverse.researchData'),
+            'description' => __("plugins.generic.dataverse.researchData.deleteNotice", ['persistentUri' => $persistentUri]),
+            'groupId' => 'default'
+        ]))
+        ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
+            'label' => __('plugins.generic.dataverse.researchData.wouldLikeToDelete'),
+            'name' => 'shouldDeleteResearchData',
+            'options' => [
+                ['value' => 1, 'label' => __('common.yes')],
+                ['value' => 0, 'label' => __('common.no')]
+            ],
+            'isRequired' => true,
+            'groupId' => 'default'
+        ]));
+
+        return $datasetDeleteNoticeForm;
+    }
+
     public function addDatasetPublishNoticeInPublishing(string $hookName, FormComponent $form): void
     {
         if ($form->id !== 'publish' || !empty($form->errors)) {
@@ -182,10 +204,16 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $decision = $templateMgr->getState('decision');
         if ($decision == Decision::EXTERNAL_REVIEW) {
             $this->editSendForReviewDecision($templateMgr, $study);
+            return;
         }
 
         if ($decision == Decision::ACCEPT) {
             $this->editAcceptDecision($templateMgr, $study, $submission->getData('contextId'));
+            return;
+        }
+
+        if ($decision == Decision::DECLINE || $decision == Decision::INITIAL_DECLINE) {
+            $this->editDeclineDecision($templateMgr, $study);
         }
     }
 
@@ -259,6 +287,33 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         );
         $decisionSteps[] = $decisionStepForm->getState();
 
+        $templateMgr->setState(['steps' => $decisionSteps]);
+    }
+
+    private function editDeclineDecision($templateMgr, $study)
+    {
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+
+            if ($dataset->isPublished()) {
+                return;
+            }
+        } catch (DataverseException $e) {
+            error_log('Dataverse Error while editing Decline Decision: ' . $e->getMessage());
+            return;
+        }
+
+        $datasetDeleteForm = $this->getDatasetDeleteNoticeForm($study->getPersistentUri());
+        $newDecisionStepForm = new Form(
+            'researchDataDeleteNotice',
+            __('plugins.generic.dataverse.researchData'),
+            '',
+            $datasetDeleteForm
+        );
+
+        $decisionSteps = $templateMgr->getState('steps');
+        $decisionSteps[] = $newDecisionStepForm->getState();
         $templateMgr->setState(['steps' => $decisionSteps]);
     }
 
