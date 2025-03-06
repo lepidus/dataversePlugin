@@ -153,7 +153,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
 		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
 
-		cy.get('input[name="datasetPublish"][value=1]').check({ force: true });
+		cy.get('input[name="datasetPublish"][value=1]').focus().check();
 		cy.get('#dataverseConfigurationForm button:contains("OK")').click();
 		cy.contains('Your changes have been saved');
     });
