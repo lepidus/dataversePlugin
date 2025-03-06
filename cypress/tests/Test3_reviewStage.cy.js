@@ -159,7 +159,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
     });
     it('Deletes research data on submission declining', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('active', submission.title);
+        cy.findSubmission('active', submissionData.title);
 
         cy.clickDecision('Decline Submission');
         cy.contains('h1', 'Decline Submission');
@@ -187,7 +187,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
     });
     it('Reverts declining and adds research data again', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('archive', submission.title);
+        cy.findSubmission('archive', submissionData.title);
 
         cy.contains('button', 'Change decision').click();
 		cy.clickDecision('Revert Decline');
@@ -200,7 +200,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.contains('is now an active submission in the review stage');
         cy.get('a.pkpButton').contains('View All Submissions').click();
 
-        cy.findSubmission('active', submission.title);
+        cy.findSubmission('active', submissionData.title);
         cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
 
