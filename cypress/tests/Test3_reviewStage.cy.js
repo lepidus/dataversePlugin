@@ -165,8 +165,6 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.contains('h1', 'Decline Submission');
         cy.contains('h2', 'Notify Authors');
         cy.contains('button', 'Skip this email').click();
-        cy.contains('h2', 'Select Files');
-        cy.contains('button', 'Continue').click();
         cy.contains('h2', 'Research data');
         cy.contains(/This submission contains deposited research data: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
 		cy.contains('Would you like to delete the research data?');
