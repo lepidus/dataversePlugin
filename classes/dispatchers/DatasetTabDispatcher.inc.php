@@ -31,13 +31,13 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $tabTemplate = $this->plugin->getTemplateResource('datasetTab/noResearchData.tpl');
 
         if (!is_null($study)) {
-            $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
-            $configuration = $configurationDAO->get($submission->getData('contextId'));
-            $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
-
-            $templateMgr->assign('dataverseAdditionalInstructions', $additionalInstructions);
             $tabTemplate = $this->plugin->getTemplateResource('datasetTab/datasetData.tpl');
         }
+
+        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
+        $configuration = $configurationDAO->get($submission->getData('contextId'));
+        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
+        $templateMgr->assign('dataverseAdditionalInstructions', $additionalInstructions);
 
         $output .= sprintf(
             '<tab id="datasetTab" label="%s" :badge="researchDataCount">%s</tab>',

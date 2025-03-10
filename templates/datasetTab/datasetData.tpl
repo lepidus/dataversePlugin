@@ -90,11 +90,6 @@
                         </pkp-form>
                     </modal-content>
                 </modal>
-                {if $dataverseAdditionalInstructions}
-                    <div id="dataverseAdditionalInstructions" style="margin-top: 1.5rem;line-height: 1.5rem;font-size: 0.875rem;">
-                        {$dataverseAdditionalInstructions}
-                    </div>
-                {/if}
             </div>
         </tab>
     </tabs>
@@ -111,4 +106,9 @@
             </pkp-form>
         </modal-content>
     </modal>
+    {if $dataverseAdditionalInstructions}
+        <div id="dataverseAdditionalInstructions" style="padding: 0 2rem;">
+            {$dataverseAdditionalInstructions}
+        </div>
+    {/if}
 </section>
