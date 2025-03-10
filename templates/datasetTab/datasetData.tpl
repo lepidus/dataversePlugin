@@ -54,4 +54,9 @@
         <pkp-form style="margin: -1rem" v-bind="components.deleteDataset" @set="set" @success="location.reload()">
         </pkp-form>
     </modal>
+    {if $dataverseAdditionalInstructions}
+        <div id="dataverseAdditionalInstructions" style="padding: 0 2rem;">
+            {$dataverseAdditionalInstructions}
+        </div>
+    {/if}
 </section>

@@ -24,4 +24,9 @@
 		></dataset-files-list-panel>
 		<pkp-form style="margin: -1rem" v-bind="components.datasetMetadata" @set="set" @success="location.reload()"></pkp-form>
 	</modal>
+	{if $dataverseAdditionalInstructions}
+		<div id="dataverseAdditionalInstructions">
+			{$dataverseAdditionalInstructions}
+		</div>
+	{/if}
 </section>
