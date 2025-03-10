@@ -1,70 +1,62 @@
 const datasetFilesListTemplate = pkp.Vue.compile(`
-    <div>
-        <div class="listPanel">
-            <div class="listPanel__header">
-                <slot name="header">
-                    <pkp-header>
-                        <h2>{{ title }}</h2>
-                        <spinner v-if="isLoading"></spinner>
-                        <template slot="actions">
-                            <pkp-button
-                                :disabled="isLoading || !canChangeFiles"
-                                @click="openAddFileModal"
-                            >
-                                {{ addFileLabel }}
-                            </pkp-button>
-                        </template>
-                    </pkp-header>
-                    <modal 
-                        name="addDatasetFileModal"
-                        :title="addFileModalTitle"
-                        :closeLabel="__('common.close')"
-                    >
-                        <pkp-form
-                            v-bind="form"
-                            @success="addFileFormSuccess"
-                        />
-                    </modal>
-                </slot>
-            </div>
-            <div class="listPanel__body">
-                <div class="listPanel__items">
-                    <div v-if="Object.keys(items).length == 0" class="listPanel__empty">
-                        <slot name="itemsEmpty">{{ __('common.noItemsFound') }}</slot>
-                    </div>
-                    <ul v-else class="listPanel__itemsList">
-                        <li v-for="item in items" :key="item.id" class="listPanel__item">
-                            <slot name="item" :item="item">
-                                <div class="listPanel__itemSummary">
-                                    <div class="listPanel__itemIdentity">
-                                        <div class="listPanel__itemTitle">
-                                            <a :href="item.downloadUrl">
-                                                {{ item.fileName }}
-                                            </a>
-                                        </div>
-                                    </div>
-                                    <div class="listPanel__itemActions">
-                                        <pkp-button
-                                            :disabled="isLoading || !canChangeFiles"
-                                            :isWarnable="true"
-                                            @click="openDeleteFileModal(item.id, item.fileName)"
-                                        >
-                                            {{ __('common.delete') }}
-                                        </pkp-button>
+    <div class="listPanel">
+        <div class="listPanel__header">
+            <slot name="header">
+                <pkp-header>
+                    <h2>{{ title }}</h2>
+                    <spinner v-if="isLoading"></spinner>
+                    <template slot="actions">
+                        <pkp-button
+                            :disabled="isLoading || !canChangeFiles"
+                            @click="openAddFileModal"
+                        >
+                            {{ addFileLabel }}
+                        </pkp-button>
+                    </template>
+                </pkp-header>
+                <modal 
+                    name="addDatasetFileModal"
+                    :title="addFileModalTitle"
+                    :closeLabel="__('common.close')"
+                >
+                    <pkp-form
+                        v-bind="form"
+                        @success="addFileFormSuccess"
+                    />
+                </modal>
+            </slot>
+        </div>
+        <div class="listPanel__body">
+            <div class="listPanel__items">
+                <div v-if="Object.keys(items).length == 0" class="listPanel__empty">
+                    <slot name="itemsEmpty">{{ __('common.noItemsFound') }}</slot>
+                </div>
+                <ul v-else class="listPanel__itemsList">
+                    <li v-for="item in items" :key="item.id" class="listPanel__item">
+                        <slot name="item" :item="item">
+                            <div class="listPanel__itemSummary">
+                                <div class="listPanel__itemIdentity">
+                                    <div class="listPanel__itemTitle">
+                                        <a :href="item.downloadUrl">
+                                            {{ item.fileName }}
+                                        </a>
                                     </div>
                                 </div>
-                            </slot>
-                        </li>
-                    </ul>
-                </div>
+                                <div class="listPanel__itemActions">
+                                    <pkp-button
+                                        :disabled="isLoading || !canChangeFiles"
+                                        :isWarnable="true"
+                                        @click="openDeleteFileModal(item.id, item.fileName)"
+                                    >
+                                        {{ __('common.delete') }}
+                                    </pkp-button>
+                                </div>
+                            </div>
+                        </slot>
+                    </li>
+                </ul>
             </div>
         </div>
-        <div
-            id="dataverseAdditionalInstructions"
-            v-if="additionalInstructions"
-            v-html="additionalInstructions"
-            style="margin-top: 1.5rem;line-height: 1.5rem;font-size: 0.875rem;"
-        ></div>
     </div>
 `);
 
@@ -96,9 +88,6 @@ pkp.Vue.component('dataset-files-list-panel', {
             type: String,
         },
         addFileModalTitle: {
-            type: String,
-        },
-        additionalInstructions: {
             type: String,
         },
         dataversePluginApiUrl: {

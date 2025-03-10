@@ -88,17 +88,12 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             ->getDispatcher()
             ->url($request, Application::ROUTE_API, $context->getPath(), 'draftDatasetFiles');
 
-        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
-        $configuration = $configurationDAO->get($context->getId());
-        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
-
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
             __('plugins.generic.dataverse.researchData.files'),
             $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
-                'additionalInstructions' => $additionalInstructions,
                 'dataversePluginApiUrl' => $dataversePluginApiUrl,
                 'fileListUrl' => $fileListApiUrl,
                 'fileActionUrl' => $fileActionApiUrl,
