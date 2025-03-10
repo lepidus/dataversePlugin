@@ -76,4 +76,9 @@
 			</div>
 		</modal-content>
 	</modal>
+	{if $dataverseAdditionalInstructions}
+		<div id="dataverseAdditionalInstructions">
+			{$dataverseAdditionalInstructions}
+		</div>
+	{/if}
 </section>

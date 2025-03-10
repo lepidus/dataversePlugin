@@ -151,6 +151,7 @@ describe('Research data deposit', function () {
 
 		cy.waitDatasetTabLoading('datasetTab');
 
+		cy.contains('Additional instructions about research data submission');
 		cy.contains('Delete research data').should('be.disabled');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
 
@@ -193,7 +194,6 @@ describe('Research data deposit', function () {
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.get('button[aria-controls="dataset_files"]').click();
 		
-		cy.contains('Additional instructions about research data submission');
 		cy.get('button').contains('Add research data').click();
 		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').upload({
@@ -225,6 +225,7 @@ describe('Research data deposit', function () {
 		cy.contains('Delete research data').click();
 		cy.get('[data-modal="delete"] button').contains('Yes').click();
 		cy.contains('No research data transferred.');
+		cy.contains('Additional instructions about research data submission');
 
 		cy.get('button[aria-controls="dataStatement"]').click();
 		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('not.be.checked');
