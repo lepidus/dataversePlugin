@@ -1,14 +1,13 @@
-<div
-    id="dataverseFilesSection"
+<dataset-files-list-panel
     v-if="section.type === 'datasetFiles'"
->
-    <dataset-files-list-panel
-        v-bind="components.datasetFiles"
-        @set='set'
-    ></dataset-files-list-panel>
-    {if $dataverseAdditionalInstructions}
-        <div id="dataverseAdditionalInstructions">
-            {$dataverseAdditionalInstructions}
-        </div>
-    {/if}
-</div>
+    v-bind="components.datasetFiles"
+    @set='set'
+></dataset-files-list-panel>
+{if $dataverseAdditionalInstructions}
+    <div
+        id="dataverseAdditionalInstructions"
+        v-if="section.type === 'datasetFiles'"
+    >
+        {$dataverseAdditionalInstructions}
+    </div>
+{/if}
