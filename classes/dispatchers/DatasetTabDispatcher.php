@@ -40,8 +40,12 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $submission = $templateMgr->getTemplateVars('submission');
 
-        $content = $this->getDatasetTabContent($submission);
+        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
+        $configuration = $configurationDAO->get($submission->getData('contextId'));
+        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
+        $templateMgr->assign('dataverseAdditionalInstructions', $additionalInstructions);
 
+        $content = $this->getDatasetTabContent($submission);
         $output .= sprintf(
             '<tab id="datasetTab" label="%s" :badge="researchDataCount">%s</tab>',
             __("plugins.generic.dataverse.researchData"),
@@ -237,17 +241,12 @@ class DatasetTabDispatcher extends DataverseDispatcher
             ]
         );
 
-        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
-        $configuration = $configurationDAO->get($submission->getData('contextId'));
-        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
-
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
             __('plugins.generic.dataverse.researchData.files'),
             $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
-                'additionalInstructions' => $additionalInstructions,
                 'dataversePluginApiUrl' => $args['dataversePluginApiUrl'],
                 'fileListUrl' => $args['fileListApiUrl'],
                 'fileActionUrl' => $args['fileActionApiUrl'],

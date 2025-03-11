@@ -29,6 +29,11 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $templateMgr = $params[1];
         $output = &$params[2];
 
+        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
+        $configuration = $configurationDAO->get($submission->getData('contextId'));
+        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
+        $templateMgr->assign('dataverseAdditionalInstructions', $additionalInstructions);
+
         $output .= $templateMgr->fetch($this->plugin->getTemplateResource('draftDatasetFiles.tpl'));
     }
 
@@ -41,6 +46,12 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         if ($request->getRequestedPage() !== 'submission' || $request->getRequestedOp() === 'saved') {
             return false;
         }
+
+        $templateMgr->addStyleSheet(
+            'dataverseSubmissionWizard',
+            $this->plugin->getPluginFullPath() . '/styles/submissionWizard.css',
+            ['contexts' => ['backend']]
+        );
 
         $submission = $request
             ->getRouter()
@@ -88,17 +99,12 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             ->getDispatcher()
             ->url($request, Application::ROUTE_API, $context->getPath(), 'draftDatasetFiles');
 
-        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
-        $configuration = $configurationDAO->get($context->getId());
-        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
-
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
             __('plugins.generic.dataverse.researchData.files'),
             $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
-                'additionalInstructions' => $additionalInstructions,
                 'dataversePluginApiUrl' => $dataversePluginApiUrl,
                 'fileListUrl' => $fileListApiUrl,
                 'fileActionUrl' => $fileActionApiUrl,

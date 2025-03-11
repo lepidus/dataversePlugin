@@ -212,7 +212,8 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
 
-		cy.contains('Delete research data').should('be.disabled');
+		cy.contains('Additional instructions about research data submission');
+        cy.contains('Delete research data').should('be.disabled');
 		cy.get('#dataset_metadata > form button[label="Save"]').should('be.disabled');
 
 		cy.get('#dataset_files-button').click();
@@ -234,8 +235,10 @@ describe('Dataverse Plugin - Workflow features', function () {
             .should('include', 'The research data from the manuscript submission "' + submissionData.title + '" has been removed');
 		cy.get('.modal__panel button:contains("Delete and send email")').click();
         cy.wait(5000);
-		
+
         cy.contains('No research data transferred.');
+        cy.contains('Additional instructions about research data submission');
+
         cy.get('#dataStatement-button').click();
 		cy.get('input[name="researchDataSubmitted"]').should('not.be.checked');
     });

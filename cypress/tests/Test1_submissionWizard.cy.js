@@ -90,12 +90,12 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.findSubmission('myQueue', submissionData.title);
 
         advanceNSteps(1);
-        cy.get('h2:contains("Research data")').should('not.be.visible');
+        cy.contains('h2', 'Research data').should('not.be.visible');
         advanceNSteps(2);
-        cy.get('h2:contains("Research data metadata")').should('not.be.visible');
+        cy.contains('h2', 'Research data metadata').should('not.be.visible');
         advanceNSteps(1);
-        cy.get('h3:contains("Research data")').should('not.exist');
-        cy.get('h3:contains("Research data metadata")').should('not.exist');
+        cy.contains('h3', 'Research data').should('not.exist');
+        cy.contains('h3', 'Research data metadata').should('not.exist');
 
         cy.get('.pkpSteps__step__label:contains("Details")').click();
         cy.get('input[name="dataStatementTypes"][value=3]').click();
