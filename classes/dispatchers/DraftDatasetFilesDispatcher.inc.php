@@ -127,6 +127,12 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
                 $file->getData('fileId'),
                 $file->getData('userId')
             );
+
+            if (is_null($tempFile)) {
+                $draftDatasetFileDAO->deleteById($file->getId());
+                continue;
+            }
+
             $fileName = strtolower($file->getFileName());
             $fileType = $tempFile->getData('filetype');
 
