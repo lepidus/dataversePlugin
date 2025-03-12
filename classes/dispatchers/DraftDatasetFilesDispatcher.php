@@ -221,6 +221,12 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
                 $file->getData('fileId'),
                 $file->getData('userId')
             );
+
+            if (is_null($tempFile)) {
+                Repo::draftDatasetFile()->delete($file);
+                continue;
+            }
+
             $fileName = strtolower($file->getFileName());
             $fileType = $tempFile->getData('filetype');
 
