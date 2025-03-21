@@ -300,6 +300,23 @@ describe('Research data deposit', function () {
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC0 1.0');
 		cy.get('#datasetTab form button').contains('Save').click();
+
+		cy.contains('It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files');
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
+			cy.get('[data-modal="fileForm"] input[type=file]').upload({
+				fileContent,
+				fileName: 'README.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
+		cy.wait(200);
+		cy.get('#datasetTab form button').contains('Save').click();
 		cy.wait(7000);
 		
 		cy.waitDatasetTabLoading('datasetTab');
@@ -389,6 +406,20 @@ describe('Research data deposit', function () {
 			cy.get('[data-modal="fileForm"] input[type=file]').upload({
 				fileContent,
 				fileName: 'Data Table.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
+		cy.wait(200);
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
+			cy.get('[data-modal="fileForm"] input[type=file]').upload({
+				fileContent,
+				fileName: 'README.pdf',
 				mimeType: 'application/pdf',
 				encoding: 'base64',
 			});
