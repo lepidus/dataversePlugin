@@ -1,3 +1,5 @@
+**English** | [Português Brasileiro](/docs/README-pt_BR.md) | [Español](/docs/README-es.md)
+
 # Dataverse Plugin
 
 We are implementing this plugin for OPS and OJS 3.3 (or higher) for SciELO Brasil.
@@ -35,15 +37,15 @@ After installation, it is necessary to enable the plugin. This is done in `Websi
 
 With the plugin enabled, you should expand its options by clicking the arrow next to its name and then accessing its `Settings`.
 
-In the new window, the  _Dataverse_ (Dataverse URL), _API Token_ and _Terms of Use_ will be displayed.
+In the new window, the settings _Dataverse URL_, _API Token_, _Terms of Use_ and _Additional Instructions_ will be displayed.
 
-You have to indicate the full Dataverse URL repository where the research data will be deposited, for example: https://demo.dataverse.org/dataverse/anotherdemo
+You have to indicate the full Dataverse URL repository where the research data will be deposited. For example: `https://demo.dataverse.org/dataverse/anotherdemo`
 
 The Terms of Use can be defined for each language configurated in your application. If you have questions about what they are, consult those responsible for the repository.
 
 **Important:** The _API Token_ belongs to a Dataverse user account. For more information on how to obtain the API token, see the [Dataverse User Guide](https://guides.dataverse.org/en/5.13/user/account.html#api-token).
 
-It is important to mention that the Dataverse user account will be included in the list of contributors of the datasets deposited by the plugin (for more [information, see this discussion](https://groups.google.com/g/dataverse-community/c/Oo4AUZJf4hE/m/DyVsQq9mAQAJ)).
+It is important to mention that the Dataverse user account will be included in the list of contributors of the datasets deposited by the plugin (for more information, see [this discussion](https://groups.google.com/g/dataverse-community/c/Oo4AUZJf4hE/m/DyVsQq9mAQAJ)).
 
 Therefore, we recommend the creation of a specific user for the journal/preprint server, instead of using a person's personal account, because each deposit will be associated with that account.
 
@@ -53,16 +55,16 @@ After filling in the fields, just confirm the action by clicking `Save`. The plu
 
 A "Research Data" deposit dialog is shown in the "Files" step of the Submission proccess.
 
-Authors, moderators, editors or managers can also edit the dataset, before publication, on the Research Data tab of the submission.
+Authors, moderators, editors or managers can also edit the dataset, before publication, on the Research Data tab added to the submission's workflow.
 
 In OJS, reviewers can have access to research data files during the review process. Reviewers access to these files can be restricted on Workflow Settings, so they can only see research data when they agree to review the submission.
 
 ## Development Instructions:
 
 1. Clone the Dataverse plugin repository
-2. To use the plugin into the PKP Application, copy it's folder to the /plugins/generic directory and make sure the folder is called "dataverse".
+2. To use the plugin into the PKP Application, copy it's folder to the `/plugins/generic` directory and make sure the folder is called "dataverse".
 3. And from the root of the PKP Appplication directory, execute this command to update the database, creating the tables used by the plugin:
-    * php tools/upgrade.php upgrade
+    * `php tools/upgrade.php upgrade`
 
 ## Running Tests
 
@@ -76,10 +78,10 @@ find plugins/generic/dataverse -name tests -type d -exec php lib/pkp/lib/vendor/
 ### Integration Tests
 
 Creates a `cypress.env.json` file in root of the PKP Application directory, with the following environment variables:
-- baseUrl
-- dataverseUrl
-- dataverseApiToken
-- dataverseTermsOfUse
+- `baseUrl`
+- `dataverseUrl`
+- `dataverseApiToken`
+- `dataverseTermsOfUse`
 
 **Example**:
 
