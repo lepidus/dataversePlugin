@@ -431,7 +431,7 @@ describe('Research data deposit', function () {
 		cy.get('#datasetTab form button').contains('Save').click();
 		cy.wait(7000);
 		
-		cy.waitDatasetTabLoading('datasetTab');
+		cy.waitDatasetTabLoading('datasetTab', true);
 
 		cy.get('div#publication button:contains("Schedule For Publication"), div#publication button:contains("Post")').click();
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();

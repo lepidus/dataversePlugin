@@ -23,9 +23,11 @@ Cypress.Commands.add('waitDataStatementTabLoading', function() {
 
 	cy.contains('Dataverse de Exemplo Lepidus repository', {timeout:10000});
 });
-Cypress.Commands.add('waitDatasetTabLoading', function(tabToLeave) {
-	cy.get('#publication-button').click();
-	cy.get('#datasetTab-button').click();
+Cypress.Commands.add('waitDatasetTabLoading', function(tabToLeave, alreadyOnDatasetTab = false) {
+	if (!alreadyOnDatasetTab) {
+		cy.get('#publication-button').click();
+		cy.get('#datasetTab-button').click();
+	}
 
 	cy.contains('h1', 'Research data', {timeout:10000});
 	cy.contains('#datasetData .value', 'Demo Dataverse, ', {timeout:10000});
