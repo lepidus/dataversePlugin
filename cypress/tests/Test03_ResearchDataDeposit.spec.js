@@ -364,14 +364,14 @@ describe('Research data deposit', function () {
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('[data-modal="fileForm"] button:contains("Save")').click();
 		cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
-		cy.get('#datasetTab-button .pkpBadge').contains('2');
+		cy.get('#datasetTab-button .pkpBadge').contains('3');
 
 		cy.get('.listPanel__item:contains(samples.pdf) button:contains(Delete)').click();
 		cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
 		cy.get('[data-modal="delete"] button:contains(Yes)').click();
 		cy.waitJQuery();
 		cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'samples.pdf');
-		cy.get('#datasetTab-button .pkpBadge').contains('1');
+		cy.get('#datasetTab-button .pkpBadge').contains('2');
 	});
 
 	it('Check editor can delete research data', function () {
