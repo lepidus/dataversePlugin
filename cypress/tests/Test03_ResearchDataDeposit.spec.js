@@ -316,6 +316,7 @@ describe('Research data deposit', function () {
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
 		cy.wait(200);
+		cy.get('select[id^="datasetMetadata-datasetLicense-control"').focus();
 		cy.get('#datasetTab form button').contains('Save').click();
 		cy.wait(7000);
 		
