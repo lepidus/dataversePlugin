@@ -215,6 +215,18 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		cy.wait(1000);
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('form:visible button:contains("Save")').click();
+        cy.contains('button', 'Add research data').click();
+        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'utf8').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
+				fileContent,
+				fileName: 'README.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64'
+			});
+		});
+        cy.wait(1000);
+		cy.get('input[name="termsOfUse"]').check();
+		cy.get('form:visible button:contains("Save")').click();
 		cy.get('#datasetMetadata-datasetSubject-control').select('Other');
 		cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
 		cy.get('button:visible:contains("Save")').click();
