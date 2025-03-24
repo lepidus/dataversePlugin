@@ -141,6 +141,18 @@ describe('Research data state', function () {
 		});
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
+			cy.get('[data-modal="fileForm"] input[type=file]').upload({
+				fileContent,
+				fileName: 'README.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC BY 4.0');
 		cy.get('#datasetTab form button').contains('Save').click();
