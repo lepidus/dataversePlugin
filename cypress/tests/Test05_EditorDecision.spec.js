@@ -163,7 +163,7 @@ describe('Research data publishing in editor decision', function () {
 		cy.wait(7000);
 
 		cy.waitDatasetTabLoading('datasetTab');
-		cy.get('#datasetTab-button .pkpBadge').contains('1');
+		cy.get('#datasetTab-button .pkpBadge').contains('2');
 	});
 	it('Check research data is published in editor decision', function () {
 		cy.login('dbarnes', null, 'publicknowledge');

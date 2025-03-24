@@ -19,10 +19,7 @@ describe('Research data deposit', function () {
 
 		cy.get('div#myQueue a:contains("New Submission")').click();
 
-		if (Cypress.env('contextTitles').en_US == 'Journal of Public Knowledge') {
-			cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
-		}
-
+		cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
 		cy.get('input[id^="dataStatementTypes"][value=1]').click();
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[id=privacyConsent]').click();

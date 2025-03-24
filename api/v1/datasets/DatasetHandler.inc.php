@@ -197,13 +197,13 @@ class DatasetHandler extends APIHandler
         $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submissionId);
 
         if (empty($draftDatasetFiles)) {
-            return $response->withStatus(400)->withJsonError('plugins.generic.dataverse.researchDataFile.error');
+            return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.researchDataFile.error');
         }
 
         import('plugins.generic.dataverse.classes.DraftDatasetFilesValidator');
         $datasetFilesValidator = new DraftDatasetFilesValidator();
         if (!$datasetFilesValidator->datasetHasReadmeFile($draftDatasetFiles)) {
-            return $response->withStatus(400)->withJsonError('plugins.generic.dataverse.error.readmeFileRequired');
+            return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.readmeFileRequired');
         }
 
         $submission = Services::get('submission')->get($submissionId);
