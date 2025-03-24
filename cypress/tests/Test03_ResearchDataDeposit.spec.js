@@ -19,10 +19,7 @@ describe('Research data deposit', function () {
 
 		cy.get('div#myQueue a:contains("New Submission")').click();
 
-		if (Cypress.env('contextTitles').en_US == 'Journal of Public Knowledge') {
-			cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
-		}
-
+		cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
 		cy.get('input[id^="dataStatementTypes"][value=1]').click();
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[id=privacyConsent]').click();
@@ -300,6 +297,24 @@ describe('Research data deposit', function () {
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC0 1.0');
 		cy.get('#datasetTab form button').contains('Save').click();
+
+		cy.contains('It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files');
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
+			cy.get('[data-modal="fileForm"] input[type=file]').upload({
+				fileContent,
+				fileName: 'README.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
+		cy.wait(200);
+		cy.get('select[id^="datasetMetadata-datasetLicense-control"').focus();
+		cy.get('#datasetTab form button').contains('Save').click();
 		cy.wait(7000);
 		
 		cy.waitDatasetTabLoading('datasetTab');
@@ -349,14 +364,14 @@ describe('Research data deposit', function () {
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('[data-modal="fileForm"] button:contains("Save")').click();
 		cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
-		cy.get('#datasetTab-button .pkpBadge').contains('2');
+		cy.get('#datasetTab-button .pkpBadge').contains('3');
 
 		cy.get('.listPanel__item:contains(samples.pdf) button:contains(Delete)').click();
 		cy.get('#datasetFiles .listPanel__items').contains('samples.pdf');
 		cy.get('[data-modal="delete"] button:contains(Yes)').click();
 		cy.waitJQuery();
 		cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'samples.pdf');
-		cy.get('#datasetTab-button .pkpBadge').contains('1');
+		cy.get('#datasetTab-button .pkpBadge').contains('2');
 	});
 
 	it('Check editor can delete research data', function () {
@@ -389,6 +404,20 @@ describe('Research data deposit', function () {
 			cy.get('[data-modal="fileForm"] input[type=file]').upload({
 				fileContent,
 				fileName: 'Data Table.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.wait(200);
+		cy.get('input[name="termsOfUse"').check();
+		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
+		cy.wait(200);
+		cy.contains('Add research data').click();
+		cy.wait(1000);
+		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
+			cy.get('[data-modal="fileForm"] input[type=file]').upload({
+				fileContent,
+				fileName: 'README.pdf',
 				mimeType: 'application/pdf',
 				encoding: 'base64',
 			});

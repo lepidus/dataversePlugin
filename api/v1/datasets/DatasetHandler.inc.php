@@ -200,6 +200,12 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.researchDataFile.error');
         }
 
+        import('plugins.generic.dataverse.classes.DraftDatasetFilesValidator');
+        $datasetFilesValidator = new DraftDatasetFilesValidator();
+        if (!$datasetFilesValidator->datasetHasReadmeFile($draftDatasetFiles)) {
+            return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.readmeFileRequired');
+        }
+
         $submission = Services::get('submission')->get($submissionId);
 
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
