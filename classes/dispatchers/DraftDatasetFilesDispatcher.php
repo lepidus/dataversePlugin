@@ -175,12 +175,13 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             && in_array(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)
         ) {
             $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
+            $validator = new DraftDatasetFilesValidator();
 
             if (empty($draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.researchData.required')];
             } elseif ($this->galleyContainsResearchData($submission, $draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.notification.galleyContainsResearchData')];
-            } elseif (!$this->researchDataHasReadme($submission, $draftDatasetFiles)) {
+            } elseif (!$validator->datasetHasReadmeFile($draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.readmeFile.required')];
             }
         }
@@ -210,33 +211,5 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
         $validator = new DraftDatasetFilesValidator();
         return $validator->galleyContainsResearchData($submissionFiles, $datasetFiles);
-    }
-
-    private function researchDataHasReadme($submission, $draftDatasetFiles)
-    {
-        $temporaryFileManager = new TemporaryFileManager();
-
-        foreach ($draftDatasetFiles as $file) {
-            $tempFile = $temporaryFileManager->getFile(
-                $file->getData('fileId'),
-                $file->getData('userId')
-            );
-
-            if (is_null($tempFile)) {
-                Repo::draftDatasetFile()->delete($file);
-                continue;
-            }
-
-            $fileName = strtolower($file->getFileName());
-            $fileType = $tempFile->getData('filetype');
-
-            if (str_contains($fileName, 'readme')
-                && ($fileType == 'application/pdf' || $fileType == 'text/plain')
-            ) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

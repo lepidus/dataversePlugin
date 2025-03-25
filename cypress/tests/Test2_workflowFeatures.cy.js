@@ -175,8 +175,23 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.wait(1000);
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
-
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
+        cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
+        cy.get('button:visible:contains("Save")').click();
+
+		cy.contains('It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files');
+        cy.contains('button', 'Add research data').click();
+        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
+				fileContent,
+				fileName: 'README.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64'
+			});
+		});
+        cy.wait(1000);
+		cy.get('input[name="termsOfUse"]').check();
+		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
         cy.get('button:visible:contains("Save")').click();
         cy.wait(7000);
@@ -264,6 +279,18 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.wait(1000);
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
+        cy.contains('button', 'Add research data').click();
+        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
+				fileContent,
+				fileName: 'README.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64'
+			});
+		});
+        cy.wait(1000);
+		cy.get('input[name="termsOfUse"]').check();
+		cy.get('form:visible button:contains("Save")').click();
 
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
@@ -341,11 +368,10 @@ describe('Dataverse Plugin - Workflow features', function () {
 			+ 'Before proceeding, make sure they are suitable for publication in ';
 		cy.get('div[data-modal="publishDataset"]').contains(publishMsg);
 		cy.get('div[data-modal="publishDataset"] button:contains("Yes")').click();
-		cy.wait(3000);
+		cy.wait(5000);
+        cy.reload();
 
-        cy.waitDatasetTabLoading();
-
-		cy.get('.value > p').contains('V1');
+		cy.contains('Demo Dataverse, V1');
 		cy.contains('Publish research data').should('not.exist');
 		cy.get('button:contains("Delete research data")').should('be.disabled');
 		cy.get('button:contains("Add research data")').should('be.disabled');
@@ -370,6 +396,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('.pkpPublication__statusPublished').should('have.text', 'Published');
         cy.get('#datasetTab-button').click();
-        cy.get('.value > p').contains('Demo Dataverse, V1');
+        cy.contains('Demo Dataverse, V1');
     });
 });
