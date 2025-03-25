@@ -368,7 +368,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 			+ 'Before proceeding, make sure they are suitable for publication in ';
 		cy.get('div[data-modal="publishDataset"]').contains(publishMsg);
 		cy.get('div[data-modal="publishDataset"] button:contains("Yes")').click();
-		cy.wait(3000);
+		cy.wait(5000);
 
         cy.waitDatasetTabLoading();
 
