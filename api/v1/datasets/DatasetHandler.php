@@ -18,6 +18,7 @@ use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
+use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DatasetHandler extends APIHandler
@@ -206,6 +207,11 @@ class DatasetHandler extends APIHandler
 
         if (empty($draftDatasetFiles)) {
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.researchDataFile.error');
+        }
+
+        $datasetFilesValidator = new DraftDatasetFilesValidator();
+        if (!$datasetFilesValidator->datasetHasReadmeFile($draftDatasetFiles)) {
+            return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.readmeFile.required');
         }
 
         $submission = Repo::submission()->get($submissionId);

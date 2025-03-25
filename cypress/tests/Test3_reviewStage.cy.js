@@ -216,7 +216,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'utf8').then((fileContent) => {
+        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
 				fileName: 'README.pdf',

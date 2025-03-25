@@ -181,7 +181,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 
 		cy.contains('It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files');
         cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'utf8').then((fileContent) => {
+        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
 				fileName: 'README.pdf',
@@ -192,6 +192,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.wait(1000);
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
+        cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
         cy.get('button:visible:contains("Save")').click();
         cy.wait(7000);
 
@@ -279,7 +280,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'utf8').then((fileContent) => {
+        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
 				fileName: 'README.pdf',
