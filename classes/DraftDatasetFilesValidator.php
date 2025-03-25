@@ -32,7 +32,7 @@ class DraftDatasetFilesValidator
         return $contains;
     }
 
-    public function datasetHasReadmeFile(array $datasetFiles): bool
+    public function datasetHasReadmeFile(array $draftDatasetFiles): bool
     {
         $temporaryFileManager = new TemporaryFileManager();
 
