@@ -370,9 +370,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('div[data-modal="publishDataset"] button:contains("Yes")').click();
 		cy.wait(5000);
 
-        cy.waitDatasetTabLoading();
-
-		cy.get('.value > p').contains('V1');
+		cy.contains('Demo Dataverse, V1');
 		cy.contains('Publish research data').should('not.exist');
 		cy.get('button:contains("Delete research data")').should('be.disabled');
 		cy.get('button:contains("Add research data")').should('be.disabled');
@@ -397,6 +395,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('.pkpPublication__statusPublished').should('have.text', 'Published');
         cy.get('#datasetTab-button').click();
-        cy.get('.value > p').contains('Demo Dataverse, V1');
+        cy.contains('Demo Dataverse, V1');
     });
 });
