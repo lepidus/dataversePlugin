@@ -146,7 +146,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.fixture('dummy.xlsx', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
-				fileName: 'Raw_data.xlsx',
+				fileName: 'Planilha_de_dados_ÇÕÔÁÀÃ.xlsx',
 				mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 				encoding: 'base64',
 			});
@@ -155,13 +155,13 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetFiles').contains('a', 'Data_detailing.pdf');
-		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
+		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.xlsx');
 
         advanceNSteps(3);
         cy.get('div:contains("To submit research data, it is necessary to send at least one file")').should('not.exist');
         cy.contains('Research data and galley have the same file');
         cy.contains('a', 'Data_detailing.pdf');
-        cy.contains('a', 'Raw_data.xlsx');
+        cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.xlsx');
 
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
         cy.get('.listPanel__item:contains(Data_detailing.pdf) button:contains(Delete)').click();
@@ -174,7 +174,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('a:contains("Data_detailing.pdf")').should('not.exist');
         cy.get('div:contains("Research data and galley have the same file")').should('not.exist');
         cy.contains('It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files');
-        cy.contains('a', 'Raw_data.xlsx');
+        cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.xlsx');
 
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
         cy.contains('button', 'Add research data').click();
@@ -189,13 +189,13 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.wait(1000);
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
-		cy.get('#datasetFiles').contains('a', 'Raw_data.xlsx');
+		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.xlsx');
         cy.get('#datasetFiles').contains('a', 'README.pdf');
 
         advanceNSteps(3);
         cy.get('div:contains("It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files")').should('not.exist');
         cy.contains('a', 'README.pdf');
-        cy.contains('a', 'Raw_data.xlsx');
+        cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.xlsx');
     });
     it('Adds dataset metadata', function () {
         cy.login('eostrom', null, 'publicknowledge');
