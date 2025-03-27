@@ -195,7 +195,7 @@ describe('Research data deposit', function () {
 		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').upload({
 				fileContent,
-				fileName: 'Submissão de dados.pdf',
+				fileName: 'Submissão_de_dados_ÇÕÔÁÀÃ.pdf',
 				mimeType: 'application/pdf',
 				encoding: 'base64',
 			});
@@ -203,14 +203,14 @@ describe('Research data deposit', function () {
 		cy.get('input[name="termsOfUse"').check();
 		cy.get('form:visible button:contains("Save")').click();
 		cy.waitJQuery();
-		cy.get('#datasetFiles .listPanel__items').contains('Submissão de dados.pdf');
+		cy.get('#datasetFiles .listPanel__items').contains('Submissão_de_dados_ÇÕÔÁÀÃ.pdf');
 		cy.get('#datasetTab-button .pkpBadge').contains('3');
 
-		cy.get('.listPanel__item:contains(Submissão de dados.pdf) button:contains(Delete)').click();
-		cy.get('#datasetFiles .listPanel__items').contains('Submissão de dados.pdf');
+		cy.get('.listPanel__item:contains(Submissão_de_dados_ÇÕÔÁÀÃ.pdf) button:contains(Delete)').click();
+		cy.get('#datasetFiles .listPanel__items').contains('Submissão_de_dados_ÇÕÔÁÀÃ.pdf');
 		cy.get('.modal:visible button:contains(Yes)').click();
 		cy.waitJQuery();
-		cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'Submissão de dados.pdf');
+		cy.get('#datasetFiles .listPanel__items').should('not.include.text', 'Submissão_de_dados_ÇÕÔÁÀÃ.pdf');
 		cy.get('#datasetTab-button .pkpBadge').contains('2');
 	});
 
@@ -234,8 +234,8 @@ describe('Research data deposit', function () {
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data deposited) td').should('contain', 'Catherine Kwantes');
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data metadata updated) td').should('contain', 'Catherine Kwantes');
-		cy.get('#submissionHistoryGridContainer tr:contains(File "Submissão de dados.pdf" added as research data.) td').should('contain', 'Catherine Kwantes');
-		cy.get('#submissionHistoryGridContainer tr:contains(File "Submissão de dados.pdf" deleted from research data.) td').should('contain', 'Catherine Kwantes');
+		cy.get('#submissionHistoryGridContainer tr:contains(File "Submissão_de_dados_ÇÕÔÁÀÃ.pdf" added as research data.) td').should('contain', 'Catherine Kwantes');
+		cy.get('#submissionHistoryGridContainer tr:contains(File "Submissão_de_dados_ÇÕÔÁÀÃ.pdf" deleted from research data.) td').should('contain', 'Catherine Kwantes');
 		cy.get('#submissionHistoryGridContainer tr:contains(Research data deleted) td').should('contain', 'Catherine Kwantes');
 	});
 
