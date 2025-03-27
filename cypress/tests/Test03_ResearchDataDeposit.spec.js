@@ -448,6 +448,7 @@ describe('Research data deposit', function () {
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
 		cy.wait(5000);
 		cy.get('.pkpPublication__statusPublished');
+		cy.reload();
 
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.contains('button', 'Delete research data').should('be.disabled');
