@@ -91,12 +91,11 @@ class JsonDatasetFactory extends DatasetFactory
             $datasetFile->setFileName($file->label);
             $datasetFile->setOriginalFileName($file->dataFile->filename);
 
-            $encodedChar = 'Ã';
-            if (str_contains($file->label, $encodedChar)) {
-                $datasetFile->setFileName(utf8_decode($file->label));
+            if (!mb_check_encoding($file->label, 'UTF-8')) {
+                $datasetFile->setFileName(mb_convert_encoding($file->label, 'UTF-8'));
             }
-            if (str_contains($file->dataFile->filename, $encodedChar)) {
-                $datasetFile->setOriginalFileName(utf8_decode($file->dataFile->filename));
+            if (!mb_check_encoding($file->dataFile->filename, 'UTF-8')) {
+                $datasetFile->setOriginalFileName(mb_convert_encoding($file->dataFile->filename, 'UTF-8'));
             }
 
             return $datasetFile;
