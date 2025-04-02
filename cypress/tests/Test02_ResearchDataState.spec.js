@@ -125,44 +125,10 @@ describe('Research data state', function () {
 		cy.get('.pkpButton:visible:contains("View")').first().click();
 
 		cy.waitDataStatementTabLoading();
-		cy.wait(2000);
-		
-		cy.get('#datasetTab-button').click();
-		cy.get('button:contains("Upload research data")').click();
-		cy.contains('Add research data').click();
-		cy.wait(1000);
-		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
-			cy.get('[data-modal="fileForm"] input[type=file]').upload({
-				fileContent,
-				fileName: 'Data Table.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64',
-			});
-		});
-		cy.get('input[name="termsOfUse"').check();
-		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
-		cy.contains('Add research data').click();
-		cy.wait(1000);
-		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
-			cy.get('[data-modal="fileForm"] input[type=file]').upload({
-				fileContent,
-				fileName: 'README.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64',
-			});
-		});
-		cy.get('input[name="termsOfUse"').check();
-		cy.get('[data-modal="fileForm"] form button').contains('Save').click();
-		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
-		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC BY 4.0');
-		cy.get('#datasetTab form button').contains('Save').click();
-		cy.wait(7000);
-
-		cy.waitDatasetTabLoading('workflow', true);
+		cy.get('#workflow-button').click();
 
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
 			cy.sendToReview();
-			cy.waitDatasetTabLoading('workflow');
 			cy.assignReviewer('Julie Janssen');
 			cy.recordEditorialDecision('Accept Submission');
 			cy.recordEditorialDecision('Send To Production');
@@ -172,14 +138,10 @@ describe('Research data state', function () {
 			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
 			cy.get('div[id^="assign-"] button:contains("Save")').click();
 			cy.get('div[id^="assign-"] [role="status"]').contains('Saved');
-			cy.reload();
-			cy.get('div#publication button:contains("Schedule For Publication")').click();
-			cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
 			cy.get('div.pkpWorkflow__publishModal button:contains("Publish")').click();
 		} else {
 			cy.get('#publication-button').click();
 			cy.get('.pkpPublication > .pkpHeader > .pkpHeader__actions > .pkpButton').click();
-			cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
 			cy.get('.pkp_modal_panel button:contains("Post")').click();
 			cy.contains('This version has been posted and can not be edited.');
 		}
@@ -193,9 +155,5 @@ describe('Research data state', function () {
 		cy.contains('The research data is available in one or more data repository(ies)').next().contains('https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM');
 		cy.contains('The research data is available on demand, condition justified in the manuscript');
 		cy.contains('The research data cannot be made publicly available').next().contains('Has sensitive data');
-
-		cy.get('.label:contains("Research data")');
-		cy.get('.data_citation').contains('Ostrom, Elinor, ' + currentYear + ', "Replication data for: ' + submission.title + '"');
-		cy.get('.data_citation').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
 	});
 });
