@@ -11,7 +11,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
     public function get(string $persistentId): Dataset
     {
         $args = '?persistentId=' . $persistentId;
-        $uri = $this->createNativeAPIURI('datasets', ':persistentId' . $args);
+        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions' . $args);
         $response = $this->nativeAPIRequest('GET', $uri);
 
         $datasetFactory = new JsonDatasetFactory($response->getBody());
@@ -39,17 +39,6 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         } else {
             return $this->getSWORDCitation($persistentId);
         }
-    }
-
-    public function getNativeCitation(string $persistentId): string
-    {
-        $args = '?persistentId=' . $persistentId;
-        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions', ':latest', 'citation' . $args);
-        $response = $this->nativeAPIRequest('GET', $uri);
-
-        $jsonContent = json_decode($response->getBody(), true);
-        $citation = $jsonContent['data']['message'];
-        return preg_replace('/,+.UNF[^]]+]/', '', $citation);
     }
 
     private function getSWORDCitation(string $persistentId): string
