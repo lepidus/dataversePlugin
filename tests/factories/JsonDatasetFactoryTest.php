@@ -7,12 +7,12 @@ class JsonDatasetFactoryTest extends PKPTestCase
 {
     public function testCreateDataset()
     {
-        $jsonContent = file_get_contents(__DIR__ . '/../fixtures/datasetResponseExample.json');
+        $jsonContent = file_get_contents(__DIR__ . '/../fixtures/datasetVersionsResponseExample.json');
         $datasetFactory = new JsonDatasetFactory($jsonContent);
         $dataset = $datasetFactory->getDataset();
 
         $this->assertEquals('doi:10.12345/FK2/ABCDEFG', $dataset->getPersistentId());
-        $this->assertEquals('Test title', $dataset->getTitle());
+        $this->assertEquals('Test title 2', $dataset->getTitle());
         $this->assertEquals('<p>An example description</p>', $dataset->getDescription());
         $this->assertEquals('CC BY 4.0', $dataset->getLicense());
         $this->assertEquals('Other', $dataset->getSubject());
@@ -26,7 +26,7 @@ class JsonDatasetFactoryTest extends PKPTestCase
         $this->assertEquals('Dataverse', $dataset->getContact()->getAffiliation());
         $this->assertEquals('Related publication', $dataset->getPubCitation());
         $this->assertEquals('Test, Depositor', $dataset->getDepositor());
-        $this->assertEquals('DRAFT', $dataset->getVersionState());
+        $this->assertEquals('RELEASED', $dataset->getVersionState());
 
         $this->assertEquals(9876543, $dataset->getFiles()[0]->getId());
         $this->assertEquals('sample.pdf', $dataset->getFiles()[0]->getFileName());
