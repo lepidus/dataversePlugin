@@ -11,14 +11,14 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
     public function get(string $persistentId): Dataset
     {
         $args = '?persistentId=' . $persistentId;
-        $uri = $this->createNativeAPIURI('datasets', ':persistentId' . $args);
+        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions' . $args);
         $response = $this->nativeAPIRequest('GET', $uri);
 
         $datasetFactory = new JsonDatasetFactory($response->getBody());
         return $datasetFactory->getDataset();
     }
 
-    public function getCitation(string $persistentId): string
+    public function getCitation(string $persistentId): array
     {
         $dataset = $this->get($persistentId);
 
@@ -35,21 +35,11 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
                 '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>',
                 $citation
             );
-            return preg_replace('/,+.UNF[^]]+]/', '', $citation);
+
+            return ['datasetIsPublished' => true, 'citation' => preg_replace('/,+.UNF[^]]+]/', '', $citation)];
         } else {
-            return $this->getSWORDCitation($persistentId);
+            return ['datasetIsPublished' => false, 'citation' => $this->getSWORDCitation($persistentId)];
         }
-    }
-
-    public function getNativeCitation(string $persistentId): string
-    {
-        $args = '?persistentId=' . $persistentId;
-        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions', ':latest', 'citation' . $args);
-        $response = $this->nativeAPIRequest('GET', $uri);
-
-        $jsonContent = json_decode($response->getBody(), true);
-        $citation = $jsonContent['data']['message'];
-        return preg_replace('/,+.UNF[^]]+]/', '', $citation);
     }
 
     private function getSWORDCitation(string $persistentId): string

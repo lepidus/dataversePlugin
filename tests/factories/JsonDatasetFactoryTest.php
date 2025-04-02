@@ -7,7 +7,7 @@ class JsonDatasetFactoryTest extends PKPTestCase
 {
     public function testCreateDataset()
     {
-        $jsonContent = file_get_contents(__DIR__ . '/../fixtures/datasetResponseExample.json');
+        $jsonContent = file_get_contents(__DIR__ . '/../fixtures/datasetVersionsResponseExample.json');
         $datasetFactory = new JsonDatasetFactory($jsonContent);
         $dataset = $datasetFactory->getDataset();
 
@@ -26,7 +26,7 @@ class JsonDatasetFactoryTest extends PKPTestCase
         $this->assertEquals('Dataverse', $dataset->getContact()->getAffiliation());
         $this->assertEquals('Related publication', $dataset->getPubCitation());
         $this->assertEquals('Test, Depositor', $dataset->getDepositor());
-        $this->assertEquals('DRAFT', $dataset->getVersionState());
+        $this->assertEquals('RELEASED', $dataset->getVersionState());
 
         $this->assertEquals(9876543, $dataset->getFiles()[0]->getId());
         $this->assertEquals('sample.pdf', $dataset->getFiles()[0]->getFileName());
