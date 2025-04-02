@@ -280,13 +280,13 @@ class DatasetHandler extends APIHandler
 
         try {
             $dataverseClient = new DataverseClient();
-            $citation = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId());
+            $citationData = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId());
         } catch (DataverseException $e) {
             error_log('Error getting citation: ' . $e->getMessage());
             return $response->withStatus($e->getCode())->withJsonError('api.error.researchDataCitationNotFound');
         }
 
-        return $response->withJson(['citation' => $citation], 200);
+        return $response->withJson(['citation' => $citationData['citation']], 200);
     }
 
     public function deleteFile($slimRequest, $response, $args)

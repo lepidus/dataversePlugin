@@ -18,7 +18,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         return $datasetFactory->getDataset();
     }
 
-    public function getCitation(string $persistentId): string
+    public function getCitation(string $persistentId): array
     {
         $dataset = $this->get($persistentId);
 
@@ -35,9 +35,10 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
                 '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>',
                 $citation
             );
-            return preg_replace('/,+.UNF[^]]+]/', '', $citation);
+            
+            return ['datasetIsPublished' => true, 'citation' => preg_replace('/,+.UNF[^]]+]/', '', $citation)];
         } else {
-            return $this->getSWORDCitation($persistentId);
+            return ['datasetIsPublished' => false, 'citation' => $this->getSWORDCitation($persistentId)];
         }
     }
 
