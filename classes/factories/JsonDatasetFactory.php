@@ -17,10 +17,26 @@ class JsonDatasetFactory extends DatasetFactory
         $this->jsonContent = $jsonContent;
     }
 
+    private function getCurrentDatasetVersion()
+    {
+        $datasetVersions = (json_decode($this->jsonContent))->data;
+        $currentVersion = $datasetVersions[0];
+
+        if (count($datasetVersions) > 1) {
+            foreach ($datasetVersions as $version) {
+                if ($version->versionState == 'RELEASED') {
+                    $currentVersion = $version;
+                    break;
+                }
+            }
+        }
+
+        return $currentVersion;
+    }
+
     protected function sanitizeProps(): array
     {
-        $responseData = json_decode($this->jsonContent);
-        $datasetVersion = $responseData->data->latestVersion;
+        $datasetVersion = $this->getCurrentDatasetVersion();
         $datasetData = $datasetVersion->metadataBlocks->citation->fields;
 
         $props = [];

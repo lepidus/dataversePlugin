@@ -28,9 +28,11 @@ class DatasetInformationDispatcher extends DataverseDispatcher
             $dataverseClient = new DataverseClient();
 
             try {
-                $citation = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId(), null);
-                $templateMgr->assign('datasetInfo', $citation);
-                $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
+                $citationData = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId(), null);
+                if ($citationData['datasetIsPublished']) {
+                    $templateMgr->assign('datasetInfo', $citationData['citation']);
+                    $output .= $templateMgr->fetch($this->plugin->getTemplateResource('dataCitation.tpl'));
+                }
             } catch (DataverseException $e) {
                 error_log('Error getting citation: ' . $e->getMessage());
             }
