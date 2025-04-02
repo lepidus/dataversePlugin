@@ -35,7 +35,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
                 '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>',
                 $citation
             );
-            
+
             return ['datasetIsPublished' => true, 'citation' => preg_replace('/,+.UNF[^]]+]/', '', $citation)];
         } else {
             return ['datasetIsPublished' => false, 'citation' => $this->getSWORDCitation($persistentId)];

@@ -18,7 +18,7 @@ class JsonDatasetFactory extends DatasetFactory
     {
         $datasetVersions = (json_decode($this->jsonContent))->data;
         $currentVersion = $datasetVersions[0];
-        
+
         if (count($datasetVersions) > 1) {
             foreach ($datasetVersions as $version) {
                 if ($version->versionState == 'RELEASED') {

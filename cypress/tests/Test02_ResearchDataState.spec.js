@@ -158,7 +158,7 @@ describe('Research data state', function () {
 		cy.get('#datasetTab form button').contains('Save').click();
 		cy.wait(7000);
 
-		cy.waitDatasetTabLoading('workflow');
+		cy.waitDatasetTabLoading('workflow', true);
 
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
 			cy.sendToReview();
