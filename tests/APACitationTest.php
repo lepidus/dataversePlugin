@@ -74,6 +74,7 @@ class APACitationTest extends PKPTestCase
         $this->publication->setData('authors', $this->authors);
         $this->publication->setData('locale', 'pt_BR');
         $this->publication->setData('relationStatus', '1');
+        $this->publication->setData('pub-id::doi', '10.1234/LepidusPreprints.1245');
     }
 
     private function addCurrentPublicationToSubmission(): void
@@ -82,7 +83,7 @@ class APACitationTest extends PKPTestCase
         $this->submission->setData('publications', array($this->publication));
     }
 
-    public function testHasDOIAsMarkup(): void
+    public function testDatasetCitationGetsDoiMarkup(): void
     {
         $expectedDOI = 'https://doi.org/10.12345/FK2/NTF9X8';
         $dataCitation = "Iris Castanheiras, 2021, \"The Rise of The Machine Empire\", $expectedDOI, Demo Dataverse, V1, UNF:6:dEgtc5Z1MSF3u7c+kF4kXg== [fileUNF]";
@@ -100,7 +101,8 @@ class APACitationTest extends PKPTestCase
 
     public function testPreprintCitationIsAPA(): void
     {
-        $expectedSubmissionCitation = 'Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
+        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
 
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
@@ -116,7 +118,8 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Álamo, Á. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Álamo, Á. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
+        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 
@@ -128,7 +131,8 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Fernandes, M. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Fernandes, M. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
+        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 
@@ -140,7 +144,8 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Átila, L. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Átila, L. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
+        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 
@@ -152,7 +157,8 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Sérgio, C. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Sérgio, C. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
+        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 
@@ -163,7 +169,8 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Castanheiras, Â. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Castanheiras, Â. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
+        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 }
