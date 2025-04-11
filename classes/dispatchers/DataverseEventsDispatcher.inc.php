@@ -420,6 +420,18 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return false;
         }
 
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+
+            if ($dataset->isPublished()) {
+                return false;
+            }
+        } catch (DataverseException $e) {
+            error_log('Dataverse error while getting dataset on publication update: ' . $e->getMessage());
+            return false;
+        }
+
         import('plugins.generic.dataverse.classes.APACitation');
         $apaCitation = new APACitation();
 
