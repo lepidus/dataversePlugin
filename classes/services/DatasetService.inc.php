@@ -74,7 +74,7 @@ class DatasetService extends DataverseService
     {
         try {
             $dataverseClient = new DataverseClient();
-            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+            $dataset = $dataverseClient->getDatasetActions()->get($data['persistentId']);
         } catch (DataverseException $e) {
             error_log('Dataverse error while getting dataset on dataset update: ' . $e->getMessage());
             return;
