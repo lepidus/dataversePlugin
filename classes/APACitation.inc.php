@@ -18,11 +18,16 @@ class APACitation
         $publication = $submission->getCurrentPublication();
         $authors =  $publication->getData('authors');
         $submittedDate = new DateTime($submission->getDateSubmitted());
+        $submissionDoi = $this->getSubmissionDoi($submission);
 
         $submissionCitation = $this->createAuthorsCitationAPA($authors) . ' ';
         $submissionCitation .= '(' . date_format($submittedDate, 'Y') . '). ';
         $submissionCitation .= '<em>' . $submission->getLocalizedTitle($submission->getLocale()) . '</em>. ';
         $submissionCitation .= $journal->getLocalizedName();
+
+        if ($submissionDoi) {
+            $submissionCitation .= ". <a href=\"$submissionDoi\">$submissionDoi</a>";
+        }
 
         return $submissionCitation;
     }
@@ -67,23 +72,21 @@ class APACitation
         return $familyName . ', ' . mb_substr($givenName, 0, 1) . ".";
     }
 
-    private function retrievePubIdAttributes(Submission $submission): array
+    private function getSubmissionDoi(Submission $submission): string
     {
+        $publication = $submission->getCurrentPublication();
         $contextId = $submission->getContextId();
-
-        $pubIdAttributes = array();
         $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $contextId);
+
         if (isset($pubIdPlugins['doipubidplugin'])) {
             $doiPlugin = $pubIdPlugins['doipubidplugin'];
+            $pubId = $publication->getStoredPubId($doiPlugin->getPubIdType());
 
-            $pubId = $submission->getStoredPubId($doiPlugin->getPubIdType());
             if (isset($pubId)) {
-                $pubIdAttributes['holdingsURI'] = $doiPlugin->getResolvingURL($contextId, $pubId);
-                $pubIdAttributes['agency'] = $doiPlugin->getDisplayName();
-                $pubIdAttributes['IDNo'] = $pubId;
+                return $doiPlugin->getResolvingURL($contextId, $pubId);
             }
         }
 
-        return $pubIdAttributes;
+        return '';
     }
 }
