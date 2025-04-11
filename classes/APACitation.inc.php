@@ -75,18 +75,20 @@ class APACitation
     private function getSubmissionDoi(Submission $submission): string
     {
         $publication = $submission->getCurrentPublication();
-        $contextId = $submission->getContextId();
-        $pubIdPlugins = PluginRegistry::loadCategory('pubIds', true, $contextId);
+        $doi = $publication->getStoredPubId('doi');
 
-        if (isset($pubIdPlugins['doipubidplugin'])) {
-            $doiPlugin = $pubIdPlugins['doipubidplugin'];
-            $pubId = $publication->getStoredPubId($doiPlugin->getPubIdType());
-
-            if (isset($pubId)) {
-                return $doiPlugin->getResolvingURL($contextId, $pubId);
-            }
+        if ($doi) {
+            return 'https://doi.org/' . $this->doiURLEncode($doi);
         }
 
         return '';
+    }
+
+    private function doiURLEncode($pubId)
+    {
+        $search = ['%', '"', '#', ' ', '<', '>', '{'];
+        $replace = ['%25', '%22', '%23', '%20', '%3c', '%3e', '%7b'];
+        $pubId = str_replace($search, $replace, $pubId);
+        return $pubId;
     }
 }
