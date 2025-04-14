@@ -30,11 +30,16 @@ class APACitation
         $context = Application::getContextDAO()->getById($submission->getData('contextId'));
         $authors =  $publication->getData('authors')->toArray();
         $submittedDate = new DateTime($submission->getData('dateSubmitted'));
+        $doiObject = $publication->getData('doiObject');
 
         $submissionCitation = $this->createAuthorsCitationAPA($authors) . ' ';
         $submissionCitation .= '(' . date_format($submittedDate, 'Y') . '). ';
         $submissionCitation .= '<em>' . $publication->getLocalizedTitle($this->locale) . '</em>. ';
         $submissionCitation .= $context->getLocalizedName();
+        if ($doiObject) {
+            $doiUrl = $doiObject->getResolvingUrl();
+            $submissionCitation .= ". <a href=\"$doiUrl\">$doiUrl</a>";
+        }
 
         return $submissionCitation;
     }

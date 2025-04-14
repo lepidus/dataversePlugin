@@ -83,8 +83,13 @@ class DatasetService extends DataverseService
 
     public function update(array $data): void
     {
-        $dataverseClient = new DataverseClient();
-        $dataset = $dataverseClient->getDatasetActions()->get($data['persistentId']);
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($data['persistentId']);
+        } catch (DataverseException $e) {
+            error_log('Dataverse error while getting dataset on dataset update: ' . $e->getMessage());
+            return;
+        }
 
         if ($dataset->isPublished()) {
             return;
