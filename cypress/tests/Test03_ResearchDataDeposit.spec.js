@@ -388,6 +388,7 @@ describe('Research data deposit', function () {
 
 		cy.get('button[aria-controls="dataStatement"]').click();
 		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('not.be.checked');
+		cy.logout();
 
 		cy.visit('localhost:8025');
 		cy.contains('Research data delete notification').click();
