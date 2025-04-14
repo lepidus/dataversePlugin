@@ -379,6 +379,8 @@ describe('Research data deposit', function () {
 
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.contains('Delete research data').click();
+		cy.getTinyMceContent('deleteDataset-deleteMessage-control')
+			.should('contain', 'The research data from the manuscript submission "' + submission.title + '" has been removed');
 		cy.setTinyMceContent('deleteDataset-deleteMessage-control', 'Your research data has been deleted.');
 		cy.get('#deleteDataset-deleteMessage-control').click();
 		cy.get('[data-modal="deleteDataset"] button').contains('Delete and send email').click();
@@ -386,6 +388,10 @@ describe('Research data deposit', function () {
 
 		cy.get('button[aria-controls="dataStatement"]').click();
 		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('not.be.checked');
+
+		cy.visit('localhost:8025');
+		cy.contains('Research data delete notification').click();
+		cy.contains('Your research data has been deleted.');
 	});
 
 	it('Check editor can publish research data', function () {
