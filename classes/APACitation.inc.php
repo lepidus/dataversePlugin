@@ -18,16 +18,11 @@ class APACitation
         $publication = $submission->getCurrentPublication();
         $authors =  $publication->getData('authors');
         $submittedDate = new DateTime($submission->getDateSubmitted());
-        $submissionDoi = $this->getSubmissionDoi($submission);
 
         $submissionCitation = $this->createAuthorsCitationAPA($authors) . ' ';
         $submissionCitation .= '(' . date_format($submittedDate, 'Y') . '). ';
         $submissionCitation .= '<em>' . $submission->getLocalizedTitle($submission->getLocale()) . '</em>. ';
         $submissionCitation .= $journal->getLocalizedName();
-
-        if ($submissionDoi) {
-            $submissionCitation .= ". <a href=\"$submissionDoi\">$submissionDoi</a>";
-        }
 
         return $submissionCitation;
     }
@@ -70,25 +65,5 @@ class APACitation
         }
 
         return $familyName . ', ' . mb_substr($givenName, 0, 1) . ".";
-    }
-
-    private function getSubmissionDoi(Submission $submission): string
-    {
-        $publication = $submission->getCurrentPublication();
-        $doi = $publication->getStoredPubId('doi');
-
-        if ($doi) {
-            return 'https://doi.org/' . $this->doiURLEncode($doi);
-        }
-
-        return '';
-    }
-
-    private function doiURLEncode($pubId)
-    {
-        $search = ['%', '"', '#', ' ', '<', '>', '{'];
-        $replace = ['%25', '%22', '%23', '%20', '%3c', '%3e', '%7b'];
-        $pubId = str_replace($search, $replace, $pubId);
-        return $pubId;
     }
 }
