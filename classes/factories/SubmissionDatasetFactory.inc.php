@@ -82,7 +82,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         return $userName . ' (via ' . $contextName . ')';
     }
 
-    private function getDatasetRelatedPublication($publication): DatasetRelatedPublication
+    public function getDatasetRelatedPublication($publication): DatasetRelatedPublication
     {
         import('plugins.generic.dataverse.classes.APACitation');
         $apaCitation = new APACitation();
