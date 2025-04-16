@@ -4,6 +4,7 @@ import('plugins.generic.dataverse.classes.factories.DatasetFactory');
 import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
 import('plugins.generic.dataverse.classes.entities.DatasetContact');
 import('plugins.generic.dataverse.classes.entities.DatasetFile');
+import('plugins.generic.dataverse.classes.entities.DatasetRelatedPublication');
 
 class JsonDatasetFactory extends DatasetFactory
 {
@@ -91,7 +92,19 @@ class JsonDatasetFactory extends DatasetFactory
                     }, $metadata->value);
                     break;
                 case 'publication':
-                    $props['pubCitation'] = $metadata->value[0]->publicationCitation->value;
+                    $publication = $metadata->value[0];
+                    $props['relatedPublication'] = new DatasetRelatedPublication(
+                        $publication->publicationCitation->value,
+                        isset($publication->publicationIDType->value) ?
+                            $publication->publicationIDType->value
+                            : null,
+                        isset($publication->publicationIDNumber->value) ?
+                            $publication->publicationIDNumber->value
+                            : null,
+                        isset($publication->publicationURL->value) ?
+                            $publication->publicationURL->value
+                            : null
+                    );
                     break;
                 default:
                     break;

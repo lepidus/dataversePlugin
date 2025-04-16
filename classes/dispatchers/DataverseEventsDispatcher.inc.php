@@ -420,11 +420,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return false;
         }
 
-        import('plugins.generic.dataverse.classes.APACitation');
-        $apaCitation = new APACitation();
+        import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
+        $datasetFactory = new SubmissionDatasetFactory($submission);
 
         $data['persistentId'] = $study->getPersistentId();
-        $data['pubCitation'] = $apaCitation->getFormattedCitationBySubmission($submission);
+        $data['relatedPublication'] = $datasetFactory->getDatasetRelatedPublication($publication);
 
         $datasetService = new DatasetService();
         $datasetService->update($data);

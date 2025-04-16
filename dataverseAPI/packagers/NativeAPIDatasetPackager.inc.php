@@ -112,7 +112,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
                 'multiple' => false,
                 'typeClass' => 'primitive'
             ],
-            'pubCitation' => [
+            'relatedPublication' => [
                 'typeName' => 'publication',
                 'multiple' => true,
                 'typeClass' => 'compound'
@@ -141,6 +141,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
     private function createMultiCompoundMetadata(array $metadataField, object $object): array
     {
         $objectData = $object->getAllData();
+        $controlledVocabMetadata = ['identifierScheme', 'IDType'];
 
         $metadataValue = [];
         foreach ($objectData as $attr => $value) {
@@ -148,7 +149,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
                 continue;
             }
 
-            $metadataTypeClass = $attr == 'identifierScheme' ? 'controlledVocabulary' : 'primitive';
+            $metadataTypeClass = in_array($attr, $controlledVocabMetadata) ? 'controlledVocabulary' : 'primitive';
             $metadataValue = array_merge($metadataValue, [
                 $metadataField['typeName'] . ucfirst($attr) => [
                     'typeName' =>  $metadataField['typeName'] . ucfirst($attr),
