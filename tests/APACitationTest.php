@@ -120,8 +120,7 @@ class APACitationTest extends PKPTestCase
 
     public function testPreprintCitationIsApa(): void
     {
-        $expectedSubmissionCitation = 'Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
-        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
+        $expectedSubmissionCitation = 'Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
 
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
@@ -138,8 +137,7 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Álamo, Á. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
-        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
+        $expectedSubmissionCitation = 'Álamo, Á. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
 
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
@@ -153,8 +151,7 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Fernandes, M. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
-        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
+        $expectedSubmissionCitation = 'Fernandes, M. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
 
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
@@ -168,8 +165,7 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Átila, L. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
-        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
+        $expectedSubmissionCitation = 'Átila, L. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
 
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
@@ -183,8 +179,7 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Sérgio, C. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
-        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
+        $expectedSubmissionCitation = 'Sérgio, C. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
 
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
@@ -197,8 +192,7 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Castanheiras, Â. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus.';
-        $expectedSubmissionCitation .= ' <a href="https://doi.org/10.1234/LepidusPreprints.1245">https://doi.org/10.1234/LepidusPreprints.1245</a>';
+        $expectedSubmissionCitation = 'Castanheiras, Â. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
 
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
