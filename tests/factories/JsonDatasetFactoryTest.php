@@ -24,7 +24,10 @@ class JsonDatasetFactoryTest extends PKPTestCase
         $this->assertEquals('Test, Contact', $dataset->getContact()->getName());
         $this->assertEquals('test@example.com', $dataset->getContact()->getEmail());
         $this->assertEquals('Dataverse', $dataset->getContact()->getAffiliation());
-        $this->assertEquals('Related publication', $dataset->getPubCitation());
+        $this->assertEquals('User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems', $dataset->getRelatedPublication()->getCitation());
+        $this->assertEquals('doi', $dataset->getRelatedPublication()->getIdType());
+        $this->assertEquals('10.1234/LepidusPreprints.1245', $dataset->getRelatedPublication()->getIdNumber());
+        $this->assertEquals('https://doi.org/10.1234/LepidusPreprints.1245', $dataset->getRelatedPublication()->getUrl());
         $this->assertEquals('Test, Depositor', $dataset->getDepositor());
         $this->assertEquals('RELEASED', $dataset->getVersionState());
 
