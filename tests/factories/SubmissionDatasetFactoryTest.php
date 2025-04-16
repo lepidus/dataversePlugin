@@ -4,6 +4,7 @@ use PKP\tests\PKPTestCase;
 use APP\submission\Submission;
 use APP\publication\Publication;
 use APP\author\Author;
+use PKP\doi\Doi;
 use PKP\user\User;
 use APP\core\Request;
 use PKP\core\Registry;
@@ -19,6 +20,7 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
 use APP\plugins\generic\dataverse\classes\entities\DatasetAuthor;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
+use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\DAO as DraftDatasetFileDao;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\Repository as DraftDatasetFileRepo;
@@ -70,8 +72,8 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
             ->setMethods(['getUser'])
             ->getMock();
         $mockRequest->expects($this->any())
-                    ->method('getUser')
-                    ->will($this->returnValue($this->user));
+            ->method('getUser')
+            ->will($this->returnValue($this->user));
         Registry::set('request', $mockRequest);
     }
 
@@ -166,6 +168,9 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $publication->setData('title', 'The Rise of The Machine Empire');
         $publication->setData('abstract', 'An example abstract');
         $publication->setData('keywords', ['Modern History'], $this->locale);
+        $doiObject = new Doi();
+        $doiObject->setData('doi', '10.1234/LepidusPreprints.1245');
+        $publication->setData('doiObject', $doiObject);
 
         $author->setData('publicationId', $publication->getId());
         $publication->setData('submissionId', $submission->getId());
@@ -201,7 +206,14 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         . ' (via ' . $this->journal->getLocalizedName() . ')';
 
         $apaCitation = new APACitation();
-        $datasetPubCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
+        $submissionCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
+        $doiObject = $this->publication->getData('doiObject');
+        $datasetRelatedPublication = new DatasetRelatedPublication(
+            $submissionCitation,
+            'doi',
+            $doiObject->getDoi(),
+            $doiObject->getResolvingUrl()
+        );
 
         $datasetFile = new DatasetFile();
         $datasetFile->setOriginalFileName($this->temporaryFile->getOriginalFileName());
@@ -217,7 +229,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $expectedDataset->setAuthors([$this->author->getId() => $datasetAuthor]);
         $expectedDataset->setContact($datasetContact);
         $expectedDataset->setDepositor($datasetDepositor);
-        $expectedDataset->setPubCitation($datasetPubCitation);
+        $expectedDataset->setRelatedPublication($datasetRelatedPublication);
         $expectedDataset->setFiles([$this->draftDatasetFile->getId() => $datasetFile]);
 
         $this->assertEquals($expectedDataset, $dataset);

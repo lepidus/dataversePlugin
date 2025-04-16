@@ -13,6 +13,7 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetAuthor;
 use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
+use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
 use APP\plugins\generic\dataverse\classes\APACitation;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
@@ -48,7 +49,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['authors'] = array_map([$this, 'createDatasetAuthor'], $authors);
         $props['contact'] = $this->createDatasetContact();
         $props['depositor'] = $this->getDatasetDepositor();
-        $props['pubCitation'] = $this->getDatasetPubCitation();
+        $props['relatedPublication'] = $this->getDatasetRelatedPublication($publication);
         $props['files'] = $this->getDatasetFiles();
 
         return $props;
@@ -98,10 +99,22 @@ class SubmissionDatasetFactory extends DatasetFactory
         return $userName . ' (via ' . $contextName . ')';
     }
 
-    private function getDatasetPubCitation(): string
+    private function getDatasetRelatedPublication($publication): DatasetRelatedPublication
     {
         $apaCitation = new APACitation();
-        return $apaCitation->getFormattedCitationBySubmission($this->submission);
+        $submissionCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
+        $doiObject = $publication->getData('doiObject');
+
+        if (empty($doiObject)) {
+            return new DatasetRelatedPublication($submissionCitation, null, null, null);
+        }
+
+        return new DatasetRelatedPublication(
+            $submissionCitation,
+            'doi',
+            $doiObject->getDoi(),
+            $doiObject->getResolvingUrl()
+        );
     }
 
     private function getDatasetFiles(): array
