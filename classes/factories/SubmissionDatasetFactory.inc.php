@@ -5,6 +5,7 @@ import('plugins.generic.dataverse.classes.entities.Dataset');
 import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
 import('plugins.generic.dataverse.classes.entities.DatasetContact');
 import('plugins.generic.dataverse.classes.entities.DatasetFile');
+import('plugins.generic.dataverse.classes.entities.DatasetRelatedPublication');
 
 class SubmissionDatasetFactory extends DatasetFactory
 {
@@ -30,7 +31,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['authors'] = array_map([$this, 'createDatasetAuthor'], $authors);
         $props['contact'] = $this->createDatasetContact();
         $props['depositor'] = $this->getDatasetDepositor();
-        $props['pubCitation'] = $this->getDatasetPubCitation();
+        $props['relatedPublication'] = $this->getDatasetRelatedPublication($publication);
         $props['files'] = $this->getDatasetFiles();
 
         return $props;
@@ -81,11 +82,30 @@ class SubmissionDatasetFactory extends DatasetFactory
         return $userName . ' (via ' . $contextName . ')';
     }
 
-    private function getDatasetPubCitation(): string
+    private function getDatasetRelatedPublication($publication): DatasetRelatedPublication
     {
         import('plugins.generic.dataverse.classes.APACitation');
         $apaCitation = new APACitation();
-        return $apaCitation->getFormattedCitationBySubmission($this->submission);
+        $submissionCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
+        $submissionDoi = $publication->getStoredPubId('doi');
+
+        if (empty($submissionDoi)) {
+            return new DatasetRelatedPublication($submissionCitation, null, null, null);
+        }
+
+        return new DatasetRelatedPublication(
+            $submissionCitation,
+            'doi',
+            $submissionDoi,
+            "https://doi.org/" . $this->doiURLEncode($submissionDoi)
+        );
+    }
+
+    private function doiURLEncode($doi)
+    {
+        $search = ['%', '"', '#', ' ', '<', '>', '{'];
+        $replace = ['%25', '%22', '%23', '%20', '%3c', '%3e', '%7b'];
+        return str_replace($search, $replace, $doi);
     }
 
     private function getDatasetFiles(): array
