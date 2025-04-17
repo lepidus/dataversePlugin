@@ -222,7 +222,7 @@ class DatasetHandler extends APIHandler
             $depositInfo = $datasetService->deposit($submission, $dataset);
             if ($depositInfo['status'] != 'Success') {
                 return $response->withStatus(403)->withJsonError(
-                    $depositInfo['message'],
+                    $depositInfo['message'].'.author',
                     $depositInfo['messageParams']
                 );
             }
