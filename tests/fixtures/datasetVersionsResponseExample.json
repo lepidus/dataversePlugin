@@ -325,7 +325,25 @@
                     "typeName": "publicationCitation",
                     "multiple": false,
                     "typeClass": "primitive",
-                    "value": "Related publication"
+                    "value": "User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems"
+                  },
+                  "publicationIDType": {
+                    "typeName": "publicationIDType",
+                    "multiple": false,
+                    "typeClass": "controlledVocabulary",
+                    "value": "doi"
+                  },
+                  "publicationIDNumber": {
+                    "typeName": "publicationIDNumber",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "10.1234/LepidusPreprints.1245"
+                  },
+                  "publicationURL": {
+                    "typeName": "publicationURL",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "https://doi.org/10.1234/LepidusPreprints.1245"
                   }
                 }
               ]
