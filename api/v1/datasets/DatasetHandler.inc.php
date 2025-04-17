@@ -218,15 +218,13 @@ class DatasetHandler extends APIHandler
         $dataset->setLicense($requestParams['datasetLicense']);
 
         if (!empty($dataset->getFiles())) {
-            try {
-                $datasetService = new DatasetService();
-                $datasetService->deposit($submission, $dataset);
-            } catch (DataverseException $e) {
-                return $response->withStatus(403)
-                    ->withJsonError(
-                        'plugins.generic.dataverse.error.depositFailed',
-                        ['error' => $e->getMessage()]
-                    );
+            $datasetService = new DatasetService();
+            $depositInfo = $datasetService->deposit($submission, $dataset);
+            if ($depositInfo['status'] != 'Success') {
+                return $response->withStatus(403)->withJsonError(
+                    $depositInfo['message'].'.author',
+                    $depositInfo['messageParams']
+                );
             }
         }
 

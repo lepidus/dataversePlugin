@@ -119,15 +119,22 @@ msgstr "El asunto de los datos de investigación es obligatorio.<br>"
 msgid "plugins.generic.dataverse.error.readmeFileRequired"
 msgstr "Es obligatorio enviar un archivo README, en formato PDF o TXT, que acompañe a los archivos de datos de la investigación"
 
-msgid "plugins.generic.dataverse.error.depositFailedOnSubmission"
-msgstr "Error al depositar los datos de investigación en Dataverse: {$error}<br>"
-"Por favor, elija otra opción de declaración de datos o intente nuevamente más tarde."
-
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro al obtener datos de investigación en Dataverse: {$error}"
 
-msgid "plugins.generic.dataverse.error.depositFailed"
+msgid "plugins.generic.dataverse.error.datasetDeposit"
 msgstr "Erro al depositar datos de investigación en Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.datasetDeposit.author"
+msgstr "Error al depositar los datos de investigación en Dataverse: {$error}<br>"
+"Por favor, elija otra opción de declaración de datos o intente nuevamente más tarde."
+
+msgid "plugins.generic.dataverse.error.datasetFileDeposit"
+msgstr "Erro al depositar lo archivo de datos \"{$fileName}\" en Dataverse: {$error}"
+
+msgid "plugins.generic.dataverse.error.datasetFileDeposit.author"
+msgstr "Erro al depositar lo archivo de datos \"{$fileName}\" en Dataverse: {$error}<br>"
+"Por favor, compruebe si hay algún problema con el archivo y sustitúyalo si es necesario"
 
 msgid "plugins.generic.dataverse.error.updateFailed"
 msgstr "Erro al actualizar datos de investigación en Dataverse: {$error}"
