@@ -99,10 +99,10 @@ class SubmissionDatasetFactory extends DatasetFactory
         return $userName . ' (via ' . $contextName . ')';
     }
 
-    private function getDatasetRelatedPublication($publication): DatasetRelatedPublication
+    public function getDatasetRelatedPublication($publication): DatasetRelatedPublication
     {
         $apaCitation = new APACitation();
-        $submissionCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
+        $submissionCitation = $apaCitation->getFormattedCitationBySubmission($this->submission, $publication);
         $doiObject = $publication->getData('doiObject');
 
         if (empty($doiObject)) {
