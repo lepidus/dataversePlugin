@@ -81,13 +81,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         }
 
         $datasetService = new DatasetService();
-        try {
-            $datasetService->deposit($submission, $dataset);
-        } catch (DataverseException $e) {
-            $stepForm->addError(
-                'depositError',
-                __('plugins.generic.dataverse.error.depositFailedOnSubmission', ['error' => $e->getMessage()])
-            );
+        $depositInfo = $datasetService->deposit($submission, $dataset);
+        if ($depositInfo['status'] != 'Success') {
+            $stepForm->addError('depositError', __($depositInfo['message'], $depositInfo['messageParams']));
             $stepForm->addErrorField('depositError');
         }
 

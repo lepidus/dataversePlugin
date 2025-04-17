@@ -6,30 +6,47 @@ import('plugins.generic.dataverse.classes.entities.Dataset');
 
 class DatasetService extends DataverseService
 {
-    public function deposit(Submission $submission, Dataset $dataset): void
+    public function deposit(Submission $submission, Dataset $dataset): array
     {
         $request = Application::get()->getRequest();
         $contextId = $request->getContext()->getId();
+        $dataverseClient = new DataverseClient();
 
         try {
-            $dataverseClient = new DataverseClient();
             $datasetIdentifier = $dataverseClient->getDatasetActions()->create($dataset);
+        } catch (DataverseException $e) {
+            $this->registerEventLog(
+                $submission,
+                'plugins.generic.dataverse.error.datasetDeposit',
+                ['error' => $e->getMessage()]
+            );
+            return [
+                'status' => 'Error',
+                'message' => 'plugins.generic.dataverse.error.datasetDeposit',
+                'messageParams' => ['error' => $e->getMessage()]
+            ];
+        }
 
-            foreach ($dataset->getFiles() as $file) {
+        foreach ($dataset->getFiles() as $file) {
+            try {
                 $dataverseClient->getDatasetFileActions()->add(
                     $datasetIdentifier->getPersistentId(),
                     $file->getOriginalFileName(),
                     $file->getPath()
                 );
+            } catch (DataverseException $e) {
+                $this->registerEventLog(
+                    $submission,
+                    'plugins.generic.dataverse.error.datasetFileDeposit',
+                    ['error' => $e->getMessage()]
+                );
+                $dataverseClient->getDatasetActions()->delete($datasetIdentifier->getPersistentId());
+                return [
+                    'status' => 'Error',
+                    'message' => 'plugins.generic.dataverse.error.datasetFileDeposit',
+                    'messageParams' => ['error' => $e->getMessage(), 'fileName' => $file->getOriginalFileName()]
+                ];
             }
-        } catch (DataverseException $e) {
-            $this->registerEventLog(
-                $submission,
-                'plugins.generic.dataverse.error.depositFailed',
-                ['error' => $e->getMessage()]
-            );
-            error_log('Dataverse API error: ' . $e->getMessage());
-            throw $e;
         }
 
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
@@ -68,6 +85,8 @@ class DatasetService extends DataverseService
         );
 
         DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId($submission->getId());
+
+        return ['status' => 'Success'];
     }
 
     public function update(array $data): void
@@ -165,7 +184,6 @@ class DatasetService extends DataverseService
 
         try {
             $dataverseClient = new DataverseClient();
-
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
 
             if ($dataset->isPublished()) {
