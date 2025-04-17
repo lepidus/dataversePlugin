@@ -12,12 +12,12 @@ use Illuminate\Support\Facades\Event;
 use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
 use APP\plugins\generic\dataverse\api\v1\dataverse\DataverseHandler;
 use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileHandler;
-use APP\plugins\generic\dataverse\classes\APACitation;
 use APP\plugins\generic\dataverse\classes\components\forms\SelectDataFilesForReviewForm;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\observers\listeners\DatasetDepositOnSubmission;
 use APP\plugins\generic\dataverse\classes\observers\listeners\ProcessDataverseDecisionsActions;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
@@ -328,9 +328,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return false;
         }
 
-        $apaCitation = new APACitation();
+        $datasetFactory = new SubmissionDatasetFactory($submission);
         $data['persistentId'] = $study->getPersistentId();
-        $data['pubCitation'] = $apaCitation->getFormattedCitationBySubmission($submission, $publication);
+        $data['relatedPublication'] = $datasetFactory->getDatasetRelatedPublication($publication);
 
         $datasetService = new DatasetService();
         $datasetService->update($data);

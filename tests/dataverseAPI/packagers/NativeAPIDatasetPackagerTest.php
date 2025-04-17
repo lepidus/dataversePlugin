@@ -6,6 +6,7 @@ use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
+use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 
 class NativeAPIDatasetPackagerTest extends PKPTestCase
 {
@@ -68,22 +69,46 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $this->assertContains($descriptionMetadata, $this->packager->getDatasetMetadata());
     }
 
-    public function testNativeApiPackagerBuildsPubCitationMetadata(): void
+    public function testNativeApiPackagerBuildsRelatedPublicationMetadata(): void
     {
+        $relatedPublication = new DatasetRelatedPublication(
+            'User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems',
+            'doi',
+            '10.1234/LepidusPreprints.1245',
+            'https://doi.org/10.1234/LepidusPreprints.1245'
+        );
         $dataset = new Dataset();
-        $dataset->setPubCitation('User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems');
+        $dataset->setRelatedPublication($relatedPublication);
 
         $this->packager = new NativeAPIDatasetPackager($dataset);
         $this->packager->loadPackageData();
 
-        $publicationMetadata = $this->packager->getMetadataField('pubCitation');
+        $publicationMetadata = $this->packager->getMetadataField('relatedPublication');
         $publicationMetadata['value'] = [
             [
                 'publicationCitation' => [
                     'typeName' => 'publicationCitation',
                     'multiple' => false,
                     'typeClass' => 'primitive',
-                    'value' => $dataset->getPubCitation()
+                    'value' => $relatedPublication->getCitation()
+                ],
+                'publicationIDType' => [
+                    'typeName' => 'publicationIDType',
+                    'multiple' => false,
+                    'typeClass' => 'controlledVocabulary',
+                    'value' => $relatedPublication->getIdType()
+                ],
+                'publicationIDNumber' => [
+                    'typeName' => 'publicationIDNumber',
+                    'multiple' => false,
+                    'typeClass' => 'primitive',
+                    'value' => $relatedPublication->getIdNumber()
+                ],
+                'publicationURL' => [
+                    'typeName' => 'publicationURL',
+                    'multiple' => false,
+                    'typeClass' => 'primitive',
+                    'value' => $relatedPublication->getUrl()
                 ]
             ]
         ];
