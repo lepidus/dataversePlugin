@@ -167,7 +167,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             'assocType' => Application::ASSOC_TYPE_SUBMISSION,
             'assocId' => $submission->getId(),
             'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_METADATA_UPDATE,
-            'message' => 'plugins.generic.dataverse.error.depositFailed',
+            'message' => 'plugins.generic.dataverse.error.datasetDeposit',
             'isTranslated' => false,
             'dateLogged' => Core::getCurrentDate(),
         ]);
@@ -185,7 +185,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
         $depositErrorsCount = $this->getQueryBuilder()
             ->filterByContexts($this->context->getId())
-            ->countDatasetsWithError(['plugins.generic.dataverse.error.depositFailed']);
+            ->countDatasetsWithError(['plugins.generic.dataverse.error.datasetDeposit']);
 
         $publishErrorsCount = $this->getQueryBuilder()
             ->filterByContexts($this->context->getId())

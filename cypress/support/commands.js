@@ -32,4 +32,5 @@ Cypress.Commands.add('waitDataStatementTabLoading', function () {
 Cypress.Commands.add('waitDatasetTabLoading', function () {
 	cy.intercept('GET', /\/api\/v1\/datasets\/\d+\/citation/).as('getDatasetRequest');
 	cy.wait('@getDatasetRequest', {timeout:10000});
+	cy.wait(1000);
 });

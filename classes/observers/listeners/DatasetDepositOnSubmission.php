@@ -37,10 +37,9 @@ class DatasetDepositOnSubmission
         }
 
         $datasetService = new DatasetService();
-        try {
-            $datasetService->deposit($submission, $dataset);
-        } catch (DataverseException $e) {
-            error_log('Dataverse API error: ' . $e->getMessage());
+        $depositInfo = $datasetService->deposit($submission, $dataset);
+        if ($depositInfo['status'] != 'Success') {
+            error_log('Dataverse API error: ' . $depositInfo['messageParams']['error']);
         }
     }
 }
