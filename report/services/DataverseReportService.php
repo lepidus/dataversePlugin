@@ -37,7 +37,11 @@ class DataverseReportService
                 'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
             ]),
             'datasetsWithDepositError' => $this->countDatasetsWithError(
-                ['plugins.generic.dataverse.error.depositFailed'],
+                [
+                    'plugins.generic.dataverse.error.depositFailed',
+                    'plugins.generic.dataverse.error.datasetDeposit',
+                    'plugins.generic.dataverse.error.datasetFileDeposit'
+                ],
                 ['contextIds' => [$contextId],]
             ),
             'datasetsWithPublishError' => $this->countDatasetsWithError(
