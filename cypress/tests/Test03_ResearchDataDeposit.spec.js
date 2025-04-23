@@ -124,8 +124,8 @@ describe('Research data deposit', function () {
 		cy.get('form[id=submitStep4Form] button:contains("Finish Submission")').click();
 		cy.wait(1000);
 		cy.get('button.pkpModalConfirmButton').click();
-
-		cy.waitJQuery();
+		cy.wait(7000);
+		
 		cy.get('h2:contains("Submission complete")');
 
 		cy.contains('Review this submission').click();
@@ -379,6 +379,11 @@ describe('Research data deposit', function () {
 
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.contains('Delete research data').click();
+		cy.contains('Send an email notification to the dataset contact');
+		cy.contains('Do not send an email notification');
+		cy.getTinyMceContent('deleteDataset-deleteMessage-control')
+			.should('contain', 'The research data from the manuscript submission "' + submission.title + '" has been removed');
+
 		cy.setTinyMceContent('deleteDataset-deleteMessage-control', 'Your research data has been deleted.');
 		cy.get('#deleteDataset-deleteMessage-control').click();
 		cy.get('[data-modal="deleteDataset"] button').contains('Delete and send email').click();

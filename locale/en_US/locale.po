@@ -211,6 +211,12 @@ msgstr "Files"
 msgid "plugins.generic.dataverse.researchData.delete"
 msgstr "Delete research data"
 
+msgid "plugins.generic.dataverse.researchData.delete.sendEmail.yes"
+msgstr "Send an email notification to the dataset contact"
+
+msgid "plugins.generic.dataverse.researchData.delete.sendEmail.no"
+msgstr "Do not send an email notification"
+
 msgid "plugins.generic.dataverse.researchData.delete.emailNotification"
 msgstr "Email notification"
 
