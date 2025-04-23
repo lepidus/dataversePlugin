@@ -27,7 +27,8 @@
         </template>
     </pkp-header>
     <span class="value">
-        <p v-html="datasetCitation"></p>
+        <p id="loadingDatasetCitation" v-if="dataset && !datasetCitation">{{ loadingCitationMsg }}</p>
+        <p id="datasetCitation" v-if="datasetCitation" v-html="datasetCitation"></p>
     </span>
     <tabs label="Dataset data">
         <tab
