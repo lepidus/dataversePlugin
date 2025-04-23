@@ -81,13 +81,9 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         }
 
         $datasetService = new DatasetService();
-        try {
-            $datasetService->deposit($submission, $dataset);
-        } catch (DataverseException $e) {
-            $stepForm->addError(
-                'depositError',
-                __('plugins.generic.dataverse.error.depositFailedOnSubmission', ['error' => $e->getMessage()])
-            );
+        $depositInfo = $datasetService->deposit($submission, $dataset);
+        if ($depositInfo['status'] != 'Success') {
+            $stepForm->addError('depositError', __($depositInfo['message'].'.author', $depositInfo['messageParams']));
             $stepForm->addErrorField('depositError');
         }
 
@@ -420,11 +416,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return false;
         }
 
-        import('plugins.generic.dataverse.classes.APACitation');
-        $apaCitation = new APACitation();
+        import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
+        $datasetFactory = new SubmissionDatasetFactory($submission);
 
         $data['persistentId'] = $study->getPersistentId();
-        $data['pubCitation'] = $apaCitation->getFormattedCitationBySubmission($submission);
+        $data['relatedPublication'] = $datasetFactory->getDatasetRelatedPublication($publication);
 
         $datasetService = new DatasetService();
         $datasetService->update($data);

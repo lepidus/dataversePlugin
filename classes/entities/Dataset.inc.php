@@ -95,14 +95,14 @@ class Dataset extends DataObject
         $this->setData('keywords', $keywords);
     }
 
-    public function getPubCitation(): ?string
+    public function getRelatedPublication(): ?DatasetRelatedPublication
     {
-        return $this->getData('pubCitation');
+        return $this->getData('relatedPublication');
     }
 
-    public function setPubCitation(string $pubCitation): void
+    public function setRelatedPublication(DatasetRelatedPublication $relatedPublication): void
     {
-        $this->setData('pubCitation', $pubCitation);
+        $this->setData('relatedPublication', $relatedPublication);
     }
 
     public function getFiles(): ?array
