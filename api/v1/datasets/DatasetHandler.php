@@ -322,7 +322,8 @@ class DatasetHandler extends APIHandler
         $deleteMessage = null;
 
         $requestParams = $slimRequest->getParsedBody();
-        if (isset($requestParams['deleteMessage'])) {
+        $sendDeleteEmail = (int) $requestParams['sendDeleteEmail'];
+        if ($sendDeleteEmail == 1 && isset($requestParams['deleteMessage'])) {
             $deleteMessage = $requestParams['deleteMessage'];
         }
 

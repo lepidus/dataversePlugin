@@ -246,6 +246,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetTab-button').click();
         
         cy.contains('Delete research data').click();
+        cy.contains('Send an email notification to the dataset contact');
+		cy.contains('Do not send an email notification');
         cy.getTinyMceContent('deleteDataset-deleteMessage-control')
             .should('include', 'The research data from the manuscript submission "' + submissionData.title + '" has been removed');
 		cy.get('.modal__panel button:contains("Delete and send email")').click();
