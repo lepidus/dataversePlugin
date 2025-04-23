@@ -379,7 +379,7 @@ describe('Research data deposit', function () {
 
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.contains('Delete research data').click();
-		cy.contains('Send an email notification to the author(s)');
+		cy.contains('Send an email notification to the dataset contact');
 		cy.contains('Do not send an email notification');
 		cy.getTinyMceContent('deleteDataset-deleteMessage-control')
 			.should('contain', 'The research data from the manuscript submission "' + submission.title + '" has been removed');

@@ -207,6 +207,12 @@ msgstr "Arquivos"
 msgid "plugins.generic.dataverse.researchData.delete"
 msgstr "Excluir dados de pesquisa"
 
+msgid "plugins.generic.dataverse.researchData.delete.sendEmail.yes"
+msgstr "Enviar uma notificação por e-mail para o contato do conjunto de dados"
+
+msgid "plugins.generic.dataverse.researchData.delete.sendEmail.no"
+msgstr "Não enviar uma notificação por e-mail"
+
 msgid "plugins.generic.dataverse.researchData.delete.emailNotification"
 msgstr "Notificação por e-mail"
 
