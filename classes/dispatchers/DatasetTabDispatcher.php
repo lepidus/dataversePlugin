@@ -282,9 +282,19 @@ class DatasetTabDispatcher extends DataverseDispatcher
         ])->addGroup([
             'id' => 'default',
             'pageId' => 'default',
-        ])->addField(new \PKP\components\forms\FieldRichTextarea('deleteMessage', [
+        ])->addField(new \PKP\components\forms\FieldOptions('sendDeleteEmail', [
+            'label' => __('common.sendEmail'),
+            'type' => 'radio',
+            'options' => [
+                ['value' => 1, 'label' => __('plugins.generic.dataverse.researchData.delete.sendEmail.yes')],
+                ['value' => 0, 'label' => __('plugins.generic.dataverse.researchData.delete.sendEmail.no')],
+            ],
+            'value' => 1,
+            'groupId' => 'default'
+        ]))->addField(new \PKP\components\forms\FieldRichTextarea('deleteMessage', [
             'label' => __('plugins.generic.dataverse.researchData.delete.emailNotification'),
             'value' => $defaultEmailBody,
+            'showWhen' => ['sendDeleteEmail', 1],
             'groupId' => 'default'
         ]));
 

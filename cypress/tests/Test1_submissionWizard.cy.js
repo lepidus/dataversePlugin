@@ -227,7 +227,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('.modal__panel:visible').within(() => {
             cy.contains('button', 'Submit').click();
         });
-        cy.waitJQuery();
+        cy.wait(7000);
         cy.contains('h1', 'Submission complete');
     });
 });
