@@ -167,6 +167,9 @@ describe('Research data deposit', function () {
 
 		cy.waitDatasetTabLoading('datasetTab');
 
+		cy.contains('.datasetLabel', 'Draft');
+		cy.contains('.datasetLabel', 'Unpublished');
+
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').clear();
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').type('The Power of Computer Vision: Advances, Applications and Challenges', { delay: 0 });
 		cy.get('div[id^="datasetMetadata-datasetDescription-control"').clear();
@@ -329,6 +332,9 @@ describe('Research data deposit', function () {
 
 		cy.waitDatasetTabLoading('datasetTab');
 
+		cy.contains('.datasetLabel', 'Draft');
+		cy.contains('.datasetLabel', 'Unpublished');
+
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').clear();
 		cy.get('input[id^="datasetMetadata-datasetTitle-control"').type('The Power of Computer Vision: Advances, Applications and Challenges', { delay: 0 });
 		cy.get('div[id^="datasetMetadata-datasetDescription-control"').clear();
@@ -460,6 +466,8 @@ describe('Research data deposit', function () {
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
 		cy.contains('button', 'Add research data').should('be.disabled');
 		cy.get('#datasetFiles .listPanel__item .listPanel__itemActions button').should('be.disabled');
+		cy.contains('.datasetLabel', 'Draft').should('not.exist');
+		cy.contains('.datasetLabel', 'Unpublished').should('not.exist');
 
 		cy.contains('View').click();
 
