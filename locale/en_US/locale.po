@@ -226,6 +226,15 @@ msgstr "Delete and send email"
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publish research data"
 
+msgid "plugins.generic.dataverse.researchData.label.draft"
+msgstr "Draft"
+
+msgid "plugins.generic.dataverse.researchData.label.unpublished"
+msgstr "Unpublished"
+
+msgid "plugins.generic.dataverse.researchData.label.inReview"
+msgstr "In Review"
+
 msgid "plugins.generic.dataverse.dataset.titlePrefix"
 msgstr "Replication data for: "
 

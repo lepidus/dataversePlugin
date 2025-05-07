@@ -3,12 +3,13 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
     data() {
         return {
             dataversePluginApiUrl: null,
+            datasetPluginApiUrl: null,
             rootDataverseName: '',
             dataverseName: '',
             dataverseLicenses: [],
             dataset: null,
             datasetCitation: '',
-            datasetCitationUrl: null,
+            datasetInReview: false,
             fileFormErrors: [],
             hasDepositedDataset: false,
             datasetIsLoading: true,
@@ -334,16 +335,31 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
 
         updateDatasetCitation() {
-            if (!this.datasetCitationUrl) {
+            if (!this.datasetPluginApiUrl) {
                 return;
             }
             var self = this;
             $.ajax({
-                url: self.datasetCitationUrl,
+                url: self.datasetPluginApiUrl+'/citation',
                 type: 'GET',
                 error: self.ajaxErrorCallback,
                 success: (r) => {
                     self.datasetCitation = r.citation;
+                },
+            });
+        },
+
+        getDatasetInReview(dataset) {
+            if (!this.datasetPluginApiUrl) {
+                return;
+            }
+            var self = this;
+            $.ajax({
+                url: self.datasetPluginApiUrl+'/inReview?datasetId='+this.dataset.datasetId,
+                type: 'GET',
+                error: self.ajaxErrorCallback,
+                success: (r) => {
+                    self.datasetInReview = r.inReview;
                 },
             });
         },
@@ -504,6 +520,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         dataset(newVal, oldVal) {
             this.updateDatasetMetadataForm(newVal);
             this.updateDatasetCitation();
+            this.getDatasetInReview(newVal);
         },
         flagMounted(newVal, oldVal) {
             this.getDataverseName();
