@@ -33,6 +33,9 @@
         <span class="datasetLabel datasetLabelUnpublished" v-if="dataset && !datasetIsPublished">
             {translate key="plugins.generic.dataverse.researchData.label.unpublished"}
         </span>
+        <span class="datasetLabel datasetLabelInReview" v-if="dataset && datasetInReview">
+            {translate key="plugins.generic.dataverse.researchData.label.inReview"}
+        </span>
     </div>
     <span class="value">
         <p id="loadingDatasetCitation" v-if="dataset && !datasetCitation">{{ loadingCitationMsg }}</p>

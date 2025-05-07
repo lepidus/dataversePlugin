@@ -35,6 +35,11 @@ class DatasetHandler extends APIHandler
                     'handler' => array($this, 'getCitation'),
                     'roles' => $roles
                 ),
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/inReview',
+                    'handler' => array($this, 'getInReview'),
+                    'roles' => $roles
+                ),
             ),
             'POST' => array(
                 array(
@@ -285,6 +290,28 @@ class DatasetHandler extends APIHandler
         }
 
         return $response->withJson(['citation' => $citationData['citation']], 200);
+    }
+
+    public function getInReview($slimRequest, $response, $args)
+    {
+        $queryParams = $slimRequest->getQueryParams();
+        $datasetId = $queryParams['datasetId'];
+
+        try {
+            $dataverseClient = new DataverseClient();
+            $datasetLocks = $dataverseClient->getDatasetActions()->getDatasetLocks($datasetId);
+        } catch (DataverseException $e) {
+            error_log('Error getting dataset locks: ' . $e->getMessage());
+            return $response->withStatus($e->getCode());
+        }
+
+        foreach ($datasetLocks as $lock) {
+            if ($lock['lockType'] == 'InReview') {
+                return $response->withJson(['inReview' => true], 200);
+            }
+        }
+
+        return $response->withJson(['inReview' => false], 200);
     }
 
     public function deleteFile($slimRequest, $response, $args)

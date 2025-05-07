@@ -109,3 +109,7 @@ div:not(:last-child) > .pkp_controllers_grid {
     background-color: #A4660E;
     margin-right: .25rem;
 }
+
+.datasetLabelInReview {
+    background-color: #5CB85C;
+}
