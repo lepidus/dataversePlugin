@@ -38,6 +38,7 @@ class JsonDatasetFactory extends DatasetFactory
         $datasetData = $datasetVersion->metadataBlocks->citation->fields;
 
         $props = [];
+        $props['datasetId'] = $datasetVersion->datasetId;
         $props['persistentId'] = $datasetVersion->datasetPersistentId;
         $props['versionState'] = $datasetVersion->versionState;
 
