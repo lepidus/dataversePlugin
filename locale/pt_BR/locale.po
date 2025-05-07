@@ -229,6 +229,15 @@ msgstr "Excluir e enviar e-mail"
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publicar dados de pesquisa"
 
+msgid "plugins.generic.dataverse.researchData.label.draft"
+msgstr "Esboço"
+
+msgid "plugins.generic.dataverse.researchData.label.unpublished"
+msgstr "Não publicado"
+
+msgid "plugins.generic.dataverse.researchData.label.inReview"
+msgstr "Em revisão"
+
 msgid "plugins.generic.dataverse.dataset.titlePrefix"
 msgstr "Dados de replicação para: "
 

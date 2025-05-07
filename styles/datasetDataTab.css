@@ -88,3 +88,24 @@ div:not(:last-child) > .pkp_controllers_grid {
     font-size: 0.875rem;
     text-align: justify;
 }
+
+#datasetLabels {
+    padding: 0 2rem;
+    font-size: .75rem;
+}
+
+.datasetLabel {
+    color: #FFF;
+    padding: .15rem .45rem;
+    border-radius: .25rem;
+}
+
+.datasetLabelDraft {
+    background-color: #337AB7;
+    margin-right: .25rem;
+}
+
+.datasetLabelUnpublished {
+    background-color: #A4660E;
+    margin-right: .25rem;
+}
