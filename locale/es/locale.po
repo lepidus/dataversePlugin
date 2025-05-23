@@ -243,6 +243,15 @@ msgstr "Eliminar y enviar correo electrónico"
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publicar datos de investigación"
 
+msgid "plugins.generic.dataverse.researchData.label.draft"
+msgstr "Versión preliminar"
+
+msgid "plugins.generic.dataverse.researchData.label.unpublished"
+msgstr "Sin publicar"
+
+msgid "plugins.generic.dataverse.researchData.label.inReview"
+msgstr "En revisión"
+
 msgid "plugins.generic.dataverse.dataset.titlePrefix"
 msgstr "Datos de réplica: "
 

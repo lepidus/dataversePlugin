@@ -26,6 +26,17 @@
             {/if}
         </template>
     </pkp-header>
+    <div id="datasetLabels">
+        <span class="datasetLabel datasetLabelDraft" v-if="dataset && !datasetIsPublished">
+            {translate key="plugins.generic.dataverse.researchData.label.draft"}
+        </span>
+        <span class="datasetLabel datasetLabelUnpublished" v-if="dataset && !datasetIsPublished">
+            {translate key="plugins.generic.dataverse.researchData.label.unpublished"}
+        </span>
+        <span class="datasetLabel datasetLabelInReview" v-if="dataset && datasetInReview">
+            {translate key="plugins.generic.dataverse.researchData.label.inReview"}
+        </span>
+    </div>
     <span class="value">
         <p v-html="datasetCitation"></p>
     </span>

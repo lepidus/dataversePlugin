@@ -19,6 +19,16 @@ class Dataset extends DataObject
         $this->setData('persistentId', $persistentId);
     }
 
+    public function getDatasetId(): ?int
+    {
+        return $this->getData('datasetId');
+    }
+
+    public function setDatasetId(int $datasetId): void
+    {
+        $this->setData('datasetId', $datasetId);
+    }
+
     public function getTitle(): ?string
     {
         return $this->getData('title');

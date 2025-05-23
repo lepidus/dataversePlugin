@@ -65,6 +65,9 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
+		cy.contains('.datasetLabel', 'Draft');
+		cy.contains('.datasetLabel', 'Unpublished');
+
         cy.get('#datasetMetadata-datasetTitle-control').should('have.value', 'Replication data for: ' + submissionData.title);
         cy.getTinyMceContent('datasetMetadata-datasetDescription-control').should('include', submissionData.abstract);
         cy.get('#datasetMetadata-datasetKeywords-selected-en').within(() => {
@@ -147,7 +150,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         
         cy.contains('Delete research data').click();
 		cy.get('.modal__panel button:contains("Delete research data")').click();
-        cy.wait(3000);
+        cy.wait(5000);
 		
         cy.contains('No research data transferred.');
         cy.get('#dataStatement-button').click();
@@ -244,6 +247,9 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
+
+        cy.contains('.datasetLabel', 'Draft');
+		cy.contains('.datasetLabel', 'Unpublished');
         
         cy.contains('Delete research data').click();
         cy.contains('Send an email notification to the dataset contact');
@@ -378,6 +384,9 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('button:contains("Delete research data")').should('be.disabled');
 		cy.get('button:contains("Add research data")').should('be.disabled');
 		cy.get('#dataset_metadata button:contains("Save")').should('be.disabled');
+        cy.contains('.datasetLabel', 'Draft').should('not.exist');
+		cy.contains('.datasetLabel', 'Unpublished').should('not.exist');
+
     });
     it('Publishing of submission new version do not publish dataset', function () {
         cy.login('dbarnes', null, 'publicknowledge');

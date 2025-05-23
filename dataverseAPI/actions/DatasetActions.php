@@ -71,6 +71,15 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         return preg_replace('/,+.UNF[^]]+]/', '', $citation);
     }
 
+    public function getDatasetLocks(int $datasetId): array
+    {
+        $uri = $this->createNativeAPIURI('datasets', $datasetId, 'locks');
+        $response = $this->nativeAPIRequest('GET', $uri);
+        $jsonContent = json_decode($response->getBody(), true);
+
+        return $jsonContent['data'];
+    }
+
     public function create(Dataset $dataset): DatasetIdentifier
     {
         $packager = new NativeAPIDatasetPackager($dataset);
