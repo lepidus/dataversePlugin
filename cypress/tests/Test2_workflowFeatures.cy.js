@@ -149,6 +149,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetTab-button').click();
         
         cy.contains('Delete research data').click();
+        cy.contains('Are you sure you want to permanently delete the research data related to this preprint?');
 		cy.get('.modal__panel button:contains("Delete research data")').click();
         cy.wait(5000);
 		
