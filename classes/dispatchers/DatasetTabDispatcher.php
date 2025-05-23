@@ -218,7 +218,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
                 'serverUrl' => $configuration->getDataverseServerUrl(),
             ]),
             'loadingCitationMsg' => __('plugins.generic.dataverse.metadataForm.loadingDatasetCitation'),
-            'datasetCitationUrl' => $dispatcher->url($request, Application::ROUTE_API, $context->getPath(), 'datasets/' . $study->getId() . '/citation'),
+            'datasetPluginApiUrl' => $dispatcher->url($request, Application::ROUTE_API, $context->getPath(), 'datasets/' . $study->getId()),
             'canSendEmail' => in_array(Role::ROLE_ID_MANAGER, $userRoles),
             'hasDepositedDataset' => true
         ]);

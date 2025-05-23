@@ -24,6 +24,7 @@ class JsonDatasetFactoryTest extends PKPTestCase
         );
 
         $this->assertEquals('doi:10.12345/FK2/ABCDEFG', $dataset->getPersistentId());
+        $this->assertEquals(1234567, $dataset->getDatasetId());
         $this->assertEquals('Test title', $dataset->getTitle());
         $this->assertEquals('<p>An example description</p>', $dataset->getDescription());
         $this->assertEquals('CC BY 4.0', $dataset->getLicense());
