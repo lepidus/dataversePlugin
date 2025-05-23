@@ -2,9 +2,9 @@
 
 # Dataverse Plugin
 
-We are implementing this plugin for OPS and OJS 3.3 (or higher) for SciELO Brasil.
+We are implementing this plugin for OPS and OJS 3.3 (or higher) for SciELO Brasil. It is a work in progress, the current version is a MVP for OPS and OJS.
 
-It is a work in progress, the current version is a MVP for OPS and OJS.
+The development of this plugin seeks to give continuity to the integration between OJS and Dataverse, done previously through the [plugin for OJS 2.4](https://github.com/asmecher/dataverse-ojs-plugin).
 
 ## Compatibility
 
@@ -13,9 +13,11 @@ The latest release of this plugin is compatible with the following PKP applicati
 * OPS 3.4.0
 * OJS 3.4.0
 
-Using PHP 8.1 or later.
+Using PHP 8.1 or later. 
 
-Compatible with Dataverse 5.x and 6.x.
+This plugin is also compatible with OJS and OPS 3.3.0. Check the latest release compatible with you application on the [Releases page](https://github.com/lepidus/dataversePlugin/releases).
+
+All releases are compatible with Dataverse 5.x and 6.x.
 
 ## Plugin Download
 
@@ -106,10 +108,15 @@ npx cypress open --config specPattern=plugins/generic/dataverse/cypress/tests
 ```
 Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en` for passing into the tests.
 
-# License
+## Credits
+This plugin was sponsored by the Scientific Electronic Library Online (SciELO).
+
+Developed by Lepidus Tecnologia.
+
+## License
 
 __This plugin is licensed under the GNU General Public License v3.0__
 
-__Copyright (c) 2021-2024 Lepidus Tecnologia__
+__Copyright (c) 2021-2025 Lepidus Tecnologia__
 
-__Copyright (c) 2021-2024 SciELO__
+__Copyright (c) 2021-2025 SciELO__

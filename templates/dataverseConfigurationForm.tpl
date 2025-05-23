@@ -1,8 +1,8 @@
 {**
  * templates/dataverseConfigurationForm.tpl
  *
- * Copyright (c) 2019-2024 Lepidus Tecnologia
- * Copyright (c) 2020-2024 SciELO
+ * Copyright (c) 2019-2025 Lepidus Tecnologia
+ * Copyright (c) 2020-2025 SciELO
  * Distributed under the GNU GPL v3. For full terms see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt
  *
  * Dataverse plugin auth form
