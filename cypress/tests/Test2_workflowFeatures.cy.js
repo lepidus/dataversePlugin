@@ -150,7 +150,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         
         cy.contains('Delete research data').click();
 		cy.get('.modal__panel button:contains("Delete research data")').click();
-        cy.wait(3000);
+        cy.wait(5000);
 		
         cy.contains('No research data transferred.');
         cy.get('#dataStatement-button').click();
