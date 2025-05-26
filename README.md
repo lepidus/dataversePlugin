@@ -5,15 +5,11 @@
 This plugin is the result of a partnership between SciELO Brazil and Lepidus. It enables the integration of Open Journal Systems (OJS) and Open Preprint Systems (OPS) with a Dataverse repository.
 This way, authors can submit research data associated with their manuscripts during the submission process to the journal or preprint server. The research data remains available within the editorial workflow (for example, it can be made available during article peer review or preprint moderation) and is linked to the publication in OJS/OPS.
 
-It is an implementation inspired by the [original Dataverse plugin for OJS 2.4](https://github.com/asmecher/dataverse-ojs-plugin).
-
 ## Compatibility
 
 This plugin is compatible with the following PKP applications:
 
-* OPS and OJS versions 3.3 and 3.4.
-
-For OJS/OPS 3.4, PHP 8.1 or higher is required.
+- OPS and OJS versions 3.3 and 3.4.
 
 Check the latest compatible version for your application on the [Releases page](https://github.com/lepidus/dataversePlugin/releases).
 

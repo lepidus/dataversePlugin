@@ -11,9 +11,7 @@ Assim, autores podem enviar os dados de pesquisa associados aos seus manuscritos
 
 Este plugin é compatível com as seguintes aplicações PKP:
 
-* OPS e OJS nas versões 3.3 e 3.4
-
-Para OJS/OPS 3.4 exige PHP 8.1 ou posterior.
+- OPS e OJS nas versões 3.3 e 3.4
 
 Verifique a última versão compatível com a sua aplicação na [Página de Versões](https://github.com/lepidus/dataversePlugin/releases).
 
@@ -113,9 +111,9 @@ Importante: Cypress busca por elementos utilizando strings exatas. O idioma da s
 
 ## Créditos
 
-Este plugin foi patrocinado pela Scientific Electronic Library Online (SciELO).
+Este plugin foi patrocinado pela Scientific Electronic Library Online (SciELO) e desenvolvido por Lepidus Tecnologia.
 
-Desenvolvido por Lepidus Tecnologia.
+O desenvolvimento deste plugin busca dar continuidade a integração entre OJS e Dataverse, feita anteriormente através do [plugin para OJS 2.4](https://github.com/asmecher/dataverse-ojs-plugin).
 
 ## Licença
 
