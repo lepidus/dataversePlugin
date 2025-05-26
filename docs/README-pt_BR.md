@@ -2,16 +2,20 @@
 
 # Plugin Dataverse
 
-Estamos implementando esse plug-in para OPS e OJS 3.3 (ou superior) para a SciELO Brasil. É um trabalho em andamento, a versão atual é um MVP para OPS e OJS.
+Este plugin é fruto da parceria entre a SciELO Brasil e a Lepidus. Ele permite integrar o Open Journal Systems (OJS) e o Open Preprint Systems (OPS) a um repositório Dataverse.
+Assim, autores podem enviar os dados de pesquisa associados aos seus manuscritos durante o processo de submissão na revista ou no servidor de preprints. Os dados de pesquisa ficam disponíveis no fluxo editorial (por exemplo, podem ser disponibilizados na avaliação do artigo ou na moderação do preprint) e são associados à publicação no OJS/OPS.
+
+É uma implementação inspirada no [plugin Dataverse original para o OJS 2.4](https://github.com/asmecher/dataverse-ojs-plugin).
 
 ## Compatibilidade
 
-Este plugin é compatível com as seguintes aplicações da PKP:
+Este plugin é compatível com as seguintes aplicações PKP:
 
-* OJS/OPS 3.4.0 (última versão)
-* OJS/OPS 3.3.0
+* OPS e OJS nas versões 3.3 e 3.4
 
-Para instalar corretamente, verifique a última versão compatível com sua aplicação na [Página de Versões](https://github.com/lepidus/dataversePlugin/releases).
+Para OJS/OPS 3.4 exige PHP 8.1 ou posterior.
+
+Verifique a última versão compatível com a sua aplicação na [Página de Versões](https://github.com/lepidus/dataversePlugin/releases).
 
 Todas as versões são compatíveis com Dataverse 5.x e 6.x.
 
@@ -109,9 +113,9 @@ Importante: Cypress busca por elementos utilizando strings exatas. O idioma da s
 
 ## Créditos
 
-Este plugin foi patrocinado pela Scientific Electronic Library Online (SciELO) e desenvolvido por Lepidus Tecnologia.
+Este plugin foi patrocinado pela Scientific Electronic Library Online (SciELO).
 
-O desenvolvimento deste plugin busca dar continuidade a integração entre OJS e Dataverse, feita anteriormente através do [plugin para OJS 2.4](https://github.com/asmecher/dataverse-ojs-plugin).
+Desenvolvido por Lepidus Tecnologia.
 
 ## Licença
 
