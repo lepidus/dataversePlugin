@@ -4,18 +4,14 @@
 
 Estamos implementando este módulo para OPS y OJS 3.3 (o superior) para SciELO Brasil. Es un trabajo en progreso, la versión actual es un MVP para OPS y OJS.
 
-El desarrollo de este plugin pretende dar continuidad a la integración entre OJS y Dataverse, realizada anteriormente a través de [módulo para OJS 2.4](https://github.com/asmecher/dataverse-ojs-plugin).
-
 ## Compatibilidad
 
-La última versión de este plugin es compatible con las siguientes aplicaciones PKP:
+Este plugin es compatible con las siguientes aplicaciones PKP:
 
-* OPS 3.4.0
-* OJS 3.4.0
+* OJS/OPS 3.4.0 (última versión)
+* OJS/OPS 3.3.0
 
-Usando PHP 8.1 o posterior.
-
-Este módulo también es compatible con OJS y OPS 3.3.0. Comprueba la última versión compatible con tu aplicación en la [Página de versiones](https://github.com/lepidus/dataversePlugin/releases).
+Para instalar correctamente, verifique la última versión compatible con tu aplicación en la [Página de versiones](https://github.com/lepidus/dataversePlugin/releases).
 
 Todas las versiones son compatibles con Dataverse 5.x y 6.x.
 
@@ -111,9 +107,9 @@ Importante: Cypress busca elementos utilizando cadenas exactas. El idioma de tu 
 
 ## Créditos
 
-Este plugin fue patrocinado por la Scientific Electronic Library Online (SciELO).
+Este plugin fue patrocinado por la Scientific Electronic Library Online (SciELO) y desarrollado por Lepidus Tecnologia.
 
-Desarrollado por Lepidus Tecnologia.
+El desarrollo de este plugin pretende dar continuidad a la integración entre OJS y Dataverse, realizada anteriormente a través de [módulo para OJS 2.4](https://github.com/asmecher/dataverse-ojs-plugin).
 
 ## Licencia
 
