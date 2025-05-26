@@ -8,12 +8,13 @@ We are implementing this plugin for OPS and OJS 3.3 (or higher) for SciELO Brasi
 
 This plugin is compatible with the following PKP applications:
 
-* OJS/OPS 3.4.0 (latest version)
-* OJS/OPS 3.3.0
+* OPS and OJS versions 3.3 and 3.4.
 
-For correct installation, check the latest release compatible with you application on the [Releases page](https://github.com/lepidus/dataversePlugin/releases).
+For OJS/OPS 3.4, PHP 8.1 or higher is required.
 
-All releases are compatible with Dataverse 5.x and 6.x.
+Check the latest compatible version for your application on the [Releases page](https://github.com/lepidus/dataversePlugin/releases).
+
+All versions are compatible with Dataverse 5.x and 6.x.
 
 ## Plugin Download
 
