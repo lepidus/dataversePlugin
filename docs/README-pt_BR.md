@@ -17,10 +17,6 @@ Verifique a última versão compatível com a sua aplicação na [Página de Ver
 
 Todas as versões são compatíveis com Dataverse 5.x e 6.x.
 
-## Download do plugin 
-
-Para fazer download do plugin, vá até a [Página de Versões](https://github.com/lepidus/dataversePlugin/releases) e faça download do pacote tar.gz da última versão compatível com o seu website.
-
 ## Instalação
 
 Este plugin está disponível para instalação através da [Galeria de Plugins da PKP](https://docs.pkp.sfu.ca/plugin-inventory/en/). Para fazer a instalação, siga os seguintes passos:

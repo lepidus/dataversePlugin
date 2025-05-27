@@ -13,10 +13,6 @@ Este plugin es compatible con las siguientes aplicaciones PKP:
 
 Consulte la última versión compatible con su aplicación en la [Página de Versiones](https://github.com/lepidus/dataversePlugin/releases).
 
-## Descargar el plugin 
-
-Para descargar el plugin, vaya a la [Página de Versiones](https://github.com/lepidus/dataversePlugin/releases) y descargue el paquete tar.gz de la última versión compatible con su sitio web.
-
 ## Instalación
 
 ### Instrucciones
