@@ -21,11 +21,14 @@ Para descargar el plugin, vaya a la [Página de Versiones](https://github.com/le
 
 ### Instrucciones
 
-1. Instale las dependencias del módulo
-2. Entre en el área administrativa de su sitio a través del __Panel de Control__.
-3. Navegue hasta `Ajustes`> `Sitio Web`> `Módulos`> `Cargar un nuevo módulo`.
-4. En __Subir fichero__, selecciona el archivo __dataverse.tar.gz__.
-5. Haga clic en __Guardar__ y el módulo se instalará en su sitio.
+Este módulo está disponible para su instalación a través de la [Galería de Plugins PKP](https://docs.pkp.sfu.ca/plugin-inventory/en/). Para instalarlo, siga estos pasos:
+
+1. Acceda a la zona __Panel de control__ de su sitio.
+2. Navegue hasta `Ajustes` > `Sítio web` > `Módulos` > `Galería de módulos`.
+3. Busque el módulo llamado `Módulo Dataverse` y haga clic en su nombre.
+4. En la ventana que se abre, haga clic en `Instalar` y confirme que desea instalar el módulo.
+
+Siguiendo estos pasos, el módulo se instalará en tu OJS/OPS. Después de la instalación, cuando quieras comprobar si hay una nueva versión disponible, sólo tienes que seguir la misma ruta y comprobar el estado del módulo en la lista.
 
 ## Instrucciones de uso
 

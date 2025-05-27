@@ -21,12 +21,14 @@ To download the plugin, go to the [Releases page](https://github.com/lepidus/dat
 
 ## Installation
 
-### Instructions
+This plugin is available for installation via the [PKP Plugin Gallery](https://docs.pkp.sfu.ca/plugin-inventory/en/). For installation, follow these steps:
 
-1. Install the plugin dependencies.
-2. Enter the administration area of ​​your application and navigate to `Settings`>` Website`> `Plugins`> `Upload a new plugin`.
-3. Under __Upload file__ select the file __dataverse.tar.gz__.
-4. Click __Save__ and the plugin will be installed on your website.
+1. Access the __Dashboard__ area of your website.
+2. Navigate to `Settings` > `Website` > `Plugins` > `Plugin Gallery`.
+3. Search for the plugin called `Dataverse Plugin` and click on its name.
+4. In the window that opens, click on `Install` and confirm that you want to install the plugin.
+
+By following these steps, the plugin will be installed on your OJS/OPS. After installation, whenever you want to check if a new version is available, just follow the same path and check the plugin's status in the list.
 
 ## Instructions for use
 

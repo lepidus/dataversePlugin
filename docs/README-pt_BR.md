@@ -23,13 +23,14 @@ Para fazer download do plugin, vá até a [Página de Versões](https://github.c
 
 ## Instalação
 
-### Instruções
+Este plugin está disponível para instalação através da [Galeria de Plugins da PKP](https://docs.pkp.sfu.ca/plugin-inventory/en/). Para fazer a instalação, siga os seguintes passos:
 
-1. Instale as dependências do plugin
-2. Entre na área administrativa do seu site através do __Painel de Controle__.
-3. Navegue até `Configurações`> `Website`> `Plugins`> `Carregar um novo plugin`.
-4. Em __Carregar arquivo__, selecione o arquivo __dataverse.tar.gz__.
-5. Clique em __Salvar__ e o plugin será instalado no seu site.
+1. Acesse a área do __Painel de Controle__ do seu site.
+2. Navegue até `Configurações` > `Website` > `Plugins` > `Galeria de plugins`.
+3. Procure pelo plugin chamado `Plugin Dataverse` e clique em seu nome.
+4. Na janela que abrir, clique em `Instalar` e confirme que deseja instalar o plugin.
+
+Seguindo esses passos, o plugin estará instalado em seu OJS/OPS. Após a instalação, quando desejar verificar se há uma nova versão disponível, basta seguir o mesmo caminho e verificar a situação do plugin na listagem.
 
 ## Instruções para uso
 
