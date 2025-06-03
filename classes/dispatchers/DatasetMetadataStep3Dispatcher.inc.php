@@ -69,7 +69,7 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
         $dataverseSubjectVocab = $dataverseMetadata->getDataverseSubjects();
         $datasetSubjectValues = array_column($dataverseSubjectVocab, 'value');
 
-        Services::get('submission')->edit(
+        $newSubmission = Services::get('submission')->edit(
             $submission,
             [
                 'datasetSubject' => $datasetSubjectValues[$subject],
@@ -77,6 +77,7 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
             ],
             Application::get()->getRequest()
         );
+        $form->submission = $newSubmission;
 
         return false;
     }
