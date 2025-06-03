@@ -36,7 +36,7 @@ msgstr "Token de API"
 
 msgid "plugins.generic.dataverse.settings.tokenDescription"
 msgstr "Token de API para integração com o Dataverse. "
-"Para mais informações sobre como obter o token de API, consulte: "
+"Para mais informações sobre como obter o token de API, consulte o "
 "<a href=\"https://guides.dataverse.org/en/5.13/user/account.html#api-token\" target=\"_new\">Guia de Usuário do Dataverse</a>."
 
 msgid "plugins.generic.dataverse.settings.termsOfUse"
@@ -52,7 +52,7 @@ msgid "plugins.generic.dataverse.settings.additionalInstructionsDescription"
 msgstr "Instruções adicionais para os usuários que forem depositar dados de pesquisa no repositório."
 
 msgid "plugins.generic.dataverse.settings.datasetPublish"
-msgstr "Publicar dados de pesquisa"
+msgstr "Publicar Dados de Pesquisa"
 
 msgid "plugins.generic.dataverse.settings.datasetPublishDescription"
 msgstr "Escolha o evento para disponibilizar publicamente os dados de pesquisa no repositório Dataverse."
@@ -128,7 +128,7 @@ msgstr "O assunto dos dados de pesquisa é obrigatório. "
 "Certifique-se que você informou o assunto dos dados de pesquisa no passo “Para os Editores”."
 
 msgid "plugins.generic.dataverse.error.readmeFile.required"
-msgstr "É obrigatório o envio de um arquivo README, em formato PDF ou TXT, que acompanhe os arquivos de dados de pesquisa"
+msgstr "É obrigatório o envio de um arquivo README, em formato PDF, MD ou TXT, que acompanhe os arquivos de dados de pesquisa"
 
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro ao obter dados de pesquisa no Dataverse: {$error}"

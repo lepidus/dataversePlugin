@@ -182,7 +182,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
         cy.get('button:visible:contains("Save")').click();
 
-		cy.contains('It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files');
+		cy.contains('It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files');
         cy.contains('button', 'Add research data').click();
         cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({

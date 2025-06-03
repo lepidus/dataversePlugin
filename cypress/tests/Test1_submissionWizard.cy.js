@@ -173,7 +173,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         advanceNSteps(3);
         cy.get('a:contains("Data_detailing.pdf")').should('not.exist');
         cy.get('div:contains("Research data and galley have the same file")').should('not.exist');
-        cy.contains('It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files');
+        cy.contains('It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files');
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.xlsx');
 
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
@@ -193,7 +193,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('#datasetFiles').contains('a', 'README.pdf');
 
         advanceNSteps(3);
-        cy.get('div:contains("It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files")').should('not.exist');
+        cy.get('div:contains("It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files")').should('not.exist');
         cy.contains('a', 'README.pdf');
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.xlsx');
     });
