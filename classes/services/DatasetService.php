@@ -55,7 +55,7 @@ class DatasetService extends DataverseService
                 $this->registerAndNotifyError(
                     $submission,
                     'plugins.generic.dataverse.error.datasetFileDeposit',
-                    ['error' => $e->getMessage()]
+                    ['error' => $e->getMessage(), 'fileName' => $file->getOriginalFileName()]
                 );
                 $dataverseClient->getDatasetActions()->delete($datasetIdentifier->getPersistentId());
                 return [
