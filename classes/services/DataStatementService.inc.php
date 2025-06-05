@@ -20,13 +20,26 @@ class DataStatementService
         ];
 
         if ($includeSubmittedType) {
+            $dataverseUrl = $this->getDataverseUrl();
             $this->getDataverseName();
+
             if (!is_null($this->dataverseName)) {
-                $types[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED] = __('plugins.generic.dataverse.dataStatement.submissionDeposit', ['dataverseName' => $this->dataverseName]);
+                $types[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED] = __(
+                    'plugins.generic.dataverse.dataStatement.submissionDeposit',
+                    ['dataverseName' => $this->dataverseName, 'dataverseUrl' => $dataverseUrl]
+                );
             }
         }
 
         return $types;
+    }
+
+    private function getDataverseUrl(): string
+    {
+        $contextId = Application::get()->getRequest()->getContext()->getId();
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+
+        return $configuration->getDataverseUrl();
     }
 
     public function getDataverseName(): ?string

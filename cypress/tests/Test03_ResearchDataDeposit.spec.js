@@ -43,6 +43,8 @@ describe('Research data deposit', function () {
 		cy.wait(1000);
 		cy.get('#submitTabs a:contains("1. Start")').click();
 		cy.wait(500);
+		cy.contains('The research data will be sent in subsequent stages of this submission, so that it can be deposited in the repository');
+		cy.contains('a', 'Dataverse de Exemplo Lepidus');
 		cy.get('input[id^="dataStatementTypes"][value=3]').click();
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
 		cy.get('input[id=privacyConsent]').click();
