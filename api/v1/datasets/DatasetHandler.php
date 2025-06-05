@@ -348,14 +348,16 @@ class DatasetHandler extends APIHandler
         $study = Repo::dataverseStudy()->get($args['studyId']);
         $deleteMessage = null;
 
-        $requestParams = $slimRequest->getParsedBody();
-        $sendDeleteEmail = (int) $requestParams['sendDeleteEmail'];
-        if ($sendDeleteEmail == 1 && isset($requestParams['deleteMessage'])) {
-            $deleteMessage = $requestParams['deleteMessage'];
-        }
-
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $requestParams = $slimRequest->getParsedBody();
+        if (isset($requestParams['sendDeleteEmail'])) {
+            $sendDeleteEmail = (int) $requestParams['sendDeleteEmail'];
+            if ($sendDeleteEmail == 1 && isset($requestParams['deleteMessage'])) {
+                $deleteMessage = $requestParams['deleteMessage'];
+            }
         }
 
         $datasetService = new DatasetService();
