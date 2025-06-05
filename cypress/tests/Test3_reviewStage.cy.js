@@ -62,11 +62,11 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		cy.get('form:visible button:contains("Save")').click();
         
         cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/dummy.csv', 'utf8').then((fileContent) => {
+        cy.fixture('example.json', 'utf8').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
-				fileName: 'Raw_data.csv',
-				mimeType: 'text/csv',
+				fileName: 'Raw_data.json',
+				mimeType: 'application/json',
 				encoding: 'utf8',
 			});
 		});
@@ -116,10 +116,10 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.contains('h2', 'Select Data Files');
         cy.contains('This submission has deposited research data. Please, select which data files will be made available for reviewers to view');
         cy.contains('span', 'example.json');
-        cy.contains('span', 'Raw_data.csv');
+        cy.contains('span', 'Raw_data.json');
         cy.contains('span', 'README.pdf');
 
-        cy.contains('span', 'Raw_data.csv').parent().within(() => {
+        cy.contains('span', 'Raw_data.json').parent().within(() => {
             cy.get('input').check();
         });
         cy.contains('span', 'README.pdf').parent().within(() => {
@@ -138,7 +138,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.contains('h1', 'Review:');
         cy.contains('Data statement');
 		cy.contains('The research data has been submitted to the Dataverse de Exemplo Lepidus repository');
-		cy.contains('a', 'Raw_data.csv');
+		cy.contains('a', 'Raw_data.json');
         cy.contains('a', 'README.pdf');
         cy.contains('a', 'example.json').should('not.exist');
     });

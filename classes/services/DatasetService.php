@@ -57,12 +57,12 @@ class DatasetService extends DataverseService
                     'plugins.generic.dataverse.error.datasetFileDeposit',
                     ['error' => $e->getMessage(), 'fileName' => $file->getOriginalFileName()]
                 );
-                /*$dataverseClient->getDatasetActions()->delete($datasetIdentifier->getPersistentId());
+                $dataverseClient->getDatasetActions()->delete($datasetIdentifier->getPersistentId());
                 return [
                     'status' => 'Error',
                     'message' => 'plugins.generic.dataverse.error.datasetFileDeposit',
                     'messageParams' => ['error' => $e->getMessage(), 'fileName' => $file->getOriginalFileName()]
-                ];*/
+                ];
             }
         }
 
