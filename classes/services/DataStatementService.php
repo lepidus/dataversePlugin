@@ -2,6 +2,8 @@
 
 namespace APP\plugins\generic\dataverse\classes\services;
 
+use APP\core\Application;
+use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 
@@ -25,9 +27,14 @@ class DataStatementService
         ];
 
         if ($includeSubmittedType) {
+            $dataverseUrl = $this->getDataverseUrl();
             $this->getDataverseName();
+
             if (!is_null($this->dataverseName)) {
-                $types[self::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED] = __('plugins.generic.dataverse.dataStatement.submissionDeposit', ['dataverseName' => $this->dataverseName]);
+                $types[self::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED] = __(
+                    'plugins.generic.dataverse.dataStatement.submissionDeposit',
+                    ['dataverseName' => $this->dataverseName, 'dataverseUrl' => $dataverseUrl]
+                );
             }
         }
 
@@ -43,6 +50,14 @@ class DataStatementService
             'DATA_STATEMENT_TYPE_ON_DEMAND' => self::DATA_STATEMENT_TYPE_ON_DEMAND,
             'DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE' => self::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE,
         ];
+    }
+
+    private function getDataverseUrl(): string
+    {
+        $contextId = Application::get()->getRequest()->getContext()->getId();
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+
+        return $configuration->getDataverseUrl();
     }
 
     public function getDataverseName(): ?string

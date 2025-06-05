@@ -373,7 +373,9 @@ msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat"
 msgstr "You must only enter the URLs to the data. Other textual information is not accepted."
 
 msgid "plugins.generic.dataverse.dataStatement.submissionDeposit"
-msgstr "The research data will be submitted to the \"{$dataverseName}\" repository in the subsequent stages of this submission"
+msgstr "The research data will be sent in subsequent stages of this submission, so that it can be deposited in the repository"
+" <a href=\"{$dataverseUrl}\" target=\"_new\">{$dataverseName}</a>"
+" (use this option only if there are data files adjacent to the manuscript to be deposited)"
 
 msgid "plugins.generic.dataverse.dataStatement.onDemand"
 msgstr "The research data is available on demand, condition justified in the manuscript"

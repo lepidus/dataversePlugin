@@ -98,6 +98,8 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('h3', 'Research data metadata').should('not.exist');
 
         cy.get('.pkpSteps__step__label:contains("Details")').click();
+        cy.contains('The research data will be sent in subsequent stages of this submission, so that it can be deposited in the repository');
+		cy.contains('a', 'Dataverse de Exemplo Lepidus');
         cy.get('input[name="dataStatementTypes"][value=3]').click();
         advanceNSteps(1);
 
