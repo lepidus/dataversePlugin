@@ -112,7 +112,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetTab-button').click();
         cy.get('#dataset_files-button').click();
 
-		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.xlsx');
+		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
         cy.get('#datasetFiles').contains('a', 'README.pdf');
         cy.get('#datasetTab-button .pkpBadge').contains('2');
 
@@ -147,11 +147,12 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
-        
+
         cy.contains('Delete research data').click();
         cy.contains('Are you sure you want to permanently delete the research data related to this preprint?');
 		cy.get('.modal__panel button:contains("Delete research data")').click();
-		
+        cy.wait(7000);
+
         cy.contains('No research data transferred.');
         cy.get('#dataStatement-button').click();
 		cy.get('input[name="researchDataSubmitted"]').should('not.be.checked');
@@ -208,7 +209,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer').within(() => {
 			cy.get('tr:contains(File "Data_detailing.pdf" added as research data.) td').should('contain', 'Elinor Ostrom');
-            cy.get('tr:contains(File "Planilha_de_dados_ÇÕÔÁÀÃ.xlsx" added as research data.) td').should('contain', 'Elinor Ostrom');
+            cy.get('tr:contains(File "Planilha_de_dados_ÇÕÔÁÀÃ.json" added as research data.) td').should('contain', 'Elinor Ostrom');
             cy.get('tr:contains(File "Data_detailing.pdf" deleted from research data.) td').should('contain', 'Elinor Ostrom');
 			cy.get('tr:contains(Research data deposited) td').should('contain', 'Elinor Ostrom');
 			cy.get('tr:contains(Research data metadata updated) td').should('contain', 'Elinor Ostrom');

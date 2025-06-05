@@ -380,7 +380,9 @@ msgid "plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat"
 msgstr "Solo debe ingresar las URL a los datos. No se acepta otra información textual."
 
 msgid "plugins.generic.dataverse.dataStatement.submissionDeposit"
-msgstr "Los datos de investigación se enviarán al repositorio \"{$dataverseName}\" en las siguientes etapas de esta presentación"
+msgstr "Los datos de investigación se enviarán en las siguientes etapas de este envío, para que puedan depositarse en el repositorio"
+" <a href=\"{$dataverseUrl}\" target=\"_new\">{$dataverseName}</a>"
+" (utilice esta opción sólo si hay archivos de datos adyacentes al manuscrito que se va a depositar)"
 
 msgid "plugins.generic.dataverse.dataStatement.onDemand"
 msgstr "Los datos de investigación están disponibles a petición, condición justificada en el manuscrito"
