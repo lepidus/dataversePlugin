@@ -112,7 +112,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetTab-button').click();
         cy.get('#dataset_files-button').click();
 
-		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.xlsx');
+		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.csv');
         cy.get('#datasetFiles').contains('a', 'README.pdf');
         cy.get('#datasetTab-button .pkpBadge').contains('2');
 
@@ -209,7 +209,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer').within(() => {
 			cy.get('tr:contains(File "Data_detailing.pdf" added as research data.) td').should('contain', 'Elinor Ostrom');
-            cy.get('tr:contains(File "Planilha_de_dados_ÇÕÔÁÀÃ.xlsx" added as research data.) td').should('contain', 'Elinor Ostrom');
+            cy.get('tr:contains(File "Planilha_de_dados_ÇÕÔÁÀÃ.csv" added as research data.) td').should('contain', 'Elinor Ostrom');
             cy.get('tr:contains(File "Data_detailing.pdf" deleted from research data.) td').should('contain', 'Elinor Ostrom');
 			cy.get('tr:contains(Research data deposited) td').should('contain', 'Elinor Ostrom');
 			cy.get('tr:contains(Research data metadata updated) td').should('contain', 'Elinor Ostrom');
