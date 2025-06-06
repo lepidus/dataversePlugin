@@ -35,6 +35,41 @@ class DataverseConfiguration extends DataObject
         return $this->getData('termsOfUse');
     }
 
+    public function getAdditionalInstructions(): array
+    {
+        if ($this->additionalInstructionsAreEmpty()) {
+            $defaultAdditionalInstructions = new DefaultAdditionalInstructions();
+            return $defaultAdditionalInstructions->getDefaultInstructions();
+        }
+
+        return $this->getData('additionalInstructions');
+    }
+
+    public function getLocalizedAdditionalInstructions(): string
+    {
+        if ($this->additionalInstructionsAreEmpty()) {
+            $defaultAdditionalInstructions = new DefaultAdditionalInstructions();
+            $this->setData('additionalInstructions', $defaultAdditionalInstructions->getDefaultInstructions());
+        }
+
+        return $this->getLocalizedData('additionalInstructions');
+    }
+
+    public function additionalInstructionsAreEmpty(): bool
+    {
+        if (is_null($this->getData('additionalInstructions'))) {
+            return true;
+        }
+
+        foreach ($this->getData('additionalInstructions') as $locale => $value) {
+            if (!empty($value)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function setDatasetPublish(int $datasetPublish): void
     {
         $this->setData('datasetPublish', $datasetPublish);
