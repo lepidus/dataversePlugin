@@ -1,5 +1,12 @@
 import '../support/commands.js';
 
+function assertAdditionalInstructionsDisplay() {
+	cy.contains('1. Submit under "Research Data" any files that have been collected');
+	cy.contains('2. It is mandatory to include a file named "Readme"');
+	cy.contains('For additional guidance on creating the file, consult the suggested references below');
+	cy.contains('3. The files deposited in "Research Data" will form a dataset');
+}
+
 describe('Research data deposit', function () {
 	const currentYear = new Date().getFullYear();
 	let submission;
@@ -59,7 +66,7 @@ describe('Research data deposit', function () {
 
 		cy.get('#submitTabs a:contains("2. Upload Submission")').click();
 		cy.wait(1000);
-		cy.contains('Additional instructions about research data submission');
+		assertAdditionalInstructionsDisplay();
 		cy.get('#submitStep2Form button.submitFormButton').click();
 		cy.get('div:contains("Research data is required. Please ensure that you have chosen and uploaded research data.")');
 
@@ -150,7 +157,7 @@ describe('Research data deposit', function () {
 
 		cy.waitDatasetTabLoading('datasetTab');
 
-		cy.contains('Additional instructions about research data submission');
+		assertAdditionalInstructionsDisplay();
 		cy.contains('Delete research data').should('be.disabled');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
 
@@ -227,7 +234,7 @@ describe('Research data deposit', function () {
 		cy.contains('Delete research data').click();
 		cy.get('[data-modal="delete"] button').contains('Yes').click();
 		cy.contains('No research data transferred.');
-		cy.contains('Additional instructions about research data submission');
+		assertAdditionalInstructionsDisplay();
 
 		cy.get('button[aria-controls="dataStatement"]').click();
 		cy.get('#dataStatement input[name="researchDataSubmitted"]').should('not.be.checked');
