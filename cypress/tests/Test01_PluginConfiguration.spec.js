@@ -48,7 +48,12 @@ describe('Plugin configuration', function () {
 		cy.get('input[name=apiToken]').focus().clear().type('invalidToken');
 		cy.get('input[name="termsOfUse[en_US]"]').focus().clear().type(Cypress.env('dataverseTermsOfUse'));
 		cy.get('textarea[id^="additionalInstructions-en_US"').then((node) => {
-			cy.setTinyMceContent(node.attr('id'), 'Additional instructions about research data submission');
+			cy.getTinyMceContent(node.attr('id'))
+				.should('contain', 'Submit files that have been collected under "Research Data"');
+			cy.getTinyMceContent(node.attr('id'))
+				.should('contain', 'It is mandatory to include a file named "Readme"');
+			cy.getTinyMceContent(node.attr('id'))
+				.should('contain', 'The files deposited in "Research Data" will make up a dataset');
 		});
 		cy.contains('span', 'Additional Instructions').click();
 
