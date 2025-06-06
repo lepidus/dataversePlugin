@@ -42,7 +42,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
         $configuration = $configurationDAO->get($submission->getData('contextId'));
-        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
+        $additionalInstructions = $configuration->getLocalizedAdditionalInstructions();
         $templateMgr->assign('dataverseAdditionalInstructions', $additionalInstructions);
 
         $content = $this->getDatasetTabContent($submission);

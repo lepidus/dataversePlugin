@@ -7,6 +7,13 @@ function advanceNSteps(n) {
     }
 }
 
+function assertAdditionalInstructionsDisplay() {
+	cy.contains('1. Submit under "Research Data" any files that have been collected');
+	cy.contains('2. It is mandatory to include a file named "Readme"');
+	cy.contains('For additional guidance on creating the file, consult the suggested references below');
+	cy.contains('3. The files deposited in "Research Data" will form a dataset');
+}
+
 describe('Dataverse Plugin - Submission wizard features', function () {
 	let submissionData;
 
@@ -104,7 +111,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         advanceNSteps(1);
 
         cy.contains('h2', 'Research data');
-        cy.contains('Additional instructions about research data submission');
+        assertAdditionalInstructionsDisplay();
         advanceNSteps(2);
         cy.contains('h2', 'Research data metadata');
         advanceNSteps(1);
