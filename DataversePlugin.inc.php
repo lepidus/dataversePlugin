@@ -122,7 +122,7 @@ class DataversePlugin extends GenericPlugin
                 $context = $request->getContext();
                 $contextId = ($context == null) ? 0 : $context->getId();
 
-                $this->import('DataverseSettingsForm');
+                $this->import('settings.DataverseSettingsForm');
                 $form = new DataverseSettingsForm($this, $contextId);
                 if ($request->getUserVar('save')) {
                     $form->readInputData();
