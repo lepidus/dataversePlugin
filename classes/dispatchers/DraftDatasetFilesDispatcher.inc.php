@@ -39,7 +39,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $contextId = $request->getContext()->getId();
         $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
         $configuration = $configurationDAO->get($contextId);
-        $additionalInstructions = $configuration->getLocalizedData('additionalInstructions');
+        $additionalInstructions = $configuration->getLocalizedAdditionalInstructions();
         $templateMgr->assign('dataverseAdditionalInstructions', $additionalInstructions);
 
         $templateOutput = $templateMgr->fetch($form->_template);

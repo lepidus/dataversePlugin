@@ -3,7 +3,6 @@
 import('lib.pkp.classes.form.Form');
 import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
 import('plugins.generic.dataverse.dataverseAPI.actions.DataverseCollectionActions');
-import('plugins.generic.dataverse.settings.DefaultAdditionalInstructions');
 
 class DataverseSettingsForm extends Form
 {
@@ -65,14 +64,7 @@ class DataverseSettingsForm extends Form
             $this->setData($name, $value);
         }
 
-        $context = Application::get()->getRequest()->getContext();
-        $primaryLocale = $context->getPrimaryLocale();
-        if (!isset($configurationData['additionalInstructions'])
-            || empty($configurationData['additionalInstructions'][$primaryLocale])
-        ) {
-            $defaultAdditionalInstructions = new DefaultAdditionalInstructions();
-            $this->setData('additionalInstructions', $defaultAdditionalInstructions->getDefaultInstructions());
-        }
+        $this->setData('additionalInstructions', $configuration->getAdditionalInstructions());
     }
 
     public function readInputData(): void

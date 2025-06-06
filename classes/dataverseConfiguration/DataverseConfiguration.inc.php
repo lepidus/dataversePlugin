@@ -3,6 +3,8 @@
 define('DATASET_PUBLISH_SUBMISSION_ACCEPTED', 1);
 define('DATASET_PUBLISH_SUBMISSION_PUBLISHED', 2);
 
+import('plugins.generic.dataverse.settings.DefaultAdditionalInstructions');
+
 class DataverseConfiguration extends DataObject
 {
     public function setDataverseUrl(string $url): void
