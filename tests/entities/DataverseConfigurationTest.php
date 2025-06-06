@@ -2,7 +2,7 @@
 
 use PKP\tests\PKPTestCase;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
-use APP\plugins\generic\dataverse\settings\DefaultAdditionalInstructions;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DefaultAdditionalInstructions;
 
 class DataverseConfigurationTest extends PKPTestCase
 {

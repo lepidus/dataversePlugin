@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\generic\dataverse\settings;
+namespace APP\plugins\generic\dataverse\classes\dataverseConfiguration;
 
 class DefaultAdditionalInstructions
 {

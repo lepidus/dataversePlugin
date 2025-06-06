@@ -3,7 +3,7 @@
 namespace APP\plugins\generic\dataverse\classes\dataverseConfiguration;
 
 use PKP\core\DataObject;
-use APP\plugins\generic\dataverse\settings\DefaultAdditionalInstructions;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DefaultAdditionalInstructions;
 
 class DataverseConfiguration extends DataObject
 {
