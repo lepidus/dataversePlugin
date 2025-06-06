@@ -74,6 +74,8 @@ class DataverseSettingsForm extends Form
         foreach ($data as $name => $value) {
             $this->setData($name, $value);
         }
+
+        $this->setData('additionalInstructions', $configuration->getAdditionalInstructions());
     }
 
     public function readInputData(): void
