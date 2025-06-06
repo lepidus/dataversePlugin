@@ -1,10 +1,10 @@
 import '../support/commands.js';
 
 function assertAdditionalInstructionsDisplay() {
-	cy.contains('Submit files that have been collected under "Research Data"');
-	cy.contains('It is mandatory to include a file named "Readme"');
-	cy.contains('For additional guidance on creating the file, see the suggested references below');
-	cy.contains('The files deposited in "Research Data" will make up a dataset');
+	cy.contains('1. Submit under "Research Data" any files that have been collected');
+	cy.contains('2. It is mandatory to include a file named "Readme"');
+	cy.contains('For additional guidance on creating the file, consult the suggested references below');
+	cy.contains('3. The files deposited in "Research Data" will form a dataset');
 }
 
 describe('Research data deposit', function () {
