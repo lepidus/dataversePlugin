@@ -49,11 +49,11 @@ describe('Plugin configuration', function () {
 		cy.get('input[name="termsOfUse[en_US]"]').focus().clear().type(Cypress.env('dataverseTermsOfUse'));
 		cy.get('textarea[id^="additionalInstructions-en_US"').then((node) => {
 			cy.getTinyMceContent(node.attr('id'))
-				.should('contain', 'Submit files that have been collected under "Research Data"');
+				.should('contain', '1. Submit under "Research Data" any files that have been collected');
 			cy.getTinyMceContent(node.attr('id'))
-				.should('contain', 'It is mandatory to include a file named "Readme"');
+				.should('contain', '2. It is mandatory to include a file named "Readme"');
 			cy.getTinyMceContent(node.attr('id'))
-				.should('contain', 'The files deposited in "Research Data" will make up a dataset');
+				.should('contain', '3. The files deposited in "Research Data" will form a dataset');
 		});
 		cy.contains('span', 'Additional Instructions').click();
 
