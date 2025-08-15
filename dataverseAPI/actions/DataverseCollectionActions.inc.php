@@ -24,7 +24,9 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
             $response = $this->nativeAPIRequest('GET', $uri);
             $dataverseCollection = $this->createDataverseCollection($response);
 
-            $cache->setEntireCache($dataverseCollection);
+            if (!empty($dataverseCollection->getName())) {
+                $cache->setEntireCache($dataverseCollection);
+            }
         }
 
         return $dataverseCollection;
@@ -48,7 +50,9 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
             $response = $this->nativeAPIRequest('GET', $uri);
             $rootDataverseCollection = $this->createDataverseCollection($response);
 
-            $cache->setEntireCache($rootDataverseCollection);
+            if (!empty($rootDataverseCollection->getName())) {
+                $cache->setEntireCache($rootDataverseCollection);
+            }
         }
 
         return $rootDataverseCollection;
@@ -99,6 +103,15 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
     private function createDataverseCollection(DataverseResponse $response): DataverseCollection
     {
         $jsonContent = json_decode($response->getBody(), true);
+        if ($jsonContent['status'] != 'OK'
+            || empty($jsonContent['data'])
+            || !isset($jsonContent['data']['name'])
+        ) {
+            $dummyDataverseCollection = new DataverseCollection();
+            $dummyDataverseCollection->setName('');
+            return $dummyDataverseCollection;
+        }
+
         $dataverseCollectionData = $jsonContent['data'];
         $dataverseCollection = new DataverseCollection();
         $dataverseCollection->setAllData($dataverseCollectionData);
