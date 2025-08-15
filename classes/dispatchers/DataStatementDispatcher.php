@@ -231,8 +231,7 @@ class DataStatementDispatcher extends DataverseDispatcher
         $output = &$params[2];
 
         $dataStatementService = new DataStatementService();
-        $allDataStatementTypes = $dataStatementService->getDataStatementTypes();
-        unset($allDataStatementTypes[DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]);
+        $allDataStatementTypes = $dataStatementService->getDataStatementTypes(false);
 
         $templateMgr->assign('dataStatementConsts', $dataStatementService->getConstantsForTemplates());
         $templateMgr->assign('dataStatementMessages', $allDataStatementTypes);
