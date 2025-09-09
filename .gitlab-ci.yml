@@ -8,3 +8,8 @@ include:
       - 'templates/groups/pkp_plugin.yml'
       - 'templates/groups/ojs/unit_tests.yml'
       - 'templates/groups/ojs/cypress_tests.yml'
+
+# Desabilita os jobs de testes de aceitação da aplicação, por enquanto
+ojs_integration_tests:
+  rules:
+    - when: never
