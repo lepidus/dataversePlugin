@@ -43,9 +43,11 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 
     it('Begins submission. Checks for data statement fields', function () {
         cy.login('eostrom', null, 'publicknowledge');
-        
+
         cy.get('div#myQueue a:contains("New Submission")').click();
         beginSubmission(submissionData);
+
+        cy.intercept("POST", /submissions\/\d+\/submit/).as('submissionValidation');
 
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         submissionData.keywords.forEach(keyword => {
@@ -62,6 +64,11 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.contains('Insert the URLs to the data');
         cy.get('#dataStatement-dataStatementUrls-control').should('be.visible');
 		advanceNSteps(4);
+        cy.wait('@submissionValidation').then((interception) => {
+            assert.equal(interception.response.statusCode, 400);
+            assert.property(interception.response.body, 'dataStatementUrls');
+            assert.notProperty(interception.response.body, 'dataStatementReason');
+        });
         cy.contains('h3', 'Data statement');
 		cy.contains('It is required to inform the URLs to the data in repositories');
 
