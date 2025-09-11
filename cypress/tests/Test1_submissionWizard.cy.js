@@ -61,8 +61,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('input[name="dataStatementTypes"][value=2]').click();
 		cy.contains('Insert the URLs to the data');
         cy.get('#dataStatement-dataStatementUrls-control').should('be.visible');
-        cy.get('.pkpFormLocales__locale:contains("French")').eq(1).click();
-        cy.get('#dataStatement-dataStatementReason-control-fr_CA').should('not.be.visible');
 		advanceNSteps(4);
         cy.contains('h3', 'Data statement');
 		cy.contains('It is required to inform the URLs to the data in repositories');

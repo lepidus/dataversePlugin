@@ -216,7 +216,7 @@ class DataStatementDispatcher extends DataverseDispatcher
             }
         }
 
-        if (in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)
+        if (in_array(DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE, $dataStatementTypes)
             && !$dataStatementReason
         ) {
             $errors['dataStatementReason'] = [__('plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.required')];
