@@ -210,6 +210,14 @@ pkp.Vue.component('field-controlled-vocab-url', {
 			this.$emit('set-errors', this.name, errors, this.localeKey);
 		},
     },
+    watch: {
+        currentValue(newVal, oldVal) {
+            if (this.currentValue === null) {
+                this.currentValue = [];
+            }
+			this.$nextTick(() => this.updateInputWidth());
+		},
+    },
     render: function (h) {
         return template.render.call(this, h);
     },
