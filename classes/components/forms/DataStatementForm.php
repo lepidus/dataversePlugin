@@ -47,10 +47,9 @@ class DataStatementForm extends FormComponent
         ->addField(new FieldText('dataStatementReason', [
             'label' => __('plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason'),
             'description' => __('plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description'),
-            'isRequired' => true,
             'isMultilingual' => true,
             'value' => $publication->getData('dataStatementReason'),
-            'size' => 'large',
+            'size' => 'large'
         ]));
 
         if ($page == 'workflow') {

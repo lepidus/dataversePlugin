@@ -45,8 +45,30 @@ pkp.Vue.component('data-statement-form', {
         }, 2500);
 	},
 	watch: {
-        flagMounted(newVal, oldVal) {
+		flagMounted(newVal, oldVal) {
 			this.updateDataSubmittedField();
+		},
+		fields(newVal, oldVal) {
+			const getField = (name) => newVal.find(field => field.name === name);
+
+			const dataStatementTypesField = getField('dataStatementTypes');
+			if (!dataStatementTypesField || !dataStatementTypesField.value) {
+				return;
+			}
+
+			const fieldsToUpdate = [
+				{ name: 'dataStatementReason', const: pkp.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE }
+			];
+
+			fieldsToUpdate.forEach(({ name, const: constValue }) => {
+				const field = getField(name);
+				if (field) {
+					field.isRequired = dataStatementTypesField.value.includes(constValue);
+					if (!field.isRequired && this.errors[field.name]) {
+						this.$delete(this.errors, field.name);
+					}
+				}
+			});
 		}
 	}
 });
@@ -55,7 +77,7 @@ function addEventListeners() {
 	let checkRepoAvailable = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE + '"]')[0];
 	let checkPublicUnavailable = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE + '"]')[0];
 	let checkDataverseSubmitted = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED + '"]')[0];
-	
+
 	let dataStatementUrlsField = document.getElementById('dataStatement-dataStatementUrls-description').parentNode;
 	let dataStatementReasonField = document.querySelectorAll('[id^="dataStatement-dataStatementReason-description"')[0].parentNode;
 	let currentUrl = window.location.href;
@@ -78,7 +100,7 @@ function addEventListeners() {
 	) {
 		let panelSections = document.getElementsByClassName('panelSection');
 		let datasetFilesPanel = document.getElementById('datasetFiles').parentNode.parentNode;
-		let datasetSubjectField = document.getElementById('datasetMetadata-datasetSubject-control'); 
+		let datasetSubjectField = document.getElementById('datasetMetadata-datasetSubject-control');
 		let datasetMetadataPanel = null;
 
 		for (let panelSection of panelSections) {
@@ -87,7 +109,7 @@ function addEventListeners() {
 				break;
 			}
 		}
-		
+
 		checkDataverseSubmitted.addEventListener('change', function() {
 			if (this.checked) {
 				datasetFilesPanel.style.display = '';
@@ -97,7 +119,7 @@ function addEventListeners() {
 				datasetMetadataPanel.style.display = 'none';
 			}
 		});
-	
+
 		datasetFilesPanel.style.display = (checkDataverseSubmitted.checked ? '' : 'none');
 		datasetMetadataPanel.style.display = (checkDataverseSubmitted.checked ? '' : 'none');
 	}
