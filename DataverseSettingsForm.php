@@ -14,6 +14,7 @@ use PKP\form\validation\FormValidatorPost;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DefaultAdditionalInstructions;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 
 class DataverseSettingsForm extends Form
@@ -101,6 +102,7 @@ class DataverseSettingsForm extends Form
 
     public function execute(...$functionArgs)
     {
+        $this->setDefaultAdditionalInstructions();
         foreach (self::CONFIG_VARS as $configVar => $type) {
             $this->plugin->updateSetting($this->contextId, $configVar, $this->getData($configVar), $type);
         }
@@ -122,5 +124,20 @@ class DataverseSettingsForm extends Form
         }
 
         return true;
+    }
+
+    private function setDefaultAdditionalInstructions(): void
+    {
+        $defaultAdditionalInstructions = new DefaultAdditionalInstructions();
+        $defaultInstructions = $defaultAdditionalInstructions->getDefaultInstructions();
+
+        $additionalInstructions = $this->getData('additionalInstructions');
+        foreach ($defaultInstructions as $locale => $instructions) {
+            if (empty($additionalInstructions[$locale])) {
+                $additionalInstructions[$locale] = $instructions;
+            }
+        }
+
+        $this->setData('additionalInstructions', $additionalInstructions);
     }
 }
