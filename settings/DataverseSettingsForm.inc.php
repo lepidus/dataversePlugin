@@ -3,6 +3,7 @@
 import('lib.pkp.classes.form.Form');
 import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
 import('plugins.generic.dataverse.dataverseAPI.actions.DataverseCollectionActions');
+import('plugins.generic.dataverse.settings.DefaultAdditionalInstructions');
 
 class DataverseSettingsForm extends Form
 {
@@ -90,6 +91,7 @@ class DataverseSettingsForm extends Form
 
     public function execute(...$functionArgs)
     {
+        $this->setDefaultAdditionalInstructions();
         foreach (self::CONFIG_VARS as $configVar => $type) {
             $this->plugin->updateSetting($this->contextId, $configVar, $this->getData($configVar), $type);
         }
@@ -111,5 +113,20 @@ class DataverseSettingsForm extends Form
         }
 
         return true;
+    }
+
+    private function setDefaultAdditionalInstructions(): void
+    {
+        $defaultAdditionalInstructions = new DefaultAdditionalInstructions();
+        $defaultInstructions = $defaultAdditionalInstructions->getDefaultInstructions();
+
+        $additionalInstructions = $this->getData('additionalInstructions');
+        foreach ($defaultInstructions as $locale => $instructions) {
+            if (empty($additionalInstructions[$locale])) {
+                $additionalInstructions[$locale] = $instructions;
+            }
+        }
+
+        $this->setData('additionalInstructions', $additionalInstructions);
     }
 }
