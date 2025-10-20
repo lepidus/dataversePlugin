@@ -9,7 +9,6 @@ include:
       - 'templates/groups/ojs/unit_tests.yml'
       - 'templates/groups/ojs/cypress_tests.yml'
 
-# Desabilita os jobs de testes de aceitação da aplicação, por enquanto
-ojs_integration_tests:
-  rules:
-    - when: never
+.integration_tests_template:
+  before_script:
+    - sed -i 's/api_key_secret = ""/api_key_secret = "$API_KEY_SECRET"/' /var/www/$CY_APPLICATION/config.inc.php
