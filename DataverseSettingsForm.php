@@ -70,6 +70,10 @@ class DataverseSettingsForm extends Form
 
     public function initData(): void
     {
+        $encryption = new DataEncryption();
+        $secretConfigExists = $encryption->secretConfigExists();
+        $this->setData('secretConfigExists', $secretConfigExists);
+
         $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
         $configuration = $configurationDAO->get($this->contextId);
         $data = $configuration->getAllData();
