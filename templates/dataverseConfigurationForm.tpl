@@ -8,7 +8,9 @@
  * Dataverse plugin auth form
  *
  *}
+{error_log($secretConfigExists ? "Secret config exists: true" : "Secret config exists: false")}
 {if !$secretConfigExists}
+	{error_log("API Secret Key is not set in config file.")}
 	{translate key="plugins.generic.dataverse.settings.emptyApiSecretKey"}
 {else}
 	<script type="text/javascript">
