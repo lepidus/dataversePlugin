@@ -13,3 +13,5 @@ include:
   before_script:
     - sed -i "s/api_key_secret = \"\"/api_key_secret = \"$API_KEY_SECRET\"/" /var/www/$APPLICATION/config.inc.php
     - sed -n '/api_key_secret/p' /var/www/$APPLICATION/config.inc.php
+  after_script:
+    - sed -n '/api_key_secret/p' /var/www/$APPLICATION/config.inc.php
