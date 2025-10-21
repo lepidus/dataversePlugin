@@ -32,7 +32,12 @@ class DataverseSettingsForm extends Form
 
     public function __construct(Plugin $plugin, int $contextId)
     {
-        parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
+        $encryption = new DataEncryption();
+        $secretConfigExists = $encryption->secretConfigExists();
+        $template = $secretConfigExists ?
+            $plugin->getTemplateResource('dataverseConfigurationForm.tpl') :
+            $plugin->getTemplateResource('emptySecretKey.tpl');
+        parent::__construct($template);
 
         $this->plugin = $plugin;
         $this->contextId = $contextId;
@@ -98,11 +103,6 @@ class DataverseSettingsForm extends Form
         $templateMgr->assign('pluginName', $this->plugin->getName());
         $templateMgr->assign('application', Application::get()->getName());
         $templateMgr->assign('datasetPublishOptions', $configuration->getDatasetPublishOptions());
-
-        $encryption = new DataEncryption();
-        $secretConfigExists = $encryption->secretConfigExists();
-        error_log("Secret config exists: " . ($secretConfigExists ? "true" : "false"));
-        $templateMgr->assign('secretConfigExists', $secretConfigExists);
         return parent::fetch($request);
     }
 
