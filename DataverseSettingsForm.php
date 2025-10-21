@@ -32,7 +32,10 @@ class DataverseSettingsForm extends Form
 
     public function __construct(Plugin $plugin, int $contextId)
     {
-        parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
+        $encryption = new DataEncryption();
+        $secretConfigExists = $encryption->secretConfigExists();
+        $template = $secretConfigExists ? 'dataverseConfigurationForm.tpl' : 'emptySecretKey.tpl';
+        parent::__construct($plugin->getTemplateResource($template));
 
         $this->plugin = $plugin;
         $this->contextId = $contextId;
@@ -70,10 +73,6 @@ class DataverseSettingsForm extends Form
 
     public function initData(): void
     {
-        $encryption = new DataEncryption();
-        $secretConfigExists = $encryption->secretConfigExists();
-        $this->setData('secretConfigExists', $secretConfigExists);
-
         $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
         $configuration = $configurationDAO->get($this->contextId);
         $data = $configuration->getAllData();
