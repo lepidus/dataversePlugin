@@ -72,6 +72,7 @@ class DataverseSettingsForm extends Form
     {
         $encryption = new DataEncryption();
         $secretConfigExists = $encryption->secretConfigExists();
+        error_log("Secret config exists: " . ($secretConfigExists ? "true" : "false"));
         $this->setData('secretConfigExists', $secretConfigExists);
 
         $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
