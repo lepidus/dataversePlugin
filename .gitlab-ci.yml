@@ -19,3 +19,8 @@ include:
     - sed -n '/api_key_secret/p' /var/www/$APPLICATION/config.inc.php
   after_script:
     - sed -n '/api_key_secret/p' /var/www/$APPLICATION/config.inc.php
+
+# Desabilita os jobs de testes de aceitação da aplicação, por enquanto
+ojs_integration_tests:
+  rules:
+    - when: never
