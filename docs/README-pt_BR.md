@@ -17,6 +17,14 @@ Verifique a última versão compatível com a sua aplicação na [Página de Ver
 
 Todas as versões são compatíveis com Dataverse 5.x e 6.x.
 
+## Requisitos para uso
+
+1. **api_key_secret**
+
+A instância do OJS deve ter a configuração `api_key_secret` configurada, você pode contatar o administrador do sistema para fazer isso (consulte [este post](https://forum.pkp.sfu.ca/t/how-to-generate-a-api-key-secret-code-in-ojs-3/72008)).
+
+Isso é necessário para utilizar as credenciais de API fornecidas, que são armazenadas criptografadas no banco de dados do OJS.
+
 ## Instalação
 
 Este plugin está disponível para instalação através da [Galeria de Plugins da PKP](https://docs.pkp.sfu.ca/plugin-inventory/en/). Para fazer a instalação, siga os seguintes passos:
