@@ -70,11 +70,6 @@ class DataverseSettingsForm extends Form
 
     public function initData(): void
     {
-        $encryption = new DataEncryption();
-        $secretConfigExists = $encryption->secretConfigExists();
-        error_log("Secret config exists: " . ($secretConfigExists ? "true" : "false"));
-        $this->setData('secretConfigExists', $secretConfigExists);
-
         $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
         $configuration = $configurationDAO->get($this->contextId);
         $data = $configuration->getAllData();
@@ -103,6 +98,11 @@ class DataverseSettingsForm extends Form
         $templateMgr->assign('pluginName', $this->plugin->getName());
         $templateMgr->assign('application', Application::get()->getName());
         $templateMgr->assign('datasetPublishOptions', $configuration->getDatasetPublishOptions());
+
+        $encryption = new DataEncryption();
+        $secretConfigExists = $encryption->secretConfigExists();
+        error_log("Secret config exists: " . ($secretConfigExists ? "true" : "false"));
+        $templateMgr->assign('secretConfigExists', $secretConfigExists);
         return parent::fetch($request);
     }
 
