@@ -9,3 +9,7 @@ include:
       - 'templates/groups/ops/unit_tests.yml'
       - 'templates/groups/ojs/unit_tests.yml'
       - 'templates/groups/ojs/cypress_tests.yml'
+
+.integration_tests_template:
+  before_script:
+    - sed -i "s/api_key_secret = \"\"/api_key_secret = \"$API_KEY_SECRET\"/" /var/www/$CY_APPLICATION/config.inc.php

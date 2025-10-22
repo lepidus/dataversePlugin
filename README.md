@@ -13,6 +13,14 @@ The latest release of this plugin is compatible with the following PKP applicati
 
 Using PHP between 7.3 and 8.1.
 
+## Requirements for usage
+
+1. **api_key_secret**
+
+The OJS/OPS instance must have the `api_key_secret` configuration set up, you may contact your system administrator to do that (see [this post](https://forum.pkp.sfu.ca/t/how-to-generate-a-api-key-secret-code-in-ojs-3/72008)).
+
+This is required to use the API credentials provided, that are stored encrypted in the OJS/OPS database.
+
 ## Plugin Download
 
 To download the plugin, go to the [Releases page](https://github.com/lepidus/dataversePlugin/releases) and download the tar.gz package of the latest release compatible with your website.

@@ -1,6 +1,7 @@
 <?php
 
 import('lib.pkp.classes.form.Form');
+import('plugins.generic.dataverse.classes.DataEncryption');
 import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
 import('plugins.generic.dataverse.dataverseAPI.actions.DataverseCollectionActions');
 import('plugins.generic.dataverse.settings.DefaultAdditionalInstructions');
@@ -19,7 +20,9 @@ class DataverseSettingsForm extends Form
 
     public function __construct(Plugin $plugin, int $contextId)
     {
-        parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
+        $encryption = new DataEncryption();
+        $template = $encryption->secretConfigExists() ? 'dataverseConfigurationForm.tpl' : 'emptySecretKey.tpl';
+        parent::__construct($plugin->getTemplateResource($template));
 
         $this->plugin = $plugin;
         $this->contextId = $contextId;
@@ -92,6 +95,7 @@ class DataverseSettingsForm extends Form
     public function execute(...$functionArgs)
     {
         $this->setDefaultAdditionalInstructions();
+        $this->encryptApiToken();
         foreach (self::CONFIG_VARS as $configVar => $type) {
             $this->plugin->updateSetting($this->contextId, $configVar, $this->getData($configVar), $type);
         }
@@ -128,5 +132,16 @@ class DataverseSettingsForm extends Form
         }
 
         $this->setData('additionalInstructions', $additionalInstructions);
+    }
+
+    private function encryptApiToken(): void
+    {
+        $encryption = new DataEncryption();
+        $apiToken = $this->getData('apiToken');
+
+        if (!$encryption->textIsEncrypted($apiToken)) {
+            $encryptedToken = $encryption->encryptString($apiToken);
+            $this->setData('apiToken', $encryptedToken);
+        }
     }
 }

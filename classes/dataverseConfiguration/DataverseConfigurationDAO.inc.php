@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 
+import('plugins.generic.dataverse.classes.DataEncryption');
 import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfiguration');
 
 class DataverseConfigurationDAO
@@ -35,6 +36,7 @@ class DataverseConfigurationDAO
     public function get(int $contextId): DataverseConfiguration
     {
         $settings = $this->dao->getPluginSettings($contextId, $this->pluginName);
+        $settings = $this->decryptApiToken($settings);
         $configuration = $this->newDataObject();
         $configuration->setAllData($settings);
         return $configuration;
@@ -51,5 +53,16 @@ class DataverseConfigurationDAO
                 $value,
             );
         }
+    }
+
+    private function decryptApiToken(array $settings): array
+    {
+        if (isset($settings['apiToken'])) {
+            $encryption = new DataEncryption();
+            if ($encryption->textIsEncrypted($settings['apiToken'])) {
+                $settings['apiToken'] = $encryption->decryptString($settings['apiToken']);
+            }
+        }
+        return $settings;
     }
 }
