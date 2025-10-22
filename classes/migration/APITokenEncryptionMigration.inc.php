@@ -18,7 +18,7 @@ class APITokenEncryptionMigration extends Migration
             ->where('plugin_name', 'dataverseplugin')
             ->where('setting_name', 'apiToken')
             ->get(['context_id', 'setting_value'])
-            ->each(function ($row) {
+            ->each(function ($row) use ($encrypter) {
                 if (empty($row->setting_value) || $encrypter->textIsEncrypted($row->setting_value)) {
                     return;
                 }
