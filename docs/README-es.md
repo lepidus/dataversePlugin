@@ -13,6 +13,14 @@ Este plugin es compatible con las siguientes aplicaciones PKP:
 
 Consulte la última versión compatible con su aplicación en la [Página de Versiones](https://github.com/lepidus/dataversePlugin/releases).
 
+## Requisitos para uso
+
+1. **api_key_secret**
+
+La instancia de OJS debe tener la configuración `api_key_secret` configurada, puedes contactar a tu administrador de sistema para hacerlo (ver [esta publicación](https://forum.pkp.sfu.ca/t/how-to-generate-a-api-key-secret-code-in-ojs-3/72008)).
+
+Esto es necesario para utilizar las credenciales de API proporcionadas, que se almacenan cifradas en la base de datos de OJS.
+
 ## Instalación
 
 ### Instrucciones

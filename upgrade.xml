@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE install SYSTEM "../../../lib/pkp/dtd/install.dtd">
+
+<install version="3.3.5.0">
+    <migration class="APP\plugins\generic\dataverse\classes\migrations\APITokenEncryptionMigration" />
+</install>

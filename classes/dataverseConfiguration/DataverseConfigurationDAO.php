@@ -5,6 +5,7 @@ namespace APP\plugins\generic\dataverse\classes\dataverseConfiguration;
 use Illuminate\Support\Facades\DB;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\DataEncryption;
 
 class DataverseConfigurationDAO
 {
@@ -36,6 +37,7 @@ class DataverseConfigurationDAO
     public function get(int $contextId): DataverseConfiguration
     {
         $settings = $this->dao->getPluginSettings($contextId, $this->pluginName);
+        $settings = $this->decryptApiToken($settings);
         $configuration = $this->newDataObject();
         $configuration->setAllData($settings);
         return $configuration;
@@ -52,5 +54,16 @@ class DataverseConfigurationDAO
                 $value,
             );
         }
+    }
+
+    private function decryptApiToken(array $settings): array
+    {
+        if (isset($settings['apiToken'])) {
+            $encryption = new DataEncryption();
+            if ($encryption->textIsEncrypted($settings['apiToken'])) {
+                $settings['apiToken'] = $encryption->decryptString($settings['apiToken']);
+            }
+        }
+        return $settings;
     }
 }
