@@ -16,7 +16,6 @@ class DataEncryption
         try {
             $this->getSecretFromConfig();
         } catch (Exception $e) {
-            error_log($e->getMessage());
             return false;
         }
         return true;
@@ -25,7 +24,6 @@ class DataEncryption
     private function getSecretFromConfig(): string
     {
         $secret = Config::getVar('security', 'api_key_secret');
-        error_log("API Key Secret is " . ($secret === null ? "null" : "set"));
         if ($secret === "") {
             throw new Exception("Dataverse Error: A secret must be set in the config file ('api_key_secret') so that keys can be encrypted and decrypted");
         }
