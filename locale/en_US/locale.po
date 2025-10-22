@@ -17,6 +17,9 @@ msgstr "Dataverse Plugin"
 msgid "plugins.generic.dataverse.description"
 msgstr "Deposit data sets and/or other supplementary files to a Dataverse."
 
+msgid "plugins.generic.dataverse.settings.emptyApiSecretKey"
+msgstr "The administrator must set a secret in the site configuration file ('api_key_secret')."
+
 msgid "plugins.generic.dataverse.settings.description"
 msgstr ""
 "Configure the Dataverse API to deposit research data into a Dataverse repository.<br>"

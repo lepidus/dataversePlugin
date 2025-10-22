@@ -1,6 +1,7 @@
 <?php
 
 import('lib.pkp.classes.form.Form');
+import('plugins.generic.dataverse.classes.DataEncryption');
 import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
 import('plugins.generic.dataverse.dataverseAPI.actions.DataverseCollectionActions');
 import('plugins.generic.dataverse.settings.DefaultAdditionalInstructions');
@@ -19,7 +20,9 @@ class DataverseSettingsForm extends Form
 
     public function __construct(Plugin $plugin, int $contextId)
     {
-        parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
+        $encryption = new DataEncryption();
+        $template = $encryption->secretConfigExists() ? 'dataverseConfigurationForm.tpl' : 'emptySecretKey.tpl';
+        parent::__construct($plugin->getTemplateResource($template));
 
         $this->plugin = $plugin;
         $this->contextId = $contextId;
