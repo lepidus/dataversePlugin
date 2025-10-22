@@ -11,6 +11,7 @@ use PKP\form\validation\FormValidatorUrl;
 use PKP\form\validation\FormValidator;
 use PKP\form\validation\FormValidatorCustom;
 use PKP\form\validation\FormValidatorPost;
+use APP\plugins\generic\dataverse\classes\DataEncryption;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
@@ -31,7 +32,9 @@ class DataverseSettingsForm extends Form
 
     public function __construct(Plugin $plugin, int $contextId)
     {
-        parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
+        $encryption = new DataEncryption();
+        $template = $encryption->secretConfigExists() ? 'dataverseConfigurationForm.tpl' : 'emptySecretKey.tpl';
+        parent::__construct($plugin->getTemplateResource($template));
 
         $this->plugin = $plugin;
         $this->contextId = $contextId;
