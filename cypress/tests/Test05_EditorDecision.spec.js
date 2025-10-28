@@ -165,7 +165,7 @@ describe('Research data publishing in editor decision', function () {
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.get('#datasetTab-button .pkpBadge').contains('2');
 	});
-	it('Check research data is published in editor decision', function () {
+	it('Check research data can be published in article acceptance', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('active', submission.title);
 
@@ -181,7 +181,12 @@ describe('Research data publishing in editor decision', function () {
 		cy.get('input[name="shouldPublishResearchData"][value="1"]').should('not.be.checked');
 		cy.get('input[name="shouldPublishResearchData"][value="0"]').should('not.be.checked');
 		
-		cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
+		cy.get('input[name="shouldPublishResearchData"][value="0"]').click();
 		cy.get('button:contains("Record Editorial Decision")').click();
+		
+		cy.get('#workflow-button').click();
+		cy.get('li.pkp_workflow_editorial.initiated').within(() => {
+			cy.contains('Copyediting');
+		});
 	});
 });
