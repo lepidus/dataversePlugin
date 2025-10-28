@@ -183,6 +183,7 @@ describe('Research data publishing in editor decision', function () {
 		
 		cy.get('input[name="shouldPublishResearchData"][value="0"]').click();
 		cy.get('button:contains("Record Editorial Decision")').click();
+		cy.wait(1000);
 		
 		cy.get('#workflow-button').click();
 		cy.get('li.pkp_workflow_editorial.initiated').within(() => {
