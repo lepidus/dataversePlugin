@@ -190,4 +190,14 @@ describe('Research data publishing in editor decision', function () {
 			cy.contains('Copyediting');
 		});
 	});
+	it('Dataset publish prompt does not appear when sending to production', function () {
+		cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submission.title);
+
+		cy.get('ul.pkp_workflow_decisions:visible a:contains("Send To Production")', { timeout: 30000 }).click();
+		cy.get('button:contains("Next:")').click();
+
+		cy.get('#researchDataNotice').should('not.exist');
+		cy.get('#researchDataPublishChoice').should('not.exist');
+	});
 });
