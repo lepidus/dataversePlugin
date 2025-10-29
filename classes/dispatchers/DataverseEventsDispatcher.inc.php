@@ -234,6 +234,10 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $form = &$params[0];
         $output = &$params[1];
 
+        if ($form->getDecision() != SUBMISSION_EDITOR_DECISION_ACCEPT) {
+            return $output;
+        }
+
         $request = Application::get()->getRequest();
         $context = $request->getContext();
         $templateMgr = TemplateManager::getManager($request);

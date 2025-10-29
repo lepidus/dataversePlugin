@@ -165,7 +165,7 @@ describe('Research data publishing in editor decision', function () {
 		cy.waitDatasetTabLoading('datasetTab');
 		cy.get('#datasetTab-button .pkpBadge').contains('2');
 	});
-	it('Check research data is published in editor decision', function () {
+	it('Check research data can be published in article acceptance', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('active', submission.title);
 
@@ -181,7 +181,23 @@ describe('Research data publishing in editor decision', function () {
 		cy.get('input[name="shouldPublishResearchData"][value="1"]').should('not.be.checked');
 		cy.get('input[name="shouldPublishResearchData"][value="0"]').should('not.be.checked');
 		
-		cy.get('input[name="shouldPublishResearchData"][value="1"]').click();
+		cy.get('input[name="shouldPublishResearchData"][value="0"]').click();
 		cy.get('button:contains("Record Editorial Decision")').click();
+		cy.wait(1000);
+		
+		cy.get('#workflow-button').click();
+		cy.get('li.pkp_workflow_editorial.initiated').within(() => {
+			cy.contains('Copyediting');
+		});
+	});
+	it('Dataset publish prompt does not appear when sending to production', function () {
+		cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submission.title);
+
+		cy.get('ul.pkp_workflow_decisions:visible a:contains("Send To Production")', { timeout: 30000 }).click();
+		cy.get('button:contains("Next:")').click();
+
+		cy.get('#researchDataNotice').should('not.exist');
+		cy.get('#researchDataPublishChoice').should('not.exist');
 	});
 });
