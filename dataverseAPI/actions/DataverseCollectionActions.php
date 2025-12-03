@@ -97,6 +97,34 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         return $matches[1] ?? '';
     }
 
+    public function getRequiredMetadata(): array
+    {
+        $cache = $this->cacheManager->getFileCache(
+            $this->contextId,
+            'dataverse_required_metadata',
+            [$this, 'cacheDismiss']
+        );
+
+        $dataverseRequiredMetadata = $cache->getContents();
+        $currentCacheTime = time() - $cache->getCacheTime();
+
+        if (is_null($dataverseRequiredMetadata) || $currentCacheTime > self::ONE_DAY_SECONDS) {
+            $cache->flush();
+
+            $args = 'returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true';
+            $uri = $this->getCurrentDataverseURI() . '/metadatablocks?' . $args;
+            $response = $this->nativeAPIRequest('GET', $uri);
+            $responseBody = json_decode($response->getBody(), true);
+            $metadataBlocks = $responseBody['data'] ?? [];
+
+            $dataverseRequiredMetadata = $this->extractRequiredMetadata($metadataBlocks);
+
+            $cache->setEntireCache($dataverseRequiredMetadata);
+        }
+
+        return $dataverseRequiredMetadata;
+    }
+
     public function publish(): void
     {
         $uri = $this->getCurrentDataverseURI() . '/actions/:publish';
@@ -120,5 +148,24 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         $dataverseCollection->setAllData($dataverseCollectionData);
 
         return $dataverseCollection;
+    }
+
+    private function extractRequiredMetadata(array $metadataBlocks): array
+    {
+        $requiredMetadata = [];
+
+        foreach ($metadataBlocks as $block) {
+            if (isset($block['fields']) && is_array($block['fields'])) {
+                $requiredMetadata[$block['name']] = [];
+                foreach ($block['fields'] as $field) {
+                    if (empty($field['isRequired']) || $field['isRequired'] !== true) {
+                        continue;
+                    }
+                    $requiredMetadata[$block['name']][$field['name']] = $field;
+                }
+            }
+        }
+
+        return $requiredMetadata;
     }
 }
