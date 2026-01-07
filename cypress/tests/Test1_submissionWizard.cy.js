@@ -197,7 +197,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
-				fileName: 'README.pdf',
+				fileName: 'LEIAME.pdf',
 				mimeType: 'application/pdf',
 				encoding: 'base64',
 			});
@@ -206,12 +206,35 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
 		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
+        cy.get('#datasetFiles').contains('a', 'LEIAME.pdf');
+
+        advanceNSteps(3);
+        cy.get('div:contains("It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files")').should('not.exist');
+        cy.contains('a', 'LEIAME.pdf');
+        cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
+
+        cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
+        cy.get('.listPanel__item:contains(LEIAME.pdf) button:contains(Delete)').click();
+		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
+        cy.waitJQuery();
+
+        cy.contains('button', 'Add research data').click();
+        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
+			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
+				fileContent,
+				fileName: 'README.pdf',
+				mimeType: 'application/pdf',
+				encoding: 'base64',
+			});
+		});
+		cy.wait(1000);
+		cy.get('input[name="termsOfUse"]').check();
+		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetFiles').contains('a', 'README.pdf');
 
         advanceNSteps(3);
         cy.get('div:contains("It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files")').should('not.exist');
         cy.contains('a', 'README.pdf');
-        cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
     });
     it('Adds dataset metadata', function () {
         cy.login('eostrom', null, 'publicknowledge');
