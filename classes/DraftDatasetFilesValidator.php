@@ -50,13 +50,26 @@ class DraftDatasetFilesValidator
             $fileName = strtolower($file->getFileName());
             $fileType = $tempFile->getData('filetype');
 
-            if (str_contains($fileName, 'readme')
+            if (
+                $this->filenameHasReadmeKeyword($fileName)
                 && ($fileType == 'application/pdf' || $fileType == 'text/plain')
             ) {
                 return true;
             }
         }
 
+        return false;
+    }
+
+    private function filenameHasReadmeKeyword(string $fileName): bool
+    {
+        $readmeKeywords = ['readme', 'leiame', 'leia-me', 'leame'];
+
+        foreach ($readmeKeywords as $keyword) {
+            if (str_contains($fileName, $keyword)) {
+                return true;
+            }
+        }
         return false;
     }
 }
