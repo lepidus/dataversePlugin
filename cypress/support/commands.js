@@ -2,7 +2,9 @@ Cypress.Commands.add('changeAuthorEditPermissionOnPublication', function(usernam
 	var familyName = fullName.split(' ')[1];
     context = context || 'publicknowledge';
 	cy.login(username, password, context);
+	cy.log('Login como dbarnes feito');
 	cy.findSubmissionAsEditor(username, password, familyName, context);
+	cy.log('Submissão encontrada');
 	cy.contains('span', fullName).parent().siblings('.show_extras').first().click();
 	cy.get('.pkp_linkaction_icon_edit_user:visible').click();
 	
@@ -11,8 +13,10 @@ Cypress.Commands.add('changeAuthorEditPermissionOnPublication', function(usernam
 	} else {
 		cy.get('input[name="canChangeMetadata"]').uncheck();
 	}
+	cy.log('Permissões de Elinor Ostrom alteradas');
 	cy.get('[id^="submitFormButton"]').contains('OK').click();
 	cy.contains('The stage assignment has been changed.');
+	cy.log('Confirmado que salvou');
 	cy.logout();
 });
 
