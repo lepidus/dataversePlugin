@@ -17,7 +17,7 @@ class DefaultAdditionalInstructions
                 generated, or used in the scientific research and that facilitate the evaluation,
                 validation, understanding, and reproduction of the research (e.g.: Databases, submitted
                 questionnaires, anonymized responses, etc).</p>
-            <p>2. It is mandatory to include a file named "Readme" (in .txt or .pdf format) containing
+            <p>2. It is mandatory to include a file named "Readme"/"Leiame"/"Leame" (in .txt or .pdf format) containing
                 information about the dataset and data files. This file should describe the research
                 context, methodology, file structure, variables, and usage instructions, following
                 best practices for scientific data management to ensure accessibility, understanding,
@@ -43,7 +43,7 @@ class DefaultAdditionalInstructions
                 observados, generados o utilizados por la investigación científica y que faciliten la evaluación,
                 validación, comprensión y reproducción de la investigación (ej.: Bases de datos, cuestionarios
                 enviados, respuestas anonimizadas, etc).</p>
-            <p>2. Es obligatorio incluir un archivo llamado "Readme" (en formato .txt o .pdf) que contenga
+            <p>2. Es obligatorio incluir un archivo llamado "Readme"/"Leiame"/"Leame" (en formato .txt o .pdf) que contenga
                 información del conjunto y archivos de datos. Este archivo debe describir el contexto de la
                 investigación, metodología, estructura de los archivos, variables e instrucciones de uso, siguiendo
                 las mejores prácticas de gestión de datos científicos para asegurar la accesibilidad,
@@ -70,7 +70,7 @@ class DefaultAdditionalInstructions
                 observados, gerados ou usados pela pesquisa científica e que facilitem a avaliação,
                 validação, compreensão e reprodução da pesquisa (ex.: Banco de dados, questionários
                 enviados, respostas anonimizadas, etc).</p>
-            <p>2. É obrigatória a inclusão de um arquivo nomeado "Readme" (em formato .txt ou .pdf) contendo
+            <p>2. É obrigatória a inclusão de um arquivo nomeado "Readme"/"Leiame"/"Leame" (em formato .txt ou .pdf) contendo
                 informações do conjunto e arquivos de dados. Este arquivo deve descrever o contexto da
                 pesquisa, metodologia, estrutura dos arquivos, variáveis e instruções de uso, seguindo
                 as melhores práticas de gestão de dados científicos para assegurar acessibilidade,
