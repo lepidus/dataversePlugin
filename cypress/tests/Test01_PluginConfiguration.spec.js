@@ -14,6 +14,7 @@ describe('Plugin configuration', function () {
 		cy.get('#active-button').click();
 		cy.get('.pkpButton:visible:contains("View")').first().click();
 		cy.get('#publication-button').click();
+		cy.logout();
 	});
 	it('Configures plugin', function() {
 		const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
