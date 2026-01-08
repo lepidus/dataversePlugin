@@ -316,7 +316,7 @@ describe('Research data deposit', function () {
 		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
 			cy.get('[data-modal="fileForm"] input[type=file]').upload({
 				fileContent,
-				fileName: 'README.pdf',
+				fileName: 'LEIAME.pdf',
 				mimeType: 'application/pdf',
 				encoding: 'base64',
 			});
