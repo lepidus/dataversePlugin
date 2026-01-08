@@ -24,7 +24,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 
     it('Data statement features are displayed in workflow tab', function () {
         if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-			cy.changeAuthorEditPermissionOnPublication('dbarnes', null, 'Elinor Ostrom', 'publicknowledge', 'check');
+			cy.changeAuthorEditPermissionOnPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionData.title, 'check');
 		}
         
         cy.login('eostrom', null, 'publicknowledge');
@@ -227,7 +227,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 	});
     it('Author can not perform actions without edit permission granted', function () {
 		if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-			cy.changeAuthorEditPermissionOnPublication('dbarnes', null, 'Elinor Ostrom', 'publicknowledge', 'uncheck');
+			cy.changeAuthorEditPermissionOnPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionData.title,'uncheck');
 		}
         
         cy.login('eostrom', null, 'publicknowledge');
