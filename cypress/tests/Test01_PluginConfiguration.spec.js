@@ -70,5 +70,6 @@ describe('Plugin configuration', function () {
 
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('div:contains("Your changes have been saved.")');
+		cy.logout();
 	});
 });
