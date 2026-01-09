@@ -14,6 +14,7 @@ describe('Plugin configuration', function () {
 		cy.get('#active-button').click();
 		cy.get('.pkpButton:visible:contains("View")').first().click();
 		cy.get('#publication-button').click();
+		cy.logout();
 	});
 	it('Configures plugin', function() {
 		const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
@@ -51,7 +52,7 @@ describe('Plugin configuration', function () {
 			cy.getTinyMceContent(node.attr('id'))
 				.should('contain', '1. Submit under "Research Data" any files that have been collected');
 			cy.getTinyMceContent(node.attr('id'))
-				.should('contain', '2. It is mandatory to include a file named "Readme"');
+				.should('contain', '2. It is mandatory to include a file named "Readme"/"Leiame"/"Leame"');
 			cy.getTinyMceContent(node.attr('id'))
 				.should('contain', '3. The files deposited in "Research Data" will form a dataset');
 		});
@@ -69,5 +70,6 @@ describe('Plugin configuration', function () {
 
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('div:contains("Your changes have been saved.")');
+		cy.logout();
 	});
 });

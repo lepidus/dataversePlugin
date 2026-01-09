@@ -2,7 +2,7 @@ import '../support/commands.js';
 
 function assertAdditionalInstructionsDisplay() {
 	cy.contains('1. Submit under "Research Data" any files that have been collected');
-	cy.contains('2. It is mandatory to include a file named "Readme"');
+	cy.contains('2. It is mandatory to include a file named "Readme"/"Leiame"/"Leame"');
 	cy.contains('For additional guidance on creating the file, consult the suggested references below');
 	cy.contains('3. The files deposited in "Research Data" will form a dataset');
 }
@@ -168,7 +168,7 @@ describe('Research data deposit', function () {
 	});
 	it('Check author can edit research data metadata', function () {
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
-			cy.allowAuthorToEditPublication('dbarnes', null, 'Catherine Kwantes');
+			cy.allowAuthorToEditPublication('dbarnes', 'Catherine Kwantes', 'publicknowledge', submission.title);
 		}
 
 		cy.login('ckwantes', null, 'publicknowledge');
@@ -316,7 +316,7 @@ describe('Research data deposit', function () {
 		cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
 			cy.get('[data-modal="fileForm"] input[type=file]').upload({
 				fileContent,
-				fileName: 'README.pdf',
+				fileName: 'LEIAME.pdf',
 				mimeType: 'application/pdf',
 				encoding: 'base64',
 			});
