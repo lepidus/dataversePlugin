@@ -89,7 +89,7 @@ describe('Research data state', function () {
 
 	it('Check data statement edit in data statement tab', function () {
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
-			cy.allowAuthorToEditPublication('dbarnes', null, 'Elinor Ostrom');
+			cy.allowAuthorToEditPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submission.title);
 		}
 
 		cy.login('eostrom', null, 'publicknowledge');

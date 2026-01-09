@@ -168,7 +168,7 @@ describe('Research data deposit', function () {
 	});
 	it('Check author can edit research data metadata', function () {
 		if (Cypress.env('contextTitles').en_US !== 'Public Knowledge Preprint Server') {
-			cy.allowAuthorToEditPublication('dbarnes', null, 'Catherine Kwantes');
+			cy.allowAuthorToEditPublication('dbarnes', 'Catherine Kwantes', 'publicknowledge', submission.title);
 		}
 
 		cy.login('ckwantes', null, 'publicknowledge');
