@@ -134,7 +134,8 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
     private function createDataverseCollection(DataverseResponse $response): DataverseCollection
     {
         $jsonContent = json_decode($response->getBody(), true);
-        if ($jsonContent['status'] != 'OK'
+        if (
+            $jsonContent['status'] != 'OK'
             || empty($jsonContent['data'])
             || !isset($jsonContent['data']['name'])
         ) {
@@ -153,19 +154,53 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
     private function extractRequiredMetadata(array $metadataBlocks): array
     {
         $requiredMetadata = [];
+        $metadataToFilter = ['title', 'dsDescription', 'author', 'subject', 'datasetContact'];
 
         foreach ($metadataBlocks as $block) {
-            if (isset($block['fields']) && is_array($block['fields'])) {
-                $requiredMetadata[$block['name']] = [];
-                foreach ($block['fields'] as $field) {
-                    if (empty($field['isRequired']) || $field['isRequired'] !== true) {
-                        continue;
-                    }
-                    $requiredMetadata[$block['name']][$field['name']] = $field;
-                }
+            if (!isset($block['fields']) || !is_array($block['fields'])) {
+                continue;
+            }
+
+            $filteredFields = $this->filterRequiredFields($block['fields'], $metadataToFilter);
+
+            if (!empty($filteredFields)) {
+                $requiredMetadata[$block['name']] = $filteredFields;
             }
         }
 
         return $requiredMetadata;
+    }
+
+    private function filterRequiredFields(array $fields, array $metadataToFilter): array
+    {
+        $filteredFields = [];
+
+        foreach ($fields as $key => $field) {
+            if (in_array($field['name'], $metadataToFilter)) {
+                continue;
+            }
+
+            if ($this->isRequiredField($field)) {
+                $filteredFields[$key] = $field;
+            }
+        }
+
+        return $filteredFields;
+    }
+
+    private function isRequiredField(array &$field): bool
+    {
+        $hasRequiredChildren = false;
+
+        if (isset($field['childFields']) && is_array($field['childFields'])) {
+            $field['childFields'] = array_filter(
+                $field['childFields'],
+                fn ($child) => $child['isRequired'] ?? false
+            );
+
+            $hasRequiredChildren = !empty($field['childFields']);
+        }
+
+        return ($field['isRequired'] ?? false) || $hasRequiredChildren;
     }
 }
