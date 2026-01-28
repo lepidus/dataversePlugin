@@ -1,7 +1,6 @@
 Cypress.Commands.add('changeAuthorEditPermissionOnPublication', function(username, password, fullName, context, option) {
 	var familyName = fullName.split(' ')[1];
     context = context || 'publicknowledge';
-	cy.login(username, password, context);
 	cy.findSubmissionAsEditor(username, password, familyName, context);
 	cy.contains('span', fullName).parent().siblings('.show_extras').first().click();
 	cy.get('.pkp_linkaction_icon_edit_user:visible').click();
