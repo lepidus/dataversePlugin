@@ -73,38 +73,33 @@ class DatasetMetadataForm extends FormComponent
             'value' => $datasetMetadata['license'],
         ]));
 
-        $requiredMetadata = $this->getRequiredMetadata();
-        foreach ($requiredMetadata as $fields) {
-            foreach ($fields as $field) {
-                if (isset($field['childFields'])) {
-                    foreach ($field['childFields'] as $childField) {
-                        $this->addMetadataField($childField, $datasetMetadata);
-                    }
-                    continue;
-                }
-
-                $this->addMetadataField($field, $datasetMetadata);
+        try {
+            $flattenedFields = $this->getFlattenedRequiredMetadataFields();
+            foreach ($flattenedFields as $field) {
+                $this->addMetadataField($field, $dataset);
             }
+        } catch (DataverseException $e) {
+            error_log('Error getting required metadata fields: ' . $e->getMessage());
         }
     }
 
-    private function addMetadataField($field, $datasetMetadata): void
+    private function addMetadataField($field, $dataset): void
     {
         $fieldName = 'dataset' . ucfirst($field['name']);
         $fieldType = $this->getFieldType($field);
 
-        $fieldConfig = $this->buildFieldConfig($field, $fieldName, $datasetMetadata);
+        $fieldConfig = $this->buildFieldConfig($field, $dataset);
 
         $this->addField(new $fieldType($fieldName, $fieldConfig));
     }
 
-    private function buildFieldConfig($field, $fieldName, $datasetMetadata): array
+    private function buildFieldConfig($field, $dataset): array
     {
         $config = [
             'label' => $field['displayName'],
             'description' => $field['description'],
             'isRequired' => $field['isRequired'],
-            'value' => $datasetMetadata[$fieldName] ?? ''
+            'value' => $dataset->getData($field['name']) ?? ''
         ];
 
         if (!empty($field['isControlledVocabulary'])) {
@@ -197,11 +192,12 @@ class DatasetMetadataForm extends FormComponent
         return $config;
     }
 
-    private function getRequiredMetadata(): array
+    private function getFlattenedRequiredMetadataFields(): array
     {
         $dataverseClient = new DataverseClient();
-        $requiredMetadata = $dataverseClient->getDataverseCollectionActions()->getRequiredMetadata();
+        $dataverseCollectionActions = $dataverseClient->getDataverseCollectionActions();
+        $requiredMetadata = $dataverseCollectionActions->getRequiredMetadata();
 
-        return $requiredMetadata;
+        return $dataverseCollectionActions->getFlattenedFields($requiredMetadata);
     }
 }

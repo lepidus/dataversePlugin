@@ -203,4 +203,23 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
         return ($field['isRequired'] ?? false) || $hasRequiredChildren;
     }
+
+    public function getFlattenedFields(array $metadataBlocks): array
+    {
+        $flattenedFields = [];
+
+        foreach ($metadataBlocks as $fields) {
+            foreach ($fields as $field) {
+                if (isset($field['childFields'])) {
+                    foreach ($field['childFields'] as $childField) {
+                        $flattenedFields[] = $childField;
+                    }
+                    continue;
+                }
+                $flattenedFields[] = $field;
+            }
+        }
+
+        return $flattenedFields;
+    }
 }
