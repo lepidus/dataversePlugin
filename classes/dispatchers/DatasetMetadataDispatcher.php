@@ -10,6 +10,7 @@ use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 class DatasetMetadataDispatcher extends DataverseDispatcher
 {
@@ -70,6 +71,13 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
         $templateMgr = $params[1];
         $output = &$params[2];
 
+        try {
+            $flattenedFields = $this->getFlattenedRequiredMetadataFields();
+            $templateMgr->assign('requiredMetadataFields', $flattenedFields);
+        } catch (DataverseException $e) {
+            error_log('Error getting required metadata fields: ' . $e->getMessage());
+        }
+
         if ($step === 'editors') {
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review/datasetMetadata.tpl'));
         }
@@ -95,5 +103,14 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
         }
 
         return false;
+    }
+
+    private function getFlattenedRequiredMetadataFields(): array
+    {
+        $dataverseClient = new DataverseClient();
+        $dataverseCollectionActions = $dataverseClient->getDataverseCollectionActions();
+        $requiredMetadata = $dataverseCollectionActions->getRequiredMetadata();
+
+        return $dataverseCollectionActions->getFlattenedFields($requiredMetadata);
     }
 }
