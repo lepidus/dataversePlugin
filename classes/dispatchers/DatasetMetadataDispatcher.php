@@ -44,6 +44,17 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
         $dataset = new Dataset();
         $dataset->setData('subject', $submission->getData('datasetSubject'));
         $dataset->setData('license', $submission->getData('datasetLicense'));
+
+        try {
+            $flattenedFields = $this->getFlattenedRequiredMetadataFields();
+            foreach ($flattenedFields as $field) {
+                $metadataName = 'dataset' . ucfirst($field['name']);
+                $dataset->setData($field['name'], $submission->getData($metadataName));
+            }
+        } catch (DataverseException $e) {
+            error_log('Error getting metadata fields from submission: ' . $e->getMessage());
+        }
+
         $datasetMetadataForm = new DatasetMetadataForm($submissionApiUrl, 'POST', $dataset, 'submission');
 
         $steps = $templateMgr->getState('steps');
