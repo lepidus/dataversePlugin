@@ -62,6 +62,22 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             ]
         ];
 
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataverseCollectionActions = $dataverseClient->getDataverseCollectionActions();
+            $requiredMetadata = $dataverseCollectionActions->getRequiredMetadata();
+            $metadataFields = $dataverseCollectionActions->getFlattenedFields($requiredMetadata);
+            foreach ($metadataFields as $field) {
+                $schema->properties->{'dataset' . ucfirst($field['name'])} = (object) [
+                    'type' => 'string',
+                    'apiSummary' => true,
+                    'validation' => ['nullable'],
+                ];
+            }
+        } catch (DataverseException $e) {
+            error_log('Dataverse Error while modifying submission schema: ' . $e->getMessage());
+        }
+
         return false;
     }
 
