@@ -100,6 +100,18 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
             if (!$submission->getData('datasetSubject')) {
                 $errors['datasetSubject'] = [__('plugins.generic.dataverse.error.datasetSubject.required')];
             }
+
+            try {
+                $flattenedFields = $this->getFlattenedRequiredMetadataFields();
+                foreach ($flattenedFields as $field) {
+                    $metadataName = 'dataset' . ucfirst($field['name']);
+                    if (empty($submission->getData($metadataName))) {
+                        $errors[$metadataName] = [__('validator.required')];
+                    }
+                }
+            } catch (DataverseException $e) {
+                error_log('Error getting required metadata fields: ' . $e->getMessage());
+            }
         }
 
         return false;
