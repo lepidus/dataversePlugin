@@ -17,6 +17,7 @@ use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
 use APP\plugins\generic\dataverse\classes\APACitation;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 class SubmissionDatasetFactory extends DatasetFactory
 {
@@ -52,7 +53,26 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['relatedPublication'] = $this->getDatasetRelatedPublication($publication);
         $props['files'] = $this->getDatasetFiles();
 
+        $this->sanitizeAdditionalProps($props);
+
         return $props;
+    }
+
+    private function sanitizeAdditionalProps(array &$props): void
+    {
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataverseCollectionActions = $dataverseClient->getDataverseCollectionActions();
+            $requiredMetadata = $dataverseCollectionActions->getRequiredMetadata();
+            $flattenedFields = $dataverseCollectionActions->getFlattenedFields($requiredMetadata);
+
+            foreach ($flattenedFields as $field) {
+                $fieldName = 'dataset' . ucfirst($field['name']);
+                $props[$field['name']] = $this->submission->getData($fieldName) ?? null;
+            }
+        } catch (DataverseException $e) {
+            error_log('Error getting required metadata fields: ' . $e->getMessage());
+        }
     }
 
     private function createDatasetAuthor(Author $author): DatasetAuthor

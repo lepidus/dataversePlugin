@@ -154,25 +154,32 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
     private function extractRequiredMetadata(array $metadataBlocks): array
     {
         $requiredMetadata = [];
-        $metadataToFilter = ['title', 'dsDescription', 'author', 'subject', 'datasetContact'];
 
         foreach ($metadataBlocks as $block) {
             if (!isset($block['fields']) || !is_array($block['fields'])) {
                 continue;
             }
 
-            $filteredFields = $this->filterRequiredFields($block['fields'], $metadataToFilter);
+            $filteredFields = $this->filterRequiredFields($block['fields']);
 
             if (!empty($filteredFields)) {
-                $requiredMetadata[$block['name']] = $filteredFields;
+                $requiredMetadata[$block['name']] = [
+                    'name' => $block['name'],
+                    'displayName' => $block['displayName'],
+                    'fields' => $filteredFields
+                ];
             }
         }
 
         return $requiredMetadata;
     }
 
-    private function filterRequiredFields(array $fields, array $metadataToFilter): array
+    private function filterRequiredFields(array $fields): array
     {
+        $metadataToFilter = [
+            'title', 'dsDescriptionValue', 'subject', 'authorName', 'authorIdentifierScheme', 'subject',
+            'datasetContactName', 'datasetContactEmail', 'depositor', 'publicationCitation'
+        ];
         $filteredFields = [];
 
         foreach ($fields as $key => $field) {
@@ -180,7 +187,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
                 continue;
             }
 
-            if ($this->isRequiredField($field)) {
+            if ($this->isRequiredField($field, $metadataToFilter)) {
                 $filteredFields[$key] = $field;
             }
         }
@@ -188,14 +195,14 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         return $filteredFields;
     }
 
-    private function isRequiredField(array &$field): bool
+    private function isRequiredField(array &$field, $metadataToFilter): bool
     {
         $hasRequiredChildren = false;
 
         if (isset($field['childFields']) && is_array($field['childFields'])) {
             $field['childFields'] = array_filter(
                 $field['childFields'],
-                fn ($child) => $child['isRequired'] ?? false
+                fn ($child) => $child['isRequired'] && !in_array($child['name'], $metadataToFilter)
             );
 
             $hasRequiredChildren = !empty($field['childFields']);
@@ -208,8 +215,8 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
     {
         $flattenedFields = [];
 
-        foreach ($metadataBlocks as $fields) {
-            foreach ($fields as $field) {
+        foreach ($metadataBlocks as $block) {
+            foreach ($block['fields'] as $field) {
                 if (isset($field['childFields'])) {
                     foreach ($field['childFields'] as $childField) {
                         $flattenedFields[] = $childField;
