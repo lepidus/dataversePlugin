@@ -272,11 +272,15 @@ class NativeAPIDatasetPackager extends DatasetPackager
     {
         $childFieldValues = [];
         foreach ($childFields as $childField) {
+            if (!isset($datasetData[$childField['name']])) {
+                continue;
+            }
+
             $childFieldValues[$childField['name']] = [
                 'typeName' => $childField['name'],
                 'multiple' => $childField['multiple'],
                 'typeClass' => $childField['typeClass'],
-                'value' => $datasetData[$childField['name']] ?? null
+                'value' => $datasetData[$childField['name']]
             ];
         }
         return $childFieldValues;
@@ -284,6 +288,10 @@ class NativeAPIDatasetPackager extends DatasetPackager
 
     private function addSimpleField(array &$datasetContent, string $blockName, array $field, array $datasetData): void
     {
+        if (!isset($datasetData[$field['name']])) {
+            return;
+        }
+
         $datasetContent['metadataBlocks'][$blockName]['fields'][] = [
             'typeName' => $field['name'],
             'multiple' => $field['multiple'],
