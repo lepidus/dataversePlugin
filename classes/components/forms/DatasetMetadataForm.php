@@ -99,7 +99,7 @@ class DatasetMetadataForm extends FormComponent
             'label' => $field['displayName'],
             'description' => $field['description'],
             'isRequired' => $field['isRequired'],
-            'value' => $dataset->getData($field['name']) ?? ''
+            'value' => isset($dataset) ? $dataset->getData($field['name']) : ''
         ];
 
         if (!empty($field['isControlledVocabulary'])) {
