@@ -187,7 +187,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             let form = { ...this.components.datasetMetadata };
 
             for (let field of form.fields) {
-                let datasetFieldName = field.name.replace(/^dataset/, '').toLowerCase();
+                let datasetFieldName = field.name.replace(/^dataset/, '');
+                if (datasetFieldName !== datasetFieldName.toUpperCase()) {
+                    datasetFieldName = datasetFieldName.charAt(0).toLowerCase() + datasetFieldName.slice(1);
+                }
 
                 if (this.dataset.hasOwnProperty(datasetFieldName)) {
                     field.value = this.dataset[datasetFieldName];
