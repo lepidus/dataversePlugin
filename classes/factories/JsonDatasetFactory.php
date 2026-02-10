@@ -13,10 +13,12 @@ use stdClass;
 class JsonDatasetFactory extends DatasetFactory
 {
     private $jsonContent;
+    private $dataverseClient;
 
-    public function __construct(string $jsonContent)
+    public function __construct(string $jsonContent, ?DataverseClient $dataverseClient = null)
     {
         $this->jsonContent = $jsonContent;
+        $this->dataverseClient = $dataverseClient;
     }
 
     private function getCurrentDatasetVersion()
@@ -189,7 +191,7 @@ class JsonDatasetFactory extends DatasetFactory
 
     private function getAdditionalRequiredMetadata(): array
     {
-        $dataverseClient = new DataverseClient();
+        $dataverseClient = $this->dataverseClient ?? new DataverseClient();
         return $dataverseClient->getDataverseCollectionActions()->getRequiredMetadata();
     }
 }

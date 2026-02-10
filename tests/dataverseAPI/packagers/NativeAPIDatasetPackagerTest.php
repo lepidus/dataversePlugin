@@ -2,6 +2,8 @@
 
 use PKP\tests\PKPTestCase;
 use APP\plugins\generic\dataverse\dataverseAPI\packagers\NativeAPIDatasetPackager;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
@@ -22,6 +24,17 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
     {
         $this->packager->clear();
         parent::tearDown();
+    }
+
+    private function createMockDataverseClient(): DataverseClient
+    {
+        $mockCollectionActions = Mockery::mock(DataverseCollectionActions::class);
+        $mockCollectionActions->shouldReceive('getRequiredMetadata')->andReturn([]);
+
+        $mockClient = Mockery::mock(DataverseClient::class);
+        $mockClient->shouldReceive('getDataverseCollectionActions')->andReturn($mockCollectionActions);
+
+        return $mockClient;
     }
 
     public function testNativeApiPackagerReturnsPackageDirPath(): void
@@ -180,7 +193,8 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
     public function testNativeApiPackagerCreatesDatasetJson(): void
     {
         $dataset = new Dataset();
-        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $mockClient = $this->createMockDataverseClient();
+        $this->packager = new NativeAPIDatasetPackager($dataset, $mockClient);
         $this->packager->loadPackageData();
         $this->packager->createDatasetPackage();
 
@@ -194,7 +208,8 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset->setTitle('Test title');
         $dataset->setLicense($this->license);
 
-        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $mockClient = $this->createMockDataverseClient();
+        $this->packager = new NativeAPIDatasetPackager($dataset, $mockClient);
         $this->packager->loadPackageData();
         $this->packager->createDatasetPackage();
 

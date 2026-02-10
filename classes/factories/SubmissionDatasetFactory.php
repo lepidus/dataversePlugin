@@ -23,6 +23,7 @@ class SubmissionDatasetFactory extends DatasetFactory
 {
     private $submission;
     private $draftDatasetFileRepo;
+    private $dataverseClient;
 
     public function __construct(Submission $submission)
     {
@@ -33,6 +34,11 @@ class SubmissionDatasetFactory extends DatasetFactory
     public function setDraftDatasetFileRepo($repository)
     {
         $this->draftDatasetFileRepo = $repository;
+    }
+
+    public function setDataverseClient($dataverseClient)
+    {
+        $this->dataverseClient = $dataverseClient;
     }
 
     protected function sanitizeProps(): array
@@ -61,7 +67,7 @@ class SubmissionDatasetFactory extends DatasetFactory
     private function sanitizeAdditionalProps(array &$props): void
     {
         try {
-            $dataverseClient = new DataverseClient();
+            $dataverseClient = $this->dataverseClient ?? new DataverseClient();
             $dataverseCollectionActions = $dataverseClient->getDataverseCollectionActions();
             $requiredMetadata = $dataverseCollectionActions->getRequiredMetadata();
             $flattenedFields = $dataverseCollectionActions->getFlattenedFields($requiredMetadata);

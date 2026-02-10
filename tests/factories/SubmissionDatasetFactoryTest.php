@@ -25,6 +25,8 @@ use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\DAO as DraftDatasetFileDao;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\Repository as DraftDatasetFileRepo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 
 class SubmissionDatasetFactoryTest extends PKPTestCase
 {
@@ -37,6 +39,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
     private $temporaryFile;
     private $draftDatasetFile;
     private $mockDraftDatasetFileRepo;
+    private $mockDataverseClient;
 
     protected function setUp(): void
     {
@@ -49,6 +52,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $this->registerMockJournalDAO();
         $this->registerMockTemporaryFileDAO();
         $this->mockDraftDatasetFileRepo = $this->createMockDraftDatasetFileRepo();
+        $this->mockDataverseClient = $this->createMockDataverseClient();
     }
 
     protected function getMockedRegistryKeys(): array
@@ -61,6 +65,18 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         return ['JournalDAO', 'TemporaryFileDAO'];
     }
 
+    private function createMockDataverseClient(): DataverseClient
+    {
+        $mockCollectionActions = Mockery::mock(DataverseCollectionActions::class);
+        $mockCollectionActions->shouldReceive('getRequiredMetadata')->andReturn([]);
+        $mockCollectionActions->shouldReceive('getFlattenedFields')->andReturn([]);
+
+        $mockClient = Mockery::mock(DataverseClient::class);
+        $mockClient->shouldReceive('getDataverseCollectionActions')->andReturn($mockCollectionActions);
+
+        return $mockClient;
+    }
+
     private function registerMockRequest(): void
     {
         $this->user = new User();
@@ -69,11 +85,17 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $this->user->setFamilyName('Doe', $this->locale);
 
         $mockRequest = $this->getMockBuilder(Request::class)
-            ->setMethods(['getUser'])
+            ->onlyMethods(['getUser', 'getUserVar', 'getContext'])
             ->getMock();
         $mockRequest->expects($this->any())
             ->method('getUser')
             ->will($this->returnValue($this->user));
+        $mockRequest->expects($this->any())
+            ->method('getUserVar')
+            ->will($this->returnValue(null));
+        $mockRequest->expects($this->any())
+            ->method('getContext')
+            ->will($this->returnValue(null));
         Registry::set('request', $mockRequest);
     }
 
@@ -189,6 +211,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
     {
         $factory = new SubmissionDatasetFactory($this->submission);
         $factory->setDraftDatasetFileRepo($this->mockDraftDatasetFileRepo);
+        $factory->setDataverseClient($this->mockDataverseClient);
         $dataset = $factory->getDataset();
 
         $datasetAuthor = new DatasetAuthor(

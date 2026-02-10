@@ -14,10 +14,12 @@ class NativeAPIDatasetPackager extends DatasetPackager
     private $datasetLicense;
     private $datasetMetadata = [];
     private $files = [];
+    private $dataverseClient;
 
-    public function __construct(Dataset $dataset)
+    public function __construct(Dataset $dataset, ?DataverseClient $dataverseClient = null)
     {
         $this->dataverseMetadata = new DataverseMetadata();
+        $this->dataverseClient = $dataverseClient;
         $this->packageDirPath = tempnam('/tmp', 'dataverse');
         unlink($this->packageDirPath);
         mkdir($this->packageDirPath);
@@ -194,7 +196,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
     {
         $datasetData = $this->dataset->getAllData();
 
-        $dataverseClient = new DataverseClient();
+        $dataverseClient = $this->dataverseClient ?? new DataverseClient();
         $requiredMetadata = $dataverseClient->getDataverseCollectionActions()->getRequiredMetadata();
 
         foreach ($requiredMetadata as $block) {
