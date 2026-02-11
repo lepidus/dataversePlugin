@@ -170,8 +170,8 @@ class DataverseSettingsForm extends Form
         $cacheManager = CacheManager::getManager();
         $cache = $cacheManager->getFileCache(
             $this->contextId,
-            $cacheId, 
-            function(FileCache $cache) {
+            $cacheId,
+            function (FileCache $cache) {
                 $cache->setEntireCache([]);
                 return [];
             }
