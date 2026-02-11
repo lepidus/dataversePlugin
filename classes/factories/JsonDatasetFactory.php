@@ -7,15 +7,18 @@ use APP\plugins\generic\dataverse\classes\entities\DatasetAuthor;
 use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use stdClass;
 
 class JsonDatasetFactory extends DatasetFactory
 {
     private $jsonContent;
+    private $dataverseClient;
 
-    public function __construct(string $jsonContent)
+    public function __construct(string $jsonContent, ?DataverseClient $dataverseClient = null)
     {
         $this->jsonContent = $jsonContent;
+        $this->dataverseClient = $dataverseClient;
     }
 
     private function getCurrentDatasetVersion()
@@ -131,6 +134,64 @@ class JsonDatasetFactory extends DatasetFactory
             return $datasetFile;
         }, $datasetVersion->files);
 
+        $props = $this->sanitizeAdditionalProps($props, $datasetVersion->metadataBlocks);
+
         return $props;
+    }
+
+    private function sanitizeAdditionalProps(array $props, stdClass $metadataBlocks): array
+    {
+        $requiredMetadata = $this->getAdditionalRequiredMetadata();
+
+        foreach ($requiredMetadata as $block) {
+            if (!isset($metadataBlocks->{$block['name']})) {
+                continue;
+            }
+
+            foreach ($block['fields'] as $field) {
+                $metadataBlockField = $this->findMetadataField($metadataBlocks->{$block['name']}->fields, $field['name']);
+
+                if (!$metadataBlockField) {
+                    continue;
+                }
+
+                $fieldValue = $field['multiple']
+                    ? array_shift($metadataBlockField->value)
+                    : $metadataBlockField->value;
+
+                $props = $this->extractFieldValues($props, $field, $fieldValue);
+            }
+        }
+
+        return $props;
+    }
+
+    private function findMetadataField(array $fields, string $fieldName): ?stdClass
+    {
+        foreach ($fields as $field) {
+            if ($field->typeName === $fieldName) {
+                return $field;
+            }
+        }
+        return null;
+    }
+
+    private function extractFieldValues(array $props, array $field, $fieldValue): array
+    {
+        if (isset($field['childFields'])) {
+            foreach ($field['childFields'] as $childField) {
+                $props[$childField['name']] = $fieldValue->{$childField['name']}->value ?? null;
+            }
+        } else {
+            $props[$field['name']] = $fieldValue;
+        }
+
+        return $props;
+    }
+
+    private function getAdditionalRequiredMetadata(): array
+    {
+        $dataverseClient = $this->dataverseClient ?? new DataverseClient();
+        return $dataverseClient->getDataverseCollectionActions()->getRequiredMetadata();
     }
 }

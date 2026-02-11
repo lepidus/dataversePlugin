@@ -1,6 +1,11 @@
 <?php
 
 use PKP\tests\PKPTestCase;
+use APP\core\Application;
+use APP\core\PageRouter;
+use APP\core\Request;
+use PKP\core\Dispatcher;
+use PKP\core\Registry;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DefaultAdditionalInstructions;
 
@@ -20,10 +25,34 @@ class DataverseConfigurationTest extends PKPTestCase
         'pt_BR' => '<p>Instruções adicionais sobre submissão de dados de pesquisa<\/p>'
     ];
 
+    protected function getMockedRegistryKeys(): array
+    {
+        return ['request'];
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->setupRequest();
         $this->dataverseConfiguration = $this->createTestDataverseConfiguration();
+    }
+
+    private function setupRequest(): void
+    {
+        Registry::delete('request');
+        $application = Application::get();
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['PATH_INFO'] = 'index/test-page/test-op';
+        $request = $application->getRequest();
+
+        $router = new PageRouter();
+        $router->setApplication($application);
+        $dispatcher = new Dispatcher();
+        $dispatcher->setApplication($application);
+        $router->setDispatcher($dispatcher);
+        $request->setRouter($router);
+
+        Registry::set('request', $request);
     }
 
     private function createTestDataverseConfiguration(): DataverseConfiguration

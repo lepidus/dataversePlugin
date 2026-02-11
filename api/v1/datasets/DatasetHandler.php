@@ -229,6 +229,23 @@ class DatasetHandler extends APIHandler
         $dataset->setSubject($requestParams['datasetSubject']);
         $dataset->setLicense($requestParams['datasetLicense']);
 
+        $excludedKeys = [
+            'datasetTitle',
+            'datasetDescription',
+            'datasetKeywords',
+            'datasetSubject',
+            'datasetLicense'
+        ];
+
+        foreach ($requestParams as $key => $value) {
+            if (in_array($key, $excludedKeys)) {
+                continue;
+            }
+            $metadataName = str_replace('dataset', '', $key);
+            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
+            $dataset->setData($metadataName, $value);
+        }
+
         if (!empty($dataset->getFiles())) {
             $datasetService = new DatasetService();
             $depositInfo = $datasetService->deposit($submission, $dataset);

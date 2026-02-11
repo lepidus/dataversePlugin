@@ -11,6 +11,8 @@ use PKP\db\DAORegistry;
 use Illuminate\Support\LazyCollection;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\APACitation;
+use APP\core\Application;
+use APP\core\PageRouter;
 
 class APACitationTest extends PKPTestCase
 {
@@ -21,6 +23,12 @@ class APACitationTest extends PKPTestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        $request = Application::get()->getRequest();
+        if (is_null($request->getRouter())) {
+            $router = new PageRouter();
+            $request->setRouter($router);
+        }
 
         $this->registerMockJournalDAO();
         $this->createTestSubmission();

@@ -5,6 +5,8 @@ namespace APP\plugins\generic\dataverse;
 use PKP\form\Form;
 use PKP\plugins\Plugin;
 use APP\core\Application;
+use PKP\cache\CacheManager;
+use PKP\cache\FileCache;
 use APP\template\TemplateManager;
 use PKP\db\DAORegistry;
 use PKP\form\validation\FormValidatorUrl;
@@ -110,6 +112,7 @@ class DataverseSettingsForm extends Form
         foreach (self::CONFIG_VARS as $configVar => $type) {
             $this->plugin->updateSetting($this->contextId, $configVar, $this->getData($configVar), $type);
         }
+        $this->flushCache();
         parent::execute(...$functionArgs);
     }
 
@@ -154,5 +157,25 @@ class DataverseSettingsForm extends Form
             $encryptedToken = $encryption->encryptString($apiToken);
             $this->setData('apiToken', $encryptedToken);
         }
+    }
+
+    private function flushCache(): void
+    {
+        $cache = $this->getCache('dataverse_required_metadata');
+        $cache->flush();
+    }
+
+    private function getCache(string $cacheId)
+    {
+        $cacheManager = CacheManager::getManager();
+        $cache = $cacheManager->getFileCache(
+            $this->contextId,
+            $cacheId,
+            function (FileCache $cache) {
+                $cache->setEntireCache([]);
+                return [];
+            }
+        );
+        return $cache;
     }
 }

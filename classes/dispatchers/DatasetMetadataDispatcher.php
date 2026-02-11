@@ -10,6 +10,8 @@ use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use PKP\validation\ValidatorFactory;
 
 class DatasetMetadataDispatcher extends DataverseDispatcher
 {
@@ -43,6 +45,17 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
         $dataset = new Dataset();
         $dataset->setData('subject', $submission->getData('datasetSubject'));
         $dataset->setData('license', $submission->getData('datasetLicense'));
+
+        try {
+            $flattenedFields = $this->getFlattenedRequiredMetadataFields();
+            foreach ($flattenedFields as $field) {
+                $metadataName = 'dataset' . ucfirst($field['name']);
+                $dataset->setData($field['name'], $submission->getData($metadataName));
+            }
+        } catch (DataverseException $e) {
+            error_log('Error getting metadata fields from submission: ' . $e->getMessage());
+        }
+
         $datasetMetadataForm = new DatasetMetadataForm($submissionApiUrl, 'POST', $dataset, 'submission');
 
         $steps = $templateMgr->getState('steps');
@@ -70,6 +83,13 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
         $templateMgr = $params[1];
         $output = &$params[2];
 
+        try {
+            $flattenedFields = $this->getFlattenedRequiredMetadataFields();
+            $templateMgr->assign('requiredMetadataFields', $flattenedFields);
+        } catch (DataverseException $e) {
+            error_log('Error getting required metadata fields: ' . $e->getMessage());
+        }
+
         if ($step === 'editors') {
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review/datasetMetadata.tpl'));
         }
@@ -86,14 +106,84 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
         $dataStatementTypes = $publication->getData('dataStatementTypes');
 
         if (
-            !empty($dataStatementTypes)
-            && in_array(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)
+            empty($dataStatementTypes)
+            || !in_array(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)
         ) {
-            if (!$submission->getData('datasetSubject')) {
-                $errors['datasetSubject'] = [__('plugins.generic.dataverse.error.datasetSubject.required')];
+            return false;
+        }
+
+        if (!$submission->getData('datasetSubject')) {
+            $errors['datasetSubject'] = [__('plugins.generic.dataverse.error.datasetSubject.required')];
+        }
+
+        try {
+            $flattenedFields = $this->getFlattenedRequiredMetadataFields();
+            foreach ($flattenedFields as $field) {
+                $metadataName = 'dataset' . ucfirst($field['name']);
+                $value = $submission->getData($metadataName);
+
+                if (empty($value)) {
+                    $errors[$metadataName] = [__('validator.required')];
+                    continue;
+                }
+
+                $this->validateFieldByType($field, $metadataName, $value, $errors);
             }
+        } catch (DataverseException $e) {
+            error_log('Error getting required metadata fields: ' . $e->getMessage());
         }
 
         return false;
+    }
+
+    private function validateFieldByType(array $field, string $metadataName, $value, array &$errors): void
+    {
+        $validationRules = $this->getValidationRules($field['type']);
+
+        if (empty($validationRules)) {
+            return;
+        }
+
+        $validator = ValidatorFactory::make(
+            ['value' => $value],
+            ['value' => $validationRules['rules']]
+        );
+
+        if (!$validator->passes()) {
+            $errors[$metadataName] = $validationRules['useValidatorMessages']
+                ? $validator->errors()->getMessages()['value']
+                : [__($validationRules['errorKey'])];
+        }
+    }
+
+    private function getValidationRules(string $type): array
+    {
+        $rules = [
+            'DATE' => [
+                'rules' => ['required', 'date', 'date_format:Y-m-d'],
+                'useValidatorMessages' => true,
+            ],
+            'URL' => [
+                'rules' => ['required', 'url'],
+                'errorKey' => 'validator.url',
+                'useValidatorMessages' => false,
+            ],
+            'EMAIL' => [
+                'rules' => ['required', 'email_or_localhost'],
+                'errorKey' => 'validator.email',
+                'useValidatorMessages' => false,
+            ],
+        ];
+
+        return $rules[$type] ?? [];
+    }
+
+    private function getFlattenedRequiredMetadataFields(): array
+    {
+        $dataverseClient = new DataverseClient();
+        $dataverseCollectionActions = $dataverseClient->getDataverseCollectionActions();
+        $requiredMetadata = $dataverseCollectionActions->getRequiredMetadata();
+
+        return $dataverseCollectionActions->getFlattenedFields($requiredMetadata);
     }
 }

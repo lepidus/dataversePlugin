@@ -7,9 +7,11 @@ use PKP\components\forms\FieldText;
 use PKP\components\forms\FieldRichTextarea;
 use PKP\components\forms\FieldControlledVocab;
 use PKP\components\forms\FieldSelect;
+use PKP\components\forms\FieldTextarea;
 use APP\core\Application;
 use PKP\facades\Locale;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 class DatasetMetadataForm extends FormComponent
 {
@@ -70,6 +72,66 @@ class DatasetMetadataForm extends FormComponent
             'options' => $this->mapLicensesForDisplay($dataverseLicenses),
             'value' => $datasetMetadata['license'],
         ]));
+
+        try {
+            $flattenedFields = $this->getFlattenedRequiredMetadataFields();
+            foreach ($flattenedFields as $field) {
+                $this->addMetadataField($field, $dataset);
+            }
+        } catch (DataverseException $e) {
+            error_log('Error getting required metadata fields: ' . $e->getMessage());
+        }
+    }
+
+    private function addMetadataField($field, $dataset): void
+    {
+        $fieldName = 'dataset' . ucfirst($field['name']);
+        $fieldType = $this->getFieldType($field);
+
+        $fieldConfig = $this->buildFieldConfig($field, $dataset);
+
+        $this->addField(new $fieldType($fieldName, $fieldConfig));
+    }
+
+    private function buildFieldConfig($field, $dataset): array
+    {
+        $config = [
+            'label' => $field['displayName'],
+            'description' => $field['description'],
+            'isRequired' => $field['isRequired'],
+            'value' => isset($dataset) ? $dataset->getData($field['name']) : ''
+        ];
+
+        if (!empty($field['isControlledVocabulary'])) {
+            $config['options'] = $this->mapControlledVocabularyOptions($field['controlledVocabularyValues']);
+        }
+
+        return $config;
+    }
+
+    private function mapControlledVocabularyOptions(array $values): array
+    {
+        return array_map(
+            static fn ($value) => ['label' => $value, 'value' => $value],
+            $values
+        );
+    }
+
+    private function getFieldType($field): string
+    {
+        if (!empty($field['isControlledVocabulary'])) {
+            return FieldSelect::class;
+        }
+
+        $fieldTypes = [
+            'TEXT' => FieldText::class,
+            'EMAIL' => FieldText::class,
+            'DATE' => FieldText::class,
+            'URL' => FieldText::class,
+            'TEXTBOX' => FieldTextarea::class
+        ];
+
+        return $fieldTypes[$field['type']] ?? FieldText::class;
     }
 
     private function getDatasetMetadata($dataset)
@@ -128,5 +190,14 @@ class DatasetMetadataForm extends FormComponent
         $config['primaryLocale'] = Locale::getLocale();
 
         return $config;
+    }
+
+    private function getFlattenedRequiredMetadataFields(): array
+    {
+        $dataverseClient = new DataverseClient();
+        $dataverseCollectionActions = $dataverseClient->getDataverseCollectionActions();
+        $requiredMetadata = $dataverseCollectionActions->getRequiredMetadata();
+
+        return $dataverseCollectionActions->getFlattenedFields($requiredMetadata);
     }
 }

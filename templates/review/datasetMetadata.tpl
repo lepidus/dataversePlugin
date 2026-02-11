@@ -39,5 +39,33 @@
                 </template>
             </div>
         </div>
+        {foreach from=$requiredMetadataFields item=field}
+            {assign var=metadataName value="dataset{$field.name|ucfirst}"}
+            <div class="submissionWizard__reviewPanel__item">
+                <template v-if="errors.{$metadataName|escape}">
+                    <notification
+                        v-for="(error, i) in errors.{$metadataName|escape}"
+                        :key="i"
+                        type="warning"
+                    >
+                        <icon icon="exclamation-triangle"></icon>
+                        {{ error }}
+                    </notification>
+                </template>
+                <h4 class="submissionWizard__reviewPanel__item__header">
+                    {$field.displayName|escape}
+                </h4>
+                <div
+                    class="submissionWizard__reviewPanel__item__value"
+                >
+                    <template v-if="submission.{$metadataName|escape}">
+                        {{ submission.{$metadataName|escape} }}
+                    </template>
+                    <template v-else>
+                        {translate key="common.noneProvided"}
+                    </template>
+                </div>
+            </div>
+        {/foreach}
     </div>
 </div>

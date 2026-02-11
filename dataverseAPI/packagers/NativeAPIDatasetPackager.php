@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\dataverse\dataverseAPI\packagers;
 
 use APP\plugins\generic\dataverse\dataverseAPI\packagers\DatasetPackager;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 
@@ -13,10 +14,12 @@ class NativeAPIDatasetPackager extends DatasetPackager
     private $datasetLicense;
     private $datasetMetadata = [];
     private $files = [];
+    private $dataverseClient;
 
-    public function __construct(Dataset $dataset)
+    public function __construct(Dataset $dataset, ?DataverseClient $dataverseClient = null)
     {
         $this->dataverseMetadata = new DataverseMetadata();
+        $this->dataverseClient = $dataverseClient;
         $this->packageDirPath = tempnam('/tmp', 'dataverse');
         unlink($this->packageDirPath);
         mkdir($this->packageDirPath);
@@ -178,6 +181,8 @@ class NativeAPIDatasetPackager extends DatasetPackager
         }
         $datasetContent['metadataBlocks']['citation']['fields'] = $this->getDatasetMetadata();
 
+        $this->addAdditionalMetadata($datasetContent);
+
         if (is_null($this->dataset->getPersistentId())) {
             $datasetContent = ['datasetVersion' => $datasetContent];
         }
@@ -185,6 +190,116 @@ class NativeAPIDatasetPackager extends DatasetPackager
         $datasetPackage = fopen($this->getPackagePath(), 'w');
         fwrite($datasetPackage, json_encode($datasetContent));
         fclose($datasetPackage);
+    }
+
+    private function addAdditionalMetadata(array &$datasetContent): void
+    {
+        $datasetData = $this->dataset->getAllData();
+
+        $dataverseClient = $this->dataverseClient ?? new DataverseClient();
+        $requiredMetadata = $dataverseClient->getDataverseCollectionActions()->getRequiredMetadata();
+
+        foreach ($requiredMetadata as $block) {
+            $this->initializeMetadataBlock($datasetContent, $block);
+
+            foreach ($block['fields'] as $field) {
+                $this->addFieldToMetadataBlock($datasetContent, $block['name'], $field, $datasetData);
+            }
+        }
+    }
+
+    private function initializeMetadataBlock(array &$datasetContent, array $block): void
+    {
+        if (!isset($datasetContent['metadataBlocks'][$block['name']])) {
+            $datasetContent['metadataBlocks'][$block['name']] = [
+                'displayName' => $block['displayName'],
+                'fields' => []
+            ];
+        }
+    }
+
+    private function addFieldToMetadataBlock(array &$datasetContent, string $blockName, array $field, array $datasetData): void
+    {
+        if ($field['typeClass'] === 'compound') {
+            $this->addCompoundField($datasetContent, $blockName, $field, $datasetData);
+            return;
+        }
+
+        $this->addSimpleField($datasetContent, $blockName, $field, $datasetData);
+    }
+
+    private function addCompoundField(array &$datasetContent, string $blockName, array $field, array $datasetData): void
+    {
+        $fieldKey = array_search(
+            $field['name'],
+            array_column($datasetContent['metadataBlocks'][$blockName]['fields'], 'typeName')
+        );
+
+        if ($fieldKey === false) {
+            $this->createNewCompoundField($datasetContent, $blockName, $field, $datasetData);
+        } else {
+            $this->updateExistingCompoundField($datasetContent, $blockName, $field, $fieldKey, $datasetData);
+        }
+    }
+
+    private function createNewCompoundField(array &$datasetContent, string $blockName, array $field, array $datasetData): void
+    {
+        $childFieldValues = $this->buildChildFieldValues($field['childFields'], $datasetData);
+
+        if ($field['multiple']) {
+            $childFieldValues = [$childFieldValues];
+        }
+
+        $datasetContent['metadataBlocks'][$blockName]['fields'][] = [
+            'typeName' => $field['name'],
+            'multiple' => $field['multiple'],
+            'typeClass' => $field['typeClass'],
+            'value' => $childFieldValues
+        ];
+    }
+
+    private function updateExistingCompoundField(array &$datasetContent, string $blockName, array $field, int $fieldKey, array $datasetData): void
+    {
+        $currentFieldValue = &$datasetContent['metadataBlocks'][$blockName]['fields'][$fieldKey]['value'];
+        $newChildFields = $this->buildChildFieldValues($field['childFields'], $datasetData);
+
+        if ($field['multiple']) {
+            $currentFieldValue[0] = array_merge($currentFieldValue[0], $newChildFields);
+        } else {
+            $currentFieldValue = array_merge($currentFieldValue, $newChildFields);
+        }
+    }
+
+    private function buildChildFieldValues(array $childFields, array $datasetData): array
+    {
+        $childFieldValues = [];
+        foreach ($childFields as $childField) {
+            if (!isset($datasetData[$childField['name']])) {
+                continue;
+            }
+
+            $childFieldValues[$childField['name']] = [
+                'typeName' => $childField['name'],
+                'multiple' => $childField['multiple'],
+                'typeClass' => $childField['typeClass'],
+                'value' => $datasetData[$childField['name']]
+            ];
+        }
+        return $childFieldValues;
+    }
+
+    private function addSimpleField(array &$datasetContent, string $blockName, array $field, array $datasetData): void
+    {
+        if (!isset($datasetData[$field['name']])) {
+            return;
+        }
+
+        $datasetContent['metadataBlocks'][$blockName]['fields'][] = [
+            'typeName' => $field['name'],
+            'multiple' => $field['multiple'],
+            'typeClass' => $field['typeClass'],
+            'value' => $datasetData[$field['name']]
+        ];
     }
 
     public function createFilesPackage(): void

@@ -5,13 +5,27 @@ use APP\plugins\generic\dataverse\classes\entities\DatasetAuthor;
 use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
 use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\factories\JsonDatasetFactory;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 
 class JsonDatasetFactoryTest extends PKPTestCase
 {
+    private function createMockDataverseClient(): DataverseClient
+    {
+        $mockCollectionActions = Mockery::mock(DataverseCollectionActions::class);
+        $mockCollectionActions->shouldReceive('getRequiredMetadata')->andReturn([]);
+
+        $mockClient = Mockery::mock(DataverseClient::class);
+        $mockClient->shouldReceive('getDataverseCollectionActions')->andReturn($mockCollectionActions);
+
+        return $mockClient;
+    }
+
     public function testCreatesDatasetFromJsonResponse()
     {
         $jsonContent = file_get_contents(__DIR__ . '/../fixtures/datasetVersionsResponseExample.json');
-        $datasetFactory = new JsonDatasetFactory($jsonContent);
+        $mockClient = $this->createMockDataverseClient();
+        $datasetFactory = new JsonDatasetFactory($jsonContent, $mockClient);
         $dataset = $datasetFactory->getDataset();
 
         $expectedDatasetAuthor = new DatasetAuthor('Test, Author', 'Dataverse', 'ORCID', '0000-0000-0000-0000');
