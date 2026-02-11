@@ -51,7 +51,7 @@ describe('Plugin configuration', function () {
 			cy.getTinyMceContent(node.attr('id'))
 				.should('contain', '1. Submit under "Research Data" any files that have been collected');
 			cy.getTinyMceContent(node.attr('id'))
-				.should('contain', '2. It is mandatory to include a file named "Readme"');
+				.should('contain', '2. It is mandatory to include a file named "Readme"/"Leiame"/"Leame"');
 			cy.getTinyMceContent(node.attr('id'))
 				.should('contain', '3. The files deposited in "Research Data" will form a dataset');
 		});
