@@ -3,7 +3,10 @@
 # Dataverse Plugin
 
 This plugin is the result of a partnership between SciELO Brazil and Lepidus. It enables the integration of Open Journal Systems (OJS) and Open Preprint Systems (OPS) with a Dataverse repository.
+
 This way, authors can submit research data associated with their manuscripts during the submission process to the journal or preprint server. The research data remains available within the editorial workflow (for example, it can be made available during article peer review or preprint moderation) and is linked to the publication in OJS/OPS.
+
+For a better understanding of the installation and use of this plugin, check our institutional video: [Dataverse plugin - Introduction and tutorial](https://app.heygen.com/videos/dataverse-plugin-introduction-and-tutorial-3cede08c38bf4065a4f769c1e35ae71d-en?languageCode=en).
 
 ## Compatibility
 
