@@ -58,7 +58,7 @@ class DataEncryption
         try {
             $encryptedString = $encrypter->encrypt($plainText);
         } catch (Exception $e) {
-            throw new Exception("DEIA Survey - Failed to encrypt string");
+            throw new Exception("Dataverse Error: Failed to encrypt string");
         }
 
         return self::BASE64_PREFIX . base64_encode($encryptedString);
