@@ -59,6 +59,9 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('h2', 'Data statement');
         cy.get('#dataStatement-dataStatementUrls-control').should('not.be.visible');
         cy.get('#dataStatement-dataStatementReason-control-en').should('not.be.visible');
+        cy.get('form[dataversepluginapiurl]').within(() => {
+            cy.get('div.pkpFormLocales').should('not.be.visible');
+        });
 
         cy.get('input[name="dataStatementTypes"][value=2]').click();
 		cy.contains('Insert the URLs to the data');
@@ -84,6 +87,9 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('input[name="dataStatementTypes"][value=5]').click();
         cy.contains('Provide the justification for the unavailability of the data');
 		cy.get('#dataStatement-dataStatementReason-control-en').should('be.visible');
+        cy.get('form[dataversepluginapiurl]').within(() => {
+            cy.get('div.pkpFormLocales').should('not.be.visible');
+        });
 		advanceNSteps(4);
 		cy.contains('It is required to inform the justification for the unavailability of the data');
 
