@@ -74,15 +74,19 @@ pkp.Vue.component('data-statement-form', {
 });
 
 function addEventListeners() {
+	let currentUrl = window.location.href;
 	let formLocalesControl = document.querySelector('form[dataversepluginapiurl] div.pkpFormLocales');
-	
+
+	if (currentUrl.includes('workflow') || currentUrl.includes('authorDashboard')) {
+		formLocalesControl = document.querySelector('#dataStatement div.pkpFormLocales');
+	}
+
 	let checkRepoAvailable = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE + '"]')[0];
 	let checkPublicUnavailable = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE + '"]')[0];
 	let checkDataverseSubmitted = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED + '"]')[0];
 
 	let dataStatementUrlsField = document.getElementById('dataStatement-dataStatementUrls-description').parentNode;
 	let dataStatementReasonField = document.querySelectorAll('[id^="dataStatement-dataStatementReason-description"')[0].parentNode;
-	let currentUrl = window.location.href;
 
 	dataStatementUrlsField.hidden = !checkRepoAvailable.checked;
 	dataStatementReasonField.hidden = !checkPublicUnavailable.checked;
