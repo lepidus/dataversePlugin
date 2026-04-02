@@ -88,7 +88,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('Provide the justification for the unavailability of the data');
 		cy.get('#dataStatement-dataStatementReason-control-en').should('be.visible');
         cy.get('form[dataversepluginapiurl]').within(() => {
-            cy.get('div.pkpFormLocales').should('not.be.visible');
+            cy.get('div.pkpFormLocales').should('be.visible');
         });
 		advanceNSteps(4);
 		cy.contains('It is required to inform the justification for the unavailability of the data');
