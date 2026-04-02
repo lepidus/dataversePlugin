@@ -74,6 +74,8 @@ pkp.Vue.component('data-statement-form', {
 });
 
 function addEventListeners() {
+	let formLocalesControl = document.querySelector('form[dataversepluginapiurl] div.pkpFormLocales');
+	
 	let checkRepoAvailable = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE + '"]')[0];
 	let checkPublicUnavailable = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE + '"]')[0];
 	let checkDataverseSubmitted = document.querySelectorAll('input[name="dataStatementTypes"][value="' + pkp.const.DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED + '"]')[0];
@@ -84,12 +86,20 @@ function addEventListeners() {
 
 	dataStatementUrlsField.hidden = !checkRepoAvailable.checked;
 	dataStatementReasonField.hidden = !checkPublicUnavailable.checked;
+	formLocalesControl.hidden = !checkPublicUnavailable.checked;
 
 	checkRepoAvailable.addEventListener('change', function() {
 		dataStatementUrlsField.hidden = !this.checked;
 	});
 
 	checkPublicUnavailable.addEventListener('change', function() {
+		if (!this.checked) {
+			let currentLocaleButton = formLocalesControl.querySelector('button.pkpFormLocales__locale--isActive');
+			if (currentLocaleButton) {
+				currentLocaleButton.click();
+			}
+		}
+		formLocalesControl.hidden = !this.checked;
 		dataStatementReasonField.hidden = !this.checked;
 	});
 
