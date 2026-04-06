@@ -198,7 +198,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
 
     it('Submit dataset with custom required metadata fields in workflow page', function () {
         if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-			cy.changeAuthorEditPermissionOnPublication('dbarnes', null, 'Elinor Ostrom', 'publicknowledge', 'check');
+            cy.changeAuthorEditPermissionOnPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submission.title, 'check');
 		}
 
         cy.login('eostrom', null, 'publicknowledge');
