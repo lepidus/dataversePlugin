@@ -1,14 +1,13 @@
 <?php
 
 use PKP\tests\PKPTestCase;
-use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\CrossrefXmlEditor;
 
 class CrossrefXmlEditorTest extends PKPTestCase
 {
     private CrossrefXmlEditor $xmlEditor;
     private DOMDocument $doc;
-    private Dataset $dataset;
+    private string $persistentId;
 
     public function setUp(): void
     {
@@ -16,7 +15,7 @@ class CrossrefXmlEditorTest extends PKPTestCase
 
         $this->xmlEditor = new CrossrefXmlEditor();
         $this->doc = $this->createTestXml();
-        $this->dataset = $this->createTestDataset();
+        $this->persistentId = 'doi:10.5072/FK2/ABCDEF';
     }
 
     private function createTestXml()
@@ -27,19 +26,11 @@ class CrossrefXmlEditorTest extends PKPTestCase
         return $xml;
     }
 
-    private function createTestDataset()
-    {
-        $dataset = new Dataset();
-        $dataset->setPersistentId('doi:10.5072/FK2/ABCDEF');
-
-        return $dataset;
-    }
-
     public function testAddsDatasetRelationToWorkNode(): void
     {
         $workNode = $this->doc->documentElement;
 
-        $result = $this->xmlEditor->addDatasetRelationToWorkNode($workNode, $this->dataset);
+        $result = $this->xmlEditor->addDatasetRelationToWorkNode($workNode, $this->persistentId);
 
         $programNode = $result->getElementsByTagNameNS('http://www.crossref.org/relations.xsd', 'program')->item(0);
         $resultXml = $result->ownerDocument->saveXML($programNode);
