@@ -2,11 +2,50 @@
 
 namespace APP\plugins\generic\dataverse\classes;
 
+use DOMDocument;
 use DOMElement;
+use Illuminate\Support\Facades\DB;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class CrossrefXmlEditor
 {
     private const RELATIONS_NAMESPACE = 'http://www.crossref.org/relations.xsd';
+
+    public function addDatasetRelationToDepositXml(DOMDocument $depositXml): DOMDocument
+    {
+        $submissionNodes = $depositXml->getElementsByTagName('journal_article');
+
+        if ($submissionNodes->count() == 0) {
+            $submissionNodes = $depositXml->getElementsByTagName('posted_content');
+        }
+
+        foreach ($submissionNodes as $submissionNode) {
+            $doiDataNode = $submissionNode->getElementsByTagName('doi_data')->item(0);
+            $doiNode = $doiDataNode->getElementsByTagName('doi')->item(0);
+            $doi = $doiNode->nodeValue;
+
+            // get the Dataverse study by this DOI
+            $submissionId = DB::table('submissions as s')
+                ->leftJoin('publications as p', 'p.submission_id', '=', 's.submission_id')
+                ->leftJoin('dois as d', 'd.doi_id', '=', 'p.doi_id')
+                ->where('d.doi', '=', $doi)
+                ->value('s.submission_id');
+
+            if (!$submissionId) {
+                continue;
+            }
+
+            $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
+
+            if (!$study) {
+                continue;
+            }
+
+            $this->addDatasetRelationToWorkNode($submissionNode, $study->getPersistentId());
+        }
+
+        return $depositXml;
+    }
 
     public function addDatasetRelationToWorkNode(DOMElement $workNode, string $persistentId): DOMElement
     {
