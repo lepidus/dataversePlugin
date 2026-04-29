@@ -29,13 +29,13 @@
         <jats:p>Lorem ipsum dolor sit amet...</jats:p>
       </jats:abstract>
       <doi_data>
-        <doi>10.14295/nvy90s19</doi>
+        <doi>10.1234/PublicKnowledge.17</doi>
         <resource>http://localhost:8000/index.php/publicknowledge/preprint/view/105/version/111</resource>
       </doi_data>
       <program xmlns="http://www.crossref.org/relations.xsd">
         <related_item>
           <description>Dataset deposited in Dataverse repository.</description>
-          <inter_work_relation relationship-type="isSupplementedBy" identifier-type="doi">10.5072/FK2/ABC</inter_work_relation>
+          <inter_work_relation relationship-type="isSupplementedBy" identifier-type="doi">10.5072/FK2/ABCDEF</inter_work_relation>
         </related_item>
       </program>
     </posted_content>

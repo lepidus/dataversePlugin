@@ -63,7 +63,7 @@
         <program xmlns="http://www.crossref.org/relations.xsd">
           <related_item>
             <description>Dataset deposited in Dataverse repository.</description>
-            <inter_work_relation relationship-type="isSupplementedBy" identifier-type="doi">10.5072/FK2/ABC</inter_work_relation>
+            <inter_work_relation relationship-type="isSupplementedBy" identifier-type="doi">10.5072/FK2/ABCDEF</inter_work_relation>
           </related_item>
         </program>
       </journal_article>
