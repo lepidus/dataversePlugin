@@ -35,7 +35,7 @@ class CrossrefXmlEditorTest extends PKPTestCase
         $programNode = $result->getElementsByTagNameNS('http://www.crossref.org/relations.xsd', 'program')->item(0);
         $resultXml = $result->ownerDocument->saveXML($programNode);
 
-        $expectedXml = file_get_contents(__DIR__ . '/fixtures/expected_dataset_relation.xml');
+        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected_dataset_relation.xml');
 
         $this->assertXmlStringEqualsXmlString($expectedXml, $resultXml);
     }
