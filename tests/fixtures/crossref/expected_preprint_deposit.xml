@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doi_batch xmlns="http://www.crossref.org/schema/5.3.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jats="http://www.ncbi.nlm.nih.gov/JATS1" xmlns:ai="http://www.crossref.org/AccessIndicators.xsd" xmlns:rel="http://www.crossref.org/relations.xsd" version="5.3.1" xsi:schemaLocation="http://www.crossref.org/schema/5.3.1 https://www.crossref.org/schemas/crossref5.3.1.xsd">
+  <head>
+    <doi_batch_id>JPKPKP_1777487523</doi_batch_id>
+    <timestamp>20260429183203763</timestamp>
+    <depositor>
+      <depositor_name>Test Preprints</depositor_name>
+      <email_address>preprints@test.com</email_address>
+    </depositor>
+    <registrant>Public Knowledge Preprint Server</registrant>
+  </head>
+  <body>
+    <posted_content type="preprint" language="en">
+      <contributors>
+        <person_name contributor_role="author" sequence="first" language="en">
+          <given_name>Machado</given_name>
+          <surname>Assis</surname>
+        </person_name>
+      </contributors>
+      <titles>
+        <title>Dom Casmurro as Preprint</title>
+      </titles>
+      <posted_date>
+        <month>04</month>
+        <day>27</day>
+        <year>2026</year>
+      </posted_date>
+      <jats:abstract xmlns:jats="http://www.ncbi.nlm.nih.gov/JATS1" xml:lang="en">
+        <jats:p>Lorem ipsum dolor sit amet...</jats:p>
+      </jats:abstract>
+      <doi_data>
+        <doi>10.14295/nvy90s19</doi>
+        <resource>http://localhost:8000/index.php/publicknowledge/preprint/view/105/version/111</resource>
+      </doi_data>
+      <program xmlns="http://www.crossref.org/relations.xsd">
+        <related_item>
+          <description>Dataset deposited in Dataverse repository.</description>
+          <inter_work_relation relationship-type="isSupplementedBy" identifier-type="doi">10.5072/FK2/ABC</inter_work_relation>
+        </related_item>
+      </program>
+    </posted_content>
+  </body>
+</doi_batch>
