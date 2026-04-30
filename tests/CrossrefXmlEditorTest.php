@@ -7,7 +7,9 @@ use APP\publication\Publication;
 use APP\submission\Submission;
 use APP\plugins\generic\dataverse\classes\CrossrefXmlEditor;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
 
 class CrossrefXmlEditorTest extends DatabaseTestCase
 {
@@ -18,16 +20,18 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
     private ?int $doiId = null;
     private string $doi = '10.1234/PublicKnowledge.17';
     private ?DataverseStudy $study = null;
+    private ?Dataset $dataset = null;
     private string $persistentId = 'doi:10.5072/FK2/ABCDEF';
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->xmlEditor = new CrossrefXmlEditor();
         $this->doc = $this->createTestXml();
         $this->submissionId = $this->createTestSubmission();
         $this->study = $this->createDataverseStudy();
+        $this->dataset = $this->createTestDataset();
+        $this->xmlEditor = $this->createXmlEditor();
     }
 
     public function tearDown(): void
@@ -97,6 +101,23 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $xml->appendChild($xml->createElement('work'));
 
         return $xml;
+    }
+
+    private function createTestDataset(): Dataset
+    {
+        $dataset = new Dataset();
+        $dataset->setPersistentId($this->persistentId);
+        $dataset->setVersionState(Dataset::VERSION_STATE_RELEASED);
+
+        return $dataset;
+    }
+
+    private function createXmlEditor(): CrossrefXmlEditor
+    {
+        $mockDatasetActions = $this->createMock(DatasetActions::class);
+        $mockDatasetActions->method('get')->willReturn($this->dataset);
+
+        return new CrossrefXmlEditor($mockDatasetActions);
     }
 
     public function testAddsDatasetRelationToWorkNode(): void

@@ -6,10 +6,19 @@ use DOMDocument;
 use DOMElement;
 use Illuminate\Support\Facades\DB;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 
 class CrossrefXmlEditor
 {
     private const RELATIONS_NAMESPACE = 'http://www.crossref.org/relations.xsd';
+
+    private DatasetActions $datasetActions;
+
+    public function __construct(?DatasetActions $actions = null)
+    {
+        $this->datasetActions = $actions ?? (new DatasetActions());
+    }
 
     public function addDatasetRelationToDepositXml(DOMDocument $depositXml): DOMDocument
     {
@@ -34,14 +43,22 @@ class CrossrefXmlEditor
             }
 
             $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
-
             if (!$study) {
                 continue;
             }
 
-            // Deve-se verificar também se o conjunto de dados está depositado
+            try {
+                $dataset = $this->datasetActions->get($study->getPersistentId());
+            } catch (DataverseException $e) {
+                $error = $e->getMessage();
+                error_log('Dataverse API error on Crossref export: ' . $error);
 
-            $this->addDatasetRelationToWorkNode($submissionNode, $study->getPersistentId());
+                return $depositXml;
+            }
+
+            if ($dataset->isPublished()) {
+                $this->addDatasetRelationToWorkNode($submissionNode, $study->getPersistentId());
+            }
         }
 
         return $depositXml;
