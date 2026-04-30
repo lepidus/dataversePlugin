@@ -36,6 +36,8 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
 
     public function tearDown(): void
     {
+        parent::tearDown();
+
         $submission = Repo::submission()->get($this->submissionId);
         if ($submission) {
             Repo::submission()->delete($submission);
@@ -45,13 +47,6 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         if ($doi) {
             Repo::doi()->delete($doi);
         }
-
-        parent::tearDown();
-    }
-
-    protected function getAffectedTables(): array
-    {
-        return [...parent::getAffectedTables(), 'dataverse_studies'];
     }
 
     private function createTestSubmission(): int
@@ -72,7 +67,7 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         ]);
         $this->doiId = Repo::doi()->add($doi);
 
-        $publication = Repo::publication()->get($submission->getData('currentPublicationId'));
+        $publication = $submission->getCurrentPublication();
         $publication->setData('doiId', $this->doiId);
         Repo::publication()->dao->update($publication);
 
