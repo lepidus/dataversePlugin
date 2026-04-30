@@ -1,0 +1,25 @@
+<?php
+
+namespace APP\plugins\generic\dataverse\classes\dispatchers;
+
+use PKP\plugins\Hook;
+use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use APP\plugins\generic\dataverse\classes\CrossrefXmlEditor;
+
+class CrossrefDispatcher extends DataverseDispatcher
+{
+    protected function registerHooks(): void
+    {
+        Hook::add('articlecrossrefxmlfilter::execute', [$this, 'addDatasetRelationToCrossrefExport']);
+    }
+
+    public function addDatasetRelationToCrossrefExport(string $hookName, array $params)
+    {
+        $preliminaryOutput = &$params[0];
+
+        $crossrefXmlEditor = new CrossrefXmlEditor();
+        $preliminaryOutput = $crossrefXmlEditor->addDatasetRelationToDepositXml($preliminaryOutput);
+
+        return Hook::CONTINUE;
+    }
+}
