@@ -14,7 +14,6 @@ class CrossrefXmlEditor
     public function addDatasetRelationToDepositXml(DOMDocument $depositXml): DOMDocument
     {
         $submissionNodes = $depositXml->getElementsByTagName('journal_article');
-
         if ($submissionNodes->count() == 0) {
             $submissionNodes = $depositXml->getElementsByTagName('posted_content');
         }
@@ -24,7 +23,6 @@ class CrossrefXmlEditor
             $doiNode = $doiDataNode->getElementsByTagName('doi')->item(0);
             $doi = $doiNode->nodeValue;
 
-            // get the Dataverse study by this DOI
             $submissionId = DB::table('submissions as s')
                 ->leftJoin('publications as p', 'p.submission_id', '=', 's.submission_id')
                 ->leftJoin('dois as d', 'd.doi_id', '=', 'p.doi_id')
@@ -41,6 +39,8 @@ class CrossrefXmlEditor
                 continue;
             }
 
+            // Deve-se verificar também se o conjunto de dados está depositado
+
             $this->addDatasetRelationToWorkNode($submissionNode, $study->getPersistentId());
         }
 
@@ -50,8 +50,6 @@ class CrossrefXmlEditor
     public function addDatasetRelationToWorkNode(DOMElement $workNode, string $persistentId): DOMElement
     {
         $doc = $workNode->ownerDocument;
-
-        $programNode = $doc->createElementNS(self::RELATIONS_NAMESPACE, 'program');
 
         $relatedItemNode = $doc->createElementNS(self::RELATIONS_NAMESPACE, 'related_item');
 
@@ -67,8 +65,16 @@ class CrossrefXmlEditor
 
         $relatedItemNode->appendChild($descriptionNode);
         $relatedItemNode->appendChild($interWorkRelationNode);
-        $programNode->appendChild($relatedItemNode);
-        $workNode->appendChild($programNode);
+
+        $existingProgramNodes = $workNode->getElementsByTagNameNS(self::RELATIONS_NAMESPACE, 'program');
+        if ($existingProgramNodes->count() > 0) {
+            $existingProgramNodes->item(0)->appendChild($relatedItemNode);
+        } else {
+            $programNode = $doc->createElementNS(self::RELATIONS_NAMESPACE, 'program');
+            $programNode->appendChild($relatedItemNode);
+            $doiDataNode = $workNode->getElementsByTagName('doi_data')->item(0);
+            $workNode->insertBefore($programNode, $doiDataNode);
+        }
 
         return $workNode;
     }
