@@ -28,16 +28,16 @@
       <jats:abstract xmlns:jats="http://www.ncbi.nlm.nih.gov/JATS1" xml:lang="en">
         <jats:p>Lorem ipsum dolor sit amet...</jats:p>
       </jats:abstract>
-      <doi_data>
-        <doi>10.1234/PublicKnowledge.17</doi>
-        <resource>http://localhost:8000/index.php/publicknowledge/preprint/view/105/version/111</resource>
-      </doi_data>
       <rel:program>
         <rel:related_item>
           <rel:description>Dataset deposited in Dataverse repository.</rel:description>
           <rel:inter_work_relation relationship-type="isSupplementedBy" identifier-type="doi">10.5072/FK2/ABCDEF</rel:inter_work_relation>
         </rel:related_item>
       </rel:program>
+      <doi_data>
+        <doi>10.1234/PublicKnowledge.17</doi>
+        <resource>http://localhost:8000/index.php/publicknowledge/preprint/view/105/version/111</resource>
+      </doi_data>
     </posted_content>
   </body>
 </doi_batch>

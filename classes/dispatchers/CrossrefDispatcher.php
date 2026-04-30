@@ -10,7 +10,7 @@ class CrossrefDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        Hook::add('articlecrossrefxmlfilter::execute', [$this, 'addDatasetRelationToCrossrefExport']);
+        Hook::add('preprintcrossrefxmlfilter::execute', [$this, 'addDatasetRelationToCrossrefExport']);
     }
 
     public function addDatasetRelationToCrossrefExport(string $hookName, array $params)

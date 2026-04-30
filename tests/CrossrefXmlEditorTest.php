@@ -108,25 +108,30 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $programNode = $result->getElementsByTagNameNS('http://www.crossref.org/relations.xsd', 'program')->item(0);
         $resultXml = $result->ownerDocument->saveXML($programNode);
 
-        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected_dataset_relation.xml');
+        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/dataset_relation.xml');
 
         $this->assertXmlStringEqualsXmlString($expectedXml, $resultXml);
     }
 
     public function testAddsDatasetRelationToDepositXml(): void
     {
-        $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit.xml', 'expected_preprint_deposit.xml');
-        $this->assertAddingOfRelationToXmlMatchesExpected('article_deposit.xml', 'expected_article_deposit.xml');
+        $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit.xml');
+        $this->assertAddingOfRelationToXmlMatchesExpected('article_deposit.xml');
     }
 
-    private function assertAddingOfRelationToXmlMatchesExpected(string $fixture, string $expectedFixture): void
+    public function testAddsRelationToXmlAlreadyWithRelation(): void
+    {
+        $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit_with_relation.xml');
+    }
+
+    private function assertAddingOfRelationToXmlMatchesExpected(string $fixture): void
     {
         $depositXml = new DOMDocument();
         $depositXml->load(__DIR__ . '/fixtures/crossref/' . $fixture);
 
         $result = $this->xmlEditor->addDatasetRelationToDepositXml($depositXml);
 
-        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/' . $expectedFixture);
+        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/' . $fixture);
 
         $this->assertXmlStringEqualsXmlString($expectedXml, $result->saveXML());
     }
