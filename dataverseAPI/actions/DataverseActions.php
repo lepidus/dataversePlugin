@@ -22,8 +22,8 @@ abstract class DataverseActions
     protected const ONE_DAY_SECONDS = 24 * 60 * 60;
 
     public function __construct(
-        DataverseConfiguration $configuration = null,
-        \GuzzleHttp\Client $client = null
+        ?DataverseConfiguration $configuration = null,
+        ?\GuzzleHttp\Client $client = null
     ) {
         if (is_null($configuration)) {
             $this->contextId = Application::get()->getRequest()->getContext()->getId();
@@ -48,7 +48,7 @@ abstract class DataverseActions
 
     public function createSWORDAPIURI(string ...$pathParams): string
     {
-        return $this->serverURL . '/dvn/api/data-deposit/v1.1/swordv2/' .join('/', $pathParams);
+        return $this->serverURL . '/dvn/api/data-deposit/v1.1/swordv2/' . join('/', $pathParams);
     }
 
     public function getCurrentDataverseURI(): string

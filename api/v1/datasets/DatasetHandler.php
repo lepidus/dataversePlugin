@@ -120,7 +120,7 @@ class DatasetHandler extends APIHandler
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
         } catch (DataverseException $e) {
             if ($e->getCode() === 404) {
-                DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
+                Repo::dataverseStudy()->delete($study);
             }
 
             $error = $e->getMessage();
@@ -251,7 +251,7 @@ class DatasetHandler extends APIHandler
             $depositInfo = $datasetService->deposit($submission, $dataset);
             if ($depositInfo['status'] != 'Success') {
                 return $response->withStatus(403)->withJsonError(
-                    $depositInfo['message'].'.author',
+                    $depositInfo['message'] . '.author',
                     $depositInfo['messageParams']
                 );
             }
