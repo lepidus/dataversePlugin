@@ -53,7 +53,7 @@ class CrossrefXmlEditor
                 $error = $e->getMessage();
                 error_log('Dataverse API error on Crossref export: ' . $error);
 
-                return $depositXml;
+                continue;
             }
 
             if ($dataset->isPublished()) {
