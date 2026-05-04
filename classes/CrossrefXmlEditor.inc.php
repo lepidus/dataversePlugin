@@ -10,7 +10,7 @@ class CrossrefXmlEditor
 {
     private const RELATIONS_NAMESPACE = 'http://www.crossref.org/relations.xsd';
 
-    private DatasetActions $datasetActions;
+    private $datasetActions;
 
     public function __construct(?DatasetActions $actions = null)
     {
