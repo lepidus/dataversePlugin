@@ -9,6 +9,8 @@ import('plugins.generic.dataverse.dataverseAPI.actions.DatasetActions');
 import('plugins.generic.dataverse.classes.dispatchers.DataStatementDispatcher');
 import('plugins.generic.dataverse.DataversePlugin');
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 class CrossrefXmlEditorTest extends DatabaseTestCase
 {
     private CrossrefXmlEditor $xmlEditor;
@@ -50,7 +52,14 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $publication = $publicationDao->newDataObject();
         $publication->setData('pub-id::doi', $this->doi);
         $publication->setData('submissionId', $submissionId);
-        $publicationDao->insertObject($publication);
+        $pubId = $publicationDao->insertObject($publication);
+
+        Capsule::table('publication_settings')->insert([
+            'publication_id' => $pubId,
+            'locale' => '',
+            'setting_name' => 'pub-id::doi',
+            'setting_value' => $this->doi,
+        ]);
 
         return $submissionId;
     }
