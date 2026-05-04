@@ -13,15 +13,15 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class CrossrefXmlEditorTest extends DatabaseTestCase
 {
-    private CrossrefXmlEditor $xmlEditor;
-    private DOMDocument $doc;
+    private $xmlEditor;
+    private $doc;
     private $contextId = 1;
-    private ?int $submissionId = null;
-    private ?int $doiId = null;
-    private string $doi = '10.1234/PublicKnowledge.17';
-    private ?DataverseStudy $study = null;
-    private ?Dataset $dataset = null;
-    private string $persistentId = 'doi:10.5072/FK2/ABCDEF';
+    private $submissionId = null;
+    private $doiId = null;
+    private $doi = '10.1234/PublicKnowledge.17';
+    private $study = null;
+    private $dataset = null;
+    private $persistentId = 'doi:10.5072/FK2/ABCDEF';
 
     public function setUp(): void
     {
