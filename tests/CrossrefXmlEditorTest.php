@@ -10,6 +10,8 @@ use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
+use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
+use APP\plugins\generic\dataverse\DataversePlugin;
 
 class CrossrefXmlEditorTest extends DatabaseTestCase
 {
@@ -26,6 +28,8 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
     public function setUp(): void
     {
         parent::setUp();
+        $plugin = new DataversePlugin();
+        $dispatcher = new DataStatementDispatcher($plugin);
 
         $this->doc = $this->createTestXml();
         $this->submissionId = $this->createTestSubmission();
