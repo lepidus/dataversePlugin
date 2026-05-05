@@ -25,7 +25,7 @@ describe('Research data state', function () {
 			cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
 		}
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
-		cy.get('input[id="privacyConsent"]').click();
+		cy.get('#privacyConsent').click();
 
 		cy.get('input[id^="dataStatementReason-en_US-"]').should('not.be.visible');
 		cy.get('ul[id^="dataStatementUrls"]').should('not.be.visible');
