@@ -154,6 +154,7 @@ describe('Research data deposit', function () {
 		});
 
 		cy.get('input[name="datasetTitle"]').should('have.value', 'Replication data for: ' + submission.title);
+		cy.logout();
 	});
 	it('Check if options are disabled for authors without edit permission', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
