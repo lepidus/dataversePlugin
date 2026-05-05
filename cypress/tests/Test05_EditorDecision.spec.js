@@ -45,7 +45,9 @@ describe('Research data publishing in editor decision', function () {
 		}
 		cy.get('input[id^="dataStatementTypes"][value=3]').click();
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
-		cy.get('input[id=privacyConsent]').click();
+		cy.contains('label', 'Yes, I agree to have my data collected').within(() => {
+			cy.get('input').check();
+		});
 		cy.get('button.submitFormButton').click();
 
 		cy.contains('Add research data').click();

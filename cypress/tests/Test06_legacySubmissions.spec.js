@@ -36,7 +36,9 @@ describe('Legacy submissions', function () {
 			cy.get('select[id="sectionId"],select[id="seriesId"]').select(submission.section);
 		}
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
-		cy.get('input[id=privacyConsent]').click();
+		cy.contains('label', 'Yes, I agree to have my data collected').within(() => {
+			cy.get('input').check();
+		});
 		cy.get('#submitStep1Form button.submitFormButton').click();
 		
 		cy.get('#submitStep2Form button.submitFormButton').click();
