@@ -44,7 +44,9 @@ describe('Research data on review', function () {
 		}
 		cy.get('input[id^="dataStatementTypes"][value=3]').click();
 		cy.get('input[id^="checklist-"]').click({ multiple: true });
-		cy.get('input[id=privacyConsent]').click();
+		cy.contains('label', 'Yes, I agree to have my data collected').within(() => {
+			cy.get('input').check();
+		});
 		cy.get('#submitStep1Form button.submitFormButton').click();
 		
 		addResearchDataFile('dummy.pdf', submission.researchDataFileNames[0]);
@@ -72,6 +74,7 @@ describe('Research data on review', function () {
 		cy.waitJQuery();
 		cy.get('#submitStep4Form button.submitFormButton').click();
 		cy.get('button.pkpModalConfirmButton').click();
+		cy.wait(7000);
 
 		cy.waitJQuery();
 		cy.get('h2:contains("Submission complete")');

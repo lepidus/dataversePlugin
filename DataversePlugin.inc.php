@@ -45,7 +45,8 @@ class DataversePlugin extends GenericPlugin
             'DatasetTabDispatcher',
             'DatasetReviewDispatcher',
             'DataverseEventsDispatcher',
-            'DraftDatasetFilesDispatcher'
+            'DraftDatasetFilesDispatcher',
+            'CrossrefDispatcher'
         ];
 
         foreach ($dispatcherClasses as $dispatcherClass) {
