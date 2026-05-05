@@ -74,6 +74,7 @@ describe('Research data on review', function () {
 		cy.waitJQuery();
 		cy.get('#submitStep4Form button.submitFormButton').click();
 		cy.get('button.pkpModalConfirmButton').click();
+		cy.wait(7000);
 
 		cy.waitJQuery();
 		cy.get('h2:contains("Submission complete")');
