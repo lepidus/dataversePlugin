@@ -41,8 +41,8 @@ class APACitationTest extends PKPTestCase
         $journal->setName('Preprints da Lepidus', 'pt_BR');
 
         $journalDAO->expects($this->any())
-                   ->method('getById')
-                   ->will($this->returnValue($journal));
+            ->method('getById')
+            ->will($this->returnValue($journal));
 
         DAORegistry::registerDAO('JournalDAO', $journalDAO);
     }
@@ -95,13 +95,13 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $studyCitationMarkup = $apaCitation->getCitationAsMarkupByStudy($study);
 
-        $expectedCitationMarkup = 'Iris Castanheiras, 2021, "The Rise of The Machine Empire", <a href="'. $expectedDOI .'">'. $expectedDOI .'</a>, Demo Dataverse, V1, UNF:6:dEgtc5Z1MSF3u7c+kF4kXg== [fileUNF]';
+        $expectedCitationMarkup = 'Iris Castanheiras, 2021, "The Rise of The Machine Empire", <a href="' . $expectedDOI . '">' . $expectedDOI . '</a>, Demo Dataverse, V1, UNF:6:dEgtc5Z1MSF3u7c+kF4kXg== [fileUNF]';
         $this->assertEquals($expectedCitationMarkup, $studyCitationMarkup);
     }
 
     public function testPreprintCitationIsAPA(): void
     {
-        $expectedSubmissionCitation = 'Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Castanheiras, I. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus. ';
 
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
@@ -117,7 +117,7 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Álamo, Á. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Álamo, Á. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus. ';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 
@@ -129,7 +129,7 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Fernandes, M. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Fernandes, M. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus. ';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 
@@ -141,7 +141,7 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Átila, L. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Átila, L. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus. ';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 
@@ -153,7 +153,7 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Sérgio, C. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Sérgio, C. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus. ';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 
@@ -164,7 +164,7 @@ class APACitationTest extends PKPTestCase
         $apaCitation = new APACitation();
         $preprintCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
 
-        $expectedSubmissionCitation = 'Castanheiras, Â. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus';
+        $expectedSubmissionCitation = 'Castanheiras, Â. (2021). <em>The Rise of The Machine Empire</em>. Preprints da Lepidus. ';
         $this->assertEquals($expectedSubmissionCitation, $preprintCitation);
     }
 }
