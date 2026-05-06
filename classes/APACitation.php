@@ -16,7 +16,7 @@ class APACitation
 
     public function getCitationAsMarkupByStudy(DataverseStudy $study): string
     {
-        $href = '<a href="'. $study->getPersistentUri() .'">'. $study->getPersistentUri() .'</a>';
+        $href = '<a href="' . $study->getPersistentUri() . '">' . $study->getPersistentUri() . '</a>';
         return str_replace($study->getPersistentUri(), $href, strip_tags($study->getDataCitation()));
     }
 
@@ -34,7 +34,7 @@ class APACitation
         $submissionCitation = $this->createAuthorsCitationAPA($authors) . ' ';
         $submissionCitation .= '(' . date_format($submittedDate, 'Y') . '). ';
         $submissionCitation .= '<em>' . $publication->getLocalizedTitle($this->locale) . '</em>. ';
-        $submissionCitation .= $context->getLocalizedName();
+        $submissionCitation .= $context->getLocalizedName() . '. ';
 
         return $submissionCitation;
     }
