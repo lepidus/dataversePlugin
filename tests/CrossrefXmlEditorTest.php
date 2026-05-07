@@ -123,7 +123,7 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
     {
         $workNode = $this->doc->documentElement;
 
-        $result = $this->xmlEditor->addDatasetRelationToWorkNode($workNode, $this->persistentId);
+        $result = $this->xmlEditor->addDatasetRelationToWorkNode($workNode, CrossrefXmlEditor::ID_TYPE_DOI, $this->persistentId);
 
         $programNode = $result->getElementsByTagNameNS('http://www.crossref.org/relations.xsd', 'program')->item(0);
         $resultXml = $result->ownerDocument->saveXML($programNode);

@@ -12,6 +12,8 @@ use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 class CrossrefXmlEditor
 {
     private const RELATIONS_NAMESPACE = 'http://www.crossref.org/relations.xsd';
+    public const ID_TYPE_DOI = 'doi';
+    public const ID_TYPE_URL = 'url';
 
     private DatasetActions $datasetActions;
 
@@ -57,14 +59,14 @@ class CrossrefXmlEditor
             }
 
             if ($dataset->isPublished()) {
-                $this->addDatasetRelationToWorkNode($submissionNode, $study->getPersistentId());
+                $this->addDatasetRelationToWorkNode($submissionNode, self::ID_TYPE_DOI, $study->getPersistentId());
             }
         }
 
         return $depositXml;
     }
 
-    public function addDatasetRelationToWorkNode(DOMElement $workNode, string $persistentId): DOMElement
+    public function addDatasetRelationToWorkNode(DOMElement $workNode, string $idType, string $identifier): DOMElement
     {
         $doc = $workNode->ownerDocument;
 
@@ -73,11 +75,11 @@ class CrossrefXmlEditor
         $descriptionNode = $doc->createElementNS(self::RELATIONS_NAMESPACE, 'description');
         $descriptionNode->appendChild($doc->createTextNode('Dataset deposited in Dataverse repository.'));
 
-        $doi = preg_replace('/^doi:/i', '', $persistentId);
+        $doi = preg_replace('/^doi:/i', '', $identifier);
 
         $interWorkRelationNode = $doc->createElementNS(self::RELATIONS_NAMESPACE, 'inter_work_relation');
         $interWorkRelationNode->setAttribute('relationship-type', 'isSupplementedBy');
-        $interWorkRelationNode->setAttribute('identifier-type', 'doi');
+        $interWorkRelationNode->setAttribute('identifier-type', $idType);
         $interWorkRelationNode->appendChild($doc->createTextNode($doi));
 
         $relatedItemNode->appendChild($descriptionNode);
