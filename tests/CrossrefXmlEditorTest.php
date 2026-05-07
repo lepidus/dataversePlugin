@@ -23,6 +23,7 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
     private ?DataverseStudy $study = null;
     private ?Dataset $dataset = null;
     private string $persistentId = 'doi:10.5072/FK2/ABCDEF';
+    private string $externalDatasetUrl = 'https://doi.org/10.1234/zenodo.98765';
 
     public function setUp(): void
     {
@@ -122,13 +123,29 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $worksXml = $this->openTestXml('work_node.xml');
 
         $noPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(0);
-        $this->xmlEditor->addDatasetRelationToWorkNode($noPreviousRelWorkNode, CrossrefXmlEditor::ID_TYPE_DOI, $this->persistentId);
+        $this->xmlEditor->addDatasetRelationToWorkNode($noPreviousRelWorkNode, $this->persistentId);
 
         $withPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(1);
-        $this->xmlEditor->addDatasetRelationToWorkNode($withPreviousRelWorkNode, CrossrefXmlEditor::ID_TYPE_DOI, $this->persistentId);
+        $this->xmlEditor->addDatasetRelationToWorkNode($withPreviousRelWorkNode, $this->persistentId);
 
         $resultXml = $worksXml->saveXML();
         $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/work_node.xml');
+
+        $this->assertXmlStringEqualsXmlString($expectedXml, $resultXml);
+    }
+
+    public function testAddsExternalDatasetRelationToWorkNode(): void
+    {
+        $worksXml = $this->openTestXml('work_node.xml');
+
+        $noPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(0);
+        $this->xmlEditor->addDatasetRelationToWorkNode($noPreviousRelWorkNode, $this->externalDatasetUrl, true);
+
+        $withPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(1);
+        $this->xmlEditor->addDatasetRelationToWorkNode($withPreviousRelWorkNode, $this->externalDatasetUrl, true);
+
+        $resultXml = $worksXml->saveXML();
+        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/work_node_external.xml');
 
         $this->assertXmlStringEqualsXmlString($expectedXml, $resultXml);
     }

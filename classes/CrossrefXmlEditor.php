@@ -12,8 +12,8 @@ use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 class CrossrefXmlEditor
 {
     private const RELATIONS_NAMESPACE = 'http://www.crossref.org/relations.xsd';
-    public const ID_TYPE_DOI = 'doi';
-    public const ID_TYPE_URL = 'url';
+    private const ID_TYPE_DOI = 'doi';
+    private const ID_TYPE_URL = 'url';
 
     private DatasetActions $datasetActions;
 
@@ -59,28 +59,30 @@ class CrossrefXmlEditor
             }
 
             if ($dataset->isPublished()) {
-                $this->addDatasetRelationToWorkNode($submissionNode, self::ID_TYPE_DOI, $study->getPersistentId());
+                $doi = preg_replace('/^doi:/i', '', $study->getPersistentId());
+                $this->addDatasetRelationToWorkNode($submissionNode, $doi);
             }
         }
 
         return $depositXml;
     }
 
-    public function addDatasetRelationToWorkNode(DOMElement $workNode, string $idType, string $identifier): DOMElement
+    public function addDatasetRelationToWorkNode(DOMElement $workNode, string $identifier, bool $isExternalDataset = false): DOMElement
     {
         $doc = $workNode->ownerDocument;
 
         $relatedItemNode = $doc->createElementNS(self::RELATIONS_NAMESPACE, 'related_item');
 
+        $descriptionText = $isExternalDataset
+            ? 'Dataset deposited in repository'
+            : 'Dataset deposited in Dataverse repository.';
         $descriptionNode = $doc->createElementNS(self::RELATIONS_NAMESPACE, 'description');
-        $descriptionNode->appendChild($doc->createTextNode('Dataset deposited in Dataverse repository.'));
-
-        $doi = preg_replace('/^doi:/i', '', $identifier);
+        $descriptionNode->appendChild($doc->createTextNode($descriptionText));
 
         $interWorkRelationNode = $doc->createElementNS(self::RELATIONS_NAMESPACE, 'inter_work_relation');
         $interWorkRelationNode->setAttribute('relationship-type', 'isSupplementedBy');
-        $interWorkRelationNode->setAttribute('identifier-type', $idType);
-        $interWorkRelationNode->appendChild($doc->createTextNode($doi));
+        $interWorkRelationNode->setAttribute('identifier-type', ($isExternalDataset ? self::ID_TYPE_URL : self::ID_TYPE_DOI));
+        $interWorkRelationNode->appendChild($doc->createTextNode($identifier));
 
         $relatedItemNode->appendChild($descriptionNode);
         $relatedItemNode->appendChild($interWorkRelationNode);
