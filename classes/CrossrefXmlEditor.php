@@ -90,6 +90,7 @@ class CrossrefXmlEditor
             $existingProgramNodes->item(0)->appendChild($relatedItemNode);
         } else {
             $programNode = $doc->createElementNS(self::RELATIONS_NAMESPACE, 'program');
+            $programNode->setAttribute('name', 'relations');
             $programNode->appendChild($relatedItemNode);
             $doiDataNode = $workNode->getElementsByTagName('doi_data')->item(0);
             $workNode->insertBefore($programNode, $doiDataNode);

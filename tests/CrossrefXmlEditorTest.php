@@ -16,7 +16,6 @@ use APP\plugins\generic\dataverse\DataversePlugin;
 class CrossrefXmlEditorTest extends DatabaseTestCase
 {
     private CrossrefXmlEditor $xmlEditor;
-    private DOMDocument $doc;
     private $contextId = 1;
     private ?int $submissionId = null;
     private ?int $doiId = null;
@@ -31,7 +30,6 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $plugin = new DataversePlugin();
         $dispatcher = new DataStatementDispatcher($plugin);
 
-        $this->doc = $this->createTestXml();
         $this->submissionId = $this->createTestSubmission();
         $this->study = $this->createDataverseStudy();
         $this->dataset = $this->createTestDataset();
@@ -94,10 +92,10 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         return $study;
     }
 
-    private function createTestXml()
+    private function openTestXml(string $fixture): DOMDocument
     {
         $xml = new DOMDocument('1.0', 'UTF-8');
-        $xml->appendChild($xml->createElement('work'));
+        $xml->load(__DIR__ . '/fixtures/crossref/' . $fixture);
 
         return $xml;
     }
@@ -121,14 +119,16 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
 
     public function testAddsDatasetRelationToWorkNode(): void
     {
-        $workNode = $this->doc->documentElement;
+        $worksXml = $this->openTestXml('work_node.xml');
 
-        $result = $this->xmlEditor->addDatasetRelationToWorkNode($workNode, CrossrefXmlEditor::ID_TYPE_DOI, $this->persistentId);
+        $noPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(0);
+        $this->xmlEditor->addDatasetRelationToWorkNode($noPreviousRelWorkNode, CrossrefXmlEditor::ID_TYPE_DOI, $this->persistentId);
 
-        $programNode = $result->getElementsByTagNameNS('http://www.crossref.org/relations.xsd', 'program')->item(0);
-        $resultXml = $result->ownerDocument->saveXML($programNode);
+        $withPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(1);
+        $this->xmlEditor->addDatasetRelationToWorkNode($withPreviousRelWorkNode, CrossrefXmlEditor::ID_TYPE_DOI, $this->persistentId);
 
-        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/dataset_relation.xml');
+        $resultXml = $worksXml->saveXML();
+        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/work_node.xml');
 
         $this->assertXmlStringEqualsXmlString($expectedXml, $resultXml);
     }
@@ -137,11 +137,6 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
     {
         $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit.xml');
         $this->assertAddingOfRelationToXmlMatchesExpected('article_deposit.xml');
-    }
-
-    public function testAddsRelationToXmlAlreadyWithRelation(): void
-    {
-        $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit_with_relation.xml');
     }
 
     private function assertAddingOfRelationToXmlMatchesExpected(string $fixture): void

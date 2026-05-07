@@ -46,7 +46,7 @@
           <day>18</day>
           <year>2023</year>
         </publication_date>
-        <program xmlns="http://www.crossref.org/relations.xsd">
+        <program xmlns="http://www.crossref.org/relations.xsd" name="relations">
           <related_item>
             <description>Dataset deposited in Dataverse repository.</description>
             <inter_work_relation relationship-type="isSupplementedBy" identifier-type="doi">10.5072/FK2/ABCDEF</inter_work_relation>
