@@ -76,7 +76,7 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
     private function addExternalDatasetsToPublication()
     {
         $this->publication->setData('dataStatementTypes', [DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE]);
-        $this->publication->setData('dataStatementUrls',  [$this->externalDatasetUrl]);
+        $this->publication->setData('dataStatementUrls', [$this->externalDatasetUrl]);
 
         Repo::publication()->dao->update($this->publication);
     }
