@@ -28,13 +28,14 @@
       <jats:abstract xmlns:jats="http://www.ncbi.nlm.nih.gov/JATS1" xml:lang="en">
         <jats:p>Lorem ipsum dolor sit amet...</jats:p>
       </jats:abstract>
-      <rel:program xmlns:rel="http://www.crossref.org/relations.xsd" name="relations">
-        <rel:related_item>
-          <rel:intra_work_relation relationship-type="isPreprintOf" identifier-type="doi">https://doi.org/10.1234/LepidusPeriodico.1756</rel:intra_work_relation>
-        </rel:related_item>
+      <rel:program name="relations">
         <rel:related_item>
           <rel:description>Dataset deposited in Dataverse repository.</rel:description>
           <rel:inter_work_relation relationship-type="isSupplementedBy" identifier-type="doi">10.5072/FK2/ABCDEF</rel:inter_work_relation>
+        </rel:related_item>
+        <rel:related_item>
+          <rel:description>Dataset deposited in repository</rel:description>
+          <rel:inter_work_relation relationship-type="isSupplementedBy" identifier-type="uri">https://doi.org/10.1234/zenodo.98765</rel:inter_work_relation>
         </rel:related_item>
       </rel:program>
       <doi_data>

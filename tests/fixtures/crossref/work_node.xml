@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<works>
+  <work> <!-- No previous relation -->
+  </work>
+  <work> <!-- With previous relation -->
+    <program xmlns="http://www.crossref.org/relations.xsd" name="relations">
+      <related_item>
+        <intra_work_relation relationship-type="isPreprintOf" identifier-type="doi">https://doi.org/10.1234/LepidusPeriodico.1756</intra_work_relation>
+      </related_item>
+    </program>
+  </work>
+</works>

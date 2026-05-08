@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<works>
+  <work> <!-- No previous relation -->
+    <program xmlns="http://www.crossref.org/relations.xsd" name="relations">
+      <related_item>
+        <description>Dataset deposited in repository</description>
+        <inter_work_relation relationship-type="isSupplementedBy" identifier-type="uri">https://doi.org/10.1234/zenodo.98765</inter_work_relation>
+      </related_item>
+    </program>
+  </work>
+  <work> <!-- With previous relation -->
+    <program xmlns="http://www.crossref.org/relations.xsd" name="relations">
+      <related_item>
+        <intra_work_relation relationship-type="isPreprintOf" identifier-type="doi">https://doi.org/10.1234/LepidusPeriodico.1756</intra_work_relation>
+      </related_item>
+      <related_item>
+        <description>Dataset deposited in repository</description>
+        <inter_work_relation relationship-type="isSupplementedBy" identifier-type="uri">https://doi.org/10.1234/zenodo.98765</inter_work_relation>
+      </related_item>
+    </program>
+  </work>
+</works>
