@@ -14,7 +14,7 @@ class CrossrefXmlEditor
 {
     private const RELATIONS_NAMESPACE = 'http://www.crossref.org/relations.xsd';
     private const ID_TYPE_DOI = 'doi';
-    private const ID_TYPE_URL = 'url';
+    private const ID_TYPE_URL = 'uri';
 
     private DatasetActions $datasetActions;
 

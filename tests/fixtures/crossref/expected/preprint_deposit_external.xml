@@ -35,7 +35,7 @@
         </rel:related_item>
         <rel:related_item>
           <rel:description>Dataset deposited in repository</rel:description>
-          <rel:inter_work_relation relationship-type="isSupplementedBy" identifier-type="url">https://doi.org/10.1234/zenodo.98765</rel:inter_work_relation>
+          <rel:inter_work_relation relationship-type="isSupplementedBy" identifier-type="uri">https://doi.org/10.1234/zenodo.98765</rel:inter_work_relation>
         </rel:related_item>
       </rel:program>
       <doi_data>

@@ -4,7 +4,7 @@
     <program xmlns="http://www.crossref.org/relations.xsd" name="relations">
       <related_item>
         <description>Dataset deposited in repository</description>
-        <inter_work_relation relationship-type="isSupplementedBy" identifier-type="url">https://doi.org/10.1234/zenodo.98765</inter_work_relation>
+        <inter_work_relation relationship-type="isSupplementedBy" identifier-type="uri">https://doi.org/10.1234/zenodo.98765</inter_work_relation>
       </related_item>
     </program>
   </work>
@@ -15,7 +15,7 @@
       </related_item>
       <related_item>
         <description>Dataset deposited in repository</description>
-        <inter_work_relation relationship-type="isSupplementedBy" identifier-type="url">https://doi.org/10.1234/zenodo.98765</inter_work_relation>
+        <inter_work_relation relationship-type="isSupplementedBy" identifier-type="uri">https://doi.org/10.1234/zenodo.98765</inter_work_relation>
       </related_item>
     </program>
   </work>
