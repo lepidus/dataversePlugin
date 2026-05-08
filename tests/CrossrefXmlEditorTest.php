@@ -51,10 +51,13 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publication = $publicationDao->newDataObject();
         $publication->setData('submissionId', $submissionId);
-        $pubId = $publicationDao->insertObject($publication);
+        $publicationId = $publicationDao->insertObject($publication);
+
+        $submission->setData('currentPublicationId', $publicationId);
+        $submissionDao->updateObject($submission);
 
         Capsule::table('publication_settings')->insert([
-            'publication_id' => $pubId,
+            'publication_id' => $publicationId,
             'locale' => '',
             'setting_name' => 'pub-id::doi',
             'setting_value' => $this->doi,
