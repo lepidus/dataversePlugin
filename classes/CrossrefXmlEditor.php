@@ -4,9 +4,10 @@ namespace APP\plugins\generic\dataverse\classes;
 
 use DOMDocument;
 use DOMElement;
-use Illuminate\Support\Facades\DB;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\classes\DataverseDAO;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 
 class CrossrefXmlEditor
@@ -29,17 +30,13 @@ class CrossrefXmlEditor
             $submissionNodes = $depositXml->getElementsByTagName('posted_content');
         }
 
+        $dataverseDao = new DataverseDAO();
         foreach ($submissionNodes as $submissionNode) {
             $doiDataNode = $submissionNode->getElementsByTagName('doi_data')->item(0);
             $doiNode = $doiDataNode->getElementsByTagName('doi')->item(0);
             $doi = $doiNode->nodeValue;
 
-            $submissionId = DB::table('submissions as s')
-                ->leftJoin('publications as p', 'p.submission_id', '=', 's.submission_id')
-                ->leftJoin('dois as d', 'd.doi_id', '=', 'p.doi_id')
-                ->where('d.doi', '=', $doi)
-                ->value('s.submission_id');
-
+            $submissionId = $dataverseDao->getSubmissionIdByDoi($doi);
             if (!$submissionId) {
                 continue;
             }
@@ -61,6 +58,15 @@ class CrossrefXmlEditor
             if ($dataset->isPublished()) {
                 $doi = preg_replace('/^doi:/i', '', $study->getPersistentId());
                 $this->addDatasetRelationToWorkNode($submissionNode, $doi);
+            }
+
+            $dataStatementTypes = $dataverseDao->getSubmissionStatementTypes($submissionId);
+            if (in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)) {
+                $externalDatasets = $dataverseDao->getSubmissionExternalDatasets($submissionId);
+
+                foreach ($externalDatasets as $externalDatasetUrl) {
+                    $this->addDatasetRelationToWorkNode($submissionNode, $externalDatasetUrl, true);
+                }
             }
         }
 
