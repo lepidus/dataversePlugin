@@ -43,37 +43,33 @@ class DataverseSearchBuilder
         return $this;
     }
 
-    public function getParams(): string
+    private function escapeColon(string $value): string
+    {
+        return str_replace(':', '\:', $value);
+    }
+
+    public function getSearchUrls(): array
     {
         if (empty($this->queries)) {
             $this->addQuery('*');
         }
 
-        $search = 'q=' . implode('+', $this->queries);
+        $searchUrl =  $this->getDataverseSearchEndpoint() . '?';
+        $searchUrl .= 'q=' . implode('+', $this->queries);
 
         if (!empty($this->types)) {
-            $search .= '&type=' .  implode('&type=', $this->types);
+            $searchUrl .= '&type=' .  implode('&type=', $this->types);
         }
 
         if (!empty($this->filterQueries)) {
-            $search .= '&fq=' . implode('+', array_map(function (array $filterQuery) {
+            $searchUrl .= '&fq=' . implode('+', array_map(function (array $filterQuery) {
                 $field = key($filterQuery);
                 $value = $filterQuery[$field];
                 return $field . ':' . $this->escapeColon($value);
             }, $this->filterQueries));
         }
 
-        return $search;
-    }
-
-    private function escapeColon(string $value): string
-    {
-        return str_replace(':', '\:', $value);
-    }
-
-    public function getSearchUrl(): string
-    {
-        return $this->getDataverseSearchEndpoint() . '?' . $this->getParams();
+        return [$searchUrl];
     }
 
     public function search(): DataverseResponse
@@ -106,4 +102,11 @@ class DataverseSearchBuilder
             $response->getBody()
         );
     }
+
+    // Refactor the current search request, turning it into a function that receives the request URL
+    //   and executes it. Should be called 'executeRequest'.
+    // Add a new function 'search' function to replace the current one. It should create n URL queries
+    //   and execute all of them using the new 'executeRequest'. It should return an array of DataverseResponse's.
+    // Add a new function called 'count'. It should work just as the search function, but instead of returning the
+    //  responses, it should sum the 'total_count' of them all and return it.
 }
