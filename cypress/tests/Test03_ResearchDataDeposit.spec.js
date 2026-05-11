@@ -20,6 +20,9 @@ describe('Research data deposit', function () {
 			keywords: ['Modern History'],
 		}
 	});
+	afterEach(function () {
+		cy.logout();
+	});
 
 	it('Check research data deposit in submission wizard', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
@@ -154,7 +157,6 @@ describe('Research data deposit', function () {
 		});
 
 		cy.get('input[name="datasetTitle"]').should('have.value', 'Replication data for: ' + submission.title);
-		cy.logout();
 	});
 	it('Check if options are disabled for authors without edit permission', function () {
 		cy.login('ckwantes', null, 'publicknowledge');
@@ -489,7 +491,6 @@ describe('Research data deposit', function () {
 		cy.get('.data_citation .value').contains('Kwantes, Catherine, ' + currentYear + ', "Replication data for: ' + submission.title + '"');
 		cy.get('.data_citation .value a').contains(/https:\/\/doi\.org\/10\.[^\/]*\/FK2\//);
 		cy.get('.data_citation .value').contains(dataverseServerName + ', V1');
-		cy.logout();
 	});
 
 	it('Check editor actions were registered in activity log', function () {
