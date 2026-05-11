@@ -105,4 +105,20 @@ class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
             $searchBuilder->getSearchUrls()
         );
     }
+
+    public function testLargeNumberOfFiltersGenerateMultipleUrls(): void
+    {
+        $largeNumberOfFilters = 1000;
+        $searchBuilder = $this->getDataverseSearchBuilder();
+        for ($i = 0; $i < $largeNumberOfFilters; $i++) {
+            $searchBuilder->addFilterQuery('publicationStatus', 'Published');
+        }
+
+        $searchUrls = $searchBuilder->getSearchUrls();
+
+        $this->assertGreaterThan(1, count($searchUrls));
+        foreach ($searchUrls as $searchUrl) {
+            $this->assertStringContainsString(self::SEARCH_URL, $searchUrl);
+        }
+    }
 }
