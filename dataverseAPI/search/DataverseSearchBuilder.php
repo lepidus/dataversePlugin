@@ -8,6 +8,8 @@ use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfig
 
 class DataverseSearchBuilder
 {
+    private const URL_MAX_LENGTH = 4096;
+
     private $configuration;
     private $httpClient;
     private $queries = [];
@@ -43,43 +45,53 @@ class DataverseSearchBuilder
         return $this;
     }
 
-    public function getParams(): string
-    {
-        if (empty($this->queries)) {
-            $this->addQuery('*');
-        }
-
-        $search = 'q=' . implode('+', $this->queries);
-
-        if (!empty($this->types)) {
-            $search .= '&type=' .  implode('&type=', $this->types);
-        }
-
-        if (!empty($this->filterQueries)) {
-            $search .= '&fq=' . implode('+', array_map(function (array $filterQuery) {
-                $field = key($filterQuery);
-                $value = $filterQuery[$field];
-                return $field . ':' . $this->escapeColon($value);
-            }, $this->filterQueries));
-        }
-
-        return $search;
-    }
-
     private function escapeColon(string $value): string
     {
         return str_replace(':', '\:', $value);
     }
 
-    public function getSearchUrl(): string
+    public function getSearchUrls(): array
     {
-        return $this->getDataverseSearchEndpoint() . '?' . $this->getParams();
+        $baseUrl = $this->getDataverseSearchEndpoint() . '?';
+        $queries = empty($this->queries) ? ['*'] : $this->queries;
+        $baseUrl .= 'q=' . implode('+', $queries);
+
+        if (!empty($this->types)) {
+            $baseUrl .= '&type=' . implode('&type=', $this->types);
+        }
+
+        if (empty($this->filterQueries)) {
+            return [$baseUrl];
+        }
+
+        $filterParts = array_map(function (array $filterQuery) {
+            $field = key($filterQuery);
+            $value = $filterQuery[$field];
+            return $field . ':' . $this->escapeColon($value);
+        }, $this->filterQueries);
+
+        $urls = [];
+        $filterPartsCount = count($filterParts);
+        for ($i = 0; $i < $filterPartsCount; $i = $j) {
+            $currentUrl = $baseUrl . '&fq=' . $filterParts[$i];
+
+            for ($j = $i + 1; $j < $filterPartsCount; $j++) {
+                $nextFilterPart = '+' . $filterParts[$j];
+                if ((strlen($currentUrl) + strlen($nextFilterPart)) > self::URL_MAX_LENGTH) {
+                    break;
+                }
+                $currentUrl .= $nextFilterPart;
+            }
+            $urls[] = $currentUrl;
+        }
+
+        return $urls;
     }
 
-    public function search(): DataverseResponse
+    private function executeRequest(string $url): DataverseResponse
     {
         try {
-            $response = $this->httpClient->request('GET', $this->getSearchUrl(), [
+            $response = $this->httpClient->request('GET', $url, [
                 'headers' => [
                     'X-Dataverse-key' => $this->configuration->getAPIToken()
                 ]
@@ -105,5 +117,26 @@ class DataverseSearchBuilder
             $response->getReasonPhrase(),
             $response->getBody()
         );
+    }
+
+    public function search(): array
+    {
+        $responses = [];
+        foreach ($this->getSearchUrls() as $url) {
+            $responses[] = $this->executeRequest($url);
+        }
+        return $responses;
+    }
+
+    public function count(): int
+    {
+        $total = 0;
+        foreach ($this->search() as $response) {
+            $body = json_decode($response->getBody(), true);
+            if (isset($body['data']['total_count'])) {
+                $total += $body['data']['total_count'];
+            }
+        }
+        return $total;
     }
 }
