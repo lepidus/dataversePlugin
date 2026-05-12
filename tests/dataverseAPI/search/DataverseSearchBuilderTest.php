@@ -1,15 +1,19 @@
 <?php
 
 import('plugins.generic.dataverse.dataverseAPI.search.DataverseSearchBuilder');
+import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfiguration');
 
 class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
 {
+    private const DATAVERSE_URL = 'https://test.dataverse.org/dataverse/testDataverse';
+    private const SEARCH_URL = 'https://test.dataverse.org/api/search?';
+
     private function getDataverseSearchBuilder(): DataverseSearchBuilder
     {
         $configuration = new DataverseConfiguration();
         $httpClient = new \GuzzleHttp\Client();
 
-        $configuration->setDataverseUrl('https://test.dataverse.org/dataverse/testDataverse');
+        $configuration->setDataverseUrl(self::DATAVERSE_URL);
 
         return new DataverseSearchBuilder($configuration, $httpClient);
     }
@@ -17,14 +21,20 @@ class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
     public function testEmptyQuery(): void
     {
         $searchBuilder = $this->getDataverseSearchBuilder();
-        $this->assertEquals('q=*', $searchBuilder->getParams());
+        $this->assertEquals(
+            [self::SEARCH_URL . 'q=*'],
+            $searchBuilder->getSearchUrls()
+        );
     }
 
     public function testSingleQuery(): void
     {
         $searchBuilder = $this->getDataverseSearchBuilder();
         $searchBuilder->addQuery('test');
-        $this->assertEquals('q=test', $searchBuilder->getParams());
+        $this->assertEquals(
+            [self::SEARCH_URL . 'q=test'],
+            $searchBuilder->getSearchUrls()
+        );
     }
 
     public function testMultipleQueries(): void
@@ -33,14 +43,20 @@ class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
             ->addQuery('title:test')
             ->addQuery('language:English');
 
-        $this->assertEquals('q=title:test+language:English', $searchBuilder->getParams());
+        $this->assertEquals(
+            [self::SEARCH_URL . 'q=title:test+language:English'],
+            $searchBuilder->getSearchUrls()
+        );
     }
 
     public function testSingleType(): void
     {
         $searchBuilder = $this->getDataverseSearchBuilder();
         $searchBuilder->addType('dataset');
-        $this->assertEquals('q=*&type=dataset', $searchBuilder->getParams());
+        $this->assertEquals(
+            [self::SEARCH_URL . 'q=*&type=dataset'],
+            $searchBuilder->getSearchUrls()
+        );
     }
 
     public function testMultipleTypes(): void
@@ -49,14 +65,20 @@ class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
             ->addType('dataset')
             ->addType('file');
 
-        $this->assertEquals('q=*&type=dataset&type=file', $searchBuilder->getParams());
+        $this->assertEquals(
+            [self::SEARCH_URL . 'q=*&type=dataset&type=file'],
+            $searchBuilder->getSearchUrls()
+        );
     }
 
     public function testSingleFilterQuery(): void
     {
         $searchBuilder = $this->getDataverseSearchBuilder();
         $searchBuilder->addFilterQuery('publicationDate', '2016');
-        $this->assertEquals('q=*&fq=publicationDate:2016', $searchBuilder->getParams());
+        $this->assertEquals(
+            [self::SEARCH_URL . 'q=*&fq=publicationDate:2016'],
+            $searchBuilder->getSearchUrls()
+        );
     }
 
     public function testMultipleFilterQueries(): void
@@ -65,7 +87,10 @@ class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
             ->addFilterQuery('publicationDate', '2016')
             ->addFilterQuery('publicationStatus', 'Published');
 
-        $this->assertEquals('q=*&fq=publicationDate:2016+publicationStatus:Published', $searchBuilder->getParams());
+        $this->assertEquals(
+            [self::SEARCH_URL . 'q=*&fq=publicationDate:2016+publicationStatus:Published'],
+            $searchBuilder->getSearchUrls()
+        );
     }
 
     public function testFullParamsSearch(): void
@@ -76,22 +101,24 @@ class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
             ->addFilterQuery('publicationStatus', 'Published');
 
         $this->assertEquals(
-            'q=foo&type=dataset&fq=publicationStatus:Published',
-            $searchBuilder->getParams()
+            [self::SEARCH_URL . 'q=foo&type=dataset&fq=publicationStatus:Published'],
+            $searchBuilder->getSearchUrls()
         );
     }
 
-    public function testBuildDataverseSearchUrl(): void
+    public function testLargeNumberOfFiltersGenerateMultipleUrls(): void
     {
-        $searchBuilder = $this->getDataverseSearchBuilder()
-            ->addQuery('foo')
-            ->addType('dataset')
-            ->addType('file')
-            ->addFilterQuery('publicationStatus', 'Published');
+        $largeNumberOfFilters = 1000;
+        $searchBuilder = $this->getDataverseSearchBuilder();
+        for ($i = 0; $i < $largeNumberOfFilters; $i++) {
+            $searchBuilder->addFilterQuery('publicationStatus', 'Published');
+        }
 
-        $this->assertEquals(
-            'https://test.dataverse.org/api/search?q=foo&type=dataset&type=file&fq=publicationStatus:Published',
-            $searchBuilder->getSearchUrl()
-        );
+        $searchUrls = $searchBuilder->getSearchUrls();
+
+        $this->assertGreaterThan(1, count($searchUrls));
+        foreach ($searchUrls as $searchUrl) {
+            $this->assertStringContainsString(self::SEARCH_URL, $searchUrl);
+        }
     }
 }
