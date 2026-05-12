@@ -8,6 +8,8 @@ use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfig
 
 class DataverseSearchBuilder
 {
+    private const URL_MAX_LENGTH = 4096;
+
     private $configuration;
     private $httpClient;
     private $queries = [];
@@ -54,28 +56,44 @@ class DataverseSearchBuilder
             $this->addQuery('*');
         }
 
-        $searchUrl =  $this->getDataverseSearchEndpoint() . '?';
-        $searchUrl .= 'q=' . implode('+', $this->queries);
+        $baseUrl = $this->getDataverseSearchEndpoint() . '?';
+        $baseUrl .= 'q=' . implode('+', $this->queries);
 
         if (!empty($this->types)) {
-            $searchUrl .= '&type=' .  implode('&type=', $this->types);
+            $baseUrl .= '&type=' . implode('&type=', $this->types);
         }
 
-        if (!empty($this->filterQueries)) {
-            $searchUrl .= '&fq=' . implode('+', array_map(function (array $filterQuery) {
-                $field = key($filterQuery);
-                $value = $filterQuery[$field];
-                return $field . ':' . $this->escapeColon($value);
-            }, $this->filterQueries));
+        if (empty($this->filterQueries)) {
+            return [$baseUrl];
         }
 
-        return [$searchUrl];
+        $filterParts = array_map(function (array $filterQuery) {
+            $field = key($filterQuery);
+            $value = $filterQuery[$field];
+            return $field . ':' . $this->escapeColon($value);
+        }, $this->filterQueries);
+
+        $urls = [];
+        for ($i = 0; $i < count($filterParts); $i = $j) {
+            $currentUrl = $baseUrl . '&fq=' . $filterParts[$i];
+
+            for ($j = $i + 1; $j < count($filterParts); $j++) {
+                $nextFilterPart = '+' . $filterParts[$j];
+                if ((strlen($currentUrl) + strlen($nextFilterPart)) > self::URL_MAX_LENGTH) {
+                    break;
+                }
+                $currentUrl .= $nextFilterPart;
+            }
+            $urls[] = $currentUrl;
+        }
+
+        return $urls;
     }
 
-    public function search(): DataverseResponse
+    private function executeRequest(string $url): DataverseResponse
     {
         try {
-            $response = $this->httpClient->request('GET', $this->getSearchUrl(), [
+            $response = $this->httpClient->request('GET', $url, [
                 'headers' => [
                     'X-Dataverse-key' => $this->configuration->getAPIToken()
                 ]
@@ -103,10 +121,24 @@ class DataverseSearchBuilder
         );
     }
 
-    // Refactor the current search request, turning it into a function that receives the request URL
-    //   and executes it. Should be called 'executeRequest'.
-    // Add a new function 'search' function to replace the current one. It should create n URL queries
-    //   and execute all of them using the new 'executeRequest'. It should return an array of DataverseResponse's.
-    // Add a new function called 'count'. It should work just as the search function, but instead of returning the
-    //  responses, it should sum the 'total_count' of them all and return it.
+    public function search(): array
+    {
+        $responses = [];
+        foreach ($this->getSearchUrls() as $url) {
+            $responses[] = $this->executeRequest($url);
+        }
+        return $responses;
+    }
+
+    public function count(): int
+    {
+        $total = 0;
+        foreach ($this->search() as $response) {
+            $body = json_decode($response->getBody(), true);
+            if (isset($body['data']['total_count'])) {
+                $total += $body['data']['total_count'];
+            }
+        }
+        return $total;
+    }
 }

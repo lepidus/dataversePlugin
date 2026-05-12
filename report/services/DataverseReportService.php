@@ -113,9 +113,7 @@ class DataverseReportService
             $searchBuilder->addFilterQuery('parentIdentifier', $submission->persistent_id);
         }
 
-        $response = $searchBuilder->search();
-        $data = json_decode($response->getBody(), true);
-        return $data['data']['total_count'];
+        return $searchBuilder->count();
     }
 
     public function getDataverseSearchBuilder(int $contextId): DataverseSearchBuilder
