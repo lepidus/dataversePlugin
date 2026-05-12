@@ -52,12 +52,9 @@ class DataverseSearchBuilder
 
     public function getSearchUrls(): array
     {
-        if (empty($this->queries)) {
-            $this->addQuery('*');
-        }
-
         $baseUrl = $this->getDataverseSearchEndpoint() . '?';
-        $baseUrl .= 'q=' . implode('+', $this->queries);
+        $queries = empty($this->queries) ? ['*'] : $this->queries;
+        $baseUrl .= 'q=' . implode('+', $queries);
 
         if (!empty($this->types)) {
             $baseUrl .= '&type=' . implode('&type=', $this->types);
@@ -74,10 +71,11 @@ class DataverseSearchBuilder
         }, $this->filterQueries);
 
         $urls = [];
-        for ($i = 0; $i < count($filterParts); $i = $j) {
+        $filterPartsCount = count($filterParts);
+        for ($i = 0; $i < $filterPartsCount; $i = $j) {
             $currentUrl = $baseUrl . '&fq=' . $filterParts[$i];
 
-            for ($j = $i + 1; $j < count($filterParts); $j++) {
+            for ($j = $i + 1; $j < $filterPartsCount; $j++) {
                 $nextFilterPart = '+' . $filterParts[$j];
                 if ((strlen($currentUrl) + strlen($nextFilterPart)) > self::URL_MAX_LENGTH) {
                     break;
