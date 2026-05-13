@@ -213,8 +213,9 @@ msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "No research data transferred."
 
 msgid "plugins.generic.dataverse.researchData.uploadDisabled"
-msgstr "It is not possible to send research data in a published submission. "
-"If you wish to send research data, please contact the system administrator."
+msgstr "It is not possible to send research data. "
+"This is because the submission has already been published, or you do not have permission to make changes. "
+"If you wish to send research data, please create a new version of contact the system administrator."
 
 msgid "plugins.generic.dataverse.researchData.uploadResearchData"
 msgstr "Upload research data"
