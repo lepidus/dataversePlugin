@@ -3,16 +3,14 @@
 		{translate key="plugins.generic.dataverse.researchData.noResearchData"}
 	</p>
     <pkp-button
-		v-if="submission.status !== getConstant('STATUS_PUBLISHED')"
+		v-if="canEditPublication && workingPublication.status !== getConstant('STATUS_PUBLISHED')"
 		@click="$modal.show('uploadResearchData')"
 	>
         {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
     </pkp-button>
-	{if !$canPublish}
-		<p v-else>
-			{translate key="plugins.generic.dataverse.researchData.uploadDisabled"}
-		</p>
-	{/if}
+	<p v-else>
+		{translate key="plugins.generic.dataverse.researchData.uploadDisabled"}
+	</p>
     <modal
 		v-bind="MODAL_PROPS"
 		name="uploadResearchData"
@@ -77,7 +75,10 @@
 		</modal-content>
 	</modal>
 	{if $dataverseAdditionalInstructions}
-		<div id="dataverseAdditionalInstructions">
+		<div
+			v-if="canEditPublication && workingPublication.status !== getConstant('STATUS_PUBLISHED')"
+			id="dataverseAdditionalInstructions"
+		>
 			{$dataverseAdditionalInstructions}
 		</div>
 	{/if}
