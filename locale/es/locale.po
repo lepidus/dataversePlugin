@@ -216,8 +216,9 @@ msgid "plugins.generic.dataverse.researchData.noResearchData"
 msgstr "No se transfieren datos de investigación."
 
 msgid "plugins.generic.dataverse.researchData.uploadDisabled"
-msgstr "No es posible enviar datos de investigación en una presentación publicada. "
-"Si desea enviar datos de investigación, por favor, póngase en contacto con el administrador del sistema."
+msgstr "No es posible enviar datos de investigación. "
+"Esto ocurre porque lo envío ya se ha publicado o porque no tienes permiso para realizar cambios. "
+"Si desea enviar datos de investigación, elija crear una nueva versión o póngase en contacto con el administrador del sistema."
 
 msgid "plugins.generic.dataverse.researchData.uploadResearchData"
 msgstr "Cargar dados de pesquisa"
