@@ -131,7 +131,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('h3', 'Research data');
         cy.contains('h3', 'Research data metadata');
     });
-    it('Adds dataset files', function () {
+    it('Should add dataset files. Dataset file should not be the same as the galley file', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         advanceNSteps(1);
@@ -195,6 +195,12 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         advanceNSteps(3);
         cy.get('a:contains("Data_detailing.pdf")').should('not.exist');
         cy.get('div:contains("Research data and galley have the same file")').should('not.exist');
+    });
+    it('Dataset should contain a README file', function () {
+        cy.login('eostrom', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionData.title);
+        advanceNSteps(4);
+
         cy.contains('It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files');
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
