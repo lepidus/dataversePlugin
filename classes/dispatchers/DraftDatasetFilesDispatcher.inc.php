@@ -126,5 +126,10 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.error.readmeFileRequired"));
             $form->addErrorField('dataverseStep2ValidationError');
         }
+
+        if (count($draftDatasetFiles) == 1) {
+            $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.error.notSolelyReadmeFile"));
+            $form->addErrorField('dataverseStep2ValidationError');
+        }
     }
 }

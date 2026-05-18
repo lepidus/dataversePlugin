@@ -211,6 +211,10 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.readmeFileRequired');
         }
 
+        if (count($draftDatasetFiles) == 1) {
+            return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.notSolelyReadmeFile');
+        }
+
         $submission = Services::get('submission')->get($submissionId);
 
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
@@ -227,7 +231,7 @@ class DatasetHandler extends APIHandler
             $depositInfo = $datasetService->deposit($submission, $dataset);
             if ($depositInfo['status'] != 'Success') {
                 return $response->withStatus(403)->withJsonError(
-                    $depositInfo['message'].'.author',
+                    $depositInfo['message'] . '.author',
                     $depositInfo['messageParams']
                 );
             }
