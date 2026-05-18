@@ -68,7 +68,7 @@ describe('Research data deposit', function () {
 		cy.get('button').contains('Finish Submission').click();
 		cy.wait(1000);
 		cy.get('button.pkpModalConfirmButton').click();
-		cy.get('div:contains("To submit research data, it is necessary to send at least one file.")');
+		cy.get('div:contains("To submit research data, it is necessary to send at least one file, accompanied by a README file")');
 		cy.get('div:contains("Please ensure that you have chosen and submitted research data files in step 2 of the submission.")');
 
 		cy.get('#submitTabs a:contains("2. Upload Submission")').click();
