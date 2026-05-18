@@ -109,7 +109,7 @@ msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
 msgstr "Email sent to {$email} notifying the deletion of research data."
 
 msgid "plugins.generic.dataverse.error.researchDataRequired"
-msgstr "To submit research data, it is necessary to send at least one file.<br>"
+msgstr "To submit research data, it is necessary to send at least one file, accompanied by a README file.<br>"
 "Please ensure that you have chosen and submitted research data files in step 2 of the submission."
 
 msgid "plugins.generic.dataverse.error.datasetSubjectRequired"
@@ -118,6 +118,9 @@ msgstr "The subject of the research data is required.<br>"
 
 msgid "plugins.generic.dataverse.error.readmeFileRequired"
 msgstr "It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files"
+
+msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
+msgstr "The research data cannot consist solely of the README file"
 
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Error getting research data to Dataverse: {$error}"
