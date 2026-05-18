@@ -183,6 +183,8 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.notification.galleyContainsResearchData')];
             } elseif (!$validator->datasetHasReadmeFile($draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.readmeFile.required')];
+            } elseif (count($draftDatasetFiles) == 1) {
+                $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.notSolelyReadmeFile')];
             }
         }
 

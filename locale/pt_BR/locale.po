@@ -123,7 +123,7 @@ msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
 msgstr "Email enviado para {$email} notificando a exclusão dos dados de pesquisa"
 
 msgid "plugins.generic.dataverse.error.researchData.required"
-msgstr "Para submeter dados de pesquisa é necessário enviar pelo menos um arquivo. "
+msgstr "Para submeter dados de pesquisa é necessário enviar pelo menos um arquivo, acompanhado de um arquivo README. "
 "Certifique-se que você escolheu e enviou arquivos de dados de pesquisa no passo “Enviar Arquivos”."
 
 msgid "plugins.generic.dataverse.error.datasetSubject.required"
@@ -132,6 +132,9 @@ msgstr "O assunto dos dados de pesquisa é obrigatório. "
 
 msgid "plugins.generic.dataverse.error.readmeFile.required"
 msgstr "É obrigatório o envio de um arquivo README, em formato PDF, MD ou TXT, que acompanhe os arquivos de dados de pesquisa"
+
+msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
+msgstr "Os dados da pesquisa não podem ser constituídos apenas pelo arquivo README"
 
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro ao obter dados de pesquisa no Dataverse: {$error}"

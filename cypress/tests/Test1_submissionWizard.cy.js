@@ -131,7 +131,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('h3', 'Research data');
         cy.contains('h3', 'Research data metadata');
     });
-    it('Adds dataset files', function () {
+    it('Should add dataset files. Dataset file should not be the same as the galley file', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         advanceNSteps(1);
@@ -140,7 +140,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('Use this field only for submitting research data');
         advanceNSteps(3);
         cy.contains('h3', 'Research data');
-        cy.contains("To submit research data, it is necessary to send at least one file");
+        cy.contains("To submit research data, it is necessary to send at least one file, accompanied by a README file");
 
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
         cy.uploadSubmissionFiles([{
@@ -180,7 +180,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
         advanceNSteps(3);
-        cy.get('div:contains("To submit research data, it is necessary to send at least one file")').should('not.exist');
+        cy.get('div:contains("To submit research data, it is necessary to send at least one file, accompanied by a README file")').should('not.exist');
         cy.contains('Research data and galley have the same file');
         cy.contains('a', 'Data_detailing.pdf');
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
@@ -195,6 +195,12 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         advanceNSteps(3);
         cy.get('a:contains("Data_detailing.pdf")').should('not.exist');
         cy.get('div:contains("Research data and galley have the same file")').should('not.exist');
+    });
+    it('Dataset should contain a README file and at least another file', function () {
+        cy.login('eostrom', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionData.title);
+        advanceNSteps(4);
+
         cy.contains('It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files');
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
@@ -211,36 +217,36 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		cy.wait(1000);
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
-		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
         cy.get('#datasetFiles').contains('a', 'LEIAME.pdf');
+
+        cy.get('.listPanel__item:contains(Planilha_de_dados_ÇÕÔÁÀÃ.json) button:contains(Delete)').click();
+		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
+        cy.waitJQuery();
+        cy.get('#datasetFiles').should('not.include.text', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
         advanceNSteps(3);
         cy.get('div:contains("It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files")').should('not.exist');
-        cy.contains('a', 'LEIAME.pdf');
-        cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
+        cy.contains('The research data cannot consist solely of the README file');
 
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
-        cy.get('.listPanel__item:contains(LEIAME.pdf) button:contains(Delete)').click();
-		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
-        cy.waitJQuery();
-
         cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
+        cy.fixture('example.json', 'utf8').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
-				fileName: 'README.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64',
+				fileName: 'Planilha_de_dados_ÇÕÔÁÀÃ.json',
+				mimeType: 'application/json',
+				encoding: 'utf8',
 			});
 		});
 		cy.wait(1000);
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
-        cy.get('#datasetFiles').contains('a', 'README.pdf');
+        cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
         advanceNSteps(3);
-        cy.get('div:contains("It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files")').should('not.exist');
-        cy.contains('a', 'README.pdf');
+        cy.get('div:contains("The research data cannot consist solely of the README file")').should('not.exist');
+        cy.contains('a', 'LEIAME.pdf');
+        cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
     });
     it('Adds dataset metadata', function () {
         cy.login('eostrom', null, 'publicknowledge');
