@@ -103,6 +103,11 @@ class NativeAPIDatasetPackager extends DatasetPackager
                 'multiple' => true,
                 'typeClass' => 'compound'
             ],
+            'language' => [
+                'typeName' => 'language',
+                'multiple' => true,
+                'typeClass' => 'controlledVocabulary'
+            ],
             'subject' => [
                 'typeName' => 'subject',
                 'multiple' => true,
@@ -131,8 +136,8 @@ class NativeAPIDatasetPackager extends DatasetPackager
     private function createSimpleCompoundMetadata(array $metadataField, string $value): array
     {
         $typeName = $metadataField['typeName'] == 'publication'
-                ? $metadataField['typeName'] . 'Citation'
-                : $metadataField['typeName'] . 'Value';
+            ? $metadataField['typeName'] . 'Citation'
+            : $metadataField['typeName'] . 'Value';
 
         return [
             $typeName => [
@@ -300,13 +305,6 @@ class NativeAPIDatasetPackager extends DatasetPackager
             'typeClass' => $field['typeClass'],
             'value' => $datasetData[$field['name']]
         ];
-    }
-
-    public function createFilesPackage(): void
-    {
-        foreach ($this->dataset->getFiles() as $file) {
-            $this->files[$fileName] = $filePath;
-        }
     }
 
     public function getPackagePath(): string
