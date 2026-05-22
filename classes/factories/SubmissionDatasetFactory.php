@@ -49,7 +49,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['title'] = $datasetTitlePrefix . $publication->getLocalizedData('title');
         $props['description'] = $publication->getLocalizedData('abstract');
         $props['keywords'] = $publication->getLocalizedData('keywords');
-        $props['language'] = $this->getLanguageFromLocale($this->submission->getLocale());
+        $props['language'] = $this->submission->getData('datasetLanguage');
         $props['subject'] = $this->submission->getData('datasetSubject');
         $props['license'] = $this->submission->getData('datasetLicense');
         $props['authors'] = array_map([$this, 'createDatasetAuthor'], $authors);
@@ -88,11 +88,6 @@ class SubmissionDatasetFactory extends DatasetFactory
             DatasetAuthor::IDENTIFIER_SCHEME_ORCID,
             $this->getAuthorOrcidNumber($author->getOrcid())
         );
-    }
-
-    private function getLanguageFromLocale(string $locale): string
-    {
-        return \Locale::getDisplayLanguage($locale, 'en');
     }
 
     private function getAuthorOrcidNumber(?string $orcid): ?string

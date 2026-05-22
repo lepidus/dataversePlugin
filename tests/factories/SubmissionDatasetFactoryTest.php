@@ -169,6 +169,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $submission->setData('contextId', rand());
         $submission->setData('dateSubmitted', '2021-01-01 15:00:00');
         $submission->setData('locale', $this->locale);
+        $submission->setData('datasetLanguage', 'English');
         $submission->setData('datasetSubject', 'Other');
         $submission->setData('datasetLicense', 'CC BY 4.0');
 
@@ -247,7 +248,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $expectedDataset->setTitle($datasetTitlePrefix . $this->publication->getLocalizedTitle());
         $expectedDataset->setDescription($this->publication->getLocalizedData('abstract'));
         $expectedDataset->setKeywords($this->publication->getLocalizedData('keywords'));
-        $expectedDataset->setLanguage('English');
+        $expectedDataset->setLanguage($this->submission->getData('datasetLanguage'));
         $expectedDataset->setSubject($this->submission->getData('datasetSubject'));
         $expectedDataset->setLicense($this->submission->getData('datasetLicense'));
         $expectedDataset->setAuthors([$this->author->getId() => $datasetAuthor]);
