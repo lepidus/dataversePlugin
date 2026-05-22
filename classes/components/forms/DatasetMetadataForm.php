@@ -177,13 +177,12 @@ class DatasetMetadataForm extends FormComponent
     private function getAvailableLanguages(): array
     {
         $context = Application::get()->getRequest()->getContext();
-        $availableLanguages = array_map(
-            function ($locale) {
-                $languageName = \Locale::getDisplayLanguage($locale, 'en');
-                return ['key' => $languageName, 'label' => $languageName];
-            },
-            $context->getSupportedSubmissionLocales()
-        );
+        $availableLanguages = [];
+
+        foreach ($context->getSupportedSubmissionLocales() as $locale) {
+            $languageName = \Locale::getDisplayLanguage($locale, 'en');
+            $availableLanguages[] = ['key' => $languageName, 'label' => $languageName];
+        }
 
         return $availableLanguages;
     }

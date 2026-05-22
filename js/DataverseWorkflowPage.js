@@ -165,8 +165,12 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         self.dataverseLicenses.push({'label': license.name, 'value': license.name});
                     }
 
-                    let numOfFields = datasetMetadataForm.fields.length;
-                    datasetMetadataForm.fields[numOfFields - 1].options = self.dataverseLicenses;
+                    for (let formField of datasetMetadataForm.fields) {
+                        if (formField.name == 'datasetLicense') {
+                            formField.options = self.dataverseLicenses;
+                            break;
+                        }
+                    }
 				},
 			});
         },
