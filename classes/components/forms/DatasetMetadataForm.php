@@ -41,37 +41,44 @@ class DatasetMetadataForm extends FormComponent
                 'value' => $datasetMetadata['title'],
                 'size' => 'large',
             ]))
-            ->addField(new FieldRichTextarea('datasetDescription', [
-                'label' => __('plugins.generic.dataverse.metadataForm.description'),
-                'isRequired' => true,
-                'toolbar' => 'bold italic superscript subscript | link | blockquote bullist numlist | image | code',
-                'plugins' => 'paste,link,lists,image,code',
-                'value' => $datasetMetadata['description']
-            ]))
-            ->addField(new FieldControlledVocab('datasetKeywords', [
-                'label' => __('plugins.generic.dataverse.metadataForm.keyword'),
-                'tooltip' => __('manager.setup.metadata.keywords.description'),
-                'apiUrl' => $this->getVocabSuggestionUrlBase(),
-                'isMultilingual' => true,
-                'locales' => $this->locales,
-                'value' => $datasetMetadata['keywords']
-            ]));
+                ->addField(new FieldRichTextarea('datasetDescription', [
+                    'label' => __('plugins.generic.dataverse.metadataForm.description'),
+                    'isRequired' => true,
+                    'toolbar' => 'bold italic superscript subscript | link | blockquote bullist numlist | image | code',
+                    'plugins' => 'paste,link,lists,image,code',
+                    'value' => $datasetMetadata['description']
+                ]))
+                ->addField(new FieldControlledVocab('datasetKeywords', [
+                    'label' => __('plugins.generic.dataverse.metadataForm.keyword'),
+                    'tooltip' => __('manager.setup.metadata.keywords.description'),
+                    'apiUrl' => $this->getVocabSuggestionUrlBase(),
+                    'isMultilingual' => true,
+                    'locales' => $this->locales,
+                    'value' => $datasetMetadata['keywords']
+                ]));
         }
 
-        $this->addField(new FieldSelect('datasetSubject', [
-            'label' => __('plugins.generic.dataverse.metadataForm.subject.label'),
-            'description' => ($page == 'submission' ? __('plugins.generic.dataverse.metadataForm.subject.description') : ''),
+        $this->addField(new FieldSelect('datasetLanguage', [
+            'label' => __('plugins.generic.dataverse.metadataForm.language.label'),
+            'description' => ($page == 'submission' ? __('plugins.generic.dataverse.metadataForm.language.description') : ''),
             'isRequired' => true,
-            'options' => $dataverseMetadata->getDataverseSubjects(),
-            'value' => $datasetMetadata['subject'],
+            'options' => $this->getAvailableLanguages(),
+            'value' => $datasetMetadata['language'],
         ]))
-        ->addField(new FieldSelect('datasetLicense', [
-            'label' => __('plugins.generic.dataverse.metadataForm.license.label'),
-            'description' => ($page == 'submission' ? __('plugins.generic.dataverse.metadataForm.license.description') : ''),
-            'isRequired' => true,
-            'options' => $this->mapLicensesForDisplay($dataverseLicenses),
-            'value' => $datasetMetadata['license'],
-        ]));
+            ->addField(new FieldSelect('datasetSubject', [
+                'label' => __('plugins.generic.dataverse.metadataForm.subject.label'),
+                'description' => ($page == 'submission' ? __('plugins.generic.dataverse.metadataForm.subject.description') : ''),
+                'isRequired' => true,
+                'options' => $dataverseMetadata->getDataverseSubjects(),
+                'value' => $datasetMetadata['subject'],
+            ]))
+            ->addField(new FieldSelect('datasetLicense', [
+                'label' => __('plugins.generic.dataverse.metadataForm.license.label'),
+                'description' => ($page == 'submission' ? __('plugins.generic.dataverse.metadataForm.license.description') : ''),
+                'isRequired' => true,
+                'options' => $this->mapLicensesForDisplay($dataverseLicenses),
+                'value' => $datasetMetadata['license'],
+            ]));
 
         try {
             $flattenedFields = $this->getFlattenedRequiredMetadataFields();
@@ -112,7 +119,7 @@ class DatasetMetadataForm extends FormComponent
     private function mapControlledVocabularyOptions(array $values): array
     {
         return array_map(
-            static fn ($value) => ['label' => $value, 'value' => $value],
+            static fn($value) => ['label' => $value, 'value' => $value],
             $values
         );
     }
@@ -141,6 +148,7 @@ class DatasetMetadataForm extends FormComponent
                 'title' => '',
                 'description' => '',
                 'keywords' => [Locale::getLocale() => []],
+                'language' => '',
                 'subject' => '',
                 'license' => ''
             ];
@@ -153,6 +161,7 @@ class DatasetMetadataForm extends FormComponent
             'title' => $dataset->getTitle(),
             'description' => $dataset->getDescription(),
             'keywords' => $mappedKeywords,
+            'language' => $dataset->getLanguage(),
             'subject' => $dataset->getSubject(),
             'license' => $dataset->getLicense()
         ];
@@ -165,10 +174,24 @@ class DatasetMetadataForm extends FormComponent
         return $request->getDispatcher()->url($request, Application::ROUTE_API, $contextPath, 'vocabs', null, null, ['vocab' => 'submissionKeyword']);
     }
 
+    private function getAvailableLanguages(): array
+    {
+        $context = Application::get()->getRequest()->getContext();
+        $availableLanguages = array_map(
+            function ($locale) {
+                $languageName = \Locale::getDisplayLanguage($locale, 'en');
+                return ['key' => $languageName, 'label' => $languageName];
+            },
+            $context->getSupportedSubmissionLocales()
+        );
+
+        return $availableLanguages;
+    }
+
     private function mapCurrentLocale(): array
     {
         $localeKey = Locale::getLocale();
-        $localeNames = array_map(fn ($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
+        $localeNames = array_map(fn($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
 
         return [
             ['key' => $localeKey, 'label' => $localeNames[$localeKey]]

@@ -274,6 +274,12 @@ msgstr "Description"
 msgid "plugins.generic.dataverse.metadataForm.keyword"
 msgstr "Keyword"
 
+msgid "plugins.generic.dataverse.metadataForm.language.label"
+msgstr "Research Data Language"
+
+msgid "plugins.generic.dataverse.metadataForm.language.description"
+msgstr "Select the language of research data to be deposited in Dataverse"
+
 msgid "plugins.generic.dataverse.metadataForm.subject.label"
 msgstr "Research Data Subject"
 
