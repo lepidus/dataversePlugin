@@ -226,7 +226,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
             $this->author->getLocalizedData('affiliation')
         );
         $datasetDepositor = $this->user->getFullName(false, true)
-        . ' (via ' . $this->journal->getLocalizedName() . ')';
+            . ' (via ' . $this->journal->getLocalizedName() . ')';
 
         $apaCitation = new APACitation();
         $submissionCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
@@ -247,6 +247,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $expectedDataset->setTitle($datasetTitlePrefix . $this->publication->getLocalizedTitle());
         $expectedDataset->setDescription($this->publication->getLocalizedData('abstract'));
         $expectedDataset->setKeywords($this->publication->getLocalizedData('keywords'));
+        $expectedDataset->setLanguage('English');
         $expectedDataset->setSubject($this->submission->getData('datasetSubject'));
         $expectedDataset->setLicense($this->submission->getData('datasetLicense'));
         $expectedDataset->setAuthors([$this->author->getId() => $datasetAuthor]);

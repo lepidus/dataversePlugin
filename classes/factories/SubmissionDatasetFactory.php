@@ -5,11 +5,9 @@ namespace APP\plugins\generic\dataverse\classes\factories;
 use APP\submission\Submission;
 use APP\author\Author;
 use APP\core\Application;
-use PKP\db\DAORegistry;
 use PKP\file\TemporaryFile;
 use PKP\file\TemporaryFileManager;
 use APP\plugins\generic\dataverse\classes\factories\DatasetFactory;
-use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetAuthor;
 use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
@@ -51,6 +49,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['title'] = $datasetTitlePrefix . $publication->getLocalizedData('title');
         $props['description'] = $publication->getLocalizedData('abstract');
         $props['keywords'] = $publication->getLocalizedData('keywords');
+        $props['language'] = $this->getLanguageFromLocale($this->submission->getLocale());
         $props['subject'] = $this->submission->getData('datasetSubject');
         $props['license'] = $this->submission->getData('datasetLicense');
         $props['authors'] = array_map([$this, 'createDatasetAuthor'], $authors);
@@ -89,6 +88,11 @@ class SubmissionDatasetFactory extends DatasetFactory
             DatasetAuthor::IDENTIFIER_SCHEME_ORCID,
             $this->getAuthorOrcidNumber($author->getOrcid())
         );
+    }
+
+    private function getLanguageFromLocale(string $locale): string
+    {
+        return \Locale::getDisplayLanguage($locale, 'en');
     }
 
     private function getAuthorOrcidNumber(?string $orcid): ?string
