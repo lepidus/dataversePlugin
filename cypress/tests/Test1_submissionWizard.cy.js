@@ -270,13 +270,13 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         
         cy.get('.pkpSteps__step__label:contains("For the Editors")').click();
         cy.get('select[name="datasetSubject"]').select('Earth and Environmental Sciences');
-        cy.get('select[name="datasetLanguage"]').select('Portuguese');
+        cy.get('select[name="datasetLanguage"]').select('French');
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
 
         advanceNSteps(1);
         cy.get('div:contains("The subject of the research data is required")').should('not.exist');
         cy.contains('Earth and Environmental Sciences');
-        cy.contains('Portuguese');
+        cy.contains('French');
         cy.contains('CC BY 4.0');
 
         cy.contains('button', 'Submit').click();

@@ -45,6 +45,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     public function modifySubmissionSchema(string $hookName, array $params): bool
     {
         $schema = &$params[0];
+        $schema->properties->{'datasetLanguage'} = (object) [
+            'type' => 'string',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
         $schema->properties->{'datasetSubject'} = (object) [
             'type' => 'string',
             'apiSummary' => true,
@@ -88,16 +93,16 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             'description' => __("plugins.generic.dataverse.researchData.publishNotice", $params),
             'groupId' => 'default'
         ]))
-        ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
-            'label' => __('plugins.generic.dataverse.researchData.wouldLikeToPublish'),
-            'name' => 'shouldPublishResearchData',
-            'options' => [
-                ['value' => 1, 'label' => __('common.yes')],
-                ['value' => 0, 'label' => __('common.no')]
-            ],
-            'isRequired' => true,
-            'groupId' => 'default'
-        ]));
+            ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
+                'label' => __('plugins.generic.dataverse.researchData.wouldLikeToPublish'),
+                'name' => 'shouldPublishResearchData',
+                'options' => [
+                    ['value' => 1, 'label' => __('common.yes')],
+                    ['value' => 0, 'label' => __('common.no')]
+                ],
+                'isRequired' => true,
+                'groupId' => 'default'
+            ]));
     }
 
     private function getDatasetDeleteNoticeForm($persistentUri)
@@ -108,16 +113,16 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             'description' => __("plugins.generic.dataverse.researchData.deleteNotice", ['persistentUri' => $persistentUri]),
             'groupId' => 'default'
         ]))
-        ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
-            'label' => __('plugins.generic.dataverse.researchData.wouldLikeToDelete'),
-            'name' => 'shouldDeleteResearchData',
-            'options' => [
-                ['value' => 1, 'label' => __('common.yes')],
-                ['value' => 0, 'label' => __('common.no')]
-            ],
-            'isRequired' => true,
-            'groupId' => 'default'
-        ]));
+            ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
+                'label' => __('plugins.generic.dataverse.researchData.wouldLikeToDelete'),
+                'name' => 'shouldDeleteResearchData',
+                'options' => [
+                    ['value' => 1, 'label' => __('common.yes')],
+                    ['value' => 0, 'label' => __('common.no')]
+                ],
+                'isRequired' => true,
+                'groupId' => 'default'
+            ]));
 
         return $datasetDeleteNoticeForm;
     }
