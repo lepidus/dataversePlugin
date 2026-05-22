@@ -2,13 +2,13 @@
 
 namespace APP\plugins\generic\dataverse\dataverseAPI\packagers;
 
-use APP\plugins\generic\dataverse\dataverseAPI\packagers\DatasetPackager;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 
-class NativeAPIDatasetPackager extends DatasetPackager
+class NativeAPIDatasetPackager
 {
+    private $dataset;
     private $packageDirPath;
     private $dataverseMetadata;
     private $datasetLicense;
@@ -23,7 +23,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
         $this->packageDirPath = tempnam('/tmp', 'dataverse');
         unlink($this->packageDirPath);
         mkdir($this->packageDirPath);
-        parent::__construct($dataset);
+        $this->dataset = $dataset;
     }
 
     public function getPackageDirPath(): string
