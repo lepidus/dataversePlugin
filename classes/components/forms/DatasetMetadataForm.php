@@ -119,7 +119,7 @@ class DatasetMetadataForm extends FormComponent
     private function mapControlledVocabularyOptions(array $values): array
     {
         return array_map(
-            static fn($value) => ['label' => $value, 'value' => $value],
+            static fn ($value) => ['label' => $value, 'value' => $value],
             $values
         );
     }
