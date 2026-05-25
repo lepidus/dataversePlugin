@@ -81,6 +81,7 @@ describe('Dataverse Plugin - Workflow features', function () {
             cy.contains(submissionData.keywords[0]);
             cy.contains(submissionData.keywords[1]);
         });
+        cy.get('#datasetMetadata-datasetLanguage-control').should('have.value', 'French');
         cy.get('#datasetMetadata-datasetSubject-control').should('have.value', 'Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC BY 4.0');
 
@@ -89,6 +90,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetKeywords-control-en').type(submissionData.keywords[2], {delay: 0});
         cy.wait(500);
 		cy.get('#datasetMetadata-datasetKeywords-control-en').type('{enter}', { delay: 0 });
+        cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
         cy.get('button:visible:contains("Save")').click();
@@ -99,6 +101,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetKeywords-selected-en').within(() => {
             cy.contains(submissionData.keywords[2]);
         });
+        cy.get('#datasetMetadata-datasetLanguage-control').should('have.value', 'English');
         cy.get('#datasetMetadata-datasetSubject-control').should('have.value', 'Computer and Information Science');
         cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC0 1.0');
 
@@ -186,6 +189,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.wait(1000);
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
+        cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
         cy.get('button:visible:contains("Save")').click();
@@ -308,6 +312,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
 
+        cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
         cy.get('button:visible:contains("Save")').click();

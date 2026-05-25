@@ -2,13 +2,13 @@
 
 namespace APP\plugins\generic\dataverse\dataverseAPI\packagers;
 
-use APP\plugins\generic\dataverse\dataverseAPI\packagers\DatasetPackager;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 
-class NativeAPIDatasetPackager extends DatasetPackager
+class NativeAPIDatasetPackager
 {
+    private $dataset;
     private $packageDirPath;
     private $dataverseMetadata;
     private $datasetLicense;
@@ -23,7 +23,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
         $this->packageDirPath = tempnam('/tmp', 'dataverse');
         unlink($this->packageDirPath);
         mkdir($this->packageDirPath);
-        parent::__construct($dataset);
+        $this->dataset = $dataset;
     }
 
     public function getPackageDirPath(): string
@@ -103,6 +103,11 @@ class NativeAPIDatasetPackager extends DatasetPackager
                 'multiple' => true,
                 'typeClass' => 'compound'
             ],
+            'language' => [
+                'typeName' => 'language',
+                'multiple' => true,
+                'typeClass' => 'controlledVocabulary'
+            ],
             'subject' => [
                 'typeName' => 'subject',
                 'multiple' => true,
@@ -131,8 +136,8 @@ class NativeAPIDatasetPackager extends DatasetPackager
     private function createSimpleCompoundMetadata(array $metadataField, string $value): array
     {
         $typeName = $metadataField['typeName'] == 'publication'
-                ? $metadataField['typeName'] . 'Citation'
-                : $metadataField['typeName'] . 'Value';
+            ? $metadataField['typeName'] . 'Citation'
+            : $metadataField['typeName'] . 'Value';
 
         return [
             $typeName => [
@@ -300,13 +305,6 @@ class NativeAPIDatasetPackager extends DatasetPackager
             'typeClass' => $field['typeClass'],
             'value' => $datasetData[$field['name']]
         ];
-    }
-
-    public function createFilesPackage(): void
-    {
-        foreach ($this->dataset->getFiles() as $file) {
-            $this->files[$fileName] = $filePath;
-        }
     }
 
     public function getPackagePath(): string

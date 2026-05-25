@@ -91,7 +91,8 @@ class JsonDatasetFactory extends DatasetFactory
                     $props['description'] = $metadata->value[0]->dsDescriptionValue->value;
                     break;
                 case 'subject':
-                    $props['subject'] = $metadata->value[0];
+                case 'language':
+                    $props[$metadata->typeName] = $metadata->value[0];
                     break;
                 case 'keyword':
                     $props['keywords'] = array_map(function (stdClass $keyword) {

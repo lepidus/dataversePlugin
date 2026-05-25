@@ -176,6 +176,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submission.title);
 
+        cy.get('select[name="datasetLanguage"]').select('English');
         cy.get('select[name="datasetSubject"]').select('Earth and Environmental Sciences');
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
         cy.get('#datasetMetadata-datasetAlternativeURL-control').focus().clear().type('https://example.com', {delay: 0});
@@ -241,6 +242,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
 
+        cy.get('select[name="datasetLanguage"]').select('English');
         cy.get('select[name="datasetSubject"]').select('Earth and Environmental Sciences');
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
         cy.get('#datasetMetadata-datasetAlternativeURL-control').focus().clear().type('https://example.com', {delay: 0});

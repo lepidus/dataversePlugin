@@ -43,6 +43,8 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
 
         $submissionApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'submissions/' . $submission->getId());
         $dataset = new Dataset();
+        $datasetLanguage = $submission->getData('datasetLanguage') ?? \Locale::getDisplayLanguage($submission->getLocale(), 'en');
+        $dataset->setData('language', $datasetLanguage);
         $dataset->setData('subject', $submission->getData('datasetSubject'));
         $dataset->setData('license', $submission->getData('datasetLicense'));
 

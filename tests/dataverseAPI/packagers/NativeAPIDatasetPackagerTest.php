@@ -168,13 +168,17 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
     {
         $dataset = new Dataset();
         $dataset->setSubject('Other');
+        $dataset->setLanguage('Language');
 
         $this->packager = new NativeAPIDatasetPackager($dataset);
         $this->packager->loadPackageData();
 
+        $languageMetadata = $this->packager->getMetadataField('language');
+        $languageMetadata['value'] = [$dataset->getLanguage()];
+        $this->assertContains($languageMetadata, $this->packager->getDatasetMetadata());
+
         $subjectMetadata = $this->packager->getMetadataField('subject');
         $subjectMetadata['value'] = [$dataset->getSubject()];
-
         $this->assertContains($subjectMetadata, $this->packager->getDatasetMetadata());
     }
 
