@@ -139,6 +139,7 @@ class DatasetHandler extends APIHandler
         $data['title'] = $requestParams['datasetTitle'];
         $data['description'] = $requestParams['datasetDescription'];
         $data['keywords'] = (array) $requestParams['datasetKeywords'];
+        $data['language'] = $requestParams['datasetLanguage'];
         $data['subject'] = $requestParams['datasetSubject'];
         $data['license'] = $requestParams['datasetLicense'];
 
@@ -223,6 +224,7 @@ class DatasetHandler extends APIHandler
         $dataset->setTitle($requestParams['datasetTitle']);
         $dataset->setDescription($requestParams['datasetDescription']);
         $dataset->setKeywords((array) $requestParams['datasetKeywords']);
+        $dataset->setLanguage($requestParams['datasetLanguage']);
         $dataset->setSubject($requestParams['datasetSubject']);
         $dataset->setLicense($requestParams['datasetLicense']);
 

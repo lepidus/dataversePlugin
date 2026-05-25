@@ -25,18 +25,22 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
         if (!empty($draftDatasetFiles)) {
             $dataverseMetadata = new DataverseMetadata();
             $dataverseSubjectVocab = $dataverseMetadata->getDataverseSubjects();
-            $availableLicenses = $dataverseMetadata->getDataverseLicenses();
-
             $datasetSubjectLabels = array_column($dataverseSubjectVocab, 'label');
             $datasetSubjectValues = array_column($dataverseSubjectVocab, 'value');
 
+            $availableLicenses = $dataverseMetadata->getDataverseLicenses();
             $selectedLicense = $submission->getData('datasetLicense') ?? $dataverseMetadata->getDefaultLicense();
 
+            $availableLanguages = $this->getAvailableLanguages();
+            $selectedLanguage = $submission->getData('datasetLanguage') ?? \Locale::getDisplayLanguage($submission->getLocale(), 'en');
+
             $templateMgr->assign([
-                'dataverseSubjectVocab' => $datasetSubjectLabels,
-                'availableLicenses' => $this->mapLicensesForStep3Display($availableLicenses),
+                'selectedLanguage' => $selectedLanguage,
+                'availableLanguages' => $availableLanguages,
                 'subjectId' => array_search($submission->getData('datasetSubject'), $datasetSubjectValues),
-                'selectedLicense' => $selectedLicense
+                'dataverseSubjectVocab' => $datasetSubjectLabels,
+                'selectedLicense' => $selectedLicense,
+                'availableLicenses' => $this->mapLicensesForStep3Display($availableLicenses)
             ]);
 
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetMetadataStep3.tpl'));
@@ -52,12 +56,26 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
         return $mappedLicenses;
     }
 
+    private function getAvailableLanguages(): array
+    {
+        $context = Application::get()->getRequest()->getContext();
+        $availableLanguages = [];
+
+        foreach ($context->getSupportedSubmissionLocales() as $locale) {
+            $languageName = \Locale::getDisplayLanguage($locale, 'en');
+            $availableLanguages[$languageName] = $languageName;
+        }
+
+        return $availableLanguages;
+    }
+
     public function readDatasetMetadataFields($hookName, $args): bool
     {
         $form = &$args[0];
         $submission = &$form->submission;
 
-        $form->readUserVars(array('datasetSubject', 'datasetLicense'));
+        $form->readUserVars(['datasetLanguage', 'datasetSubject', 'datasetLicense']);
+        $language = $form->getData('datasetLanguage');
         $subject = $form->getData('datasetSubject');
         $license = $form->getData('datasetLicense');
 
@@ -72,6 +90,7 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
         $newSubmission = Services::get('submission')->edit(
             $submission,
             [
+                'datasetLanguage' => $language,
                 'datasetSubject' => $datasetSubjectValues[$subject],
                 'datasetLicense' => $license
             ],

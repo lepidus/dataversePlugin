@@ -1,4 +1,22 @@
 {fbvFormSection 
+    label="plugins.generic.dataverse.metadataForm.language.label" 
+    description="plugins.generic.dataverse.metadataForm.language.description" 
+    required=true
+}
+    {fbvElement 
+        type="select" 
+        name="datasetLanguage" 
+        id="datasetLanguage" 
+        defaultLabel="" 
+        defaultValue=""
+        selected=$selectedLanguage
+        from=$availableLanguages 
+        translate=false 
+        required=true
+    }
+{/fbvFormSection}
+
+{fbvFormSection 
     label="plugins.generic.dataverse.metadataForm.subject.label" 
     description="plugins.generic.dataverse.metadataForm.subject.description" 
     required=true
