@@ -45,6 +45,16 @@ class Dataset extends DataObject
         $this->setData('description', $description);
     }
 
+    public function getLanguage(): ?string
+    {
+        return $this->getData('language');
+    }
+
+    public function setLanguage(string $language): void
+    {
+        $this->setData('language', $language);
+    }
+
     public function getSubject(): ?string
     {
         return $this->getData('subject');

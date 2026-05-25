@@ -28,6 +28,7 @@ class JsonDatasetFactoryTest extends PKPTestCase
         $this->assertEquals('Test title', $dataset->getTitle());
         $this->assertEquals('<p>An example description</p>', $dataset->getDescription());
         $this->assertEquals('CC BY 4.0', $dataset->getLicense());
+        $this->assertEquals('Portuguese', $dataset->getLanguage());
         $this->assertEquals('Other', $dataset->getSubject());
         $this->assertEquals(['test'], $dataset->getKeywords());
         $this->assertEquals($expectedDatasetAuthor, $dataset->getAuthors()[0]);

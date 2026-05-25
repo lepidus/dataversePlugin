@@ -1,7 +1,6 @@
 <?php
 
 import('plugins.generic.dataverse.classes.factories.DatasetFactory');
-import('plugins.generic.dataverse.classes.entities.Dataset');
 import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
 import('plugins.generic.dataverse.classes.entities.DatasetContact');
 import('plugins.generic.dataverse.classes.entities.DatasetFile');
@@ -26,6 +25,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['title'] = $datasetTitlePrefix . $publication->getLocalizedTitle('title');
         $props['description'] = $publication->getLocalizedData('abstract');
         $props['keywords'] = $publication->getLocalizedData('keywords');
+        $props['language'] = $this->submission->getData('datasetLanguage');
         $props['subject'] = $this->submission->getData('datasetSubject');
         $props['license'] = $this->submission->getData('datasetLicense');
         $props['authors'] = array_map([$this, 'createDatasetAuthor'], $authors);

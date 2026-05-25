@@ -349,6 +349,14 @@
               ]
             },
             {
+              "typeName": "language",
+              "multiple": true,
+              "typeClass": "controlledVocabulary",
+              "value": [
+                "Portuguese"
+              ]
+            },
+            {
               "typeName": "depositor",
               "multiple": false,
               "typeClass": "primitive",
