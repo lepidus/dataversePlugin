@@ -1,10 +1,10 @@
 <?php
 
-import('plugins.generic.dataverse.dataverseAPI.packagers.DatasetPackager');
 import('plugins.generic.dataverse.classes.DataverseMetadata');
 
-class NativeAPIDatasetPackager extends DatasetPackager
+class NativeAPIDatasetPackager
 {
+    private $dataset;
     private $packageDirPath;
     private $dataverseMetadata;
     private $datasetLicense;
@@ -17,7 +17,7 @@ class NativeAPIDatasetPackager extends DatasetPackager
         $this->packageDirPath = tempnam('/tmp', 'dataverse');
         unlink($this->packageDirPath);
         mkdir($this->packageDirPath);
-        parent::__construct($dataset);
+        $this->dataset = $dataset;
     }
 
     public function getPackageDirPath(): string
@@ -97,6 +97,11 @@ class NativeAPIDatasetPackager extends DatasetPackager
                 'multiple' => true,
                 'typeClass' => 'compound'
             ],
+            'language' => [
+                'typeName' => 'language',
+                'multiple' => true,
+                'typeClass' => 'controlledVocabulary'
+            ],
             'subject' => [
                 'typeName' => 'subject',
                 'multiple' => true,
@@ -125,8 +130,8 @@ class NativeAPIDatasetPackager extends DatasetPackager
     private function createSimpleCompoundMetadata(array $metadataField, string $value): array
     {
         $typeName = $metadataField['typeName'] == 'publication'
-                ? $metadataField['typeName'] . 'Citation'
-                : $metadataField['typeName'] . 'Value';
+            ? $metadataField['typeName'] . 'Citation'
+            : $metadataField['typeName'] . 'Value';
 
         return [
             $typeName => [
@@ -182,13 +187,6 @@ class NativeAPIDatasetPackager extends DatasetPackager
         $datasetPackage = fopen($this->getPackagePath(), 'w');
         fwrite($datasetPackage, json_encode($datasetContent));
         fclose($datasetPackage);
-    }
-
-    public function createFilesPackage(): void
-    {
-        foreach ($this->dataset->getFiles() as $file) {
-            $this->files[$fileName] = $filePath;
-        }
     }
 
     public function getPackagePath(): string

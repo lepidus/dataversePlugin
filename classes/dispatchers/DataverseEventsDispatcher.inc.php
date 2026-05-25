@@ -28,6 +28,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     public function modifySubmissionSchema(string $hookName, array $params): bool
     {
         $schema = &$params[0];
+        $schema->properties->{'datasetLanguage'} = (object) [
+            'type' => 'string',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
         $schema->properties->{'datasetSubject'} = (object) [
             'type' => 'string',
             'apiSummary' => true,
@@ -83,7 +88,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $datasetService = new DatasetService();
         $depositInfo = $datasetService->deposit($submission, $dataset);
         if ($depositInfo['status'] != 'Success') {
-            $stepForm->addError('depositError', __($depositInfo['message'].'.author', $depositInfo['messageParams']));
+            $stepForm->addError('depositError', __($depositInfo['message'] . '.author', $depositInfo['messageParams']));
             $stepForm->addErrorField('depositError');
         }
 
@@ -207,16 +212,16 @@ class DataverseEventsDispatcher extends DataverseDispatcher
                 'description' => __("plugins.generic.dataverse.researchData.publishNotice", $params),
                 'groupId' => 'default'
             ]))
-            ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
-                'label' => __('plugins.generic.dataverse.researchData.wouldLikeToPublish'),
-                'name' => 'shouldPublishResearchData',
-                'options' => [
-                    ['value' => 1, 'label' => __('common.yes')],
-                    ['value' => 0, 'label' => __('common.no')]
-                ],
-                'isRequired' => true,
-                'groupId' => 'default'
-            ]));
+                ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
+                    'label' => __('plugins.generic.dataverse.researchData.wouldLikeToPublish'),
+                    'name' => 'shouldPublishResearchData',
+                    'options' => [
+                        ['value' => 1, 'label' => __('common.yes')],
+                        ['value' => 0, 'label' => __('common.no')]
+                    ],
+                    'isRequired' => true,
+                    'groupId' => 'default'
+                ]));
         } catch (DataverseException $e) {
             $warningIconHtml = '<span class="fa fa-exclamation-triangle pkpIcon--inline"></span>';
             $noticeMsg = __('plugins.generic.dataverse.notice.cannotPublish', ['error' => $e->getMessage()]);
@@ -370,7 +375,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         }
 
         $templateOutput = $this->prepareFormToDisplay($templateMgr, $form, $request);
-        $pattern = '/<p>'.__('editor.submission.externalReviewDescription').'<\/p>/';
+        $pattern = '/<p>' . __('editor.submission.externalReviewDescription') . '<\/p>/';
 
         if (preg_match($pattern, $templateOutput, $matches, PREG_OFFSET_CAPTURE)) {
             $match = $matches[0][0];

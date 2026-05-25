@@ -131,6 +131,10 @@ describe('Research data deposit', function () {
 		cy.wait(1000);
 		cy.get('select[id^="datasetSubject"').select('Other');
 
+		cy.contains('Research Data Language');
+		cy.get('select[id^="datasetLanguage"').should('have.value', 'English');
+		cy.get('select[id^="datasetLanguage"').select('French');
+
 		cy.contains('Research Data License');
 		cy.get('select[id^="datasetLicense"').should('have.value', 'CC0 1.0');
 		cy.get('select[id^="datasetLicense"').select('CC BY 4.0');
@@ -194,6 +198,9 @@ describe('Research data deposit', function () {
 		cy.get('#datasetMetadata-datasetKeywords-control').type('Computer Vision', { delay: 0 });
 		cy.wait(500);
 		cy.get('#datasetMetadata-datasetKeywords-control').type('{enter}', { delay: 0 });
+		cy.get('#datasetMetadata-datasetLanguage-control').should('have.value', 'French');
+		cy.get('#datasetMetadata-datasetLanguage-control').select('English');
+		cy.get('#datasetMetadata-datasetSubject-control').should('have.value', 'Other');
 		cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
 		cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC BY 4.0');
 		cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
