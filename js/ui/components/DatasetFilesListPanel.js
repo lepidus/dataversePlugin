@@ -124,6 +124,7 @@ pkp.Vue.component('dataset-files-list-panel', {
         },
         addFileFormSuccess(data) {
             this.refreshItems();
+            this.clearForm();
             this.$modal.hide('addDatasetFileModal');
         },
         openDeleteFileModal(fileId, fileName) {
@@ -219,6 +220,13 @@ pkp.Vue.component('dataset-files-list-panel', {
                     termsOfUseFieldOption.label = termsOfUseFieldOption.label.replace('{$dataverseName}', r.dataverseName);
 				},
 			});
+        },
+        clearForm() {
+            let form = {...this.form};
+            Object.keys(form.fields).forEach((key) => {
+                form.fields[key].value = null;
+            });
+			this.form = form;
         }
     },
     render: function (h) {

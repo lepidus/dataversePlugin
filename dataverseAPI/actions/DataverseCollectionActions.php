@@ -2,10 +2,9 @@
 
 namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
-use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DataverseCollectionActionsInterface;
 use APP\plugins\generic\dataverse\classes\entities\DataverseCollection;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
-use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DataverseCollectionActionsInterface;
 
 class DataverseCollectionActions extends DataverseActions implements DataverseCollectionActionsInterface
 {
@@ -111,7 +110,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         if (is_null($dataverseRequiredMetadata) || $currentCacheTime > self::ONE_DAY_SECONDS) {
             $cache->flush();
 
-            $args = 'returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true';
+            $args = 'returnDatasetFieldTypes=true';
             $uri = $this->getCurrentDataverseURI() . '/metadatablocks?' . $args;
             $response = $this->nativeAPIRequest('GET', $uri);
             $responseBody = json_decode($response->getBody(), true);
@@ -178,7 +177,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
     {
         $metadataToFilter = [
             'title', 'dsDescriptionValue', 'subject', 'authorName', 'authorIdentifierScheme', 'subject',
-            'datasetContactName', 'datasetContactEmail', 'depositor', 'publicationCitation'
+            'datasetContactName', 'datasetContactEmail', 'depositor', 'publicationCitation', 'producerName'
         ];
         $filteredFields = [];
 
