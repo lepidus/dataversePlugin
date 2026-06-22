@@ -138,6 +138,12 @@
               "typeClass": "compound",
               "value": [
                 {
+                  "publicationRelationType": {
+                    "typeName": "publicationRelationType",
+                    "multiple": false,
+                    "typeClass": "controlledVocabulary",
+                    "value": "IsCitedBy"
+                  },
                   "publicationCitation": {
                     "typeName": "publicationCitation",
                     "multiple": false,
@@ -321,6 +327,12 @@
               "typeClass": "compound",
               "value": [
                 {
+                  "publicationRelationType": {
+                    "typeName": "publicationRelationType",
+                    "multiple": false,
+                    "typeClass": "controlledVocabulary",
+                    "value": "IsCitedBy"
+                  },
                   "publicationCitation": {
                     "typeName": "publicationCitation",
                     "multiple": false,
