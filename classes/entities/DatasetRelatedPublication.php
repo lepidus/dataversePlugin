@@ -8,7 +8,7 @@ class DatasetRelatedPublication extends DataObject
 {
     public function __construct(string $relationType, string $citation, ?string $idType, ?string $idNumber, ?string $url)
     {
-        $this->setData('relationType', $relationType);
+        $this->setData('RelationType', $relationType);
         $this->setData('citation', $citation);
         $this->setData('IDType', $idType);
         $this->setData('IDNumber', $idNumber);
@@ -17,7 +17,7 @@ class DatasetRelatedPublication extends DataObject
 
     public function getRelationType(): string
     {
-        return $this->getData('relationType');
+        return $this->getData('RelationType');
     }
 
     public function getCitation(): string
