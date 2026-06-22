@@ -172,6 +172,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $submission->setData('datasetLanguage', 'English');
         $submission->setData('datasetSubject', 'Other');
         $submission->setData('datasetLicense', 'CC BY 4.0');
+        $submission->setData('datasetRelationType', 'IsCitedBy');
 
         $author = new Author();
         $author->setId(rand());
@@ -233,6 +234,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $submissionCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);
         $doiObject = $this->publication->getData('doiObject');
         $datasetRelatedPublication = new DatasetRelatedPublication(
+            'IsCitedBy',
             $submissionCitation,
             'doi',
             $doiObject->getDoi(),

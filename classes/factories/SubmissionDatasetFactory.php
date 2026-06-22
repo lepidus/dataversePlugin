@@ -131,10 +131,17 @@ class SubmissionDatasetFactory extends DatasetFactory
         $doiObject = $publication->getData('doiObject');
 
         if (empty($doiObject)) {
-            return new DatasetRelatedPublication($submissionCitation, null, null, null);
+            return new DatasetRelatedPublication(
+                $this->submission->getData('datasetRelationType'),
+                $submissionCitation,
+                null,
+                null,
+                null
+            );
         }
 
         return new DatasetRelatedPublication(
+            $this->submission->getData('datasetRelationType'),
             $submissionCitation,
             'doi',
             $doiObject->getDoi(),
