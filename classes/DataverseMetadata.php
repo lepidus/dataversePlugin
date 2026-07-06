@@ -9,6 +9,8 @@ use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 class DataverseMetadata
 {
+    public const DEFAULT_RELATION_TYPE = 'IsCitedBy';
+
     private $dataverseLicenses;
 
     public function getDataverseSubjects(): array
@@ -99,6 +101,36 @@ class DataverseMetadata
         }
 
         return null;
+    }
+
+    public function getDataverseRelationTypes(): array
+    {
+        return [
+            [
+                'label' => __('plugins.generic.dataverse.metadataForm.relationType.isCitedBy'),
+                'value' => 'IsCitedBy',
+            ],
+            [
+                'label' => __('plugins.generic.dataverse.metadataForm.relationType.cites'),
+                'value' => 'Cites'
+            ],
+            [
+                'label' => __('plugins.generic.dataverse.metadataForm.relationType.isSupplementTo'),
+                'value' => 'IsSupplementTo'
+            ],
+            [
+                'label' => __('plugins.generic.dataverse.metadataForm.relationType.isSupplementedBy'),
+                'value' => 'IsSupplementedBy',
+            ],
+            [
+                'label' => __('plugins.generic.dataverse.metadataForm.relationType.isReferencedBy'),
+                'value' => 'IsReferencedBy'
+            ],
+            [
+                'label' => __('plugins.generic.dataverse.metadataForm.relationType.references'),
+                'value' => 'References'
+            ]
+        ];
     }
 
     private function getDataverseConfiguration(): DataverseConfiguration
