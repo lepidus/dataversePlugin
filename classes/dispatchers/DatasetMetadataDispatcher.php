@@ -8,6 +8,7 @@ use APP\pages\submission\SubmissionHandler;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
@@ -44,10 +45,11 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
         $submissionApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'submissions/' . $submission->getId());
         $dataset = new Dataset();
         $datasetLanguage = $submission->getData('datasetLanguage') ?? \Locale::getDisplayLanguage($submission->getLocale(), 'en');
-        $dataset->setData('language', $datasetLanguage);
-        $dataset->setData('subject', $submission->getData('datasetSubject'));
-        $dataset->setData('license', $submission->getData('datasetLicense'));
-        $dataset->setData('relationType', $submission->getData('relationType'));
+        $dataset->setLanguage($datasetLanguage);
+        $dataset->setSubject($submission->getData('datasetSubject'));
+        $dataset->setLicense($submission->getData('datasetLicense'));
+        $relatedPublication = new DatasetRelatedPublication($submission->getData('datasetRelationType') ?? '', '', '', '', '');
+        $dataset->setRelatedPublication($relatedPublication);
 
         try {
             $flattenedFields = $this->getFlattenedRequiredMetadataFields();

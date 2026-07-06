@@ -161,7 +161,8 @@ class DatasetMetadataForm extends FormComponent
                 'keywords' => [Locale::getLocale() => []],
                 'language' => '',
                 'subject' => '',
-                'license' => ''
+                'license' => '',
+                'relationType' => ''
             ];
         }
 
@@ -174,7 +175,8 @@ class DatasetMetadataForm extends FormComponent
             'keywords' => $mappedKeywords,
             'language' => $dataset->getLanguage(),
             'subject' => $dataset->getSubject(),
-            'license' => $dataset->getLicense()
+            'license' => $dataset->getLicense(),
+            'relationType' => $dataset->getRelatedPublication()->getRelationType()
         ];
     }
 
