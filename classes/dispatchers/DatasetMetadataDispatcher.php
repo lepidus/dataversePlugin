@@ -47,6 +47,7 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
         $dataset->setData('language', $datasetLanguage);
         $dataset->setData('subject', $submission->getData('datasetSubject'));
         $dataset->setData('license', $submission->getData('datasetLicense'));
+        $dataset->setData('relationType', $submission->getData('relationType'));
 
         try {
             $flattenedFields = $this->getFlattenedRequiredMetadataFields();
@@ -74,7 +75,10 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
             return $step;
         }, $steps);
 
-        $templateMgr->setState(['steps' => $steps]);
+        $templateMgr->setState([
+            'relationTypes' => DataverseMetadata::getDataverseRelationTypes(),
+            'steps' => $steps
+        ]);
 
         return false;
     }

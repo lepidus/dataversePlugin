@@ -282,6 +282,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('French');
         cy.contains('Earth and Environmental Sciences');
         cy.contains('CC BY 4.0');
+        cy.contains('Is Supplemented By')
 
         cy.contains('button', 'Submit').click();
         cy.get('.modal__panel:visible').within(() => {

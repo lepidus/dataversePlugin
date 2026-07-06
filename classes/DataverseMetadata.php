@@ -103,30 +103,30 @@ class DataverseMetadata
         return null;
     }
 
-    public function getDataverseRelationTypes(): array
+    public static function getDataverseRelationTypes(): array
     {
         return [
-            [
+            'IsCitedBy' => [
                 'label' => __('plugins.generic.dataverse.metadataForm.relationType.isCitedBy'),
                 'value' => 'IsCitedBy',
             ],
-            [
+            'Cites' => [
                 'label' => __('plugins.generic.dataverse.metadataForm.relationType.cites'),
                 'value' => 'Cites'
             ],
-            [
+            'IsSupplementTo' => [
                 'label' => __('plugins.generic.dataverse.metadataForm.relationType.isSupplementTo'),
                 'value' => 'IsSupplementTo'
             ],
-            [
+            'IsSupplementedBy' => [
                 'label' => __('plugins.generic.dataverse.metadataForm.relationType.isSupplementedBy'),
                 'value' => 'IsSupplementedBy',
             ],
-            [
+            'IsReferencedBy' => [
                 'label' => __('plugins.generic.dataverse.metadataForm.relationType.isReferencedBy'),
                 'value' => 'IsReferencedBy'
             ],
-            [
+            'References' => [
                 'label' => __('plugins.generic.dataverse.metadataForm.relationType.references'),
                 'value' => 'References'
             ]
