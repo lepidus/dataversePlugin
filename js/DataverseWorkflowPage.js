@@ -213,6 +213,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         field.value[form.primaryLocale] = this.dataset[datasetFieldName];
                     }
                 }
+
+                if (datasetFieldName === 'relationType') {
+                    field.value = this.dataset.relatedPublication._data.RelationType;
+                }
             }
 
             form.canSubmit =

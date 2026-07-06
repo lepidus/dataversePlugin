@@ -115,6 +115,11 @@ class DatasetService extends DataverseService
         }
 
         foreach ($data as $name => $value) {
+            if ($name == 'relationType') {
+                $dataset->getRelatedPublication()->setData('RelationType', $value);
+                continue;
+            }
+
             $dataset->setData($name, $value);
         }
 
