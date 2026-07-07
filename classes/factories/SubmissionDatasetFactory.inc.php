@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.factories.DatasetFactory');
+import('plugins.generic.dataverse.classes.DataverseMetadata');
 import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
 import('plugins.generic.dataverse.classes.entities.DatasetContact');
 import('plugins.generic.dataverse.classes.entities.DatasetFile');
@@ -90,10 +91,17 @@ class SubmissionDatasetFactory extends DatasetFactory
         $submissionDoi = $publication->getStoredPubId('doi');
 
         if (empty($submissionDoi)) {
-            return new DatasetRelatedPublication($submissionCitation, null, null, null);
+            return new DatasetRelatedPublication(
+                $this->submission->getData('datasetRelationType') ?? DataverseMetadata::DEFAULT_RELATION_TYPE,
+                $submissionCitation,
+                null,
+                null,
+                null
+            );
         }
 
         return new DatasetRelatedPublication(
+            $this->submission->getData('datasetRelationType') ?? DataverseMetadata::DEFAULT_RELATION_TYPE,
             $submissionCitation,
             'doi',
             $submissionDoi,
