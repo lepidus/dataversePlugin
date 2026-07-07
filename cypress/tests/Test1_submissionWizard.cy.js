@@ -261,7 +261,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('Research Data Relation Type');
         cy.get('select[name="datasetLanguage"]').should('have.value', 'English');
         cy.get('select[name="datasetLicense"]').should('have.value', 'CC0 1.0');
-        cy.get('select[name="datasetRelationType"]').should('have.value', 'Is Cited By');
+        cy.get('select[name="datasetRelationType"]').should('have.value', 'IsCitedBy');
 
         advanceNSteps(1);
         cy.contains('h3', 'Research data metadata');

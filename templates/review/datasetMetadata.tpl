@@ -54,7 +54,7 @@
                 {translate key="plugins.generic.dataverse.metadataForm.relationType.label"}
             </h4>
             <div class="submissionWizard__reviewPanel__item__value">
-                <template>
+                <template v-if="submission.datasetRelationType">
                     {{ relationTypes[submission.datasetRelationType]['label'] }}
                 </template>
             </div>
