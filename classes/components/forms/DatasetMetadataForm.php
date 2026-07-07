@@ -130,7 +130,7 @@ class DatasetMetadataForm extends FormComponent
     private function mapControlledVocabularyOptions(array $values): array
     {
         return array_map(
-            fn($value) => ['label' => $value, 'value' => $value],
+            fn ($value) => ['label' => $value, 'value' => $value],
             $values
         );
     }
@@ -203,7 +203,10 @@ class DatasetMetadataForm extends FormComponent
     private function mapCurrentLocale(): array
     {
         $localeKey = Locale::getLocale();
-        $localeNames = array_map(fn($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
+        $localeNames = array_map(
+            fn ($localeMetadata) => $localeMetadata->getDisplayName(),
+            Locale::getLocales()
+        );
 
         return [
             ['key' => $localeKey, 'label' => $localeNames[$localeKey]]
