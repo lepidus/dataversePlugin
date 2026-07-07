@@ -95,18 +95,7 @@ class JsonDatasetFactory extends DatasetFactory
                     break;
                 case 'publication':
                     $publication = $metadata->value[0];
-                    $props['relatedPublication'] = new DatasetRelatedPublication(
-                        $publication->publicationCitation->value,
-                        isset($publication->publicationIDType->value) ?
-                            $publication->publicationIDType->value
-                            : null,
-                        isset($publication->publicationIDNumber->value) ?
-                            $publication->publicationIDNumber->value
-                            : null,
-                        isset($publication->publicationURL->value) ?
-                            $publication->publicationURL->value
-                            : null
-                    );
+                    $props['relatedPublication'] = $this->getRelatedPublication($publication);
                     break;
                 default:
                     break;
@@ -130,5 +119,22 @@ class JsonDatasetFactory extends DatasetFactory
         }, $datasetVersion->files);
 
         return $props;
+    }
+
+    private function getRelatedPublication($publication): DatasetRelatedPublication
+    {
+        return new DatasetRelatedPublication(
+            $publication->publicationRelationType->value,
+            $publication->publicationCitation->value,
+            isset($publication->publicationIDType->value) ?
+                $publication->publicationIDType->value
+                : null,
+            isset($publication->publicationIDNumber->value) ?
+                $publication->publicationIDNumber->value
+                : null,
+            isset($publication->publicationURL->value) ?
+                $publication->publicationURL->value
+                : null
+        );
     }
 }

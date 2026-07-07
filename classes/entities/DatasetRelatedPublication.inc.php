@@ -2,12 +2,18 @@
 
 class DatasetRelatedPublication extends DataObject
 {
-    public function __construct(string $citation, ?string $idType, ?string $idNumber, ?string $url)
+    public function __construct(string $relationType, string $citation, ?string $idType, ?string $idNumber, ?string $url)
     {
+        $this->setData('RelationType', $relationType);
         $this->setData('citation', $citation);
         $this->setData('IDType', $idType);
         $this->setData('IDNumber', $idNumber);
         $this->setData('URL', $url);
+    }
+
+    public function getRelationType(): string
+    {
+        return $this->getData('RelationType');
     }
 
     public function getCitation(): string

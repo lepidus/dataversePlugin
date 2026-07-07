@@ -17,6 +17,7 @@ class JsonDatasetFactoryTest extends PKPTestCase
         $expectedDatasetAuthor = new DatasetAuthor('Test, Author', 'Dataverse', 'ORCID', '0000-0000-0000-0000');
         $expectedDatasetContact = new DatasetContact('Test, Contact', 'test@example.com', 'Dataverse');
         $expectedDatasetRelatedPublication = new DatasetRelatedPublication(
+            'IsCitedBy',
             'User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems',
             'doi',
             '10.1234/LepidusPreprints.1245',
