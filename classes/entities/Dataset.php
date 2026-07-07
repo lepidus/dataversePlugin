@@ -54,7 +54,7 @@ class Dataset extends DataObject
         return $this->getData('language');
     }
 
-    public function setLanguage(string $language): void
+    public function setLanguage(?string $language): void
     {
         $this->setData('language', $language);
     }
@@ -64,7 +64,7 @@ class Dataset extends DataObject
         return $this->getData('subject');
     }
 
-    public function setSubject(string $subject): void
+    public function setSubject(?string $subject): void
     {
         $this->setData('subject', $subject);
     }
@@ -74,7 +74,7 @@ class Dataset extends DataObject
         return $this->getData('license');
     }
 
-    public function setLicense(string $license): void
+    public function setLicense(?string $license): void
     {
         $this->setData('license', $license);
     }
