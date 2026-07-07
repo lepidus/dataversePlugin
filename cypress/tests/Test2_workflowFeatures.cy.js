@@ -84,7 +84,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetLanguage-control').should('have.value', 'French');
         cy.get('#datasetMetadata-datasetSubject-control').should('have.value', 'Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC BY 4.0');
-        cy.get('#datasetMetadata-datasetRelationType-control').should('have.value', 'Is Supplemented By');
+        cy.get('#datasetMetadata-datasetRelationType-control').should('have.value', 'IsSupplementedBy');
 
         cy.get('#datasetMetadata-datasetTitle-control').clear().type('Test metadata editing', {delay: 0});
         cy.setTinyMceContent('datasetMetadata-datasetDescription-control', 'new description');
