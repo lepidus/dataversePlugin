@@ -106,7 +106,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetLanguage-control').should('have.value', 'English');
         cy.get('#datasetMetadata-datasetSubject-control').should('have.value', 'Computer and Information Science');
         cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC0 1.0');
-        cy.get('#datasetMetadata-datasetRelationType-control').should('have.value', 'Is Cited By');
+        cy.get('#datasetMetadata-datasetRelationType-control').should('have.value', 'IsCitedBy');
 
         cy.get('#datasetMetadata-datasetTitle-control').clear().type('Replication data for: ' + submissionData.title, {delay: 0});
         cy.getTinyMceContent('datasetMetadata-datasetDescription-control', submissionData.abstract);
