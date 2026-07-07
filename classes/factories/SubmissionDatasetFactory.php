@@ -7,6 +7,7 @@ use APP\author\Author;
 use APP\core\Application;
 use PKP\file\TemporaryFile;
 use PKP\file\TemporaryFileManager;
+use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\factories\DatasetFactory;
 use APP\plugins\generic\dataverse\classes\entities\DatasetAuthor;
 use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
@@ -132,7 +133,7 @@ class SubmissionDatasetFactory extends DatasetFactory
 
         if (empty($doiObject)) {
             return new DatasetRelatedPublication(
-                $this->submission->getData('datasetRelationType'),
+                $this->submission->getData('datasetRelationType') ?? DataverseMetadata::DEFAULT_RELATION_TYPE,
                 $submissionCitation,
                 null,
                 null,
@@ -141,7 +142,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         }
 
         return new DatasetRelatedPublication(
-            $this->submission->getData('datasetRelationType'),
+            $this->submission->getData('datasetRelationType') ?? DataverseMetadata::DEFAULT_RELATION_TYPE,
             $submissionCitation,
             'doi',
             $doiObject->getDoi(),
