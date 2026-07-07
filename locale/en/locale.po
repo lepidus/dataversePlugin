@@ -328,6 +328,30 @@ msgstr "Social Sciences"
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Other"
 
+msgid "plugins.generic.dataverse.metadataForm.relationType.label"
+msgstr "Research Data Relation Type"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.description"
+msgstr "Select the nature of the relation between the research data and this publication"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.isCitedBy"
+msgstr "Is Cited By"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.cites"
+msgstr "Cites"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.isSupplementTo"
+msgstr "Is Supplement To"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.isSupplementedBy"
+msgstr "Is Supplemented By"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.isReferencedBy"
+msgstr "Is Referenced By"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.references"
+msgstr "References"
+
 msgid "plugins.generic.dataverse.metadataForm.license.label"
 msgstr "Research Data License"
 

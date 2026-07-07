@@ -84,6 +84,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetLanguage-control').should('have.value', 'French');
         cy.get('#datasetMetadata-datasetSubject-control').should('have.value', 'Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC BY 4.0');
+        cy.get('#datasetMetadata-datasetRelationType-control').should('have.value', 'IsSupplementedBy');
 
         cy.get('#datasetMetadata-datasetTitle-control').clear().type('Test metadata editing', {delay: 0});
         cy.setTinyMceContent('datasetMetadata-datasetDescription-control', 'new description');
@@ -93,6 +94,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
+        cy.get('#datasetMetadata-datasetRelationType-control').select('Is Cited By');
         cy.get('button:visible:contains("Save")').click();
         cy.get('.pkpFormPage__status:contains("Saved")');
 
@@ -104,6 +106,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetLanguage-control').should('have.value', 'English');
         cy.get('#datasetMetadata-datasetSubject-control').should('have.value', 'Computer and Information Science');
         cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC0 1.0');
+        cy.get('#datasetMetadata-datasetRelationType-control').should('have.value', 'IsCitedBy');
 
         cy.get('#datasetMetadata-datasetTitle-control').clear().type('Replication data for: ' + submissionData.title, {delay: 0});
         cy.getTinyMceContent('datasetMetadata-datasetDescription-control', submissionData.abstract);
@@ -192,6 +195,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
+        cy.get('#datasetMetadata-datasetRelationType-control').select('Is Cited By');
         cy.get('button:visible:contains("Save")').click();
 
 		cy.contains('It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files');
@@ -315,6 +319,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
+        cy.get('#datasetMetadata-datasetRelationType-control').select('Is Cited By');
         cy.get('button:visible:contains("Save")').click();
         cy.wait(7000);
 

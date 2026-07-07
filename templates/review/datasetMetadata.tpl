@@ -17,6 +17,16 @@
     <div class="submissionWizard__reviewPanel__body">
         <div class="submissionWizard__reviewPanel__item">
             <h4 class="submissionWizard__reviewPanel__item__header">
+                {translate key="plugins.generic.dataverse.metadataForm.language.label"}
+            </h4>
+            <div class="submissionWizard__reviewPanel__item__value">
+                <template>
+                    {{ submission.datasetLanguage }}
+                </template>
+            </div>
+        </div>
+        <div class="submissionWizard__reviewPanel__item">
+            <h4 class="submissionWizard__reviewPanel__item__header">
                 {translate key="plugins.generic.dataverse.metadataForm.subject.label"}
             </h4>
             <div class="submissionWizard__reviewPanel__item__value">
@@ -36,6 +46,16 @@
             <div class="submissionWizard__reviewPanel__item__value">
                 <template>
                     {{ submission.datasetLicense }}
+                </template>
+            </div>
+        </div>
+        <div class="submissionWizard__reviewPanel__item">
+            <h4 class="submissionWizard__reviewPanel__item__header">
+                {translate key="plugins.generic.dataverse.metadataForm.relationType.label"}
+            </h4>
+            <div class="submissionWizard__reviewPanel__item__value">
+                <template v-if="submission.datasetRelationType">
+                    {{ relationTypes[submission.datasetRelationType]['label'] }}
                 </template>
             </div>
         </div>

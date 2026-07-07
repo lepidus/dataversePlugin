@@ -8,12 +8,12 @@ use PKP\security\Validation;
 use PKP\facades\Locale;
 use PKP\security\authorization\PolicySet;
 use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
-use PKP\db\DAORegistry;
 use APP\core\Application;
 use APP\log\event\SubmissionEventLogEntry;
 use PKP\core\Core;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
@@ -155,6 +155,7 @@ class DatasetHandler extends APIHandler
         $data['language'] = $requestParams['datasetLanguage'];
         $data['subject'] = $requestParams['datasetSubject'];
         $data['license'] = $requestParams['datasetLicense'];
+        $data['relationType'] = $requestParams['datasetRelationType'];
 
         $datasetService = new DatasetService();
         $datasetService->update($data);
@@ -235,13 +236,18 @@ class DatasetHandler extends APIHandler
         $dataset->setSubject($requestParams['datasetSubject']);
         $dataset->setLicense($requestParams['datasetLicense']);
 
+        $relatedPublication = $dataset->getRelatedPublication();
+        $relatedPublication->setData('RelationType', $requestParams['datasetRelationType']);
+        $dataset->setRelatedPublication($relatedPublication);
+
         $excludedKeys = [
             'datasetTitle',
             'datasetDescription',
             'datasetKeywords',
             'datasetLanguage',
             'datasetSubject',
-            'datasetLicense'
+            'datasetLicense',
+            'datasetRelationType'
         ];
 
         foreach ($requestParams as $key => $value) {

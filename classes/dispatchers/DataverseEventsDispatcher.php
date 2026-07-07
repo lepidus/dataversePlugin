@@ -45,21 +45,15 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     public function modifySubmissionSchema(string $hookName, array $params): bool
     {
         $schema = &$params[0];
-        $schema->properties->{'datasetLanguage'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'datasetSubject'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'datasetLicense'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
+        $metadataFields = ['datasetLanguage', 'datasetSubject', 'datasetLicense', 'datasetRelationType'];
+
+        foreach ($metadataFields as $field) {
+            $schema->properties->{$field} = (object) [
+                'type' => 'string',
+                'apiSummary' => true,
+                'validation' => ['nullable'],
+            ];
+        }
         $schema->properties->{'selectedDataFilesForReview'} = (object) [
             'type' => 'array',
             'items' => (object) [
@@ -341,20 +335,36 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     public function updateDatasetOnPublicationUpdate(string $hookName, array $params): bool
     {
         $publication = &$params[0];
+        $editParams = $params[2];
         $submission = Repo::submission()->get($publication->getData('submissionId'));
-        $data = [];
 
         $study = Repo::dataverseStudy()->getBySubmissionId($submission->getId());
-        if (!$study) {
+        if (!$study || !isset($editParams['title'])) {
             return false;
         }
 
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+
+            if ($dataset->isPublished()) {
+                return false;
+            }
+        } catch (DataverseException $e) {
+            error_log('Dataverse Error while updating related publication citation: ' . $e->getMessage());
+            return false;
+        }
+
+        $relationType = $dataset->getRelatedPublication()->getRelationType();
         $datasetFactory = new SubmissionDatasetFactory($submission);
-        $data['persistentId'] = $study->getPersistentId();
-        $data['relatedPublication'] = $datasetFactory->getDatasetRelatedPublication($publication);
+        $relatedPublication = $datasetFactory->getDatasetRelatedPublication($publication);
+        $relatedPublication->setData('RelationType', $relationType);
 
         $datasetService = new DatasetService();
-        $datasetService->update($data);
+        $datasetService->update([
+            'persistentId' => $study->getPersistentId(),
+            'relatedPublication' => $relatedPublication
+        ]);
 
         return false;
     }

@@ -258,26 +258,31 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('Research Data Language');
         cy.contains('Research Data Subject');
         cy.contains('Research Data License');
+        cy.contains('Research Data Relation Type');
         cy.get('select[name="datasetLanguage"]').should('have.value', 'English');
         cy.get('select[name="datasetLicense"]').should('have.value', 'CC0 1.0');
+        cy.get('select[name="datasetRelationType"]').should('have.value', 'IsCitedBy');
 
         advanceNSteps(1);
         cy.contains('h3', 'Research data metadata');
         cy.contains('Research Data Language');
         cy.contains('Research Data Subject');
         cy.contains('Research Data License');
+        cy.contains('Research Data Relation Type');
         cy.contains('The subject of the research data is required');
         
         cy.get('.pkpSteps__step__label:contains("For the Editors")').click();
         cy.get('select[name="datasetLanguage"]').select('French');
         cy.get('select[name="datasetSubject"]').select('Earth and Environmental Sciences');
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
+        cy.get('select[name="datasetRelationType"]').select('Is Supplemented By');
 
         advanceNSteps(1);
         cy.get('div:contains("The subject of the research data is required")').should('not.exist');
         cy.contains('French');
         cy.contains('Earth and Environmental Sciences');
         cy.contains('CC BY 4.0');
+        cy.contains('Is Supplemented By')
 
         cy.contains('button', 'Submit').click();
         cy.get('.modal__panel:visible').within(() => {

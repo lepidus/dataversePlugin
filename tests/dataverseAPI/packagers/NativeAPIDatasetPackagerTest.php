@@ -85,6 +85,7 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
     public function testNativeApiPackagerBuildsRelatedPublicationMetadata(): void
     {
         $relatedPublication = new DatasetRelatedPublication(
+            'IsCitedBy',
             'User, T. (2023). <em>Test Dataset</em>. Open Preprint Systems',
             'doi',
             '10.1234/LepidusPreprints.1245',
@@ -99,6 +100,12 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $publicationMetadata = $this->packager->getMetadataField('relatedPublication');
         $publicationMetadata['value'] = [
             [
+                'publicationRelationType' => [
+                    'typeName' => 'publicationRelationType',
+                    'multiple' => false,
+                    'typeClass' => 'controlledVocabulary',
+                    'value' => $relatedPublication->getRelationType()
+                ],
                 'publicationCitation' => [
                     'typeName' => 'publicationCitation',
                     'multiple' => false,

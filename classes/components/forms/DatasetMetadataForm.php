@@ -32,6 +32,10 @@ class DatasetMetadataForm extends FormComponent
             if (empty($datasetMetadata['license'])) {
                 $datasetMetadata['license'] = $dataverseMetadata->getDefaultLicense();
             }
+
+            if (empty($datasetMetadata['relationType'])) {
+                $datasetMetadata['relationType'] = DataverseMetadata::DEFAULT_RELATION_TYPE;
+            }
         }
 
         if ($page == 'workflow') {
@@ -78,6 +82,13 @@ class DatasetMetadataForm extends FormComponent
                 'isRequired' => true,
                 'options' => $this->mapLicensesForDisplay($dataverseLicenses),
                 'value' => $datasetMetadata['license'],
+            ]))
+            ->addField(new FieldSelect('datasetRelationType', [
+                'label' => __('plugins.generic.dataverse.metadataForm.relationType.label'),
+                'description' => ($page == 'submission' ? __('plugins.generic.dataverse.metadataForm.relationType.description') : ''),
+                'isRequired' => true,
+                'options' =>  $dataverseMetadata->getDataverseRelationTypes(),
+                'value' => $datasetMetadata['relationType'],
             ]));
 
         try {
@@ -150,7 +161,8 @@ class DatasetMetadataForm extends FormComponent
                 'keywords' => [Locale::getLocale() => []],
                 'language' => '',
                 'subject' => '',
-                'license' => ''
+                'license' => '',
+                'relationType' => ''
             ];
         }
 
@@ -163,7 +175,8 @@ class DatasetMetadataForm extends FormComponent
             'keywords' => $mappedKeywords,
             'language' => $dataset->getLanguage(),
             'subject' => $dataset->getSubject(),
-            'license' => $dataset->getLicense()
+            'license' => $dataset->getLicense(),
+            'relationType' => $dataset->getRelatedPublication()->getRelationType()
         ];
     }
 
@@ -190,7 +203,10 @@ class DatasetMetadataForm extends FormComponent
     private function mapCurrentLocale(): array
     {
         $localeKey = Locale::getLocale();
-        $localeNames = array_map(fn ($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
+        $localeNames = array_map(
+            fn ($localeMetadata) => $localeMetadata->getDisplayName(),
+            Locale::getLocales()
+        );
 
         return [
             ['key' => $localeKey, 'label' => $localeNames[$localeKey]]
