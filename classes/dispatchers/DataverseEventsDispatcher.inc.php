@@ -28,21 +28,15 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     public function modifySubmissionSchema(string $hookName, array $params): bool
     {
         $schema = &$params[0];
-        $schema->properties->{'datasetLanguage'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'datasetSubject'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'datasetLicense'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
+        $metadataFields = ['datasetLanguage', 'datasetSubject', 'datasetLicense', 'datasetRelationType'];
+
+        foreach ($metadataFields as $field) {
+            $schema->properties->{$field} = (object) [
+                'type' => 'string',
+                'apiSummary' => true,
+                'validation' => ['nullable'],
+            ];
+        }
         $schema->properties->{'selectedDataFilesForReview'} = (object) [
             'type' => 'array',
             'items' => (object) [

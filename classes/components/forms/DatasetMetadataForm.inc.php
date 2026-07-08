@@ -61,6 +61,12 @@ class DatasetMetadataForm extends FormComponent
                 'isRequired' => true,
                 'options' => [],
                 'value' => $datasetMetadata['license'],
+            ]))
+            ->addField(new FieldSelect('datasetRelationType', [
+                'label' => __('plugins.generic.dataverse.metadataForm.relationType.label'),
+                'isRequired' => true,
+                'options' =>  $dataverseMetadata->getDataverseRelationTypes(),
+                'value' => $datasetMetadata['relationType'],
             ]));
     }
 
@@ -73,7 +79,8 @@ class DatasetMetadataForm extends FormComponent
                 'keywords' => [],
                 'language' => '',
                 'subject' => '',
-                'license' => ''
+                'license' => '',
+                'relationType' => ''
             ];
         }
 
@@ -83,7 +90,8 @@ class DatasetMetadataForm extends FormComponent
             'keywords' => (array) $dataset->getKeywords() ?? [],
             'language' => $dataset->getLanguage(),
             'subject' => $dataset->getSubject(),
-            'license' => $dataset->getLicense()
+            'license' => $dataset->getLicense(),
+            'relationType' => $dataset->getRelatedPublication()->getRelationType()
         ];
     }
 

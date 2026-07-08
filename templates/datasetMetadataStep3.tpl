@@ -51,3 +51,21 @@
         required=true
     }
 {/fbvFormSection}
+
+{fbvFormSection 
+    label="plugins.generic.dataverse.metadataForm.relationType.label" 
+    description="plugins.generic.dataverse.metadataForm.relationType.description" 
+    required=true
+}
+    {fbvElement 
+        type="select" 
+        name="datasetRelationType" 
+        id="datasetRelationType" 
+        defaultLabel="" 
+        defaultValue=""
+        selected=$selectedRelationType
+        from=$availableRelationTypes
+        translate=false 
+        required=true
+    }
+{/fbvFormSection}
