@@ -146,7 +146,7 @@ class NativeAPIDatasetPackager
     private function createMultiCompoundMetadata(array $metadataField, object $object): array
     {
         $objectData = $object->getAllData();
-        $controlledVocabMetadata = ['identifierScheme', 'IDType'];
+        $controlledVocabMetadata = ['identifierScheme', 'RelationType', 'IDType'];
 
         $metadataValue = [];
         foreach ($objectData as $attr => $value) {

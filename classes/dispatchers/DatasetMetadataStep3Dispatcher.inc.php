@@ -34,24 +34,29 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
             $availableLanguages = $this->getAvailableLanguages();
             $selectedLanguage = $submission->getData('datasetLanguage') ?? \Locale::getDisplayLanguage($submission->getLocale(), 'en');
 
+            $availableRelationTypes = DataverseMetadata::getDataverseRelationTypes();
+            $selectedRelationType = $submission->getData('datasetRelationType') ?? DataverseMetadata::DEFAULT_RELATION_TYPE;
+
             $templateMgr->assign([
                 'selectedLanguage' => $selectedLanguage,
                 'availableLanguages' => $availableLanguages,
                 'subjectId' => array_search($submission->getData('datasetSubject'), $datasetSubjectValues),
                 'dataverseSubjectVocab' => $datasetSubjectLabels,
                 'selectedLicense' => $selectedLicense,
-                'availableLicenses' => $this->mapLicensesForStep3Display($availableLicenses)
+                'availableLicenses' => $this->mapValuesForStep3Display($availableLicenses, 'name', 'name'),
+                'selectedRelationType' => $selectedRelationType,
+                'availableRelationTypes' => $this->mapValuesForStep3Display($availableRelationTypes, 'label', 'value')
             ]);
 
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('datasetMetadataStep3.tpl'));
         }
     }
 
-    private function mapLicensesForStep3Display(array $licenses): array
+    private function mapValuesForStep3Display(array $licenses, string $fieldForLabel, string $fieldForValue): array
     {
         $mappedLicenses = [];
         foreach ($licenses as $license) {
-            $mappedLicenses[$license['name']] = $license['name'];
+            $mappedLicenses[$license[$fieldForValue]] = $license[$fieldForLabel];
         }
         return $mappedLicenses;
     }
@@ -74,10 +79,11 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
         $form = &$args[0];
         $submission = &$form->submission;
 
-        $form->readUserVars(['datasetLanguage', 'datasetSubject', 'datasetLicense']);
+        $form->readUserVars(['datasetLanguage', 'datasetSubject', 'datasetLicense', 'datasetRelationType']);
         $language = $form->getData('datasetLanguage');
         $subject = $form->getData('datasetSubject');
         $license = $form->getData('datasetLicense');
+        $relationType = $form->getData('datasetRelationType');
 
         if (is_null($subject)) {
             return false;
@@ -92,7 +98,8 @@ class DatasetMetadataStep3Dispatcher extends DataverseDispatcher
             [
                 'datasetLanguage' => $language,
                 'datasetSubject' => $datasetSubjectValues[$subject],
-                'datasetLicense' => $license
+                'datasetLicense' => $license,
+                'datasetRelationType' => $relationType
             ],
             Application::get()->getRequest()
         );

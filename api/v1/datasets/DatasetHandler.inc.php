@@ -142,6 +142,7 @@ class DatasetHandler extends APIHandler
         $data['language'] = $requestParams['datasetLanguage'];
         $data['subject'] = $requestParams['datasetSubject'];
         $data['license'] = $requestParams['datasetLicense'];
+        $data['relationType'] = $requestParams['datasetRelationType'];
 
         $datasetService = new DatasetService();
         $datasetService->update($data);
@@ -227,6 +228,10 @@ class DatasetHandler extends APIHandler
         $dataset->setLanguage($requestParams['datasetLanguage']);
         $dataset->setSubject($requestParams['datasetSubject']);
         $dataset->setLicense($requestParams['datasetLicense']);
+
+        $relatedPublication = $dataset->getRelatedPublication();
+        $relatedPublication->setData('RelationType', $requestParams['datasetRelationType']);
+        $dataset->setRelatedPublication($relatedPublication);
 
         if (!empty($dataset->getFiles())) {
             $datasetService = new DatasetService();

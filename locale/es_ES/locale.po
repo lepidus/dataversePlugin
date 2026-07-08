@@ -317,6 +317,30 @@ msgstr "Ciencias sociales"
 msgid "plugins.generic.dataverse.metadataForm.subject.Other"
 msgstr "Otra"
 
+msgid "plugins.generic.dataverse.metadataForm.relationType.label"
+msgstr "Tipo de relación de los datos de investigación"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.description"
+msgstr "Seleccione la naturaleza de la relación entre los datos de la investigación y esta publicación"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.isCitedBy"
+msgstr "Es citado por"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.cites"
+msgstr "Cita"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.isSupplementTo"
+msgstr "Es Suplemento De"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.isSupplementedBy"
+msgstr "Es Suplementado Por"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.isReferencedBy"
+msgstr "Es Referenciado Por"
+
+msgid "plugins.generic.dataverse.metadataForm.relationType.references"
+msgstr "Referencia"
+
 msgid "plugins.generic.dataverse.metadataForm.license.label"
 msgstr "Licencia de datos de investigación"
 

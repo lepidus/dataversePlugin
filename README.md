@@ -114,6 +114,6 @@ Important: Cypress search for elements with expected strings. The locale of your
 
 __This plugin is licensed under the GNU General Public License v3.0__
 
-__Copyright (c) 2021-2023 Lepidus Tecnologia__
+__Copyright (c) 2021-2026 Lepidus Tecnologia__
 
-__Copyright (c) 2021-2023 SciELO__
+__Copyright (c) 2021-2026 SciELO__

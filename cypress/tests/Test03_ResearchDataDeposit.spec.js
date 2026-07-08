@@ -129,6 +129,8 @@ describe('Research data deposit', function () {
 
 		cy.get('#submitTabs a:contains("3. Enter Metadata")').click();
 		cy.wait(1000);
+
+		cy.contains('Research Data Subject');
 		cy.get('select[id^="datasetSubject"').select('Other');
 
 		cy.contains('Research Data Language');
@@ -138,6 +140,11 @@ describe('Research data deposit', function () {
 		cy.contains('Research Data License');
 		cy.get('select[id^="datasetLicense"').should('have.value', 'CC0 1.0');
 		cy.get('select[id^="datasetLicense"').select('CC BY 4.0');
+
+		cy.contains('Research Data Relation Type');
+		cy.get('select[id^="datasetRelationType"').should('have.value', 'IsCitedBy');
+		cy.get('select[id^="datasetRelationType"').select('Is Supplemented By');
+
 		cy.get('form[id=submitStep3Form] button:contains("Save and continue"):visible').click();
 
 		cy.wait(1000);
@@ -204,6 +211,8 @@ describe('Research data deposit', function () {
 		cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
 		cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC BY 4.0');
 		cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
+		cy.get('#datasetMetadata-datasetRelationType-control').should('have.value', 'IsSupplementedBy');
+		cy.get('#datasetMetadata-datasetRelationType-control').select('Is Cited By');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').click();
 		cy.get('#datasetTab [role="status"]').contains('Saved');
 
@@ -322,6 +331,7 @@ describe('Research data deposit', function () {
 		cy.get('input[name="datasetTitle"]').should('have.value', 'Replication data for: ' + submission.title);
 		cy.get('select[id^="datasetMetadata-datasetSubject-control"').select('Other');
 		cy.get('select[id^="datasetMetadata-datasetLicense-control"').select('CC0 1.0');
+		cy.get('select[id^="datasetMetadata-datasetRelationType-control"').select('Is Supplemented By');
 		cy.get('#datasetTab form button').contains('Save').click();
 
 		cy.contains('It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files');
@@ -369,6 +379,8 @@ describe('Research data deposit', function () {
 		cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
 		cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC0 1.0');
 		cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
+		cy.get('#datasetMetadata-datasetRelationType-control').should('have.value', 'IsSupplementedBy');
+		cy.get('#datasetMetadata-datasetRelationType-control').select('Is Cited By');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').click();
 		cy.get('#datasetTab [role="status"]').contains('Saved');
 
