@@ -2,6 +2,7 @@
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.services.DatasetService');
+import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 import('lib.pkp.classes.log.SubmissionLog');
 import('classes.log.SubmissionEventLogEntry');
 
@@ -402,10 +403,10 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         }
     }
 
-    public function updateDatasetOnPublicationUpdate(string $hookName, array $args): bool
+    public function updateDatasetOnPublicationUpdate(string $hookName, array $params): bool
     {
-        $publication = &$args[0];
-        $data = [];
+        $publication = &$params[0];
+        $editParams = $params[2];
 
         $publicationDAO = DAORegistry::getDAO('PublicationDAO');
         $publicationDAO->updateObject($publication);
@@ -415,18 +416,33 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $studyDAO = DAORegistry::getDAO('DataverseStudyDAO');
         $study = $studyDAO->getStudyBySubmissionId($submission->getId());
 
-        if (!$study) {
+        if (!$study || !isset($editParams['title'])) {
+            return false;
+        }
+
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+
+            if ($dataset->isPublished()) {
+                return false;
+            }
+        } catch (DataverseException $e) {
+            error_log('Dataverse Error while updating related publication citation: ' . $e->getMessage());
             return false;
         }
 
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $datasetFactory = new SubmissionDatasetFactory($submission);
-
-        $data['persistentId'] = $study->getPersistentId();
-        $data['relatedPublication'] = $datasetFactory->getDatasetRelatedPublication($publication);
+        $relatedPublication = $datasetFactory->getDatasetRelatedPublication($publication);
+        $actualRelationType = $dataset->getRelatedPublication()->getRelationType();
+        $relatedPublication->setData('RelationType', $actualRelationType);
 
         $datasetService = new DatasetService();
-        $datasetService->update($data);
+        $datasetService->update([
+            'persistentId' => $study->getPersistentId(),
+            'relatedPublication' => $relatedPublication
+        ]);
 
         return false;
     }
