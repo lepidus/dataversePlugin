@@ -4,16 +4,12 @@
 <!--
   * plugins/generic/dataverse/version.xml
   *
-  * Copyright (c) 2013-2019 Simon Fraser University
-  * Copyright (c) 2003-2019 John Willinsky
-  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
-  *
   * Plugin version information.
   -->
 <version>
 	<application>dataverse</application>
 	<type>plugins.generic</type>
-	<release>2.8.10.0</release>
+	<release>2.8.11.0</release>
 	<date>2026-05-25</date>
 	<lazy-load>1</lazy-load>
 	<class>DataversePlugin</class>
