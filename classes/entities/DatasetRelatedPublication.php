@@ -6,7 +6,7 @@ use PKP\core\DataObject;
 
 class DatasetRelatedPublication extends DataObject
 {
-    public function __construct(string $relationType, string $citation, ?string $idType, ?string $idNumber, ?string $url)
+    public function __construct(?string $relationType, string $citation, ?string $idType, ?string $idNumber, ?string $url)
     {
         $this->setData('RelationType', $relationType);
         $this->setData('citation', $citation);
