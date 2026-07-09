@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
 use PKP\plugins\Hook;
+use APP\core\Application;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\CrossrefXmlEditor;
 
@@ -17,9 +18,10 @@ class CrossrefDispatcher extends DataverseDispatcher
     public function addDatasetRelationToCrossrefExport(string $hookName, array $params)
     {
         $preliminaryOutput = &$params[0];
+        $context = Application::get()->getRequest()->getContext();
 
         $crossrefXmlEditor = new CrossrefXmlEditor();
-        $preliminaryOutput = $crossrefXmlEditor->addDatasetRelationToDepositXml($preliminaryOutput);
+        $preliminaryOutput = $crossrefXmlEditor->addDatasetRelationToDepositXml($preliminaryOutput, $context->getId());
 
         return Hook::CONTINUE;
     }
