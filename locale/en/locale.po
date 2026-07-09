@@ -18,7 +18,11 @@ msgid "plugins.generic.dataverse.description"
 msgstr "Deposit data sets and/or other supplementary files to a Dataverse."
 
 msgid "plugins.generic.dataverse.settings.emptyApiSecretKey"
-msgstr "The administrator must set a secret in the site configuration file ('api_key_secret')."
+msgstr ""
+"Your OJS/OPS is missing a security setting ('api_key_secret'). You may contact your system administrator to set it up in the config file.<br><br>"
+"The 'api_key_secret' is used to safely store your Dataverse credentials."
+" More information on how to set it up can be found in <a href=\"https://forum.pkp.sfu.ca/t/how-to-generate-a-api-key-secret-code-in-ojs-3/72008/\" target=\"_blank\">this PKP Community Forum thread</a>.<br><br>"
+"Once it's set up, come back here to enter your credentials."
 
 msgid "plugins.generic.dataverse.settings.description"
 msgstr ""
