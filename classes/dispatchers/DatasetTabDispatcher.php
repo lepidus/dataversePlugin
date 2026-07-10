@@ -12,10 +12,8 @@ use PKP\facades\Locale;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
-use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
-use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use PKP\components\forms\FormComponent;
@@ -108,22 +106,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $this->setupResearchDataUpdate($submission, $study);
 
         return false;
-    }
-
-    private function getApiUrl(string $handlerPath, array $params = []): ?string
-    {
-        $request = Application::get()->getRequest();
-        $context = $request->getContext();
-
-        return $request->getDispatcher()->url(
-            $request,
-            Application::ROUTE_API,
-            $context->getPath(),
-            $handlerPath,
-            null,
-            null,
-            $params
-        );
     }
 
     private function setupResearchDataDeposit(Submission $submission): void

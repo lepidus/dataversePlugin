@@ -88,16 +88,11 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     private function addDatasetFilesList($templateMgr, $request, $submission): void
     {
         $items = $this->getDatasetFiles($request, $submission->getId());
-        $context = $request->getContext();
-        $dataversePluginApiUrl = $request
-            ->getDispatcher()
-            ->url($request, Application::ROUTE_API, $context->getPath(), 'dataverse');
-        $fileListApiUrl = $request
-            ->getDispatcher()
-            ->url($request, Application::ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
-        $fileActionApiUrl = $request
-            ->getDispatcher()
-            ->url($request, Application::ROUTE_API, $context->getPath(), 'draftDatasetFiles');
+        $user = $request->getUser();
+
+        $dataversePluginApiUrl = $this->getApiUrl('dataverse');
+        $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
+        $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId(), 'userId' => $user->getId()]);
 
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
@@ -134,9 +129,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     private function getDatasetFiles($request, $submissionId): array
     {
         $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submissionId)->toArray();
-        $datasetFilesApiUrl = $request
-            ->getDispatcher()
-            ->url($request, Application::ROUTE_API, $request->getContext()->getPath(), "draftDatasetFiles");
+        $datasetFilesApiUrl = $this->getApiUrl('draftDatasetFiles');
         $datasetFilesProps = [];
 
         foreach ($draftDatasetFiles as $draftDatasetFile) {
