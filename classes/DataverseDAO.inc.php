@@ -4,13 +4,15 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class DataverseDAO
 {
-    public function getSubmissionIdByDoi(string $doi): ?int
+    public function getSubmissionIdByDoi(string $doi, int $contextId): ?int
     {
-        return Capsule::table('publications as p')
+        return Capsule::table('submissions as s')
+            ->leftJoin('publications as p', 'p.submission_id', '=', 's.submission_id')
             ->leftJoin('publication_settings as ps', 'p.publication_id', '=', 'ps.publication_id')
             ->where('ps.setting_name', '=', 'pub-id::doi')
             ->where('ps.setting_value', '=', $doi)
-            ->value('p.submission_id');
+            ->where('s.context_id', '=', $contextId)
+            ->value('s.submission_id');
     }
 
     public function getSubmissionStatementTypes(int $submissionId): ?array
