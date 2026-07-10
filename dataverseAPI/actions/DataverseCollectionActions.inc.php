@@ -72,7 +72,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         if (is_null($dataverseLicenses) || $currentCacheTime > self::ONE_DAY_SECONDS) {
             $cache->flush();
 
-            $uri = $this->createNativeAPIURI('licenses');
+            $uri = $this->createNativeAPIURI(['licenses']);
             $response = $this->nativeAPIRequest('GET', $uri);
             $dataverseLicenses = json_decode($response->getBody(), true);
 
@@ -84,7 +84,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
     public function getApiTokenExpirationDate(): string
     {
-        $uri = $this->createNativeAPIURI('users', 'token');
+        $uri = $this->createNativeAPIURI(['users', 'token']);
         $response = $this->nativeAPIRequest('GET', $uri);
         $decodedResponse = json_decode($response->getBody(), true);
 
@@ -103,7 +103,8 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
     private function createDataverseCollection(DataverseResponse $response): DataverseCollection
     {
         $jsonContent = json_decode($response->getBody(), true);
-        if ($jsonContent['status'] != 'OK'
+        if (
+            $jsonContent['status'] != 'OK'
             || empty($jsonContent['data'])
             || !isset($jsonContent['data']['name'])
         ) {

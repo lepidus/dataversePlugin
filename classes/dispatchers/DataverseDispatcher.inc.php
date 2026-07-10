@@ -11,4 +11,20 @@ abstract class DataverseDispatcher
     }
 
     abstract protected function registerHooks(): void;
+
+    protected function getApiUrl(string $handlerPath, array $params = []): ?string
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+
+        return $request->getDispatcher()->url(
+            $request,
+            ROUTE_API,
+            $context->getPath(),
+            $handlerPath,
+            null,
+            null,
+            $params
+        );
+    }
 }

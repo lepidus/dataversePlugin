@@ -17,8 +17,8 @@ abstract class DataverseActions
     protected const ONE_DAY_SECONDS = 24 * 60 * 60;
 
     public function __construct(
-        DataverseConfiguration $configuration = null,
-        \GuzzleHttp\Client $client = null
+        ?DataverseConfiguration $configuration = null,
+        ?\GuzzleHttp\Client $client = null
     ) {
         if (is_null($configuration)) {
             $this->contextId = Application::get()->getRequest()->getContext()->getId();
@@ -36,24 +36,29 @@ abstract class DataverseActions
         $this->cacheManager = CacheManager::getManager();
     }
 
-    public function createNativeAPIURI(string ...$pathParams): string
+    public function createNativeAPIURI(array $pathParams, array $queryParams = []): string
     {
-        return $this->serverURL . '/api/' . join('/', $pathParams);
+        $uri = $this->serverURL . '/api/' . join('/', $pathParams);
+        if (!empty($queryParams)) {
+            $uri .= '?' . http_build_query($queryParams);
+        }
+
+        return $uri;
     }
 
     public function createSWORDAPIURI(string ...$pathParams): string
     {
-        return $this->serverURL . '/dvn/api/data-deposit/v1.1/swordv2/' .join('/', $pathParams);
+        return $this->serverURL . '/dvn/api/data-deposit/v1.1/swordv2/' . join('/', $pathParams);
     }
 
     public function getCurrentDataverseURI(): string
     {
-        return $this->createNativeAPIURI('dataverses', $this->dataverseAlias);
+        return $this->createNativeAPIURI(['dataverses', $this->dataverseAlias]);
     }
 
     public function getRootDataverseURI(): string
     {
-        return $this->createNativeAPIURI('dataverses', ':root');
+        return $this->createNativeAPIURI(['dataverses', ':root']);
     }
 
     public function nativeAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
