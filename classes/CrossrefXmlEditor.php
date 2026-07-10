@@ -23,7 +23,7 @@ class CrossrefXmlEditor
         $this->datasetActions = $actions ?? (new DatasetActions());
     }
 
-    public function addDatasetRelationToDepositXml(DOMDocument $depositXml): DOMDocument
+    public function addDatasetRelationToDepositXml(DOMDocument $depositXml, int $contextId): DOMDocument
     {
         $submissionNodes = $depositXml->getElementsByTagName('journal_article');
         if ($submissionNodes->count() == 0) {
@@ -36,7 +36,7 @@ class CrossrefXmlEditor
             $doiNode = $doiDataNode->getElementsByTagName('doi')->item(0);
             $doi = $doiNode->nodeValue;
 
-            $submissionId = $dataverseDao->getSubmissionIdByDoi($doi);
+            $submissionId = $dataverseDao->getSubmissionIdByDoi($doi, $contextId);
             if (!$submissionId) {
                 continue;
             }

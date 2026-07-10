@@ -6,12 +6,13 @@ use Illuminate\Support\Facades\DB;
 
 class DataverseDAO
 {
-    public function getSubmissionIdByDoi(string $doi): ?int
+    public function getSubmissionIdByDoi(string $doi, int $contextId): ?int
     {
         return DB::table('submissions as s')
             ->leftJoin('publications as p', 'p.submission_id', '=', 's.submission_id')
             ->leftJoin('dois as d', 'd.doi_id', '=', 'p.doi_id')
             ->where('d.doi', '=', $doi)
+            ->where('d.context_id', '=', $contextId)
             ->value('s.submission_id');
     }
 

@@ -12,10 +12,8 @@ use PKP\facades\Locale;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
-use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
-use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use PKP\components\forms\FormComponent;
@@ -114,17 +112,11 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         $request = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
-        $context = $request->getContext();
-        $user = $request->getUser();
 
-        $dataversePluginApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'dataverse');
-        $metadataFormAction = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
-        $fileListApiUrl = $request
-            ->getDispatcher()
-            ->url($request, Application::ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
-        $fileActionApiUrl = $request
-            ->getDispatcher()
-            ->url($request, Application::ROUTE_API, $context->getPath(), 'draftDatasetFiles');
+        $dataversePluginApiUrl = $this->getApiUrl('dataverse');
+        $metadataFormAction = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
+        $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
+        $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles');
 
         $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
@@ -162,30 +154,10 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $userRoles = (array) $router->getHandler()->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES);
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($context->getId());
 
-        $dataversePluginApiUrl = $dispatcher->url(
-            $request,
-            Application::ROUTE_API,
-            $context->getPath(),
-            'dataverse'
-        );
-        $datasetApiUrl = $dispatcher->url(
-            $request,
-            Application::ROUTE_API,
-            $context->getPath(),
-            'datasets/' . $study->getId()
-        );
-        $fileListApiUrl = $dispatcher->url(
-            $request,
-            Application::ROUTE_API,
-            $context->getPath(),
-            'datasets/' . $study->getId() . '/files'
-        );
-        $fileActionApiUrl = $dispatcher->url(
-            $request,
-            Application::ROUTE_API,
-            $context->getPath(),
-            'datasets/' . $study->getId() . '/file'
-        );
+        $dataversePluginApiUrl = $this->getApiUrl('dataverse');
+        $datasetApiUrl = $this->getApiUrl('datasets/' . $study->getId());
+        $fileListApiUrl = $this->getApiUrl('datasets/' . $study->getId() . '/files');
+        $fileActionApiUrl = $this->getApiUrl('datasets/' . $study->getId() . '/file');
         $datasetStatementUrl = $dispatcher->url(
             $request,
             Application::ROUTE_PAGE,

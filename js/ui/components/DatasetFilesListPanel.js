@@ -158,7 +158,7 @@ pkp.Vue.component('dataset-files-list-panel', {
 						callback: () => {
 							var self = this;
                             $.ajax({
-                                url: this.fileActionUrl + '?fileId=' + fileId + '&fileName=' + fileName,
+                                url: this.fileActionUrl + '?fileId=' + encodeURIComponent(fileId) + '&fileName=' + encodeURIComponent(fileName),
                                 type: 'DELETE',
                                 headers: {
                                     'X-Csrf-Token': pkp.currentUser.csrfToken,

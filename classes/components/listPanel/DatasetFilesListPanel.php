@@ -57,7 +57,7 @@ class DatasetFilesListPanel extends ListPanel
         if (str_contains($this->fileActionUrl, '/draftDatasetFiles')) {
             $submissionId = $this->submission->getId();
             $userId = $request->getUser()->getId();
-            $addFileUrl .= "?submissionId=$submissionId&userId=$userId";
+            $addFileUrl .= '?' . http_build_query(['submissionId' => $submissionId, 'userId' => $userId]);
         }
 
         return new DraftDatasetFileForm(

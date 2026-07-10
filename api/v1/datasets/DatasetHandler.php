@@ -305,7 +305,9 @@ class DatasetHandler extends APIHandler
 
         $items = array_map(function ($datasetFile) use ($fileActionApiUrl) {
             $fileVars = $datasetFile->getVars();
-            $fileVars['downloadUrl'] = $fileActionApiUrl . '?fileId=' . $datasetFile->getId() . '&fileName=' . $datasetFile->getFileName();
+            $fileVars['downloadUrl'] = $fileActionApiUrl
+                . '?fileId=' . urlencode($datasetFile->getId())
+                . '&fileName=' . urlencode($datasetFile->getFileName());
             return $fileVars;
         }, $datasetFiles);
 

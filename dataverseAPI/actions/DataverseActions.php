@@ -41,9 +41,14 @@ abstract class DataverseActions
         $this->cacheManager = CacheManager::getManager();
     }
 
-    public function createNativeAPIURI(string ...$pathParams): string
+    public function createNativeAPIURI(array $pathParams, array $queryParams = []): string
     {
-        return $this->serverURL . '/api/' . join('/', $pathParams);
+        $uri = $this->serverURL . '/api/' . join('/', $pathParams);
+        if (!empty($queryParams)) {
+            $uri .= '?' . http_build_query($queryParams);
+        }
+
+        return $uri;
     }
 
     public function createSWORDAPIURI(string ...$pathParams): string
@@ -53,12 +58,12 @@ abstract class DataverseActions
 
     public function getCurrentDataverseURI(): string
     {
-        return $this->createNativeAPIURI('dataverses', $this->dataverseAlias);
+        return $this->createNativeAPIURI(['dataverses', $this->dataverseAlias]);
     }
 
     public function getRootDataverseURI(): string
     {
-        return $this->createNativeAPIURI('dataverses', ':root');
+        return $this->createNativeAPIURI(['dataverses', ':root']);
     }
 
     public function nativeAPIRequest(string $method, string $uri, array $options = [], bool $returnResponse = true): ?DataverseResponse
