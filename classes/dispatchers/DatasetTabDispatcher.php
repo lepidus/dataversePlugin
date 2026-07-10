@@ -278,7 +278,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
     private function getFormLocales($context): array
     {
         $supportedFormLocales = $context->getSupportedFormLocales();
-        $localeNames = array_map(fn($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
+        $localeNames = array_map(fn ($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
 
         $formLocales = array_map(function ($localeKey) use ($localeNames) {
             return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
