@@ -54,6 +54,12 @@ class DatasetFilesListPanel extends ListPanel
         $request = Application::get()->getRequest();
         $addFileUrl = $this->fileActionUrl;
 
+        if (str_contains($this->fileActionUrl, '/draftDatasetFiles')) {
+            $submissionId = $this->submission->getId();
+            $userId = $request->getUser()->getId();
+            $addFileUrl .= '?' . http_build_query(['submissionId' => $submissionId, 'userId' => $userId]);
+        }
+
         return new DraftDatasetFileForm(
             $addFileUrl,
             $request->getContext()

@@ -88,11 +88,10 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     private function addDatasetFilesList($templateMgr, $request, $submission): void
     {
         $items = $this->getDatasetFiles($request, $submission->getId());
-        $user = $request->getUser();
 
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
         $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
-        $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId(), 'userId' => $user->getId()]);
+        $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles');
 
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',

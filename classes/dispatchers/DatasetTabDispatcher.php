@@ -112,21 +112,19 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         $request = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
-        $user = $request->getUser();
 
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
         $metadataFormAction = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
         $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
-        $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId(), 'userId' => $user->getId()]);
-        $draftDatasetFilesApiUrl = $this->getApiUrl('draftDatasetFiles');
+        $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles');
 
         $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
         $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
 
-        $datasetFiles = array_map(function ($draftDatasetFile) use ($draftDatasetFilesApiUrl) {
+        $datasetFiles = array_map(function ($draftDatasetFile) use ($fileActionApiUrl) {
             $fileVars = $draftDatasetFile->getAllData();
-            $fileVars['downloadUrl'] = $draftDatasetFilesApiUrl . '/' . $draftDatasetFile->getFileId() . '/download';
+            $fileVars['downloadUrl'] = $fileActionApiUrl . '/' . $draftDatasetFile->getFileId() . '/download';
             return $fileVars;
         }, $draftDatasetFiles);
         ksort($datasetFiles);
