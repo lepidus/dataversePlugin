@@ -31,10 +31,19 @@ class DataverseActionsTest extends PKPTestCase
             ->setConstructorArgs(array($this->configuration))
             ->getMockForAbstractClass();
 
-        $uri = $actions->createNativeAPIURI('datasets', ':persistentId?persistentId=doi:10.12345/FK2/123456');
-
+        $encodedDoi = urlencode('doi:10.12345/FK2/123456');
+        $uri = $actions->createNativeAPIURI(['datasets', ':persistentId'], ['persistentId' => 'doi:10.12345/FK2/123456']);
         $this->assertEquals(
-            'https://test.dataverse.org/api/datasets/:persistentId?persistentId=doi:10.12345/FK2/123456',
+            "https://test.dataverse.org/api/datasets/:persistentId?persistentId=$encodedDoi",
+            $uri
+        );
+
+        $uri = $actions->createNativeAPIURI(
+            ['datasets', 'export'],
+            ['exporter' => 'dataverse_json', 'persistentId' => 'doi:10.12345/FK2/123456']
+        );
+        $this->assertEquals(
+            "https://test.dataverse.org/api/datasets/export?exporter=dataverse_json&persistentId=$encodedDoi",
             $uri
         );
     }

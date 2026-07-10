@@ -169,7 +169,7 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $depositXml = new DOMDocument();
         $depositXml->load(__DIR__ . '/fixtures/crossref/' . $fixture);
 
-        $result = $this->xmlEditor->addDatasetRelationToDepositXml($depositXml);
+        $result = $this->xmlEditor->addDatasetRelationToDepositXml($depositXml, $this->contextId);
 
         $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/' . $expectedFixture);
 

@@ -10,8 +10,10 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
 {
     public function get(string $persistentId): Dataset
     {
-        $args = '?persistentId=' . $persistentId;
-        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions' . $args);
+        $uri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId', 'versions'],
+            ['persistentId' => $persistentId]
+        );
         $response = $this->nativeAPIRequest('GET', $uri);
 
         $datasetFactory = new JsonDatasetFactory($response->getBody());
@@ -23,8 +25,10 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         $dataset = $this->get($persistentId);
 
         if ($dataset->isPublished()) {
-            $args = '?exporter=dataverse_json&persistentId=' . $persistentId;
-            $uri = $this->createNativeAPIURI('datasets', 'export' . $args);
+            $uri = $this->createNativeAPIURI(
+                ['datasets', 'export'],
+                ['exporter' => 'dataverse_json', 'persistentId' => $persistentId]
+            );
             $response = $this->nativeAPIRequest('GET', $uri);
 
             $jsonContent = json_decode($response->getBody(), true);
@@ -64,7 +68,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
 
     public function getDatasetLocks(int $datasetId): array
     {
-        $uri = $this->createNativeAPIURI('datasets', $datasetId, 'locks');
+        $uri = $this->createNativeAPIURI(['datasets', $datasetId, 'locks']);
         $response = $this->nativeAPIRequest('GET', $uri);
         $jsonContent = json_decode($response->getBody(), true);
 
@@ -96,8 +100,10 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         $packager = new NativeAPIDatasetPackager($dataset);
         $packager->createDatasetPackage();
 
-        $args = '?persistentId=' . $dataset->getPersistentId();
-        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions', ':draft', $args);
+        $uri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId', 'versions', ':draft'],
+            ['persistentId' => $dataset->getPersistentId()]
+        );
         $options = [
             'headers' => ['Content-Type' => 'application/json'],
             'body' => GuzzleHttp\Psr7\Utils::tryFopen($packager->getPackagePath(), 'rb')
@@ -108,15 +114,19 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
 
     public function delete(string $persistendId): void
     {
-        $args = '?persistentId=' . $persistendId;
-        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions', ':draft' . $args);
+        $uri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId', 'versions', ':draft'],
+            ['persistentId' => $persistendId]
+        );
         $this->nativeAPIRequest('DELETE', $uri);
     }
 
     public function publish(string $persistendId): void
     {
-        $args = '?persistentId=' . $persistendId . '&type=major';
-        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'actions', ':publish' . $args);
+        $uri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId', 'actions', ':publish'],
+            ['persistentId' => $persistendId, 'type' => 'major']
+        );
 
         $this->nativeAPIRequest('POST', $uri);
     }

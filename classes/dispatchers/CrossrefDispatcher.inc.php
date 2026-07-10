@@ -14,9 +14,10 @@ class CrossrefDispatcher extends DataverseDispatcher
     public function addDatasetRelationToCrossrefExport(string $hookName, array $params)
     {
         $preliminaryOutput = &$params[0];
+        $context = Application::get()->getRequest()->getContext();
 
         $crossrefXmlEditor = new CrossrefXmlEditor();
-        $preliminaryOutput = $crossrefXmlEditor->addDatasetRelationToDepositXml($preliminaryOutput);
+        $preliminaryOutput = $crossrefXmlEditor->addDatasetRelationToDepositXml($preliminaryOutput, $context->getId());
 
         return false;
     }

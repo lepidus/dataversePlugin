@@ -124,7 +124,9 @@ class JsonDatasetFactory extends DatasetFactory
     private function getRelatedPublication($publication): DatasetRelatedPublication
     {
         return new DatasetRelatedPublication(
-            $publication->publicationRelationType->value,
+            isset($publication->publicationRelationType->value)
+                ? $publication->publicationRelationType->value
+                : null,
             $publication->publicationCitation->value,
             isset($publication->publicationIDType->value) ?
                 $publication->publicationIDType->value

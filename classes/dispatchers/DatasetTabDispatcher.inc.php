@@ -99,13 +99,13 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $context = $request->getContext();
         $user = $request->getUser();
 
-        $metadataFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'datasets', null, null, ['submissionId' => $submission->getId()]);
+        $metadataFormAction = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
 
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $factory = new SubmissionDatasetFactory($submission);
         $dataset = $factory->getDataset();
 
-        $fileListApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, ['submissionId' => $submission->getId()]);
+        $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
 
         $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
 
@@ -115,13 +115,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         ksort($items);
 
-        $params = [
-            'submissionId' => $submission->getId(),
-            'userId' => $user->getId()
-        ];
-
-        $fileFormAction = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'draftDatasetFiles', null, null, $params);
-        $dataversePluginApiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'dataverse');
+        $fileFormAction = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId(), 'userId' => $user->getId()]);
+        $dataversePluginApiUrl = $this->getApiUrl('dataverse');
 
         $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
         $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
@@ -149,33 +144,10 @@ class DatasetTabDispatcher extends DataverseDispatcher
             return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
         }, $supportedFormLocales);
 
-        $dataversePluginApiUrl = $dispatcher->url(
-            $request,
-            ROUTE_API,
-            $context->getPath(),
-            'dataverse'
-        );
-        $datasetApiUrl = $dispatcher->url(
-            $request,
-            ROUTE_API,
-            $context->getPath(),
-            'datasets/' . $study->getId()
-        );
-        $fileListApiUrl = $dispatcher->url(
-            $request,
-            ROUTE_API,
-            $context->getPath(),
-            'datasets/' . $study->getId() . '/files',
-            null,
-            null,
-            ['persistentId' => $study->getPersistentId()]
-        );
-        $fileFormAction = $dispatcher->url(
-            $request,
-            ROUTE_API,
-            $context->getPath(),
-            'datasets/' . $study->getId() . '/file'
-        );
+        $dataversePluginApiUrl = $this->getApiUrl('dataverse');
+        $datasetApiUrl = $this->getApiUrl('datasets/' . $study->getId());
+        $fileListApiUrl = $this->getApiUrl('datasets/' . $study->getId() . '/files', ['persistentId' => $study->getPersistentId()]);
+        $fileFormAction = $this->getApiUrl('datasets/' . $study->getId() . '/file');
         $dataStatementUrl = $dispatcher->url(
             $request,
             ROUTE_PAGE,
