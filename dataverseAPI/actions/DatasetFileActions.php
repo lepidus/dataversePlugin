@@ -13,8 +13,10 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 {
     public function getByDatasetId(string $persistentId): array
     {
-        $args = '?persistentId=' . $persistentId;
-        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'versions', ':latest', 'files' . $args);
+        $uri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId', 'versions', ':latest', 'files'],
+            ['persistentId' => $persistentId]
+        );
         $response = $this->nativeAPIRequest('GET', $uri);
 
         $jsonContent = json_decode($response->getBody(), true);
@@ -38,8 +40,10 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
     public function add(string $persistentId, string $filename, string $filePath): void
     {
-        $args = '?persistentId=' . $persistentId;
-        $uri = $this->createNativeAPIURI('datasets', ':persistentId', 'add' . $args);
+        $uri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId', 'add'],
+            ['persistentId' => $persistentId]
+        );
         $options = [
             'multipart' => [
                 [
@@ -71,7 +75,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         mkdir($datasetFileDir);
 
         $filePath = $datasetFileDir . DIRECTORY_SEPARATOR . $filename;
-        $uri = $this->createNativeAPIURI('access', 'datafile', $datasetFileId);
+        $uri = $this->createNativeAPIURI(['access', 'datafile', $datasetFileId]);
 
         $options = ['sink' => Utils::tryFopen($filePath, 'w')];
 
