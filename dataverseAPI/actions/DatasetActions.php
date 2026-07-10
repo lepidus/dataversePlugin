@@ -57,7 +57,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
 
     private function getSWORDCitation(string $persistentId): string
     {
-        $uri = $this->createSWORDAPIURI('edit', 'study', urlencode($persistentId));
+        $uri = $this->createSWORDAPIURI('edit', 'study', $persistentId);
         $response = $this->swordAPIRequest('GET', $uri);
 
         $doc = new DOMDocument();
