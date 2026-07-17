@@ -404,7 +404,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('#dataset_metadata button:contains("Save")').should('be.disabled');
         cy.contains('.datasetLabel', 'Draft').should('not.exist');
 		cy.contains('.datasetLabel', 'Unpublished').should('not.exist');
-
     });
     it('Publishing of submission new version do not publish dataset', function () {
         cy.login('dbarnes', null, 'publicknowledge');
