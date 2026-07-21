@@ -77,34 +77,6 @@ describe('Dataverse Plugin - Dataset linking', function () {
 		});
 	}
 
-	function disassociateResearchData() {
-		cy.contains('button', 'Disassociate research data').click();
-		cy.get('.modal__panel:visible, [role="dialog"]:visible').within(() => {
-			cy.contains('button', /Disassociate research data|Disassociate/).click();
-		});
-		cy.wait(1000);
-	}
-
-	function associateResearchData(persistentId) {
-		cy.contains('button', 'Associate research data').click();
-		cy.get('.modal__panel:visible, [role="dialog"]:visible').within(() => {
-			cy.get(
-				'input[name="persistentId"], ' +
-				'input[name="datasetPersistentId"], ' +
-				'input[name="datasetPersistentID"], ' +
-				'input[id*="persistentId"], ' +
-				'input[id*="PersistentId"]'
-			).focus().clear().type(persistentId, {delay: 0});
-			cy.contains('button', /Associate research data|Associate/).click();
-		});
-	}
-
-	function closeVisibleModal() {
-		cy.get('.modal__panel:visible, [role="dialog"]:visible').within(() => {
-			cy.contains('button', /Cancel|Close/).click();
-		});
-	}
-
 	it('Author creates a submission with research data', function () {
 		cy.login('eostrom', null, 'publicknowledge');
 		cy.get('div#myQueue a:contains("New Submission")').click();
@@ -156,7 +128,7 @@ describe('Dataverse Plugin - Dataset linking', function () {
 
 	it('Disassociates research data from the submission', function () {
         accessDatasetTab(submissionData.title, 'eostrom');
-        cy.contains('button', 'Disassociate research data').should('not.exist');
+        cy.contains('button', 'Disassociate').should('not.exist');
 		
         getPersistentIdFromCitation().then((persistentId) => {
 			currentDatasetPersistentId = persistentId;
@@ -164,10 +136,15 @@ describe('Dataverse Plugin - Dataset linking', function () {
 		cy.logout();
 
         accessDatasetTab(submissionData.title, 'dbarnes');
-		disassociateResearchData();
+		cy.contains('button', 'Disassociate').click();
+		cy.get('.modal__panel:visible, [role="dialog"]:visible').within(() => {
+			cy.contains('Do you really want to disassociate the research dataset from this submission?');
+			cy.contains('The dataset will remain in Dataverse but will no longer be accessible from this submission');
+			cy.contains('button', 'Disassociate').click();
+		});
 
 		cy.contains('No research data transferred.');
-		cy.contains('button', 'Associate research data');
+		cy.contains('button', 'Associate dataset');
 	});
 
 	it('Does not associate invalid research data', function () {
@@ -178,28 +155,36 @@ describe('Dataverse Plugin - Dataset linking', function () {
 		cy.logout();
 
         accessEmptyDatasetTab(submissionData.title, 'dbarnes');
-        associateResearchData(previousDatasetPersistentId);
-		cy.get('.modal__panel:visible, [role="dialog"]:visible')
-			.contains(/already associated|already linked/i);
-		closeVisibleModal();
 
-		associateResearchData('doi:10.12345/FK2/BLABLA.TESTE');
-		cy.get('.modal__panel:visible, [role="dialog"]:visible')
-			.contains(/does not exist|not found|not possible/i);
-		closeVisibleModal();
+		cy.contains('button', 'Associate dataset').click();
+		cy.get('.modal__panel:visible, [role="dialog"]:visible').within(() => {
+			cy.get('input[name="datasetPersistentId"]').type(previousDatasetPersistentId, {delay: 0});
+			cy.contains('button', 'Associate').click();
+		});
+		cy.contains('The dataset entered is already associated with a submission in this context');
+
+		cy.get('.modal__panel:visible, [role="dialog"]:visible').within(() => {
+			cy.get('input[name="datasetPersistentId"]').type('doi:10.12345/FK2/BLABLA.TESTE', {delay: 0});
+			cy.contains('button', 'Associate').click();
+		});
+		cy.contains('The dataset entered is not present at the Dataverse repository');
 	});
 
-	it('Associates research data to the submission using its persistent id', function () {
+	it('Re-associates research data to the submission using its persistent id', function () {
         accessEmptyDatasetTab(submissionData.title, 'eostrom');
-		cy.contains('button', 'Associate research data').should('not.exist');
+		cy.contains('button', 'Associate dataset').should('not.exist');
 		cy.logout();
 
         accessEmptyDatasetTab(submissionData.title, 'dbarnes');
-        associateResearchData(currentDatasetPersistentId);
-		cy.wait(1000);
+		cy.contains('button', 'Associate dataset').click();
+		cy.get('.modal__panel:visible, [role="dialog"]:visible').within(() => {
+			cy.get('input[name="datasetPersistentId"]').type(currentDatasetPersistentId, {delay: 0});
+			cy.contains('button', 'Associate').click();
+		});
 
-		cy.contains('h1', 'Research data', {timeout: 10000});
+		cy.waitDatasetTabLoading();
+		cy.contains('h1', 'Research data');
 		cy.contains('a', currentDatasetPersistentId.replace('doi:', 'https://doi.org/'));
-		cy.contains('button', 'Disassociate research data');
+		cy.contains('button', 'Disassociate');
 	});
 });
