@@ -27,6 +27,8 @@ class DatasetHandler extends APIHandler
     {
         $this->_handlerPath = 'datasets';
         $roles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_AUTHOR];
+        $managerRoles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR];
+
         $this->_endpoints = [
             'GET' => [
                 [
@@ -72,6 +74,11 @@ class DatasetHandler extends APIHandler
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
                     'handler' => [$this, 'edit'],
                     'roles' => $roles
+                ],
+                [
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/disassociate',
+                    'handler' => [$this, 'disassociateDataset'],
+                    'roles' => $managerRoles
                 ],
                 [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/publish',
@@ -161,6 +168,19 @@ class DatasetHandler extends APIHandler
         $datasetService->update($data);
 
         return $this->get($slimRequest, $response, $args);
+    }
+
+    public function disassociateDataset($slimRequest, $response, $args)
+    {
+        $study = Repo::dataverseStudy()->get($args['studyId']);
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $datasetService = new DatasetService();
+        $datasetService->disassociate($study);
+
+        return $response->withStatus(200);
     }
 
     public function publishDataset($slimRequest, $response, $args)

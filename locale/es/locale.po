@@ -123,6 +123,9 @@ msgstr "Datos de investigación publicados"
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Datos de investigación eliminados"
 
+msgid "plugins.generic.dataverse.log.researchDataDisassociate"
+msgstr "Datos de investigación desvinculados"
+
 msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
 msgstr "Correo electrónico enviado a {$email} para notificar la eliminación de los datos de investigación."
 

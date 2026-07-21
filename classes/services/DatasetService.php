@@ -187,6 +187,26 @@ class DatasetService extends DataverseService
         );
     }
 
+    public function disassociate(DataverseStudy $study): void
+    {
+        $submission = Repo::submission()->get($study->getSubmissionId());
+        $publication = $submission->getCurrentPublication();
+        $dataStatementTypes = $publication->getData('dataStatementTypes');
+
+        Repo::dataverseStudy()->delete($study);
+
+        if (($key = array_search(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) !== false) {
+            unset($dataStatementTypes[$key]);
+            sort($dataStatementTypes);
+        }
+        Repo::publication()->edit($publication, ['dataStatementTypes' => $dataStatementTypes]);
+
+        $this->registerEventLog(
+            $submission,
+            'plugins.generic.dataverse.log.researchDataDisassociate'
+        );
+    }
+
     public function publish(Submission $submission, DataverseStudy $study): void
     {
         try {
