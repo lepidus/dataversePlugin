@@ -210,9 +210,9 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
-        cy.contains('Delete research data').click();
+        cy.contains('Delete').click();
         cy.contains('Are you sure you want to permanently delete the research data related to this preprint?');
-		cy.get('.modal__panel button:contains("Delete research data")').click();
+		cy.get('.modal__panel button:contains("Delete")').click();
         cy.wait(7000);
 
         cy.contains('button', 'Upload research data').click();

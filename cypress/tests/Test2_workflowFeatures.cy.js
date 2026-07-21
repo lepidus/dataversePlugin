@@ -161,9 +161,9 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
-        cy.contains('Delete research data').click();
+        cy.contains('Delete').click();
         cy.contains('Are you sure you want to permanently delete the research data related to this preprint?');
-		cy.get('.modal__panel button:contains("Delete research data")').click();
+		cy.get('.modal__panel button:contains("Delete")').click();
         cy.wait(7000);
 
         cy.contains('No research data transferred.');
@@ -247,7 +247,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('#datasetTab-button').click();
 
 		assertAdditionalInstructionsDisplay();
-        cy.contains('Delete research data').should('be.disabled');
+        cy.contains('Delete').should('be.disabled');
 		cy.get('#dataset_metadata > form button[label="Save"]').should('be.disabled');
 
 		cy.get('#dataset_files-button').click();
@@ -267,7 +267,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.contains('.datasetLabel', 'Draft');
 		cy.contains('.datasetLabel', 'Unpublished');
         
-        cy.contains('Delete research data').click();
+        cy.contains('Delete').click();
         cy.contains('Send an email notification to the dataset contact');
 		cy.contains('Do not send an email notification');
         cy.getTinyMceContent('deleteDataset-deleteMessage-control')
@@ -399,7 +399,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 
 		cy.contains('Demo Dataverse, V1');
 		cy.contains('Publish research data').should('not.exist');
-		cy.get('button:contains("Delete research data")').should('be.disabled');
+		cy.get('button:contains("Delete")').should('be.disabled');
 		cy.get('button:contains("Add research data")').should('be.disabled');
 		cy.get('#dataset_metadata button:contains("Save")').should('be.disabled');
         cy.contains('.datasetLabel', 'Draft').should('not.exist');
