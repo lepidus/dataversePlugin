@@ -236,8 +236,15 @@ msgstr "Metadatos"
 msgid "plugins.generic.dataverse.researchData.files"
 msgstr "Archivos"
 
+msgid "plugins.generic.dataverse.researchData.disassociate"
+msgstr "Desvincular"
+
+msgid "plugins.generic.dataverse.researchData.disassociate.description"
+msgstr "¿Realmente desea desvincular el conjunto de datos de investigación de este envío?"
+" El conjunto de datos permanecerá en Dataverse, pero ya no será accesible después de este envío."
+
 msgid "plugins.generic.dataverse.researchData.delete"
-msgstr "Eliminar datos de investigación"
+msgstr "Eliminar"
 
 msgid "plugins.generic.dataverse.researchData.delete.sendEmail.yes"
 msgstr "Enviar una notificación por correo electrónico al contacto del conjunto de datos"

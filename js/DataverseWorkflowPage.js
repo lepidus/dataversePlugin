@@ -92,6 +92,36 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }
         },
 
+        openDisassociateDatasetModal() {
+            this.openDialog({
+                name: 'disassociateDataset',
+                title: this.disassociateDatasetLabel,
+                message: this.confirmDisassociateDatasetMessage,
+                actions: [
+                    {
+                        label: this.disassociateDatasetLabel,
+                        isWarnable: true,
+                        callback: () => {
+                            let self = this;
+                            $.ajax({
+                                url: this.components.datasetMetadata.action + '/disassociate',
+                                type: 'POST',
+                                headers: {
+                                    'X-Csrf-Token': pkp.currentUser.csrfToken,
+                                    'X-Http-Method-Override': 'PUT',
+                                },
+                                error: this.ajaxErrorCallback,
+                                success: function (r) {
+                                    self.$modal.hide('disassociateDataset');
+                                    location.reload();
+                                },
+                            });
+                        }
+                    }
+                ]
+            });
+        },
+
         openPublishDatasetModal() {
             this.openDialog({
                 name: 'publishDataset',

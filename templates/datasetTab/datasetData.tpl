@@ -17,6 +17,12 @@
             </pkp-button>
             {if $canPublish}
                 <pkp-button
+                    @click="openDisassociateDatasetModal"
+                    :is-warnable="true"
+                >
+                    {translate key="plugins.generic.dataverse.researchData.disassociate"}
+                </pkp-button>
+                <pkp-button
                     v-if="!datasetIsPublished"
                     @click="openPublishDatasetModal"
                     :disabled="datasetIsPublished"

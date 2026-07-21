@@ -233,8 +233,15 @@ msgstr "Metadata"
 msgid "plugins.generic.dataverse.researchData.files"
 msgstr "Files"
 
+msgid "plugins.generic.dataverse.researchData.disassociate"
+msgstr "Disassociate"
+
+msgid "plugins.generic.dataverse.researchData.disassociate.description"
+msgstr "Do you really want to disassociate the research dataset from this submission?"
+" The dataset will remain in Dataverse but will no longer be accessible from this submission."
+
 msgid "plugins.generic.dataverse.researchData.delete"
-msgstr "Delete research data"
+msgstr "Delete"
 
 msgid "plugins.generic.dataverse.researchData.delete.sendEmail.yes"
 msgstr "Send an email notification to the dataset contact"

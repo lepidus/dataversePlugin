@@ -184,6 +184,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
             'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
             'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
+            'disassociateDatasetLabel' => __('plugins.generic.dataverse.researchData.disassociate'),
+            'confirmDisassociateDatasetMessage' => __('plugins.generic.dataverse.researchData.disassociate.description'),
             'publishDatasetLabel' => __('plugins.generic.dataverse.researchData.publish'),
             'confirmPublishDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetPublish', [
                 'serverUrl' => $configuration->getDataverseServerUrl(),
