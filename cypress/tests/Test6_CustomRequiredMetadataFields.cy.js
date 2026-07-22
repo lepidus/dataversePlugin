@@ -181,7 +181,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
         cy.get('#datasetMetadata-datasetAlternativeURL-control').focus().clear().type('https://example.com', {delay: 0});
         cy.get('#datasetMetadata-datasetDsDescriptionDate-control').focus().clear().type('2023-06-01', {delay: 0});
-        cy.get('select[name="datasetPublicationRelationType"]').select('Cites');
+        cy.get('select[name="datasetRelationType"]').select('Cites');
         cy.get('select[name="datasetPSRI1"]').select('Yes');
         cy.get('select[name="datasetPSRI2"]').select('Yes');
         
