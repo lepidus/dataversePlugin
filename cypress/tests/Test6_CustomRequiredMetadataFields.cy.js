@@ -103,7 +103,6 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         // Step 4
         cy.contains('Alternative URL');
         cy.contains('Description Date');
-        cy.contains('Related Publication Relation Type');
         cy.contains('Are the original data publicly available?');
         cy.contains('Is the original code available?');
 
@@ -116,7 +115,6 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         const metadataFields = [
             'Alternative URL',
             'Description Date',
-            'Related Publication Relation Type',
             'Are the original data publicly available?',
             'Is the original code available?'
         ];
@@ -179,9 +177,9 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.get('select[name="datasetLanguage"]').select('English');
         cy.get('select[name="datasetSubject"]').select('Earth and Environmental Sciences');
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
+        cy.get('select[name="datasetRelationType"]').select('Cites');
         cy.get('#datasetMetadata-datasetAlternativeURL-control').focus().clear().type('https://example.com', {delay: 0});
         cy.get('#datasetMetadata-datasetDsDescriptionDate-control').focus().clear().type('2023-06-01', {delay: 0});
-        cy.get('select[name="datasetPublicationRelationType"]').select('Cites');
         cy.get('select[name="datasetPSRI1"]').select('Yes');
         cy.get('select[name="datasetPSRI2"]').select('Yes');
         
@@ -247,7 +245,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
         cy.get('#datasetMetadata-datasetAlternativeURL-control').focus().clear().type('https://example.com', {delay: 0});
         cy.get('#datasetMetadata-datasetDsDescriptionDate-control').focus().clear().type('2023-06-01', {delay: 0});
-        cy.get('select[name="datasetPublicationRelationType"]').select('Cites');
+        cy.get('select[name="datasetRelationType"]').select('Cites');
         cy.get('select[name="datasetPSRI1"]').select('Yes');
         cy.get('select[name="datasetPSRI2"]').select('Yes');
         cy.get('button:visible:contains("Save")').click();
