@@ -239,6 +239,9 @@ msgstr "Metadados"
 msgid "plugins.generic.dataverse.researchData.files"
 msgstr "Arquivos"
 
+msgid "plugins.generic.dataverse.researchData.associate"
+msgstr "Associar conjunto de dados"
+
 msgid "plugins.generic.dataverse.researchData.disassociate"
 msgstr "Desassociar"
 

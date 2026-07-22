@@ -236,6 +236,9 @@ msgstr "Metadata"
 msgid "plugins.generic.dataverse.researchData.files"
 msgstr "Files"
 
+msgid "plugins.generic.dataverse.researchData.associate"
+msgstr "Associate dataset"
+
 msgid "plugins.generic.dataverse.researchData.disassociate"
 msgstr "Disassociate"
 

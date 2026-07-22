@@ -11,7 +11,13 @@
 	<p v-else>
 		{translate key="plugins.generic.dataverse.researchData.uploadDisabled"}
 	</p>
-    <modal
+    <pkp-button
+		v-if="canEditPublication && workingPublication.status !== getConstant('STATUS_PUBLISHED')"
+		@click="$modal.show('associateResearchData')"
+	>
+        {translate key="plugins.generic.dataverse.researchData.associate"}
+    </pkp-button>
+	<modal
 		name="uploadResearchData"
 		title="{translate key="plugins.generic.dataverse.researchData.uploadResearchData"}"
 		:closeLabel="__('common.close')"
@@ -21,6 +27,12 @@
 			@set='set'
 		></dataset-files-list-panel>
 		<pkp-form style="margin: -1rem" v-bind="components.datasetMetadata" @set="set" @success="location.reload()"></pkp-form>
+	</modal>
+	<modal
+		name="associateResearchData"
+		title="{translate key="plugins.generic.dataverse.researchData.associate"}"
+		:closeLabel="__('common.close')"
+	>
 	</modal>
 	{if $dataverseAdditionalInstructions}
 		<div
