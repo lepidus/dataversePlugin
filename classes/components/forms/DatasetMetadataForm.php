@@ -2,16 +2,16 @@
 
 namespace APP\plugins\generic\dataverse\classes\components\forms;
 
-use PKP\components\forms\FormComponent;
-use PKP\components\forms\FieldText;
-use PKP\components\forms\FieldRichTextarea;
-use PKP\components\forms\FieldControlledVocab;
-use PKP\components\forms\FieldSelect;
-use PKP\components\forms\FieldTextarea;
 use APP\core\Application;
-use PKP\facades\Locale;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use PKP\components\forms\FieldControlledVocab;
+use PKP\components\forms\FieldRichTextarea;
+use PKP\components\forms\FieldSelect;
+use PKP\components\forms\FieldText;
+use PKP\components\forms\FieldTextarea;
+use PKP\components\forms\FormComponent;
+use PKP\facades\Locale;
 
 class DatasetMetadataForm extends FormComponent
 {
@@ -87,7 +87,7 @@ class DatasetMetadataForm extends FormComponent
                 'label' => __('plugins.generic.dataverse.metadataForm.relationType.label'),
                 'description' => ($page == 'submission' ? __('plugins.generic.dataverse.metadataForm.relationType.description') : ''),
                 'isRequired' => true,
-                'options' =>  $dataverseMetadata->getDataverseRelationTypes(),
+                'options' => $dataverseMetadata->getDataverseRelationTypes(),
                 'value' => $datasetMetadata['relationType'],
             ]));
 
@@ -104,6 +104,10 @@ class DatasetMetadataForm extends FormComponent
     private function addMetadataField($field, $dataset): void
     {
         $fieldName = 'dataset' . ucfirst($field['name']);
+        if ($this->getField($fieldName)) {
+            return;
+        }
+
         $fieldType = $this->getFieldType($field);
 
         $fieldConfig = $this->buildFieldConfig($field, $dataset);
