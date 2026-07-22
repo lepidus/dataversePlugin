@@ -242,6 +242,17 @@ msgstr "Archivos"
 msgid "plugins.generic.dataverse.researchData.associate"
 msgstr "Vincular conjunto de datos"
 
+msgid "plugins.generic.dataverse.researchData.associate.disclaimer"
+msgstr "Proporcione el ID persistente del conjunto de datos que desea asociar a este envío.<br><br>"
+"El conjunto de datos debe estar almacenado en el repositorio Dataverse registrado en la configuración del plugin. "
+"Asegúrese también de que no esté ya asociado a otro envío."
+
+msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"
+msgstr "ID Persistente"
+
+msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.description"
+msgstr "El ID persistente del conjunto de datos en Dataverse"
+
 msgid "plugins.generic.dataverse.researchData.disassociate"
 msgstr "Desvincular"
 

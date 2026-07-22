@@ -26,13 +26,26 @@
 			v-bind="components.datasetFiles"
 			@set='set'
 		></dataset-files-list-panel>
-		<pkp-form style="margin: -1rem" v-bind="components.datasetMetadata" @set="set" @success="location.reload()"></pkp-form>
+		<pkp-form 
+			style="margin: -1rem" 
+			v-bind="components.datasetMetadata" 
+			@set="set" 
+			@success="location.reload()"
+		></pkp-form>
 	</modal>
 	<modal
 		name="associateResearchData"
 		title="{translate key="plugins.generic.dataverse.researchData.associate"}"
 		:closeLabel="__('common.close')"
 	>
+	<p>
+		{translate key="plugins.generic.dataverse.researchData.associate.disclaimer"}
+	</p>
+		<pkp-form
+			v-bind="components.associateDataset"
+			@set='set'
+			@success="location.reload()"
+		></pkp-form>
 	</modal>
 	{if $dataverseAdditionalInstructions}
 		<div

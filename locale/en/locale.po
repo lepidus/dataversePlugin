@@ -239,6 +239,17 @@ msgstr "Files"
 msgid "plugins.generic.dataverse.researchData.associate"
 msgstr "Associate dataset"
 
+msgid "plugins.generic.dataverse.researchData.associate.disclaimer"
+msgstr "Please provide the Persistent ID of the dataset you wish to associate with this submission.<br><br>"
+"The dataset must be deposited in the Dataverse repository configured in the plugin settings. "
+"Also, ensure that it is not already associated with another submission."
+
+msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"
+msgstr "Persistent ID"
+
+msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.description"
+msgstr "The Persistent ID of the dataset in Dataverse"
+
 msgid "plugins.generic.dataverse.researchData.disassociate"
 msgstr "Disassociate"
 

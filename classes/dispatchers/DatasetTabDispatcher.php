@@ -12,6 +12,7 @@ use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
+use APP\plugins\generic\dataverse\classes\components\forms\AssociateDatasetForm;
 use APP\plugins\generic\dataverse\classes\components\forms\DeleteDatasetForm;
 use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
@@ -113,7 +114,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $templateMgr = TemplateManager::getManager($request);
 
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
-        $metadataFormAction = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
+        $datasetApiUrl = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
         $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
         $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles');
 
@@ -128,13 +129,14 @@ class DatasetTabDispatcher extends DataverseDispatcher
         }, $draftDatasetFiles);
         ksort($datasetFiles);
 
-        $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
+        $this->initDatasetMetadataForm($templateMgr, $datasetApiUrl, 'POST', $dataset);
         $this->initDatasetFilesList($templateMgr, $submission, [
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
             'fileListApiUrl' => $fileListApiUrl,
             'fileActionApiUrl' => $fileActionApiUrl,
             'files' => $datasetFiles
         ]);
+        $this->initAssociateDatasetForm($templateMgr, $datasetApiUrl);
 
         $templateMgr->setState([
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
@@ -201,6 +203,12 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         $datasetMetadataForm = new DatasetMetadataForm($action, $method, $dataset, 'workflow');
         $this->addComponent($templateMgr, $datasetMetadataForm);
+    }
+
+    private function initAssociateDatasetForm(TemplateManager $templateMgr, string $action): void
+    {
+        $associateDatasetForm = new AssociateDatasetForm($action);
+        $this->addComponent($templateMgr, $associateDatasetForm);
     }
 
     private function initDatasetFilesList($templateMgr, $submission, $args): void
