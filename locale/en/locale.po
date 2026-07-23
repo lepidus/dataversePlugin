@@ -79,6 +79,9 @@ msgstr "Unable to connect to Dataverse. Error returned: {$msg}"
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Please enter a API token."
 
+msgid "plugins.generic.dataverse.settings.termsOfUseRequired"
+msgstr "Please enter the URLs for the terms of use."
+
 msgid "plugins.generic.dataverse.researchDataDescription"
 msgstr "Use this field only for submitting research data. "
 "Do not use it to upload your manuscript or the list of bibliographic references available in your manuscript. "
