@@ -251,7 +251,7 @@ msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"
 msgstr "ID Persistente"
 
 msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.description"
-msgstr "El ID persistente del conjunto de datos en Dataverse"
+msgstr "El ID persistente del conjunto de datos en Dataverse (ex.: \"doi:10.12345/FYI/ABCDEF\")"
 
 msgid "plugins.generic.dataverse.associateDatasetForm.submitButton"
 msgstr "Vincular"

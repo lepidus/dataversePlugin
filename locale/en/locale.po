@@ -248,7 +248,7 @@ msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"
 msgstr "Persistent ID"
 
 msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.description"
-msgstr "The Persistent ID of the dataset in Dataverse"
+msgstr "The Persistent ID of the dataset in Dataverse (e.g.: \"doi:10.12345/FYI/ABCDEF\")"
 
 msgid "plugins.generic.dataverse.associateDatasetForm.submitButton"
 msgstr "Associate"
