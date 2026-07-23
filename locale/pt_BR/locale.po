@@ -253,6 +253,9 @@ msgstr "ID Persistente"
 msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.description"
 msgstr "O ID Persistente do conjuntos de dados no Dataverse"
 
+msgid "plugins.generic.dataverse.associateDatasetForm.submitButton"
+msgstr "Associar"
+
 msgid "plugins.generic.dataverse.researchData.disassociate"
 msgstr "Desassociar"
 

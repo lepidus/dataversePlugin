@@ -12,9 +12,19 @@ class AssociateDatasetForm extends FormComponent
         $this->id = 'associateDataset';
         $this->action = $action;
         $this->method = 'POST';
-        //$this->locales = $this->mapCurrentLocale();
 
+        $this->addPage([
+            'id' => 'default',
+            'submitButton' => [
+                'label' => __('plugins.generic.dataverse.associateDatasetForm.submitButton')
+            ],
+        ]);
+        $this->addGroup([
+            'id' => 'default',
+            'pageId' => 'default',
+        ]);
         $this->addField(new FieldText('datasetPersistentId', [
+            'groupId' => 'default',
             'label' => __('plugins.generic.dataverse.associateDatasetForm.persistentId.label'),
             'description' => __('plugins.generic.dataverse.associateDatasetForm.persistentId.description'),
             'isRequired' => true,
