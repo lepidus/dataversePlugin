@@ -74,10 +74,13 @@ msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
 msgstr "Dataverse URL is required."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
-msgstr "Can't connect to Dataverse."
+msgstr "Unable to connect to Dataverse. Error returned: {$msg}"
 
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Please enter a API token."
+
+msgid "plugins.generic.dataverse.settings.termsOfUseRequired"
+msgstr "Please enter the URLs for the terms of use."
 
 msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
 msgstr "Research data and galley have the same file. Make sure the files are added in the proper section."
