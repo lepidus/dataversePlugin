@@ -49,7 +49,7 @@ class DataverseSettingsForm extends Form
         $this->addCheck(new FormValidator(
             $this,
             'termsOfUse',
-            FormValidator::FORM_VALIDATOR_REQUIRED_VALUE,
+            FORM_VALIDATOR_REQUIRED_VALUE,
             'plugins.generic.dataverse.settings.termsOfUseRequired'
         ));
         $this->addCheck(new FormValidatorPost($this));
