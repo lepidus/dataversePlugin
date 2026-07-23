@@ -55,7 +55,7 @@ class DataverseSettingsForm extends Form
         ));
         $this->addCheck(new FormValidatorCustom(
             $this,
-            'termsOfUse',
+            'apiToken',
             FormValidator::FORM_VALIDATOR_REQUIRED_VALUE,
             'plugins.generic.dataverse.settings.dataverseUrlNotValid',
             [$this, 'validateConfiguration']
@@ -127,6 +127,10 @@ class DataverseSettingsForm extends Form
         try {
             $dataverseCollectionActions->get();
         } catch (DataverseException $e) {
+            $message = __('plugins.generic.dataverse.settings.dataverseUrlNotValid', ['msg' => $e->getMessage()]);
+            error_log("Dataverse Error - $message");
+            $this->addError('apiToken', $message);
+
             return false;
         }
 

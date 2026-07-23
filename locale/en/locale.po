@@ -74,7 +74,7 @@ msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
 msgstr "Dataverse URL is required."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
-msgstr "Can't connect to Dataverse."
+msgstr "Unable to connect to Dataverse. Error returned: {$msg}"
 
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Please enter a API token."
