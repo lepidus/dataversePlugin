@@ -24,9 +24,24 @@ use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DatasetService extends DataverseService
 {
-    public function deposit(Submission $submission, Dataset $dataset): array
+    private function createStudy(Submission $submission, string $persistentId): void
     {
         $contextId = $submission->getData('contextId');
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+        $swordAPIBaseUrl = $configuration->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
+
+        $study = Repo::dataverseStudy()->newDataObject();
+        $study->setSubmissionId($submission->getId());
+        $study->setPersistentId($persistentId);
+        $study->setEditUri($swordAPIBaseUrl . 'edit/study/' . $persistentId);
+        $study->setEditMediaUri($swordAPIBaseUrl . 'edit-media/study/' . $persistentId);
+        $study->setStatementUri($swordAPIBaseUrl . 'statement/study/' . $persistentId);
+        $study->setPersistentUri('https://doi.org/' . str_replace('doi:', '', $persistentId));
+        Repo::dataverseStudy()->add($study);
+    }
+
+    public function deposit(Submission $submission, Dataset $dataset): array
+    {
         $dataverseClient = new DataverseClient();
 
         try {
@@ -66,17 +81,7 @@ class DatasetService extends DataverseService
             }
         }
 
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
-        $swordAPIBaseUrl = $configuration->getDataverseServerUrl() . '/dvn/api/data-deposit/v1.1/swordv2/';
-
-        $study = Repo::dataverseStudy()->newDataObject();
-        $study->setSubmissionId($submission->getId());
-        $study->setPersistentId($datasetIdentifier->getPersistentId());
-        $study->setEditUri($swordAPIBaseUrl . 'edit/study/' . $datasetIdentifier->getPersistentId());
-        $study->setEditMediaUri($swordAPIBaseUrl . 'edit-media/study/' . $datasetIdentifier->getPersistentId());
-        $study->setStatementUri($swordAPIBaseUrl . 'statement/study/' . $datasetIdentifier->getPersistentId());
-        $study->setPersistentUri('https://doi.org/' . str_replace('doi:', '', $datasetIdentifier->getPersistentId()));
-        Repo::dataverseStudy()->add($study);
+        $this->createStudy($submission, $datasetIdentifier->getPersistentId());
 
         $publication = $submission->getCurrentPublication();
         $dataStatementTypes = $publication->getData('dataStatementTypes');
@@ -205,6 +210,38 @@ class DatasetService extends DataverseService
             $submission,
             'plugins.generic.dataverse.log.researchDataDisassociate'
         );
+    }
+
+    public function associate(int $submissionId, string $persistentId): array
+    {
+        $submission = Repo::submission()->get($submissionId);
+        if (!$submission) {
+            return ['status' => DataverseService::STATUS_NOT_FOUND, 'message' => 'api.404.resourceNotFound'];
+        }
+
+        $existingStudy = Repo::dataverseStudy()->getBySubmissionId($submissionId);
+        if ($existingStudy) {
+            return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.submissionHasStudy'];
+        }
+
+        if (!preg_match('/^doi:10\.\d{4,9}\/[-._;()\/:A-Z0-9]+$/i', $persistentId)) {
+            return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.invalidPersistentId'];
+        }
+
+        $existingStudyWithPersistentId = Repo::dataverseStudy()->getByPersistentId($persistentId);
+        if ($existingStudyWithPersistentId) {
+            return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.studyAlreadyExists'];
+        }
+
+        try {
+            $dataverseClient = new DataverseClient();
+            $dataset = $dataverseClient->getDatasetActions()->get($persistentId);
+        } catch (DataverseException $e) {
+            return ['status' => DataverseService::STATUS_NOT_FOUND, 'message' => 'plugins.generic.dataverse.error.associate.datasetNotFound'];
+        }
+
+        $this->createStudy($submission, $persistentId);
+        return ['status' => DataverseService::STATUS_SUCCESS];
     }
 
     public function publish(Submission $submission, DataverseStudy $study): void
