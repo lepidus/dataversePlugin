@@ -240,8 +240,9 @@ msgid "plugins.generic.dataverse.researchData.associate"
 msgstr "Associate dataset"
 
 msgid "plugins.generic.dataverse.researchData.associate.disclaimer"
-msgstr "Please provide the Persistent ID of the dataset you wish to associate with this submission.<br><br>"
-"The dataset must be deposited in the Dataverse repository configured in the plugin settings. "
+msgstr "Please provide the Persistent ID of the dataset deposited in Dataverse you wish to associate with this submission. "
+"This information can be found in the metadata section on the dataset page.<br><br>"
+"The dataset must be deposited in the same repository configured in the plugin settings. "
 "Also, ensure that it is not already associated with another submission."
 
 msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"

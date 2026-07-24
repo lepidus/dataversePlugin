@@ -243,8 +243,9 @@ msgid "plugins.generic.dataverse.researchData.associate"
 msgstr "Associar conjunto de dados"
 
 msgid "plugins.generic.dataverse.researchData.associate.disclaimer"
-msgstr "Por favor, informe o ID Persistente do conjunto de dados que deseja associar com esta submissão.<br><br>"
-"O conjunto de dados deve estar depositado no repositório Dataverse cadastrado nas configurações do plugin. "
+msgstr "Por favor, informe o ID Persistente do conjunto de dados depositado no Dataverse que deseja associar com esta submissão. "
+"Essa informação pode ser encontrada na seção de metadados na página do conjunto de dados<br><br>"
+"O conjunto de dados deve estar depositado no mesmo repositório cadastrado nas configurações do plugin. "
 "Certifique-se também que este não esteja já associado a outra submissão."
 
 msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"
