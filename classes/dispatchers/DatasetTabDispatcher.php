@@ -114,7 +114,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $templateMgr = TemplateManager::getManager($request);
 
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
-        $datasetApiUrl = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
+        $metadataFormAction = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
+        $associateFormAction = $this->getApiUrl('datasets/associate', ['submissionId' => $submission->getId()]);
         $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
         $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles');
 
@@ -129,14 +130,14 @@ class DatasetTabDispatcher extends DataverseDispatcher
         }, $draftDatasetFiles);
         ksort($datasetFiles);
 
-        $this->initDatasetMetadataForm($templateMgr, $datasetApiUrl, 'POST', $dataset);
+        $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
         $this->initDatasetFilesList($templateMgr, $submission, [
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
             'fileListApiUrl' => $fileListApiUrl,
             'fileActionApiUrl' => $fileActionApiUrl,
             'files' => $datasetFiles
         ]);
-        $this->initAssociateDatasetForm($templateMgr, $datasetApiUrl);
+        $this->initAssociateDatasetForm($templateMgr, $associateFormAction);
 
         $templateMgr->setState([
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
