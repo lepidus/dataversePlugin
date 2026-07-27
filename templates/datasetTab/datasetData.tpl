@@ -9,6 +9,7 @@
         </h1>
         <template slot="actions">
             <pkp-button
+                id="deleteDatasetButton"
                 @click="openDeleteDatasetModal"
                 :is-warnable="true"
                 :disabled="datasetIsPublished || !canEditPublication"
@@ -17,6 +18,7 @@
             </pkp-button>
             {if $canPublish}
                 <pkp-button
+                    id="associateDatasetButton"
                     @click="openDisassociateDatasetModal"
                     :is-warnable="true"
                 >
@@ -24,6 +26,7 @@
                 </pkp-button>
                 <pkp-button
                     v-if="!datasetIsPublished"
+                    id="publishDatasetButton"
                     @click="openPublishDatasetModal"
                     :disabled="datasetIsPublished"
                 >

@@ -161,7 +161,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
-        cy.contains('Delete').click();
+        cy.get('#deleteDatasetButton').click();
         cy.contains('Are you sure you want to permanently delete the research data related to this preprint?');
 		cy.get('.modal__panel button:contains("Delete")').click();
         cy.wait(7000);
@@ -267,7 +267,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.contains('.datasetLabel', 'Draft');
 		cy.contains('.datasetLabel', 'Unpublished');
         
-        cy.contains('Delete').click();
+        cy.get('#deleteDatasetButton').click();
         cy.contains('Send an email notification to the dataset contact');
 		cy.contains('Do not send an email notification');
         cy.getTinyMceContent('deleteDataset-deleteMessage-control')

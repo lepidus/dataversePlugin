@@ -144,7 +144,7 @@ describe('Dataverse Plugin - Dataset linking', function () {
 		});
 
 		cy.contains('No research data transferred.');
-		cy.contains('button', 'Associate dataset');
+		cy.get('#associateDatasetButton');
 	});
 
 	it('Does not associate invalid research data', function () {
@@ -156,7 +156,7 @@ describe('Dataverse Plugin - Dataset linking', function () {
 
         accessEmptyDatasetTab(submissionData.title, 'dbarnes');
 
-		cy.contains('button', 'Associate dataset').click();
+		cy.get('#associateDatasetButton');
 		cy.get('.modal__panel:visible, [role="dialog"]:visible').within(() => {
 			cy.get('input[name="datasetPersistentId"]').type(previousDatasetPersistentId, {delay: 0});
 			cy.contains('button', 'Associate').click();
@@ -172,11 +172,11 @@ describe('Dataverse Plugin - Dataset linking', function () {
 
 	it('Re-associates research data to the submission using its persistent id', function () {
         accessEmptyDatasetTab(submissionData.title, 'eostrom');
-		cy.contains('button', 'Associate dataset').should('not.exist');
+		cy.get('#associateDatasetButton').should('not.exist');
 		cy.logout();
 
         accessEmptyDatasetTab(submissionData.title, 'dbarnes');
-		cy.contains('button', 'Associate dataset').click();
+		cy.get('#associateDatasetButton').click();
 		cy.get('.modal__panel:visible, [role="dialog"]:visible').within(() => {
 			cy.get('input[name="datasetPersistentId"]').type(currentDatasetPersistentId, {delay: 0});
 			cy.contains('button', 'Associate').click();
