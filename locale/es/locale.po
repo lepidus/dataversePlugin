@@ -212,7 +212,7 @@ msgid "plugins.generic.dataverse.modal.confirmDelete"
 msgstr "¿Realmente desea eliminar permanentemente el archivo de datos de investigación <strong>{$title}</strong>?"
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
-msgstr "¿Realmente desea eliminar de forma permanente los datos de investigación relacionados con esta versión preliminar?"
+msgstr "¿Realmente desea eliminar de forma permanente los datos de investigación relacionados con esto envío?"
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
 msgstr ""

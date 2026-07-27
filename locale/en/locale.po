@@ -209,7 +209,7 @@ msgid "plugins.generic.dataverse.modal.confirmDelete"
 msgstr "Are you sure you want to permanently delete the research data file <strong>{$title}</strong>?"
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
-msgstr "Are you sure you want to permanently delete the research data related to this preprint?"
+msgstr "Are you sure you want to permanently delete the research data related to this submission?"
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
 msgstr ""
