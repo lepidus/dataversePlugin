@@ -208,9 +208,9 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
-        cy.contains('Delete research data').click();
-        cy.contains('Are you sure you want to permanently delete the research data related to this preprint?');
-		cy.get('.modal__panel button:contains("Delete research data")').click();
+        cy.get('#deleteDatasetButton').click();
+        cy.contains('Are you sure you want to permanently delete the research data related to this submission?');
+		cy.get('.modal__panel button:contains("Delete")').click();
         cy.wait(7000);
 
         cy.contains('button', 'Upload research data').click();
@@ -243,6 +243,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.get('select[name="datasetLanguage"]').select('English');
         cy.get('select[name="datasetSubject"]').select('Earth and Environmental Sciences');
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
+        cy.get('select[name="datasetRelationType"]').select('Cites');
         cy.get('#datasetMetadata-datasetAlternativeURL-control').focus().clear().type('https://example.com', {delay: 0});
         cy.get('#datasetMetadata-datasetDsDescriptionDate-control').focus().clear().type('2023-06-01', {delay: 0});
         cy.get('select[name="datasetRelationType"]').select('Cites');

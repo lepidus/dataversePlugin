@@ -126,6 +126,9 @@ msgstr "Dados de pesquisa publicados"
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Dados de pesquisa excluídos"
 
+msgid "plugins.generic.dataverse.log.researchDataDisassociate"
+msgstr "Dados de pesquisa desassociados"
+
 msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
 msgstr "Email enviado para {$email} notificando a exclusão dos dados de pesquisa"
 
@@ -175,6 +178,18 @@ msgstr "Erro ao adicionar o arquivo de dados de pesquisa \"{$filename}\": {$erro
 msgid  "plugins.generic.dataverse.error.deleteFileFailed"
 msgstr "Erro ao excluir o arquivo de dados de pesquisa \"{$filename}\": {$error}"
 
+msgid "plugins.generic.dataverse.error.submissionHasStudy"
+msgstr "A submissão já possui um conjunto de dados associado"
+
+msgid "plugins.generic.dataverse.error.invalidPersistentId"
+msgstr "O identificador persistente informado é inválido"
+
+msgid "plugins.generic.dataverse.error.associate.alreadyAssociated"
+msgstr "O conjunto de dados informado já está associado a uma submissão neste contexto"
+
+msgid "plugins.generic.dataverse.error.associate.notFound"
+msgstr "O conjunto de dados informado não está presente no repositório Dataverse"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar arquivo de dados de pesquisa"
 
@@ -200,7 +215,7 @@ msgid "plugins.generic.dataverse.modal.confirmDelete"
 msgstr "Deseja realmente excluir permanentemente o arquivo de dados de pesquisa <strong>{$title}</strong>?"
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
-msgstr "Deseja realmente excluir permanentemente os dados de pesquisa relacionados a esse preprint?"
+msgstr "Deseja realmente excluir permanentemente os dados de pesquisa relacionados a esta submissão?"
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
 msgstr ""
@@ -239,8 +254,33 @@ msgstr "Metadados"
 msgid "plugins.generic.dataverse.researchData.files"
 msgstr "Arquivos"
 
+msgid "plugins.generic.dataverse.researchData.associate"
+msgstr "Associar conjunto de dados"
+
+msgid "plugins.generic.dataverse.researchData.associate.disclaimer"
+msgstr "Por favor, informe o ID Persistente do conjunto de dados depositado no Dataverse que deseja associar com esta submissão. "
+"Essa informação pode ser encontrada na seção de metadados na página do conjunto de dados<br><br>"
+"O conjunto de dados deve estar depositado no mesmo repositório cadastrado nas configurações do plugin. "
+"Certifique-se também que este não esteja já associado a outra submissão."
+
+msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"
+msgstr "ID Persistente"
+
+msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.description"
+msgstr "O ID Persistente do conjuntos de dados no Dataverse (ex.: \"doi:10.12345/FYI/ABCDEF\")"
+
+msgid "plugins.generic.dataverse.associateDatasetForm.submitButton"
+msgstr "Associar"
+
+msgid "plugins.generic.dataverse.researchData.disassociate"
+msgstr "Desassociar"
+
+msgid "plugins.generic.dataverse.researchData.disassociate.description"
+msgstr "Deseja realmente desassociar o conjunto de dados de pesquisa desta submissão?"
+" O conjunto de dados continuará presente no Dataverse, mas não será mais acessível a partir desta submissão."
+
 msgid "plugins.generic.dataverse.researchData.delete"
-msgstr "Excluir dados de pesquisa"
+msgstr "Excluir"
 
 msgid "plugins.generic.dataverse.researchData.delete.sendEmail.yes"
 msgstr "Enviar uma notificação por e-mail para o contato do conjunto de dados"

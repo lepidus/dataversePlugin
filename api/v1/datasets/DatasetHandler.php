@@ -13,10 +13,12 @@ use APP\log\event\SubmissionEventLogEntry;
 use PKP\core\Core;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
-use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
-use APP\plugins\generic\dataverse\classes\services\DatasetService;
-use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
+use APP\plugins\generic\dataverse\classes\services\{
+    DatasetService,
+    DatasetFileService,
+    DataverseService
+};
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
@@ -27,6 +29,8 @@ class DatasetHandler extends APIHandler
     {
         $this->_handlerPath = 'datasets';
         $roles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_AUTHOR];
+        $managerRoles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR];
+
         $this->_endpoints = [
             'GET' => [
                 [
@@ -62,6 +66,11 @@ class DatasetHandler extends APIHandler
                     'roles' => $roles
                 ],
                 [
+                    'pattern' => $this->getEndpointPattern() . '/associate',
+                    'handler' => [$this, 'associateDataset'],
+                    'roles' => $roles
+                ],
+                [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
                     'handler' => [$this, 'addFile'],
                     'roles' => $roles
@@ -72,6 +81,11 @@ class DatasetHandler extends APIHandler
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
                     'handler' => [$this, 'edit'],
                     'roles' => $roles
+                ],
+                [
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/disassociate',
+                    'handler' => [$this, 'disassociateDataset'],
+                    'roles' => $managerRoles
                 ],
                 [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/publish',
@@ -105,6 +119,17 @@ class DatasetHandler extends APIHandler
         $this->addPolicy($rolePolicy);
 
         return parent::authorize($request, $args, $roleAssignments);
+    }
+
+    private function mapServiceStatusToHttpCode(string $status): ?int
+    {
+        $map = [
+            DataverseService::STATUS_SUCCESS => 200,
+            DataverseService::STATUS_NOT_FOUND => 404,
+            DataverseService::STATUS_ERROR => 403
+        ];
+
+        return $map[$status] ?? null;
     }
 
     public function get($slimRequest, $response, $args)
@@ -161,6 +186,38 @@ class DatasetHandler extends APIHandler
         $datasetService->update($data);
 
         return $this->get($slimRequest, $response, $args);
+    }
+
+    public function associateDataset($slimRequest, $response, $args)
+    {
+        $requestParams = $slimRequest->getParsedBody();
+        $queryParams = $slimRequest->getQueryParams();
+        $submissionId = $queryParams['submissionId'];
+        $persistentId = $requestParams['datasetPersistentId'];
+
+        $datasetService = new DatasetService();
+        $associationResult = $datasetService->associate($submissionId, $persistentId);
+
+        if ($associationResult['status'] !== DataverseService::STATUS_SUCCESS) {
+            return $response
+                ->withStatus($this->mapServiceStatusToHttpCode($associationResult['status']))
+                ->withJsonError($associationResult['message']);
+        }
+
+        return $response->withStatus(200);
+    }
+
+    public function disassociateDataset($slimRequest, $response, $args)
+    {
+        $study = Repo::dataverseStudy()->get($args['studyId']);
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $datasetService = new DatasetService();
+        $datasetService->disassociate($study);
+
+        return $response->withStatus(200);
     }
 
     public function publishDataset($slimRequest, $response, $args)

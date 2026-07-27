@@ -13,6 +13,10 @@ use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 abstract class DataverseService
 {
+    public const STATUS_SUCCESS = 'success';
+    public const STATUS_NOT_FOUND = 'notFound';
+    public const STATUS_ERROR = 'error';
+
     protected function registerEventLog(
         Submission $submission,
         string $message,

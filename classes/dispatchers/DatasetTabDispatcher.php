@@ -8,15 +8,15 @@ use APP\template\TemplateManager;
 use APP\submission\Submission;
 use PKP\db\DAORegistry;
 use PKP\security\Role;
-use PKP\facades\Locale;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
+use APP\plugins\generic\dataverse\classes\components\forms\AssociateDatasetForm;
+use APP\plugins\generic\dataverse\classes\components\forms\DeleteDatasetForm;
 use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
-use PKP\components\forms\FormComponent;
 
 class DatasetTabDispatcher extends DataverseDispatcher
 {
@@ -115,6 +115,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
         $metadataFormAction = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
+        $associateFormAction = $this->getApiUrl('datasets/associate', ['submissionId' => $submission->getId()]);
         $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
         $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles');
 
@@ -136,6 +137,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'fileActionApiUrl' => $fileActionApiUrl,
             'files' => $datasetFiles
         ]);
+        $this->initAssociateDatasetForm($templateMgr, $associateFormAction);
 
         $templateMgr->setState([
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
@@ -178,13 +180,15 @@ class DatasetTabDispatcher extends DataverseDispatcher
         ]);
 
         $defaultEmailBody = $this->getDeleteDatasetEmailBody($submission, $datasetStatementUrl);
-        $deleteDatasetForm = $this->getDeleteDatasetForm($context, $datasetApiUrl, $defaultEmailBody);
+        $deleteDatasetForm = new DeleteDatasetForm($datasetApiUrl, $context, $defaultEmailBody);
         $this->addComponent($templateMgr, $deleteDatasetForm);
 
         $templateMgr->setState([
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
             'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
             'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
+            'disassociateDatasetLabel' => __('plugins.generic.dataverse.researchData.disassociate'),
+            'confirmDisassociateDatasetMessage' => __('plugins.generic.dataverse.researchData.disassociate.description'),
             'publishDatasetLabel' => __('plugins.generic.dataverse.researchData.publish'),
             'confirmPublishDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetPublish', [
                 'serverUrl' => $configuration->getDataverseServerUrl(),
@@ -200,6 +204,12 @@ class DatasetTabDispatcher extends DataverseDispatcher
     {
         $datasetMetadataForm = new DatasetMetadataForm($action, $method, $dataset, 'workflow');
         $this->addComponent($templateMgr, $datasetMetadataForm);
+    }
+
+    private function initAssociateDatasetForm(TemplateManager $templateMgr, string $action): void
+    {
+        $associateDatasetForm = new AssociateDatasetForm($action);
+        $this->addComponent($templateMgr, $associateDatasetForm);
     }
 
     private function initDatasetFilesList($templateMgr, $submission, $args): void
@@ -240,49 +250,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
                 'dataStatementUrl' => $datasetStatementUrl,
             ]
         );
-    }
-
-    public function getDeleteDatasetForm($context, $datasetApiUrl, $defaultEmailBody): FormComponent
-    {
-        $locales = $this->getFormLocales($context);
-        $deleteDatasetForm = new FormComponent('deleteDataset', 'DELETE', $datasetApiUrl, $locales);
-        $deleteDatasetForm->addPage([
-            'id' => 'default',
-            'submitButton' => [
-                'label' => __('plugins.generic.dataverse.researchData.delete.submitLabel'),
-            ],
-        ])->addGroup([
-            'id' => 'default',
-            'pageId' => 'default',
-        ])->addField(new \PKP\components\forms\FieldOptions('sendDeleteEmail', [
-            'label' => __('common.sendEmail'),
-            'type' => 'radio',
-            'options' => [
-                ['value' => 1, 'label' => __('plugins.generic.dataverse.researchData.delete.sendEmail.yes')],
-                ['value' => 0, 'label' => __('plugins.generic.dataverse.researchData.delete.sendEmail.no')],
-            ],
-            'value' => 1,
-            'groupId' => 'default'
-        ]))->addField(new \PKP\components\forms\FieldRichTextarea('deleteMessage', [
-            'label' => __('plugins.generic.dataverse.researchData.delete.emailNotification'),
-            'value' => $defaultEmailBody,
-            'showWhen' => ['sendDeleteEmail', 1],
-            'groupId' => 'default'
-        ]));
-
-        return $deleteDatasetForm;
-    }
-
-    private function getFormLocales($context): array
-    {
-        $supportedFormLocales = $context->getSupportedFormLocales();
-        $localeNames = array_map(fn ($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
-
-        $formLocales = array_map(function ($localeKey) use ($localeNames) {
-            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-        }, $supportedFormLocales);
-
-        return $formLocales;
     }
 
     private function addComponent(TemplateManager $templateMgr, $component, $args = []): void
