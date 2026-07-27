@@ -152,7 +152,7 @@ describe('Dataverse Plugin - Dataset linking', function () {
 	});
 
 	it('Does not associate invalid research data', function () {
-        accessDatasetTab(previousSubmission, 'dbarnes', 'active');
+        accessDatasetTab(previousSubmission, 'dbarnes', 'archive');
 		getPersistentIdFromCitation().then((persistentId) => {
 			previousDatasetPersistentId = persistentId;
 		});
