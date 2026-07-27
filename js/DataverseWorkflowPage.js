@@ -176,8 +176,13 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                     
                     if (self.hasDepositedDataset) {
                         let deleteDatasetForm = self.components.deleteDataset;
-                        let deleteMessageField = deleteDatasetForm.fields[1];
-                        deleteMessageField.value = deleteMessageField.value.replace('{$dataverseName}', self.dataverseName);
+                        for (let formField of deleteDatasetForm.fields) {
+                            if (formField.name == 'deleteMessage') {
+                                formField.value = formField.value.replace('{$dataverseName}', self.dataverseName);
+                                break;
+                            }
+                        }
+                        
                     }
 				},
 			});
