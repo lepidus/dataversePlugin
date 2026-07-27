@@ -19,6 +19,17 @@ class DeleteDatasetForm extends FormComponent
         $this->method = 'DELETE';
         $this->locales = $this->getFormLocales($context);
 
+        $this->addPage([
+            'id' => 'default',
+            'submitButton' => [
+                'label' => __('plugins.generic.dataverse.researchData.delete.submitLabel')
+            ],
+        ]);
+        $this->addGroup([
+            'id' => 'default',
+            'pageId' => 'default',
+        ]);
+
         $this->addField(new FieldHTML('confirmation', [
             'description' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
             'groupId' => 'default',
@@ -44,7 +55,7 @@ class DeleteDatasetForm extends FormComponent
     private function getFormLocales($context): array
     {
         $supportedFormLocales = $context->getSupportedFormLocales();
-        $localeNames = array_map(fn($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
+        $localeNames = array_map(fn ($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
 
         $formLocales = array_map(function ($localeKey) use ($localeNames) {
             return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];

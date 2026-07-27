@@ -18,7 +18,7 @@
             </pkp-button>
             {if $canPublish}
                 <pkp-button
-                    id="associateDatasetButton"
+                    id="disassociateDatasetButton"
                     @click="openDisassociateDatasetModal"
                     :is-warnable="true"
                 >

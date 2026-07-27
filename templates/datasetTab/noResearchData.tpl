@@ -13,6 +13,7 @@
 	</p>
     <pkp-button
 		v-if="canEditPublication && workingPublication.status !== getConstant('STATUS_PUBLISHED')"
+		id="associateDatasetButton"
 		@click="$modal.show('associateResearchData')"
 	>
         {translate key="plugins.generic.dataverse.researchData.associate"}
