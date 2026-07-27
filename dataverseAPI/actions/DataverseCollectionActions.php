@@ -177,7 +177,8 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
     {
         $metadataToFilter = [
             'title', 'dsDescriptionValue', 'subject', 'authorName', 'authorIdentifierScheme', 'subject',
-            'datasetContactName', 'datasetContactEmail', 'depositor', 'publicationCitation', 'producerName'
+            'datasetContactName', 'datasetContactEmail', 'depositor', 'publicationCitation',
+            'publicationRelationType', 'producerName'
         ];
         $filteredFields = [];
 
@@ -216,16 +217,17 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
         foreach ($metadataBlocks as $block) {
             foreach ($block['fields'] as $field) {
-                if (isset($field['childFields'])) {
-                    foreach ($field['childFields'] as $childField) {
-                        $flattenedFields[] = $childField;
+                $fields = $field['childFields'] ?? [$field];
+
+                foreach ($fields as $flattenedField) {
+                    $fieldName = $flattenedField['name'];
+                    if (!isset($flattenedFields[$fieldName])) {
+                        $flattenedFields[$fieldName] = $flattenedField;
                     }
-                    continue;
                 }
-                $flattenedFields[] = $field;
             }
         }
 
-        return $flattenedFields;
+        return array_values($flattenedFields);
     }
 }

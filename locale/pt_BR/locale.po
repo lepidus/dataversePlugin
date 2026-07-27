@@ -74,13 +74,16 @@ msgid "plugins.generic.dataverse.settings.datasetPublishRequired"
 msgstr "É obrigatório escolher o evento para publicar os dados de pesquisa."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlRequired"
-msgstr "Endereço do Dataverse é obrigatório."
+msgstr "O endereço URL do Dataverse é obrigatório."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
-msgstr "Impossível conectar ao Dataverse."
+msgstr "Não foi possível conectar ao Dataverse. Erro retornado: {$msg}"
 
 msgid "plugins.generic.dataverse.settings.tokenRequired"
-msgstr "Informe uma chave de API para Dataverse."
+msgstr "Por favor, informe uma chave de API para Dataverse."
+
+msgid "plugins.generic.dataverse.settings.termsOfUseRequired"
+msgstr "Por favor, informe as URLs para os termos de uso."
 
 msgid "plugins.generic.dataverse.researchDataDescription"
 msgstr "Use esse campo apenas para submeter dados de pesquisa. "
