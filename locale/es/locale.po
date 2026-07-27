@@ -175,6 +175,18 @@ msgstr "Erro al añadir el archivo de datos de investigación \"{$filename}\": {
 msgid  "plugins.generic.dataverse.error.deleteFileFailed"
 msgstr "Erro al excluír el archivo de datos de investigación \"{$filename}\": {$error}"
 
+msgid "plugins.generic.dataverse.error.submissionHasStudy"
+msgstr "El envío ya cuenta con un conjunto de datos asociado"
+
+msgid "plugins.generic.dataverse.error.invalidPersistentId"
+msgstr "El identificador persistente proporcionado no es válido"
+
+msgid "plugins.generic.dataverse.error.associate.alreadyAssociated"
+msgstr "El conjunto de datos proporcionado ya está asociado a un envío en este contexto"
+
+msgid "plugins.generic.dataverse.error.associate.notFound"
+msgstr "El conjunto de datos especificado no está presente en el repositorio de Dataverse"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar archivo de datos de investigación"
 

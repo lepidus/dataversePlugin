@@ -172,6 +172,18 @@ msgstr "Error adding the research data file \"{$filename}\": {$error}"
 msgid  "plugins.generic.dataverse.error.deleteFileFailed"
 msgstr "Error deleting the research data file \"{$filename}\": {$error}"
 
+msgid "plugins.generic.dataverse.error.submissionHasStudy"
+msgstr "The submission already has a dataset associated"
+
+msgid "plugins.generic.dataverse.error.invalidPersistentId"
+msgstr "The persistent ID informed is invalid"
+
+msgid "plugins.generic.dataverse.error.associate.alreadyAssociated"
+msgstr "The dataset entered is already associated with a submission in this context"
+
+msgid "plugins.generic.dataverse.error.associate.notFound"
+msgstr "The dataset entered is not present at the Dataverse repository"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Upload research data file"
 

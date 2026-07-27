@@ -230,14 +230,14 @@ class DatasetService extends DataverseService
 
         $existingStudyWithPersistentId = Repo::dataverseStudy()->getByPersistentId($persistentId);
         if ($existingStudyWithPersistentId) {
-            return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.studyAlreadyExists'];
+            return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
         }
 
         try {
             $dataverseClient = new DataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($persistentId);
         } catch (DataverseException $e) {
-            return ['status' => DataverseService::STATUS_NOT_FOUND, 'message' => 'plugins.generic.dataverse.error.associate.datasetNotFound'];
+            return ['status' => DataverseService::STATUS_NOT_FOUND, 'message' => 'plugins.generic.dataverse.error.associate.notFound'];
         }
 
         $this->createStudy($submission, $persistentId);

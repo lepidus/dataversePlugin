@@ -175,6 +175,18 @@ msgstr "Erro ao adicionar o arquivo de dados de pesquisa \"{$filename}\": {$erro
 msgid  "plugins.generic.dataverse.error.deleteFileFailed"
 msgstr "Erro ao excluir o arquivo de dados de pesquisa \"{$filename}\": {$error}"
 
+msgid "plugins.generic.dataverse.error.submissionHasStudy"
+msgstr "A submissão já possui um conjunto de dados associado"
+
+msgid "plugins.generic.dataverse.error.invalidPersistentId"
+msgstr "O identificador persistente informado é inválido"
+
+msgid "plugins.generic.dataverse.error.associate.alreadyAssociated"
+msgstr "O conjunto de dados informado já está associado a uma submissão neste contexto"
+
+msgid "plugins.generic.dataverse.error.associate.notFound"
+msgstr "O conjunto de dados informado não está presente no repositório Dataverse"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar arquivo de dados de pesquisa"
 
