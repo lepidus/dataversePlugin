@@ -146,7 +146,7 @@ describe('Dataverse Plugin - Dataset linking', function () {
 
         accessDatasetTab(submissionData.title, 'dbarnes');
 		cy.contains('button', 'Disassociate').click();
-		cy.get('.modal__panel:visible').within(() => {
+		cy.get('div[data-modal="disassociateDataset"]').within(() => {
 			cy.contains('Do you really want to disassociate the research dataset from this submission?');
 			cy.contains('The dataset will remain in Dataverse but will no longer be accessible from this submission');
 			cy.contains('button', 'Disassociate').click();
@@ -166,13 +166,13 @@ describe('Dataverse Plugin - Dataset linking', function () {
         accessEmptyDatasetTab(submissionData.title, 'dbarnes');
 
 		cy.get('#associateDatasetButton').click();
-		cy.get('.modal__panel:visible').within(() => {
+		cy.get('div[data-modal="associateResearchData"]').within(() => {
 			cy.get('input[name="datasetPersistentId"]').clear().type(previousDatasetPersistentId, {delay: 0});
 			cy.contains('button', 'Associate').click();
 		});
 		cy.contains('The dataset entered is already associated with a submission in this context');
 
-		cy.get('.modal__panel:visible').within(() => {
+		cy.get('div[data-modal="associateResearchData"]').within(() => {
 			cy.get('input[name="datasetPersistentId"]').clear().type('doi:10.12345/FK2/BLABLA.TESTE', {delay: 0});
 			cy.contains('button', 'Associate').click();
 		});
@@ -186,9 +186,10 @@ describe('Dataverse Plugin - Dataset linking', function () {
 
         accessEmptyDatasetTab(submissionData.title, 'dbarnes');
 		cy.get('#associateDatasetButton').click();
-		cy.get('.modal__panel:visible').within(() => {
+		cy.get('div[data-modal="associateResearchData"]').within(() => {
 			cy.get('input[name="datasetPersistentId"]').type(currentDatasetPersistentId, {delay: 0});
 			cy.contains('button', 'Associate').click();
+			cy.wait(500);
 		});
 
 		cy.waitDatasetTabLoading();
