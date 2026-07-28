@@ -176,7 +176,7 @@ describe('Research data deposit', function () {
 		cy.waitDatasetTabLoading('datasetTab');
 
 		assertAdditionalInstructionsDisplay();
-		cy.contains('Delete research data').should('be.disabled');
+		cy.get('#deleteDatasetButton').should('be.disabled');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
 
 		cy.get('button[aria-controls="dataset_files"]').click();
@@ -254,7 +254,7 @@ describe('Research data deposit', function () {
 		cy.get('.pkpButton:visible:contains("View")').first().click();
 
 		cy.waitDatasetTabLoading('datasetTab');
-		cy.contains('Delete research data').click();
+		cy.get('#deleteDatasetButton').click();
 		cy.get('[data-modal="delete"] button').contains('Yes').click();
 		cy.contains('No research data transferred.');
 		assertAdditionalInstructionsDisplay();
@@ -419,7 +419,7 @@ describe('Research data deposit', function () {
 		cy.findSubmissionAsEditor('dbarnes', null, 'Kwantes');
 
 		cy.waitDatasetTabLoading('datasetTab');
-		cy.contains('Delete research data').click();
+		cy.get('#deleteDatasetButton').click();
 		cy.contains('Send an email notification to the dataset contact');
 		cy.contains('Do not send an email notification');
 		cy.getTinyMceContent('deleteDataset-deleteMessage-control')
@@ -497,7 +497,7 @@ describe('Research data deposit', function () {
 		cy.reload();
 
 		cy.waitDatasetTabLoading('datasetTab');
-		cy.contains('button', 'Delete research data').should('be.disabled');
+		cy.get('#deleteDatasetButton').should('be.disabled');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
 		cy.contains('button', 'Add research data').should('be.disabled');
 		cy.get('#datasetFiles .listPanel__item .listPanel__itemActions button').should('be.disabled');
@@ -628,7 +628,7 @@ describe('Research data deposit', function () {
 		cy.wait(3000);
 
 		cy.get('button').contains('Publish research data').should('not.exist');
-		cy.get('button').contains('Delete research data').should('be.disabled');
+		cy.get('#deleteDatasetButton').should('be.disabled');
 		cy.get('button').contains('Add research data').should('be.disabled');
 		cy.get('#dataset_metadata button').contains('Save').should('be.disabled');
 	});
