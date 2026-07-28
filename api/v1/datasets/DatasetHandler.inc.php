@@ -6,6 +6,7 @@ import('classes.log.SubmissionEventLogEntry');
 import('plugins.generic.dataverse.classes.entities.Dataset');
 import('plugins.generic.dataverse.classes.services.DatasetService');
 import('plugins.generic.dataverse.classes.services.DatasetFileService');
+import('plugins.generic.dataverse.classes.services.DataverseService');
 
 class DatasetHandler extends APIHandler
 {
@@ -13,6 +14,8 @@ class DatasetHandler extends APIHandler
     {
         $this->_handlerPath = 'datasets';
         $roles = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
+        $managerRoles = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR];
+
         $this->_endpoints = array(
             'GET' => array(
                 array(
@@ -48,6 +51,11 @@ class DatasetHandler extends APIHandler
                     'roles' => $roles
                 ),
                 array(
+                    'pattern' => $this->getEndpointPattern() . '/associate',
+                    'handler' => [$this, 'associateDataset'],
+                    'roles' => $roles
+                ),
+                array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
                     'handler' => array($this, 'addFile'),
                     'roles' => $roles
@@ -58,6 +66,11 @@ class DatasetHandler extends APIHandler
                     'pattern' => $this->getEndpointPattern() . '/{studyId}',
                     'handler' => array($this, 'edit'),
                     'roles' => $roles
+                ),
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/{studyId}/disassociate',
+                    'handler' => [$this, 'disassociateDataset'],
+                    'roles' => $managerRoles
                 ),
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/publish',
@@ -93,6 +106,17 @@ class DatasetHandler extends APIHandler
         $this->addPolicy($rolePolicy);
 
         return parent::authorize($request, $args, $roleAssignments);
+    }
+
+    private function mapServiceStatusToHttpCode(string $status): ?int
+    {
+        $map = [
+            DataverseService::STATUS_SUCCESS => 200,
+            DataverseService::STATUS_NOT_FOUND => 404,
+            DataverseService::STATUS_ERROR => 403
+        ];
+
+        return $map[$status] ?? null;
     }
 
     public function get($slimRequest, $response, $args)
@@ -148,6 +172,38 @@ class DatasetHandler extends APIHandler
         $datasetService->update($data);
 
         return $this->get($slimRequest, $response, $args);
+    }
+
+    public function associateDataset($slimRequest, $response, $args)
+    {
+        $requestParams = $slimRequest->getParsedBody();
+        $queryParams = $slimRequest->getQueryParams();
+        $submissionId = $queryParams['submissionId'];
+        $persistentId = $requestParams['datasetPersistentId'];
+
+        $datasetService = new DatasetService();
+        $associationResult = $datasetService->associate($submissionId, $persistentId);
+
+        if ($associationResult['status'] !== DataverseService::STATUS_SUCCESS) {
+            return $response
+                ->withStatus($this->mapServiceStatusToHttpCode($associationResult['status']))
+                ->withJsonError($associationResult['message']);
+        }
+
+        return $response->withStatus(200);
+    }
+
+    public function disassociateDataset($slimRequest, $response, $args)
+    {
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudy($args['studyId']);
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $datasetService = new DatasetService();
+        $datasetService->disassociate($study);
+
+        return $response->withStatus(200);
     }
 
     public function publishDataset($slimRequest, $response, $args)
