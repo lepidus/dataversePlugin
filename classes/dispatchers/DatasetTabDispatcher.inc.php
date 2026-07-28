@@ -3,6 +3,8 @@
 use PKP\components\forms\FormComponent;
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
+import('plugins.generic.dataverse.classes.components.forms.AssociateDatasetForm');
+import('plugins.generic.dataverse.classes.components.forms.DeleteDatasetForm');
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 import('lib.pkp.classes.submission.SubmissionFile');
 
@@ -100,6 +102,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $user = $request->getUser();
 
         $metadataFormAction = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
+        $associateFormAction = $this->getApiUrl('datasets/associate', ['submissionId' => $submission->getId()]);
 
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $factory = new SubmissionDatasetFactory($submission);
@@ -121,6 +124,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
         $this->initDatasetFilesList($templateMgr, $fileListApiUrl, $items);
         $this->initDatasetFileForm($templateMgr, $fileFormAction);
+        $this->initAssociateDatasetForm($templateMgr, $associateFormAction);
 
         $templateMgr->setState([
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
@@ -137,12 +141,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $router = $request->getRouter();
         $userRoles = (array) $router->getHandler()->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($context->getId());
-
-        $supportedFormLocales = $context->getSupportedFormLocales();
-        $localeNames = AppLocale::getAllLocales();
-        $locales = array_map(function ($localeKey) use ($localeNames) {
-            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-        }, $supportedFormLocales);
 
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
         $datasetApiUrl = $this->getApiUrl('datasets/' . $study->getId());
@@ -171,13 +169,15 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $this->initDatasetFilesList($templateMgr, $fileListApiUrl, []);
         $this->initDatasetFileForm($templateMgr, $fileFormAction);
 
-        $deleteDatasetForm = $this->getDeleteDatasetForm($datasetApiUrl, $context, $locales, $mail);
+        $deleteDatasetForm = new DeleteDatasetForm($datasetApiUrl, $context, $mail->getBody());
         $this->addComponent($templateMgr, $deleteDatasetForm);
 
         $templateMgr->setState([
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
             'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
             'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
+            'disassociateDatasetLabel' => __('plugins.generic.dataverse.researchData.disassociate'),
+            'confirmDisassociateDatasetMessage' => __('plugins.generic.dataverse.researchData.disassociate.description'),
             'publishDatasetLabel' => __('plugins.generic.dataverse.researchData.publish'),
             'confirmPublishDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetPublish', [
                 'serverUrl' => $configuration->getDataverseServerUrl(),
@@ -203,6 +203,12 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $datasetMetadataForm = new DatasetMetadataForm($action, $method, $locales, $dataset);
 
         $this->addComponent($templateMgr, $datasetMetadataForm);
+    }
+
+    private function initAssociateDatasetForm(PKPTemplateManager $templateMgr, string $action): void
+    {
+        $associateDatasetForm = new AssociateDatasetForm($action);
+        $this->addComponent($templateMgr, $associateDatasetForm);
     }
 
     private function initDatasetFilesList($templateMgr, $apiUrl, $items): void

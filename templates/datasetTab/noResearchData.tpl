@@ -11,6 +11,13 @@
 	<p v-else>
 		{translate key="plugins.generic.dataverse.researchData.uploadDisabled"}
 	</p>
+	<pkp-button
+		v-if="canEditPublication && workingPublication.status !== getConstant('STATUS_PUBLISHED')"
+		id="associateDatasetButton"
+		@click="$modal.show('associateResearchData')"
+	>
+        {translate key="plugins.generic.dataverse.researchData.associate"}
+    </pkp-button>
     <modal
 		v-bind="MODAL_PROPS"
 		name="uploadResearchData"
@@ -72,6 +79,24 @@
 				</modal>
 				<pkp-form style="margin: -1rem" v-bind="components.datasetMetadata" @set="set" @success="location.reload()"></pkp-form>
 			</div>
+		</modal-content>
+	</modal>
+	<modal
+		v-bind="MODAL_PROPS"
+		name="associateResearchData"
+	>
+		<modal-content
+			close-label="common.close"
+			modal-name="associateResearchData"
+			title="{translate key="plugins.generic.dataverse.researchData.associate"}"
+		>
+			<p>{translate key="plugins.generic.dataverse.researchData.associate.disclaimer"}</p>
+			<pkp-form
+				style="margin: -1rem" 
+				v-bind="components.associateDataset"
+				@set='set'
+				@success="location.reload()"
+			></pkp-form>
 		</modal-content>
 	</modal>
 	{if $dataverseAdditionalInstructions}

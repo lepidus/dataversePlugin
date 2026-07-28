@@ -112,6 +112,9 @@ msgstr "Research data published"
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Research data deleted"
 
+msgid "plugins.generic.dataverse.log.researchDataDisassociate"
+msgstr "Research data disassociated"
+
 msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
 msgstr "Email sent to {$email} notifying the deletion of research data."
 
@@ -161,6 +164,18 @@ msgstr "Error adding the research data file \"{$filename}\": {$error}"
 msgid  "plugins.generic.dataverse.error.deleteFileFailed"
 msgstr "Error deleting the research data file \"{$filename}\": {$error}"
 
+msgid "plugins.generic.dataverse.error.submissionHasStudy"
+msgstr "The submission already has a dataset associated"
+
+msgid "plugins.generic.dataverse.error.invalidPersistentId"
+msgstr "The persistent ID informed is invalid"
+
+msgid "plugins.generic.dataverse.error.associate.alreadyAssociated"
+msgstr "The dataset entered is already associated with a submission in this context"
+
+msgid "plugins.generic.dataverse.error.associate.notFound"
+msgstr "The dataset entered is not present at the Dataverse repository"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Upload research data file"
 
@@ -186,7 +201,7 @@ msgid "plugins.generic.dataverse.modal.confirmDelete"
 msgstr "Are you sure you want to permanently delete the research data file <strong>{$title}</strong>?"
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
-msgstr "Are you sure you want to permanently delete the research data related to this preprint?"
+msgstr "Are you sure you want to permanently delete the research data related to this submission?"
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
 msgstr ""
@@ -222,8 +237,33 @@ msgstr "Metadata"
 msgid "plugins.generic.dataverse.researchData.files"
 msgstr "Files"
 
+msgid "plugins.generic.dataverse.researchData.associate"
+msgstr "Associate dataset"
+
+msgid "plugins.generic.dataverse.researchData.associate.disclaimer"
+msgstr "Please provide the Persistent ID of the dataset deposited in Dataverse you wish to associate with this submission. "
+"This information can be found in the metadata section on the dataset page.<br><br>"
+"The dataset must be deposited in the same repository configured in the plugin settings. "
+"Also, ensure that it is not already associated with another submission."
+
+msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"
+msgstr "Persistent ID"
+
+msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.description"
+msgstr "The Persistent ID of the dataset in Dataverse (e.g.: \"doi:10.12345/FYI/ABCDEF\")"
+
+msgid "plugins.generic.dataverse.associateDatasetForm.submitButton"
+msgstr "Associate"
+
+msgid "plugins.generic.dataverse.researchData.disassociate"
+msgstr "Disassociate"
+
+msgid "plugins.generic.dataverse.researchData.disassociate.description"
+msgstr "Do you really want to disassociate the research dataset from this submission?"
+" The dataset will remain in Dataverse but will no longer be accessible from this submission."
+
 msgid "plugins.generic.dataverse.researchData.delete"
-msgstr "Delete research data"
+msgstr "Delete"
 
 msgid "plugins.generic.dataverse.researchData.delete.sendEmail.yes"
 msgstr "Send an email notification to the dataset contact"
