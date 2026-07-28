@@ -17,7 +17,7 @@ describe('Dataverse Plugin - Dataset linking', function () {
 				'disasters'
 			]
 		}
-		previousSubmission = 'Sustainable Cities: Co-benefits of mass public transportation in climate change mitigation';
+		previousSubmission = 'The Rise of the Machine Empire';
 	});
 
 	afterEach(() => {
