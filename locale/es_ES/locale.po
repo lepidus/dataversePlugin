@@ -115,6 +115,9 @@ msgstr "Datos de investigación publicados"
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Datos de investigación eliminados"
 
+msgid "plugins.generic.dataverse.log.researchDataDisassociate"
+msgstr "Datos de investigación desvinculados"
+
 msgid  "plugins.generic.dataverse.log.sendDatasetDeleteEmail"
 msgstr "Correo electrónico enviado a {$email} para notificar la eliminación de los datos de investigación."
 
@@ -164,6 +167,18 @@ msgstr "Erro al añadir el archivo de datos de investigación \"{$filename}\": {
 msgid  "plugins.generic.dataverse.error.deleteFileFailed"
 msgstr "Erro al excluír el archivo de datos de investigación \"{$filename}\": {$error}"
 
+msgid "plugins.generic.dataverse.error.submissionHasStudy"
+msgstr "El envío ya cuenta con un conjunto de datos asociado"
+
+msgid "plugins.generic.dataverse.error.invalidPersistentId"
+msgstr "El identificador persistente proporcionado no es válido"
+
+msgid "plugins.generic.dataverse.error.associate.alreadyAssociated"
+msgstr "El conjunto de datos proporcionado ya está asociado a un envío en este contexto"
+
+msgid "plugins.generic.dataverse.error.associate.notFound"
+msgstr "El conjunto de datos especificado no está presente en el repositorio de Dataverse"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar archivo de datos de investigación"
 
@@ -189,7 +204,7 @@ msgid "plugins.generic.dataverse.modal.confirmDelete"
 msgstr "¿Realmente desea eliminar permanentemente el archivo de datos de investigación <strong>{$title}</strong>?"
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetDelete"
-msgstr "¿Realmente desea eliminar de forma permanente los datos de investigación relacionados con esta versión preliminar?"
+msgstr "¿Realmente desea eliminar de forma permanente los datos de investigación relacionados con esto envío?"
 
 msgid "plugins.generic.dataverse.modal.confirmDatasetPublish"
 msgstr ""
@@ -225,8 +240,33 @@ msgstr "Metadatos"
 msgid "plugins.generic.dataverse.researchData.files"
 msgstr "Archivos"
 
+msgid "plugins.generic.dataverse.researchData.associate"
+msgstr "Vincular conjunto de datos"
+
+msgid "plugins.generic.dataverse.researchData.associate.disclaimer"
+msgstr "Proporcione el ID persistente del conjunto de datos depositado en Dataverse que desea asociar a este envío. "
+"Esta información se puede encontrar en la sección de metadatos de la página del conjunto de datos.<br><br>"
+"El conjunto de datos debe estar almacenado en el mismo repositorio registrado en la configuración del plugin. "
+"Asegúrese también de que no esté ya asociado a otro envío."
+
+msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"
+msgstr "ID Persistente"
+
+msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.description"
+msgstr "El ID persistente del conjunto de datos en Dataverse (ex.: \"doi:10.12345/FYI/ABCDEF\")"
+
+msgid "plugins.generic.dataverse.associateDatasetForm.submitButton"
+msgstr "Vincular"
+
+msgid "plugins.generic.dataverse.researchData.disassociate"
+msgstr "Desvincular"
+
+msgid "plugins.generic.dataverse.researchData.disassociate.description"
+msgstr "¿Realmente desea desvincular el conjunto de datos de investigación de este envío?"
+" El conjunto de datos permanecerá en Dataverse, pero ya no será accesible después de este envío."
+
 msgid "plugins.generic.dataverse.researchData.delete"
-msgstr "Eliminar datos de investigación"
+msgstr "Eliminar"
 
 msgid "plugins.generic.dataverse.researchData.delete.sendEmail.yes"
 msgstr "Enviar una notificación por correo electrónico al contacto del conjunto de datos"
