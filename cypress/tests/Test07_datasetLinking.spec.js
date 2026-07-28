@@ -92,6 +92,16 @@ describe('Dataverse Plugin - Dataset linking', function () {
 		return persistentUri;
 	}
 
+	function convertPersistentIdToUri(persistentId) {
+		var doiIdPrefix = 'doi:';
+
+		if (persistentId.indexOf(doiIdPrefix) === 0) {
+			return 'https://doi.org/' + persistentId.substring(doiIdPrefix.length);
+		}
+
+		return persistentId;
+	}
+
 	function getPersistentIdFromCitation() {
 		return cy.get('#datasetData .value a[href*="doi.org"]').invoke('attr', 'href').then((persistentUri) => {
 			return convertPersistentUriToId(persistentUri);
@@ -182,8 +192,8 @@ describe('Dataverse Plugin - Dataset linking', function () {
 			cy.wait(500);
 		});
 
-		cy.waitDatasetTabLoading();
-		cy.contains('h1', 'Research data');
+		cy.waitDatasetTabLoading('datasetTab');
+		cy.contains('a', convertPersistentIdToUri(currentDatasetPersistentId));
 		cy.contains('button', 'Disassociate');
 	});
 });
