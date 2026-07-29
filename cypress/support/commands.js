@@ -40,17 +40,14 @@ Cypress.Commands.add('advanceSubmissionSteps', function (numberOfSteps) {
 
 let keywordSuggestionRequest = 0;
 
-Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, keyword) {
+Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, keyword, selectSuggestion = true) {
 	const requestAlias = `getKeywordSuggestions${++keywordSuggestionRequest}`;
 	cy.intercept('GET', '**/api/v1/vocabs*').as(requestAlias);
 	cy.get(inputSelector).type(keyword, {delay: 0});
 	cy.wait(`@${requestAlias}`).then((interception) => {
 		expect(interception.response.statusCode).to.eq(200);
-		const responseContainsKeyword = JSON.stringify(interception.response.body)
-			.toLocaleLowerCase()
-			.includes(keyword.toLocaleLowerCase());
 
-		if (responseContainsKeyword) {
+		if (selectSuggestion) {
 			cy.contains('.autosuggest__results-item', keyword).click();
 		} else {
 			cy.get(inputSelector).type('{enter}', {delay: 0});

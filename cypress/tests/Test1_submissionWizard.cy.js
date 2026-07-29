@@ -44,7 +44,12 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         submissionData.keywords.forEach(keyword => {
-			cy.addKeyword('#titleAbstract-keywords-control-en', '#titleAbstract-keywords-selected-en', keyword);
+			cy.addKeyword(
+				'#titleAbstract-keywords-control-en',
+				'#titleAbstract-keywords-selected-en',
+				keyword,
+				keyword !== 'sustainable cities'
+			);
         });
 
         cy.contains('h2', 'Data statement');
