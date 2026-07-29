@@ -209,7 +209,32 @@ class DataverseActionsTest extends PKPTestCase
         $response = $actions->nativeAPIRequest('GET', $actions->getCurrentDataverseURI());
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('Controlled Dataverse', json_decode($response->getBody(), true)['data']['name']);
+        $this->assertSame(
+            'Dataverse de Exemplo Lepidus',
+            json_decode($response->getBody(), true)['data']['name']
+        );
+    }
+
+    public function testControlledDataverseExposesDefaultLicense(): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken('valid-token');
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, new Client()])
+            ->getMockForAbstractClass();
+
+        $response = $actions->nativeAPIRequest(
+            'GET',
+            $actions->createNativeAPIURI(['licenses'])
+        );
+        $licenses = json_decode($response->getBody(), true)['data'];
+        $defaultLicenses = array_values(array_filter($licenses, function (array $license): bool {
+            return $license['isDefault'];
+        }));
+
+        $this->assertCount(1, $defaultLicenses);
+        $this->assertSame('CC0 1.0', $defaultLicenses[0]['name']);
     }
 
     /**
