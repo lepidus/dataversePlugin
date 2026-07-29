@@ -160,6 +160,12 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 			});
 		});
         cy.wait(1000);
+        cy.contains('legend', 'Dataverse terms of use');
+        cy.contains('Deposit research data in Dataverse').within(() => {
+            cy.contains('a', 'Terms of Use').invoke('attr', 'href').then((termsOfUseUrl) => {
+                expect(termsOfUseUrl).to.equal(Cypress.env('dataverseTermsOfUse'));
+            });
+        });
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetFiles').contains('Data_detailing.pdf');
