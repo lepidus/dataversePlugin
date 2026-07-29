@@ -9,12 +9,10 @@ function assertAdditionalInstructionsDisplay() {
 
 function waitForSuccessfulSubmission() {
 	cy.wait('@completeSubmission').then((interception) => {
-		if (interception.response.statusCode !== 200) {
-			waitForSuccessfulSubmission();
-			return;
-		}
+		expect(interception.request.body).not.to.have.property('_validateOnly');
 		expect(interception.response.statusCode).to.eq(200);
 	});
+	cy.contains('h1', 'Submission complete', {timeout: 30000}).should('be.visible');
 }
 
 describe('Dataverse Plugin - Submission wizard features', function () {
@@ -282,7 +280,11 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 
         cy.contains('button', 'Submit').click();
         cy.get('.modal__panel:visible').within(() => {
-            cy.intercept('POST', /submissions\/\d+\/submit/).as('completeSubmission');
+			cy.intercept('POST', /submissions\/\d+\/submit/, (request) => {
+				if (!request.body._validateOnly) {
+					request.alias = 'completeSubmission';
+				}
+			});
             cy.contains('button', 'Submit').click();
         });
         waitForSuccessfulSubmission();
