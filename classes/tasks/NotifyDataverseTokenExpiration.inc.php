@@ -34,14 +34,14 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
     {
         $context = Application::get()->getRequest()->getContext();
 
-        $admin = $this->getAdminUser($context->getId());
-        if (!$admin) {
+        $recipients = $this->getNotificationRecipients($context);
+        if (empty($recipients)) {
             return;
         }
 
         $email = new MailTemplate('DATAVERSE_TOKEN_EXPIRATION', null, $context, false);
         $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
-        $email->setRecipients([['name' => $admin->getFullName(), 'email' => $admin->getEmail()]]);
+        $email->setRecipients($recipients);
 
         $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
         $email->sendWithParams([
@@ -51,36 +51,46 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         ]);
     }
 
-    private function getAdminUser($contextId)
+    protected function getNotificationRecipients($context): array
     {
-        $applicationName = Application::get()->getName();
-        $adminEnAbbrev = ($applicationName == 'ojs2' ? 'jm' : 'psm');
+        $recipients = [];
+        $users = array_merge(
+            $this->getUsersByRole(ROLE_ID_SITE_ADMIN, CONTEXT_SITE),
+            $this->getUsersByRole(ROLE_ID_MANAGER, $context->getId())
+        );
 
-        $adminUserGroup = $this->getUserGroupByAbbrev($contextId, $adminEnAbbrev);
-        if (!$adminUserGroup) {
-            return null;
+        foreach ($users as $user) {
+            $this->addRecipient($recipients, $user->getFullName(), $user->getEmail());
         }
 
-        $adminUsers = Services::get('user')->getMany([
-            'contextId' => $contextId,
-            'userGroupIds' => [$adminUserGroup->getId()]
-        ]);
+        $this->addRecipient(
+            $recipients,
+            $context->getData('contactName'),
+            $context->getData('contactEmail')
+        );
 
-        return $adminUsers->current();
+        return array_values($recipients);
     }
 
-    private function getUserGroupByAbbrev(int $contextId, string $abbrev)
+    protected function getUsersByRole(int $roleId, int $contextId): array
     {
-        $contextUserGroups = DAORegistry::getDAO('UserGroupDAO')->getByContextId($contextId)->toArray();
+        return iterator_to_array(Services::get('user')->getMany([
+            'contextId' => $contextId,
+            'roleIds' => [$roleId]
+        ]));
+    }
 
-        foreach ($contextUserGroups as $userGroup) {
-            $userGroupAbbrev = strtolower($userGroup->getData('abbrev', 'en_US'));
-
-            if ($userGroupAbbrev === $abbrev) {
-                return $userGroup;
-            }
+    private function addRecipient(array &$recipients, ?string $name, ?string $email): void
+    {
+        $email = trim((string) $email);
+        $recipientKey = strtolower($email);
+        if ($email === '' || isset($recipients[$recipientKey])) {
+            return;
         }
 
-        return null;
+        $recipients[$recipientKey] = [
+            'name' => (string) $name,
+            'email' => $email,
+        ];
     }
 }
