@@ -44,15 +44,12 @@ Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, ke
 	const requestAlias = `getKeywordSuggestions${++keywordSuggestionRequest}`;
 	cy.intercept('GET', '**/api/v1/vocabs*').as(requestAlias);
 	cy.get(inputSelector).type(keyword, {delay: 0});
-	cy.wait(`@${requestAlias}`).its('response.statusCode').should('eq', 200);
-	cy.get('body').then(($body) => {
-		const matchingSuggestion = $body
-			.find('.autosuggest__results-item')
-			.filter((index, element) => element.textContent.trim() === keyword)
-			.first();
+	cy.wait(`@${requestAlias}`).then((interception) => {
+		expect(interception.response.statusCode).to.eq(200);
+		const responseContainsKeyword = JSON.stringify(interception.response.body).includes(keyword);
 
-		if (matchingSuggestion.length) {
-			cy.wrap(matchingSuggestion).click();
+		if (responseContainsKeyword) {
+			cy.contains('.autosuggest__results-item', keyword).click();
 		} else {
 			cy.get(inputSelector).type('{enter}', {delay: 0});
 		}
