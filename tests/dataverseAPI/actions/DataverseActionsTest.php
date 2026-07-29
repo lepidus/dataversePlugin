@@ -120,7 +120,8 @@ class DataverseActionsTest extends PKPTestCase
             ->getMockForAbstractClass();
 
         $this->expectException(DataverseException::class);
-        $this->expectExceptionMessage('Error Communicating with Server');
+        $this->expectExceptionCode(503);
+        $this->expectExceptionMessage('Dataverse service is temporarily unavailable.');
         $actions->nativeAPIRequest('GET', 'test');
     }
 
@@ -139,7 +140,8 @@ class DataverseActionsTest extends PKPTestCase
             ->getMockForAbstractClass();
 
         $this->expectException(DataverseException::class);
-        $this->expectExceptionMessage('Failed to connect to Dataverse');
+        $this->expectExceptionCode(503);
+        $this->expectExceptionMessage('Dataverse service is temporarily unavailable.');
         $actions->nativeAPIRequest('GET', 'test');
     }
 
@@ -180,8 +182,60 @@ class DataverseActionsTest extends PKPTestCase
             ->getMockForAbstractClass();
 
         $this->expectException(DataverseException::class);
-        $this->expectExceptionCode(500);
-        $this->expectExceptionMessage('Error Communicating with Server');
+        $this->expectExceptionCode(503);
+        $this->expectExceptionMessage('Dataverse service is temporarily unavailable.');
         $actions->nativeAPIRequest('GET', 'test');
+    }
+
+    public function testHtmlChallengeResponseIsReportedAsServiceUnavailableWithoutLeakingBody(): void
+    {
+        $mockHandler = new MockHandler([
+            new RequestException(
+                '403 Forbidden',
+                new Request('GET', 'test'),
+                new Response(
+                    403,
+                    ['Content-Type' => 'text/html', 'cdn-challenge' => 'true'],
+                    '<html><title>Establishing a secure connection ...</title></html>'
+                )
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
+            ->getMockForAbstractClass();
+
+        try {
+            $actions->nativeAPIRequest('GET', 'test');
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(503, $exception->getCode());
+            $this->assertSame('Dataverse service is temporarily unavailable.', $exception->getMessage());
+            $this->assertStringNotContainsString('Establishing a secure connection', $exception->getMessage());
+        }
+    }
+
+    public function testRequestErrorWithoutResponseIsReportedAsServiceUnavailable(): void
+    {
+        $mockHandler = new MockHandler([
+            new ConnectException(
+                'Connection timed out with infrastructure details',
+                new Request('GET', 'test')
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
+            ->getMockForAbstractClass();
+
+        try {
+            $actions->nativeAPIRequest('GET', 'test');
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(503, $exception->getCode());
+            $this->assertSame('Dataverse service is temporarily unavailable.', $exception->getMessage());
+        }
     }
 }

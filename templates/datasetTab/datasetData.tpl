@@ -1,4 +1,4 @@
-<span v-if="datasetIsLoading">
+<span v-if="datasetIsLoading && !dataverseIsUnavailable">
     <spinner></spinner>
     {translate key="plugins.generic.dataverse.metadataForm.loadingDataset"}
 </span>
@@ -12,7 +12,7 @@
                 id="deleteDatasetButton"
                 @click="openDeleteDatasetModal"
                 :is-warnable="true"
-                :disabled="datasetIsPublished || !canEditPublication"
+                :disabled="dataverseIsUnavailable || datasetIsPublished || !canEditPublication"
             >
                 {translate key="plugins.generic.dataverse.researchData.delete"}
             </pkp-button>
@@ -21,6 +21,7 @@
                     id="disassociateDatasetButton"
                     @click="openDisassociateDatasetModal"
                     :is-warnable="true"
+                    :disabled="dataverseIsUnavailable"
                 >
                     {translate key="plugins.generic.dataverse.researchData.disassociate"}
                 </pkp-button>
@@ -28,13 +29,19 @@
                     v-if="!datasetIsPublished"
                     id="publishDatasetButton"
                     @click="openPublishDatasetModal"
-                    :disabled="datasetIsPublished"
+                    :disabled="dataverseIsUnavailable || datasetIsPublished"
                 >
                     {translate key="plugins.generic.dataverse.researchData.publish"}
                 </pkp-button>
             {/if}
         </template>
     </pkp-header>
+    <div v-if="dataverseIsUnavailable" class="pkp_notification pkp_notification_warning" role="status">
+        <p>{translate key="plugins.generic.dataverse.error.unavailable"}</p>
+        <pkp-button @click="retryDataverseRequests">
+            {translate key="plugins.generic.dataverse.error.retry"}
+        </pkp-button>
+    </div>
     <div id="datasetLabels">
         <span class="datasetLabel datasetLabelDraft" v-if="dataset && !datasetIsPublished">
             {translate key="plugins.generic.dataverse.researchData.label.draft"}
@@ -49,7 +56,7 @@
     <span class="value">
         <p v-html="datasetCitation"></p>
     </span>
-    <tabs label="Dataset data" :is-side-tabs='true'>
+    <tabs v-if="!dataverseIsUnavailable" label="Dataset data" :is-side-tabs='true'>
         <tab
             id="dataset_metadata"
             label={translate key="plugins.generic.dataverse.researchData.metadata"}

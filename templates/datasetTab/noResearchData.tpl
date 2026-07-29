@@ -1,9 +1,16 @@
 <section class="noResearchData -pkpClearfix">
+	<div v-if="dataverseIsUnavailable" class="pkp_notification pkp_notification_warning" role="status">
+		<p>{translate key="plugins.generic.dataverse.error.unavailable"}</p>
+		<pkp-button @click="retryDataverseRequests">
+			{translate key="plugins.generic.dataverse.error.retry"}
+		</pkp-button>
+	</div>
     <p>
 		{translate key="plugins.generic.dataverse.researchData.noResearchData"}
 	</p>
     <pkp-button
 		v-if="canEditPublication && workingPublication.status !== getConstant('STATUS_PUBLISHED')"
+		:disabled="dataverseIsUnavailable"
 		@click="$modal.show('uploadResearchData')"
 	>
         {translate key="plugins.generic.dataverse.researchData.uploadResearchData"}
@@ -13,6 +20,7 @@
 	</p>
     <pkp-button
 		v-if="canEditPublication && workingPublication.status !== getConstant('STATUS_PUBLISHED')"
+		:disabled="dataverseIsUnavailable"
 		id="associateDatasetButton"
 		@click="$modal.show('associateResearchData')"
 	>

@@ -20,6 +20,8 @@ abstract class DataverseActions
     protected $cacheManager;
 
     protected const ONE_DAY_SECONDS = 24 * 60 * 60;
+    private const SERVICE_UNAVAILABLE_MESSAGE = 'Dataverse service is temporarily unavailable.';
+    private const SERVICE_UNAVAILABLE_STATUS = 503;
 
     public function __construct(
         ?DataverseConfiguration $configuration = null,
@@ -69,23 +71,12 @@ abstract class DataverseActions
     public function nativeAPIRequest(string $method, string $uri, array $options = [], bool $returnResponse = true): ?DataverseResponse
     {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
+        $options += ['connect_timeout' => 5, 'timeout' => 15];
 
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
-            $message = $e->getMessage();
-            $code = $e->getCode();
-
-            if (method_exists($e, 'hasResponse') and $e->hasResponse()) {
-                $response = $e->getResponse();
-                $code = $response->getStatusCode();
-
-                $responseBody = json_decode($response->getBody(), true);
-                if (!empty($responseBody)) {
-                    $message = $responseBody['message'];
-                }
-            }
-            throw new DataverseException($message, $code, $e);
+            throw $this->createDataverseException($e);
         }
 
         if (!$returnResponse) {
@@ -102,19 +93,12 @@ abstract class DataverseActions
     public function swordAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
     {
         $options['auth'] = [$this->apiToken, ''];
+        $options += ['connect_timeout' => 5, 'timeout' => 15];
 
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
-            $message = $e->getMessage();
-            $code = $e->getCode();
-
-            if (method_exists($e, 'hasResponse') and $e->hasResponse()) {
-                $response = $e->getResponse();
-                $code = $response->getStatusCode();
-                $message = $response->getReasonPhrase();
-            }
-            throw new DataverseException($message, $code, $e);
+            throw $this->createDataverseException($e);
         }
 
         return new DataverseResponse(
@@ -127,5 +111,40 @@ abstract class DataverseActions
     public function cacheDismiss()
     {
         return null;
+    }
+
+    private function createDataverseException(TransferException $exception): DataverseException
+    {
+        if (!method_exists($exception, 'hasResponse') || !$exception->hasResponse()) {
+            return new DataverseException(
+                self::SERVICE_UNAVAILABLE_MESSAGE,
+                self::SERVICE_UNAVAILABLE_STATUS,
+                $exception
+            );
+        }
+
+        $response = $exception->getResponse();
+        $statusCode = $response->getStatusCode();
+        $message = $this->getJsonErrorMessage($response);
+
+        if ($message !== null && in_array($statusCode, [400, 404, 409, 422], true)) {
+            return new DataverseException($message, $statusCode, $exception);
+        }
+
+        return new DataverseException(
+            self::SERVICE_UNAVAILABLE_MESSAGE,
+            self::SERVICE_UNAVAILABLE_STATUS,
+            $exception
+        );
+    }
+
+    private function getJsonErrorMessage($response): ?string
+    {
+        $responseBody = json_decode((string) $response->getBody(), true);
+        if (!is_array($responseBody) || !isset($responseBody['message']) || !is_string($responseBody['message'])) {
+            return null;
+        }
+
+        return $responseBody['message'];
     }
 }
