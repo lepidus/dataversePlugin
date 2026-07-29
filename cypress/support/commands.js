@@ -42,7 +42,7 @@ Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, ke
 	cy.get(inputSelector)
 		.type(keyword, {delay: 0})
 		.should('have.value', keyword)
-		.type('{enter}', {delay: 0});
+		.type('{downarrow}{enter}', {delay: 0});
 	cy.get(selectedSelector).within(() => {
 		cy.contains('.pkpAutosuggest__selection', keyword);
 	});
