@@ -46,7 +46,9 @@ Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, ke
 	cy.get(inputSelector).type(keyword, {delay: 0});
 	cy.wait(`@${requestAlias}`).then((interception) => {
 		expect(interception.response.statusCode).to.eq(200);
-		const responseContainsKeyword = JSON.stringify(interception.response.body).includes(keyword);
+		const responseContainsKeyword = JSON.stringify(interception.response.body)
+			.toLocaleLowerCase()
+			.includes(keyword.toLocaleLowerCase());
 
 		if (responseContainsKeyword) {
 			cy.contains('.autosuggest__results-item', keyword).click();
