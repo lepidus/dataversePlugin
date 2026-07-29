@@ -4,8 +4,8 @@ Esta matriz registra a camada mais barata que preserva a garantia de cada cenár
 
 | Spec | Cenário | Camada recomendada | Decisão e garantia preservada |
 | --- | --- | --- | --- |
-| Test0 | Submissão antes da configuração | Cypress sem Dataverse externo | Manter como smoke do hook e da renderização sem configuração. |
-| Test0 | Configurar o plugin | Cypress sem Dataverse externo | Manter um único cenário da interface de configuração; outras preparações devem usar fixture. |
+| Test0 (00-local) | Submissão antes da configuração | Cypress sem Dataverse externo | Manter como smoke do hook e da renderização sem configuração; executável isoladamente na VM local. |
+| Test0 | Configurar o plugin | Cypress com Dataverse externo | Manter um único cenário da interface de configuração e da validação real do token; outras preparações devem usar fixture. |
 | Test1 | Campos e validações da declaração de dados | Cypress com backend controlado | Manter uma prova da exibição e do erro retornado; cobrir combinações exaustivas no dispatcher/formulário. |
 | Test1 | Exibir campos somente ao escolher depósito | Cypress sem Dataverse externo | Manter porque valida reatividade e visibilidade no Vue. |
 | Test1 | Arquivo de dados igual à composição | Unidade + um smoke Cypress | Migrar a comparação exaustiva para `DraftDatasetFilesValidatorTest`; manter só a apresentação do erro. |
