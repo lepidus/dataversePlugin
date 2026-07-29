@@ -146,6 +146,8 @@ class DatasetHandler extends APIHandler
         } catch (DataverseException $e) {
             if ($e->getCode() === 404) {
                 Repo::dataverseStudy()->delete($study);
+
+                return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
             }
 
             error_log('Dataverse API error: ' . $e->getMessage());
