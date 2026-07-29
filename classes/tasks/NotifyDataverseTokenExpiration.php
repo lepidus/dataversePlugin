@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Mail;
 
 class NotifyDataverseTokenExpiration extends ScheduledTask
 {
+    private const MANAGER_USER_GROUP_NAME_LOCALE_KEY = 'default.groups.name.manager';
+
     public function executeActions()
     {
         $dataverseClient = new DataverseClient();
@@ -70,7 +72,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         $recipients = [];
         $users = array_merge(
             $this->getUsersByRole(Role::ROLE_ID_SITE_ADMIN, Application::CONTEXT_SITE),
-            $this->getUsersByRole(Role::ROLE_ID_MANAGER, $context->getId())
+            $this->getJournalManagerUsers($context->getId())
         );
 
         foreach ($users as $user) {
@@ -91,6 +93,41 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         return Repo::user()->getCollector()
             ->filterByContextIds([$contextId])
             ->filterByRoleIds([$roleId])
+            ->getMany()
+            ->toArray();
+    }
+
+    protected function getJournalManagerUsers(int $contextId): array
+    {
+        foreach ($this->getManagerUserGroups($contextId) as $userGroup) {
+            if (
+                !$userGroup->getDefault()
+                || $userGroup->getData('nameLocaleKey') !== self::MANAGER_USER_GROUP_NAME_LOCALE_KEY
+            ) {
+                continue;
+            }
+
+            return $this->getUsersByUserGroup($userGroup->getId(), $contextId);
+        }
+
+        return [];
+    }
+
+    protected function getManagerUserGroups(int $contextId): array
+    {
+        return Repo::userGroup()->getCollector()
+            ->filterByContextIds([$contextId])
+            ->filterByRoleIds([Role::ROLE_ID_MANAGER])
+            ->filterByIsDefault(true)
+            ->getMany()
+            ->toArray();
+    }
+
+    protected function getUsersByUserGroup(int $userGroupId, int $contextId): array
+    {
+        return Repo::user()->getCollector()
+            ->filterByContextIds([$contextId])
+            ->filterByUserGroupIds([$userGroupId])
             ->getMany()
             ->toArray();
     }
