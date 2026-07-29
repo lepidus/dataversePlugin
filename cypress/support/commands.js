@@ -39,8 +39,10 @@ Cypress.Commands.add('advanceSubmissionSteps', function (numberOfSteps) {
 });
 
 Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, keyword) {
-	cy.get(inputSelector).type(keyword, {delay: 0});
-	cy.contains('.autosuggest__results-item', keyword).click();
+	cy.get(inputSelector)
+		.type(keyword, {delay: 0})
+		.should('have.value', keyword)
+		.type('{enter}', {delay: 0});
 	cy.get(selectedSelector).within(() => {
 		cy.contains('.pkpAutosuggest__selection', keyword);
 	});
