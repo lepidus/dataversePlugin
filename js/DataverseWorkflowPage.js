@@ -14,7 +14,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             hasDepositedDataset: false,
             datasetIsLoading: true,
             isLoading: false,
-            latestGetRequest: '',
+            latestGetRequest: 0,
             flagMounted: false
         };
     },
@@ -142,7 +142,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                                 },
                                 error: this.ajaxErrorCallback,
                                 success: function (r) {
+                                    self.latestGetRequest += 1;
                                     self.dataset = r;
+                                    self.datasetIsLoading = false;
                                     self.$modal.hide('publishDataset');
                                 },
                             });
@@ -210,11 +212,15 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 
         refreshDataset() {
             const self = this;
+            const requestId = ++this.latestGetRequest;
             this.datasetIsLoading = true;
             $.ajax({
                 url: this.components.datasetMetadata.action,
                 type: 'GET',
                 success(r) {
+                    if (requestId !== self.latestGetRequest) {
+                        return;
+                    }
                     self.dataset = r;
                     self.datasetIsLoading = false;
                 }
