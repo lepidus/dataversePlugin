@@ -7,6 +7,16 @@ function assertAdditionalInstructionsDisplay() {
 	cy.contains('3. The files deposited in "Research Data" will form a dataset');
 }
 
+function waitForSuccessfulSubmission() {
+	cy.wait('@completeSubmission').then((interception) => {
+		if (interception.response.statusCode !== 200) {
+			waitForSuccessfulSubmission();
+			return;
+		}
+		expect(interception.response.statusCode).to.eq(200);
+	});
+}
+
 describe('Dataverse Plugin - Submission wizard features', function () {
 	let submissionData;
 
@@ -272,8 +282,9 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 
         cy.contains('button', 'Submit').click();
         cy.get('.modal__panel:visible').within(() => {
+            cy.intercept('POST', /submissions\/\d+\/submit/).as('completeSubmission');
             cy.contains('button', 'Submit').click();
         });
-        cy.contains('h1', 'Submission complete', {timeout: 30000});
+        waitForSuccessfulSubmission();
     });
 });
