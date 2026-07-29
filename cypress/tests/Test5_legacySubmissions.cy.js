@@ -24,7 +24,7 @@ describe('Dataverse Plugin - Legacy submissions', function () {
         cy.contains('button', 'Begin Submission').click();
     }
 
-    it('Disables plugin temporarily', function () {
+    it('Finishes a submission started while the plugin was disabled', function () {
         cy.login('dbarnes', null, 'publicknowledge');
 		cy.contains('a', 'Website').click();
 
@@ -37,8 +37,8 @@ describe('Dataverse Plugin - Legacy submissions', function () {
         });
 
         cy.get('input[id^=select-cell-dataverseplugin]').should('not.be.checked');
-    });
-	it('Starts a new submission, without finishing it', function () {
+		cy.logout();
+
 		cy.login('ccorino', null, 'publicknowledge');
 
 		cy.get('div#myQueue a:contains("New Submission")').click();
@@ -58,19 +58,22 @@ describe('Dataverse Plugin - Legacy submissions', function () {
 		}]);
 		cy.contains('button', 'Continue').click();
 		cy.logout();
-	});
-    it('Enables plugin back', function () {
+
         cy.login('dbarnes', null, 'publicknowledge');
 		cy.contains('a', 'Website').click();
 
 		cy.waitJQuery();
 		cy.get('#plugins-button').click();
-		cy.get('input[id^=select-cell-dataverseplugin]').check();
+        cy.get('input[id^=select-cell-dataverseplugin]').check();
         cy.get('input[id^=select-cell-dataverseplugin]').should('be.checked');
-    });
-    it('Tries to finish submission', function () {
+		cy.logout();
+
 		cy.login('ccorino', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
+		cy.location('search').then((search) => {
+			cy.visit('index.php/publicknowledge/submission' + search + '#details');
+			cy.reload();
+		});
 
 		cy.advanceSubmissionSteps(4);
 
