@@ -142,9 +142,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                                 },
                                 error: this.ajaxErrorCallback,
                                 success: function (r) {
-                                    setTimeout(() => {
-                                        self.dataset = r;
-                                    }, 2500);
+                                    self.dataset = r;
                                     self.$modal.hide('publishDataset');
                                 },
                             });

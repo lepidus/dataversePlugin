@@ -353,7 +353,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 		}).as('publishDataset');
 		cy.get('div[data-modal="publishDataset"] button:contains("Yes")').click();
 		cy.wait('@publishDataset').its('response.statusCode').should('eq', 200);
-        cy.reload();
 
 		cy.contains('Demo Dataverse, V1');
 		cy.contains('Publish research data').should('not.exist');
