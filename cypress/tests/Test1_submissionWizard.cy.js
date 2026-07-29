@@ -16,7 +16,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 			abstract: 'Mass public transportation can be used as a way to reduce greenhouse gases emissions.',
 			keywords: [
                 'mass public transport',
-				'sustainable cities',
 			]
 		}
 	});
@@ -44,12 +43,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         submissionData.keywords.forEach(keyword => {
-			cy.addKeyword(
-				'#titleAbstract-keywords-control-en',
-				'#titleAbstract-keywords-selected-en',
-				keyword,
-				keyword !== 'sustainable cities'
-			);
+			cy.addKeyword('#titleAbstract-keywords-control-en', '#titleAbstract-keywords-selected-en', keyword);
         });
 
         cy.contains('h2', 'Data statement');

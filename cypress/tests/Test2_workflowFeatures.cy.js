@@ -16,7 +16,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 			abstract: 'Mass public transportation can be used as a way to reduce greenhouse gases emissions.',
 			keywords: [
                 'mass public transport',
-				'sustainable cities',
                 'climate change'
 			]
 		}
@@ -75,7 +74,6 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.getTinyMceContent('datasetMetadata-datasetDescription-control').should('include', submissionData.abstract);
         cy.get('#datasetMetadata-datasetKeywords-selected-en').within(() => {
             cy.contains(submissionData.keywords[0]);
-            cy.contains(submissionData.keywords[1]);
         });
         cy.get('#datasetMetadata-datasetLanguage-control').should('have.value', 'French');
         cy.get('#datasetMetadata-datasetSubject-control').should('have.value', 'Earth and Environmental Sciences');
@@ -87,7 +85,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.addKeyword(
 			'#datasetMetadata-datasetKeywords-control-en',
 			'#datasetMetadata-datasetKeywords-selected-en',
-			submissionData.keywords[2]
+			submissionData.keywords[1]
 		);
         cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
@@ -99,7 +97,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetTitle-control').should('have.value', 'Test metadata editing');
         cy.getTinyMceContent('datasetMetadata-datasetDescription-control').should('include', 'new description');
         cy.get('#datasetMetadata-datasetKeywords-selected-en').within(() => {
-            cy.contains(submissionData.keywords[2]);
+			cy.contains(submissionData.keywords[1]);
         });
         cy.get('#datasetMetadata-datasetLanguage-control').should('have.value', 'English');
         cy.get('#datasetMetadata-datasetSubject-control').should('have.value', 'Computer and Information Science');

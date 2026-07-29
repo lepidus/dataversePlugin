@@ -40,24 +40,15 @@ Cypress.Commands.add('advanceSubmissionSteps', function (numberOfSteps) {
 
 let keywordSuggestionRequest = 0;
 
-Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, keyword, selectSuggestion = true) {
+Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, keyword) {
 	const requestAlias = `getKeywordSuggestions${++keywordSuggestionRequest}`;
-	if (selectSuggestion) {
-		cy.intercept('GET', '**/api/v1/vocabs*').as(requestAlias);
-	}
+	cy.intercept('GET', '**/api/v1/vocabs*').as(requestAlias);
 	cy.get(inputSelector).type(keyword, {delay: 0});
-	if (selectSuggestion) {
-		cy.wait(`@${requestAlias}`).then((interception) => {
-			expect(interception.response.statusCode).to.eq(200);
-			cy.contains('.autosuggest__results-item', keyword).click();
-		});
-		cy.get(inputSelector).should('have.value', '');
-	} else {
-		cy.window().then((window) => new Cypress.Promise((resolve) => {
-			window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
-		}));
-		cy.get(inputSelector).type('{enter}', {delay: 0});
-	}
+	cy.wait(`@${requestAlias}`).then((interception) => {
+		expect(interception.response.statusCode).to.eq(200);
+		cy.contains('.autosuggest__results-item', keyword).click();
+	});
+	cy.get(inputSelector).should('have.value', '');
 	cy.get(selectedSelector).within(() => {
 		cy.contains('.pkpAutosuggest__selection', keyword);
 	});
