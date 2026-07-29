@@ -15,10 +15,6 @@ abstract class DataverseActions
     protected $cacheManager;
 
     protected const ONE_DAY_SECONDS = 24 * 60 * 60;
-    private const SERVICE_UNAVAILABLE_MESSAGE = 'Dataverse service is temporarily unavailable.';
-    private const SERVICE_UNAVAILABLE_STATUS = 503;
-    private const AUTHENTICATION_ERROR_MESSAGE = 'Dataverse API token is invalid or expired.';
-
     public function __construct(
         ?DataverseConfiguration $configuration = null,
         ?\GuzzleHttp\Client $client = null
@@ -72,7 +68,7 @@ abstract class DataverseActions
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
-            throw $this->createDataverseException($e);
+            throw DataverseException::fromTransferException($e);
         }
 
         return new DataverseResponse(
@@ -90,7 +86,7 @@ abstract class DataverseActions
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
-            throw $this->createDataverseException($e);
+            throw DataverseException::fromTransferException($e);
         }
 
         return new DataverseResponse(
@@ -105,62 +101,4 @@ abstract class DataverseActions
         return null;
     }
 
-    private function createDataverseException(TransferException $exception): DataverseException
-    {
-        if (!method_exists($exception, 'hasResponse') || !$exception->hasResponse()) {
-            return new DataverseException(
-                self::SERVICE_UNAVAILABLE_MESSAGE,
-                self::SERVICE_UNAVAILABLE_STATUS,
-                $exception
-            );
-        }
-
-        $response = $exception->getResponse();
-        $statusCode = $response->getStatusCode();
-        $message = $this->getJsonErrorMessage($response);
-
-        if ($this->isAuthenticationError($statusCode, $message)) {
-            return new DataverseException(
-                self::AUTHENTICATION_ERROR_MESSAGE,
-                DataverseException::AUTHENTICATION_ERROR_CODE,
-                $exception
-            );
-        }
-
-        if ($message !== null && in_array($statusCode, [400, 404, 409, 422], true)) {
-            return new DataverseException($message, $statusCode, $exception);
-        }
-
-        return new DataverseException(
-            self::SERVICE_UNAVAILABLE_MESSAGE,
-            self::SERVICE_UNAVAILABLE_STATUS,
-            $exception
-        );
-    }
-
-    private function getJsonErrorMessage($response): ?string
-    {
-        $responseBody = json_decode((string) $response->getBody(), true);
-        if (!is_array($responseBody) || !isset($responseBody['message']) || !is_string($responseBody['message'])) {
-            return null;
-        }
-
-        return $responseBody['message'];
-    }
-
-    private function isAuthenticationError(int $statusCode, ?string $message): bool
-    {
-        if ($message === null || !in_array($statusCode, [401, 403], true)) {
-            return false;
-        }
-
-        if ($statusCode === 401) {
-            return true;
-        }
-
-        return (bool) preg_match(
-            '/(?:bad|invalid|expired).*(?:api key|token)|(?:api key|token).*(?:bad|invalid|expired)/i',
-            $message
-        );
-    }
 }

@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+import('plugins.generic.dataverse.classes.exception.DataverseException');
 
 class DataverseMetadata
 {

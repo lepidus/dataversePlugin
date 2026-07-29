@@ -243,6 +243,30 @@ class DataverseActionsTest extends PKPTestCase
         }
     }
 
+    public function testUnauthorizedJsonResponseIsReportedAsInvalidOrExpiredToken(): void
+    {
+        $mockHandler = new MockHandler([
+            new RequestException(
+                '401 Unauthorized',
+                new Request('GET', 'test'),
+                new Response(401, ['Content-Type' => 'application/json'], '{"status":"ERROR","message":"Bad API key"}')
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
+            ->getMockForAbstractClass();
+
+        try {
+            $actions->nativeAPIRequest('GET', 'test');
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(401, $exception->getCode());
+            $this->assertSame('plugins.generic.dataverse.error.invalidToken', $exception->getUserMessageKey());
+        }
+    }
+
     public function testJsonPermissionErrorIsNotReportedAsInvalidToken(): void
     {
         $mockHandler = new MockHandler([

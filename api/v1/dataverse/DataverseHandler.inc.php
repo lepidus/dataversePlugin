@@ -1,5 +1,7 @@
 <?php
 
+import('plugins.generic.dataverse.classes.exception.DataverseException');
+
 import('lib.pkp.classes.handler.APIHandler');
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 

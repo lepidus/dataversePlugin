@@ -1,5 +1,7 @@
 <?php
 
+import('plugins.generic.dataverse.classes.exception.DataverseException');
+
 define('DATA_STATEMENT_TYPE_IN_MANUSCRIPT', 0x000000001);
 define('DATA_STATEMENT_TYPE_REPO_AVAILABLE', 0x000000002);
 define('DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED', 0x000000003);

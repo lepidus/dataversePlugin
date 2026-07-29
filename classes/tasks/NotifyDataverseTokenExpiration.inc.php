@@ -3,6 +3,7 @@
 import('lib.pkp.classes.scheduledTask.ScheduledTask');
 import('lib.pkp.classes.mail.MailTemplate');
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+import('plugins.generic.dataverse.classes.exception.DataverseException');
 
 class NotifyDataverseTokenExpiration extends ScheduledTask
 {

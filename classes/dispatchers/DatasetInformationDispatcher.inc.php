@@ -1,5 +1,7 @@
 <?php
 
+import('plugins.generic.dataverse.classes.exception.DataverseException');
+
 Import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 
 class DatasetInformationDispatcher extends DataverseDispatcher
