@@ -49,8 +49,20 @@ Cypress.Commands.add('advanceSubmissionSteps', function (numberOfSteps) {
 });
 
 Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, keyword) {
+	cy.intercept('GET', '**/api/v1/vocabs*').as('getKeywordSuggestions');
 	cy.get(inputSelector).type(keyword, {delay: 0});
-	cy.contains('[class*="autosuggest__results"]', keyword).click();
+	cy.wait('@getKeywordSuggestions').its('response.statusCode').should('eq', 200);
+	cy.get('body').then(($body) => {
+		const matchingSuggestions = $body
+			.find('[class*="autosuggest__results"]')
+			.filter((index, element) => element.textContent.trim() === keyword);
+
+		if (matchingSuggestions.length) {
+			cy.wrap(matchingSuggestions.first()).click();
+		} else {
+			cy.get(inputSelector).type('{enter}', {delay: 0});
+		}
+	});
 	cy.get(selectedSelector).within(() => {
 		cy.contains('.pkpAutosuggest__selection', keyword);
 	});
