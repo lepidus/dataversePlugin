@@ -54,7 +54,7 @@ Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, ke
 	cy.wait('@getKeywordSuggestions').its('response.statusCode').should('eq', 200);
 	cy.get('body').then(($body) => {
 		const matchingSuggestions = $body
-			.find('[class*="autosuggest__results"]')
+			.find('[class*="autosuggest__results"] *')
 			.filter((index, element) => element.textContent.trim() === keyword);
 
 		if (matchingSuggestions.length) {
