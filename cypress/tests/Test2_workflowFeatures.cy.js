@@ -107,8 +107,13 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.findSubmission('myQueue', submissionData.title);
 
         cy.get('#publication-button').click();
+        cy.intercept({
+            method: 'GET',
+            url: '**/api/v1/datasets/*/files*'
+        }).as('loadDatasetFiles');
         cy.get('#datasetTab-button').click();
         cy.get('#dataset_files-button').click();
+		cy.wait('@loadDatasetFiles').its('response.statusCode').should('eq', 200);
 
 		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
         cy.get('#datasetFiles').contains('a', 'LEIAME.pdf');
@@ -125,13 +130,14 @@ describe('Dataverse Plugin - Workflow features', function () {
 		});
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
+		cy.wait('@loadDatasetFiles').its('response.statusCode').should('eq', 200);
 
         cy.get('#datasetFiles').contains('example.json');
         cy.get('#datasetTab-button .pkpBadge').contains('3');
 
         cy.get('.listPanel__item:contains("example.json") button:contains("Delete")').click();
 		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
-        cy.waitJQuery();
+		cy.wait('@loadDatasetFiles').its('response.statusCode').should('eq', 200);
 
         cy.get('#datasetFiles').should('not.include.text', 'example.json');
         cy.get('#datasetTab-button .pkpBadge').contains('2');
