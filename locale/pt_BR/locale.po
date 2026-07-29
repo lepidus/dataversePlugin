@@ -152,6 +152,9 @@ msgstr "Erro ao obter dados de pesquisa no Dataverse: {$error}"
 msgid "plugins.generic.dataverse.error.unavailable"
 msgstr "O repositório de dados de pesquisa está temporariamente indisponível. O fluxo editorial continua disponível, mas as ações do Dataverse ficam desabilitadas até a conexão ser restabelecida."
 
+msgid "plugins.generic.dataverse.error.invalidToken"
+msgstr "O token de API do Dataverse expirou ou não é mais válido. Solicite a um gerente da revista ou administrador do sistema que o atualize nas configurações do plugin."
+
 msgid "plugins.generic.dataverse.error.retry"
 msgstr "Tentar novamente"
 

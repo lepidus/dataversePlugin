@@ -22,6 +22,7 @@ abstract class DataverseActions
     protected const ONE_DAY_SECONDS = 24 * 60 * 60;
     private const SERVICE_UNAVAILABLE_MESSAGE = 'Dataverse service is temporarily unavailable.';
     private const SERVICE_UNAVAILABLE_STATUS = 503;
+    private const AUTHENTICATION_ERROR_MESSAGE = 'Dataverse API token is invalid or expired.';
 
     public function __construct(
         ?DataverseConfiguration $configuration = null,
@@ -127,6 +128,14 @@ abstract class DataverseActions
         $statusCode = $response->getStatusCode();
         $message = $this->getJsonErrorMessage($response);
 
+        if ($this->isAuthenticationError($statusCode, $message)) {
+            return new DataverseException(
+                self::AUTHENTICATION_ERROR_MESSAGE,
+                DataverseException::AUTHENTICATION_ERROR_CODE,
+                $exception
+            );
+        }
+
         if ($message !== null && in_array($statusCode, [400, 404, 409, 422], true)) {
             return new DataverseException($message, $statusCode, $exception);
         }
@@ -146,5 +155,21 @@ abstract class DataverseActions
         }
 
         return $responseBody['message'];
+    }
+
+    private function isAuthenticationError(int $statusCode, ?string $message): bool
+    {
+        if ($message === null || !in_array($statusCode, [401, 403], true)) {
+            return false;
+        }
+
+        if ($statusCode === 401) {
+            return true;
+        }
+
+        return (bool) preg_match(
+            '/(?:bad|invalid|expired).*(?:api key|token)|(?:api key|token).*(?:bad|invalid|expired)/i',
+            $message
+        );
     }
 }

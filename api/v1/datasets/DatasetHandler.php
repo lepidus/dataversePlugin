@@ -154,7 +154,7 @@ class DatasetHandler extends APIHandler
 
             return $response
                 ->withStatus($e->getCode())
-                ->withJsonError('plugins.generic.dataverse.error.unavailable');
+                ->withJsonError($e->getUserMessageKey());
         }
 
         return $response->withJson($dataset->getAllData(), 200);
@@ -353,7 +353,7 @@ class DatasetHandler extends APIHandler
             error_log('Error getting dataset files: ' . $e->getMessage());
             return $response
                 ->withStatus($e->getCode())
-                ->withJsonError('plugins.generic.dataverse.error.unavailable');
+                ->withJsonError($e->getUserMessageKey());
         }
 
         $fileActionApiUrl = $request
@@ -391,7 +391,7 @@ class DatasetHandler extends APIHandler
             error_log('Error getting citation: ' . $e->getMessage());
             return $response
                 ->withStatus($e->getCode())
-                ->withJsonError('plugins.generic.dataverse.error.unavailable');
+                ->withJsonError($e->getUserMessageKey());
         }
 
         return $response->withJson(['citation' => $citationData['citation']], 200);
@@ -409,7 +409,7 @@ class DatasetHandler extends APIHandler
             error_log('Error getting dataset locks: ' . $e->getMessage());
             return $response
                 ->withStatus($e->getCode())
-                ->withJsonError('plugins.generic.dataverse.error.unavailable');
+                ->withJsonError($e->getUserMessageKey());
         }
 
         foreach ($datasetLocks as $lock) {
