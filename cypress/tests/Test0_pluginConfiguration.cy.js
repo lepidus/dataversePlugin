@@ -8,6 +8,12 @@ describe('Plugin configuration', function () {
 		cy.waitJQuery();
 		cy.get('#plugins-button').click();
 
+		cy.get('input[id^=select-cell-dataverseplugin]').then(($plugin) => {
+			if (!$plugin.is(':checked')) {
+				cy.wrap($plugin).check();
+				cy.get('input[id^=select-cell-dataverseplugin]').should('be.checked');
+			}
+		});
 		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
 		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
 
