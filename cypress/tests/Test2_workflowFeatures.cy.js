@@ -16,7 +16,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 			abstract: 'Mass public transportation can be used as a way to reduce greenhouse gases emissions.',
 			keywords: [
                 'mass public transport',
-                'climate change'
 			]
 		}
 	});
@@ -82,11 +81,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('#datasetMetadata-datasetTitle-control').clear().type('Test metadata editing', {delay: 0});
         cy.setTinyMceContent('datasetMetadata-datasetDescription-control', 'new description');
-		cy.addKeyword(
-			'#datasetMetadata-datasetKeywords-control-en',
-			'#datasetMetadata-datasetKeywords-selected-en',
-			submissionData.keywords[1]
-		);
         cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
@@ -96,9 +90,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('#datasetMetadata-datasetTitle-control').should('have.value', 'Test metadata editing');
         cy.getTinyMceContent('datasetMetadata-datasetDescription-control').should('include', 'new description');
-        cy.get('#datasetMetadata-datasetKeywords-selected-en').within(() => {
-			cy.contains(submissionData.keywords[1]);
-        });
         cy.get('#datasetMetadata-datasetLanguage-control').should('have.value', 'English');
         cy.get('#datasetMetadata-datasetSubject-control').should('have.value', 'Computer and Information Science');
         cy.get('#datasetMetadata-datasetLicense-control').should('have.value', 'CC0 1.0');

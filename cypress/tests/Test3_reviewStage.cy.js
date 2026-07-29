@@ -9,7 +9,6 @@ describe('Dataverse Plugin - Features around review stage', function () {
 			abstract: 'Recent evidence show that art can have a great impact in improving mental well-being.',
 			keywords: [
                 'art',
-				'well-being',
 			]
 		}
 	});

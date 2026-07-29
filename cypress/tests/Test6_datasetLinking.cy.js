@@ -12,8 +12,6 @@ describe('Dataverse Plugin - Dataset linking', function () {
 			abstract: 'Containment plans are essential to manage disasters when they happen.',
 			keywords: [
 				'containment plans',
-				'disaster management',
-				'disasters'
 			]
 		}
 		previousSubmission = 'Sustainable Cities: Co-benefits of mass public transportation in climate change mitigation';

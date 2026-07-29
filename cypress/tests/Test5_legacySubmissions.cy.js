@@ -7,7 +7,7 @@ describe('Dataverse Plugin - Legacy submissions', function () {
 		submissionData = {
 			title: 'The evolution of metro systems in Brazil',
 			abstract: 'An example abstract.',
-			keywords: ['Metro', 'Brazil'],
+			keywords: ['Metro'],
 		}
 	});
 
