@@ -151,7 +151,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'base64',
 			});
 		});
-		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetFiles').contains('Data_detailing.pdf');
@@ -165,7 +164,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'utf8',
 			});
 		});
-		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetFiles').contains('a', 'Data_detailing.pdf');
@@ -206,7 +204,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'base64',
 			});
 		});
-		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetFiles').contains('a', 'LEIAME.pdf');
@@ -230,7 +227,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'utf8',
 			});
 		});
-		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');

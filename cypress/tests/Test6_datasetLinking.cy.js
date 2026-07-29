@@ -46,7 +46,6 @@ describe('Dataverse Plugin - Dataset linking', function () {
 				encoding,
 			});
 		});
-		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
 	}

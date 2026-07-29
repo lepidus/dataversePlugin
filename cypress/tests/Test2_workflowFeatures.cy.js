@@ -137,7 +137,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 				encoding: 'utf8',
 			});
 		});
-		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
 
@@ -186,7 +185,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 				encoding: 'utf8',
 			});
 		});
-		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetMetadata-datasetLanguage-control').select('English');
@@ -205,7 +203,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 				encoding: 'base64'
 			});
 		});
-		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
@@ -293,7 +290,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 				encoding: 'utf8',
 			});
 		});
-		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.contains('button', 'Add research data').click();
@@ -305,7 +301,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 				encoding: 'base64'
 			});
 		});
-		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
 

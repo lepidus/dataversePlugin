@@ -42,8 +42,3 @@ Cypress.Commands.add('advanceSubmissionSteps', function (numberOfSteps) {
 		});
 	}
 });
-
-Cypress.Commands.add('waitForDatasetFileUpload', function () {
-	cy.get('#datasetFileForm-datasetFile-hiddenFileId')
-		.should('not.have.value', '');
-});
