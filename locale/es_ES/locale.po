@@ -138,6 +138,12 @@ msgstr "Los datos de investigación no pueden consistir únicamente en el archiv
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro al obtener datos de investigación en Dataverse: {$error}"
 
+msgid "plugins.generic.dataverse.error.unavailable"
+msgstr "El repositorio de datos de investigación no está disponible temporalmente. El flujo editorial continúa disponible, pero las acciones de Dataverse permanecen deshabilitadas hasta que se restablezca la conexión."
+
+msgid "plugins.generic.dataverse.error.retry"
+msgstr "Intentar de nuevo"
+
 msgid "plugins.generic.dataverse.error.datasetDeposit"
 msgstr "Erro al depositar datos de investigación en Dataverse: {$error}"
 

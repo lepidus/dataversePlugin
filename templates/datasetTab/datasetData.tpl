@@ -1,4 +1,4 @@
-<span v-if="datasetIsLoading">
+<span v-if="datasetIsLoading && !dataverseIsUnavailable">
     <spinner></spinner>
     {translate key="plugins.generic.dataverse.metadataForm.loadingDataset"}
 </span>
@@ -12,7 +12,7 @@
                 id="deleteDatasetButton"
                 @click="openDeleteDatasetModal"
                 :is-warnable="true"
-                :disabled="datasetIsPublished || !canEditPublication"
+                :disabled="dataverseIsUnavailable || datasetIsPublished || !canEditPublication"
             >
                 {translate key="plugins.generic.dataverse.researchData.delete"}
             </pkp-button>
@@ -21,6 +21,7 @@
                     id="disassociateDatasetButton"
                     @click="openDisassociateDatasetModal"
                     :is-warnable="true"
+                    :disabled="dataverseIsUnavailable"
                 >
                     {translate key="plugins.generic.dataverse.researchData.disassociate"}
                 </pkp-button>
@@ -28,13 +29,19 @@
                     v-if="!datasetIsPublished"
                     id="publishDatasetButton"
                     @click="openPublishDatasetModal"
-                    :disabled="datasetIsPublished"
+                    :disabled="dataverseIsUnavailable || datasetIsPublished"
                 >
                     {translate key="plugins.generic.dataverse.researchData.publish"}
                 </pkp-button>
             {/if}
         </template>
     </pkp-header>
+    <div v-if="dataverseIsUnavailable" class="pkp_notification pkp_notification_warning" role="status">
+        <p>{translate key="plugins.generic.dataverse.error.unavailable"}</p>
+        <pkp-button @click="retryDataverseRequests">
+            {translate key="plugins.generic.dataverse.error.retry"}
+        </pkp-button>
+    </div>
     <div id="datasetLabels">
         <span class="datasetLabel datasetLabelDraft" v-if="dataset && !datasetIsPublished">
             {translate key="plugins.generic.dataverse.researchData.label.draft"}
@@ -50,7 +57,7 @@
         <p id="loadingDatasetCitation" v-if="dataset && !datasetCitation">{{ loadingCitationMsg }}</p>
         <p id="datasetCitation" v-if="datasetCitation" v-html="datasetCitation"></p>
     </span>
-    <tabs label="Dataset data">
+    <tabs v-if="!dataverseIsUnavailable" label="Dataset data">
         <tab
             id="dataset_metadata"
             label={translate key="plugins.generic.dataverse.researchData.metadata"}
@@ -70,7 +77,7 @@
                             <pkp-button 
                                 ref="fileModalButton"
                                 @click="openAddFileModal"
-                                :disabled="datasetIsPublished"
+                                :disabled="dataverseIsUnavailable || datasetIsPublished"
                             >
                                 {{ components.datasetFiles.addFileLabel }}
                             </pkp-button>
@@ -89,7 +96,7 @@
                                 <pkp-button 
                                     @click="openDeleteFileModal(item.item.id)"
                                     class="pkpButton--isWarnable"
-                                    :disabled="datasetIsPublished || !canEditPublication"
+                                    :disabled="dataverseIsUnavailable || datasetIsPublished || !canEditPublication"
                                 >
                                     {{ __('common.delete') }}
                                 </pkp-button>

@@ -135,15 +135,11 @@ class DatasetHandler extends APIHandler
                 DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
             }
 
-            $error = $e->getMessage();
-            $message = 'plugins.generic.dataverse.error.getFailed';
+            error_log('Dataverse API error: ' . $e->getMessage());
 
-            error_log('Dataverse API error: ' . $error);
-
-            return $response->withStatus(403)->withJsonError(
-                $message,
-                ['error' => $error]
-            );
+            return $response
+                ->withStatus($e->getCode())
+                ->withJsonError('plugins.generic.dataverse.error.unavailable');
         }
 
         return $response->withJson($dataset->getAllData(), 200);
@@ -327,7 +323,9 @@ class DatasetHandler extends APIHandler
             $datasetFiles = $dataverseClient->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
         } catch (DataverseException $e) {
             error_log('Error getting dataset files: ' . $e->getMessage());
-            return $response->withStatus($e->getCode())->withJson(['error' => $e->getMessage()]);
+            return $response
+                ->withStatus($e->getCode())
+                ->withJsonError('plugins.generic.dataverse.error.unavailable');
         }
 
         $items = array_map(function (DatasetFile $file) {
@@ -353,7 +351,9 @@ class DatasetHandler extends APIHandler
             $citationData = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId());
         } catch (DataverseException $e) {
             error_log('Error getting citation: ' . $e->getMessage());
-            return $response->withStatus($e->getCode())->withJsonError('api.error.researchDataCitationNotFound');
+            return $response
+                ->withStatus($e->getCode())
+                ->withJsonError('plugins.generic.dataverse.error.unavailable');
         }
 
         return $response->withJson(['citation' => $citationData['citation']], 200);
@@ -369,7 +369,9 @@ class DatasetHandler extends APIHandler
             $datasetLocks = $dataverseClient->getDatasetActions()->getDatasetLocks($datasetId);
         } catch (DataverseException $e) {
             error_log('Error getting dataset locks: ' . $e->getMessage());
-            return $response->withStatus($e->getCode());
+            return $response
+                ->withStatus($e->getCode())
+                ->withJsonError('plugins.generic.dataverse.error.unavailable');
         }
 
         foreach ($datasetLocks as $lock) {
