@@ -42,17 +42,7 @@ Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, ke
 	cy.intercept('GET', '**/api/v1/vocabs*').as('getKeywordSuggestions');
 	cy.get(inputSelector).type(keyword, {delay: 0});
 	cy.wait('@getKeywordSuggestions').its('response.statusCode').should('eq', 200);
-	cy.get('body').then(($body) => {
-		const matchingSuggestions = $body
-			.find('[class*="autosuggest__results"] *')
-			.filter((index, element) => element.textContent.trim() === keyword);
-
-		if (matchingSuggestions.length) {
-			cy.wrap(matchingSuggestions.first()).click();
-		} else {
-			cy.get(inputSelector).type('{enter}', {delay: 0});
-		}
-	});
+	cy.contains('.autosuggest__results-item', keyword).click();
 	cy.get(selectedSelector).within(() => {
 		cy.contains('.pkpAutosuggest__selection', keyword);
 	});
