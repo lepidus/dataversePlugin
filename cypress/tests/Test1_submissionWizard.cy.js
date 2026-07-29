@@ -266,12 +266,23 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('The subject of the research data is required');
         
         cy.get('.pkpSteps__step__label:contains("For the Editors")').click();
+        cy.intercept('**/api/v1/submissions/**', (request) => {
+            const isMutation = ['POST', 'PUT', 'PATCH'].includes(request.method);
+            const isSubmissionValidation = /\/submit(\?.*)?$/.test(request.url);
+            if (isMutation && !isSubmissionValidation) {
+                request.alias = 'saveDatasetMetadata';
+            }
+        });
         cy.get('select[name="datasetLanguage"]').select('French');
         cy.get('select[name="datasetSubject"]').select('Earth and Environmental Sciences');
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
         cy.get('select[name="datasetRelationType"]').select('Is Supplemented By');
 
         cy.advanceSubmissionSteps(1);
+        cy.wait('@saveDatasetMetadata').then((interception) => {
+            expect(interception.request.method).to.be.oneOf(['POST', 'PUT', 'PATCH']);
+            expect(interception.response.statusCode).to.eq(200);
+        });
         cy.get('div:contains("The subject of the research data is required")').should('not.exist');
         cy.contains('French');
         cy.contains('Earth and Environmental Sciences');
