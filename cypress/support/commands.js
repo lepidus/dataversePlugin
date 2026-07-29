@@ -42,17 +42,18 @@ let keywordSuggestionRequest = 0;
 
 Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, keyword, selectSuggestion = true) {
 	const requestAlias = `getKeywordSuggestions${++keywordSuggestionRequest}`;
-	cy.intercept('GET', '**/api/v1/vocabs*').as(requestAlias);
+	if (selectSuggestion) {
+		cy.intercept('GET', '**/api/v1/vocabs*').as(requestAlias);
+	}
 	cy.get(inputSelector).type(keyword, {delay: 0});
-	cy.wait(`@${requestAlias}`).then((interception) => {
-		expect(interception.response.statusCode).to.eq(200);
-
-		if (selectSuggestion) {
+	if (selectSuggestion) {
+		cy.wait(`@${requestAlias}`).then((interception) => {
+			expect(interception.response.statusCode).to.eq(200);
 			cy.contains('.autosuggest__results-item', keyword).click();
-		} else {
-			cy.get(inputSelector).type('{enter}', {delay: 0});
-		}
-	});
+		});
+	} else {
+		cy.get(inputSelector).type('{enter}', {delay: 0});
+	}
 	cy.get(selectedSelector).within(() => {
 		cy.contains('.pkpAutosuggest__selection', keyword);
 	});
