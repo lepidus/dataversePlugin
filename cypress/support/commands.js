@@ -24,16 +24,6 @@ Cypress.Commands.add('changeAuthorEditPermissionOnPublication', function(usernam
 	cy.logout();
 });
 
-Cypress.Commands.add('waitDataStatementTabLoading', function () {
-	cy.intercept('GET', '**/api/v1/dataverse/dataverseName*').as('getDataverseNameRequest');
-	cy.wait('@getDataverseNameRequest', {timeout:10000});
-});
-
-Cypress.Commands.add('waitDatasetTabLoading', function () {
-	cy.intercept('GET', /\/api\/v1\/datasets\/\d+\/citation/).as('getDatasetRequest');
-	cy.wait('@getDatasetRequest', {timeout:10000});
-});
-
 Cypress.Commands.add('advanceSubmissionSteps', function (numberOfSteps) {
 	for (let step = 0; step < numberOfSteps; step++) {
 		cy.location('hash').then((currentHash) => {

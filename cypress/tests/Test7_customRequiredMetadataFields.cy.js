@@ -194,8 +194,6 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submission.title);
         
-        cy.waitDatasetTabLoading();
-
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 

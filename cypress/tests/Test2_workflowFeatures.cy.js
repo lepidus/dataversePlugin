@@ -30,8 +30,6 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
-        cy.waitDataStatementTabLoading();
-
         cy.get('#publication-button').click();
         cy.contains('button', 'Data statement').click();
 
@@ -67,8 +65,6 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
-        cy.waitDatasetTabLoading();
-
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
@@ -121,8 +117,6 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
 
-        cy.waitDatasetTabLoading();
-
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
         cy.get('#dataset_files-button').click();
@@ -157,8 +151,6 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
-        cy.waitDatasetTabLoading();
-
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
@@ -173,8 +165,6 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
-        cy.waitDataStatementTabLoading();
-
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
@@ -236,8 +226,6 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
 
-        cy.waitDatasetTabLoading();
-
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
 
@@ -253,8 +241,6 @@ describe('Dataverse Plugin - Workflow features', function () {
     it('Editor can delete research data in workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('active', submissionData.title);
-
-        cy.waitDatasetTabLoading();
 
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
@@ -277,8 +263,6 @@ describe('Dataverse Plugin - Workflow features', function () {
     it('Editor can upload research data in workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('active', submissionData.title);
-
-        cy.waitDataStatementTabLoading();
 
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
@@ -318,8 +302,6 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('active', submissionData.title);
         
-        cy.waitDatasetTabLoading();
-
         if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
 			cy.get('#workflow-button').click();
             
@@ -368,8 +350,6 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('archive', submissionData.title);
 
-        cy.waitDatasetTabLoading();
-
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
@@ -397,8 +377,6 @@ describe('Dataverse Plugin - Workflow features', function () {
     it('Publishing of submission new version do not publish dataset', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('archive', submissionData.title);
-
-        cy.waitDatasetTabLoading();
 
         cy.get('#publication-button').click();
         cy.contains('button', 'Create New Version').click();

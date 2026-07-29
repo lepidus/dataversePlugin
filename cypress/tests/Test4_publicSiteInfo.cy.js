@@ -26,8 +26,6 @@ describe('Dataverse Plugin - Information displayed in public site', function () 
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('myQueue', secondSubmissionTitle);
 
-        cy.waitDataStatementTabLoading();
-
         cy.get('#workflow-button').click();
         cy.clickDecision('Send To Production');
         cy.recordDecisionSendToProduction(['Catherine Kwantes'], []);

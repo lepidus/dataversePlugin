@@ -53,7 +53,6 @@ describe('Dataverse Plugin - Dataset linking', function () {
 	function accessDatasetTab(submissionTitle, username, tab = 'active') {
 		cy.login(username, null, 'publicknowledge');
 		cy.findSubmission(tab, submissionTitle);
-		cy.waitDatasetTabLoading();
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
 	}
@@ -61,7 +60,6 @@ describe('Dataverse Plugin - Dataset linking', function () {
 	function accessEmptyDatasetTab(submissionTitle, username, tab = 'active') {
 		cy.login(username, null, 'publicknowledge');
 		cy.findSubmission(tab, submissionTitle);
-		cy.waitDataStatementTabLoading();
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
 	}
@@ -174,7 +172,6 @@ describe('Dataverse Plugin - Dataset linking', function () {
 			cy.contains('button', 'Associate').click();
 		});
 
-		cy.waitDatasetTabLoading();
 		cy.contains('h1', 'Research data');
 		cy.contains('a', currentDatasetPersistentId.replace('doi:', 'https://doi.org/'));
 		cy.contains('button', 'Disassociate');
