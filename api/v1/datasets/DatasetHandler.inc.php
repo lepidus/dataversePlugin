@@ -133,6 +133,8 @@ class DatasetHandler extends APIHandler
         } catch (DataverseException $e) {
             if ($e->getCode() === 404) {
                 DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
+
+                return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
             }
 
             error_log('Dataverse API error: ' . $e->getMessage());
