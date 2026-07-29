@@ -217,6 +217,56 @@ class DataverseActionsTest extends PKPTestCase
         }
     }
 
+    public function testJsonAuthenticationErrorIsReportedAsInvalidOrExpiredToken(): void
+    {
+        $mockHandler = new MockHandler([
+            new RequestException(
+                '403 Forbidden',
+                new Request('GET', 'test'),
+                new Response(403, ['Content-Type' => 'application/json'], '{"status":"ERROR","message":"Bad API key"}')
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
+            ->getMockForAbstractClass();
+
+        try {
+            $actions->nativeAPIRequest('GET', 'test');
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(401, $exception->getCode());
+            $this->assertSame('Dataverse API token is invalid or expired.', $exception->getMessage());
+            $this->assertSame('plugins.generic.dataverse.error.invalidToken', $exception->getUserMessageKey());
+            $this->assertStringNotContainsString('Bad API key', $exception->getMessage());
+        }
+    }
+
+    public function testJsonPermissionErrorIsNotReportedAsInvalidToken(): void
+    {
+        $mockHandler = new MockHandler([
+            new RequestException(
+                '403 Forbidden',
+                new Request('GET', 'test'),
+                new Response(403, ['Content-Type' => 'application/json'], '{"status":"ERROR","message":"User is not permitted"}')
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
+            ->getMockForAbstractClass();
+
+        try {
+            $actions->nativeAPIRequest('GET', 'test');
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(503, $exception->getCode());
+            $this->assertSame('plugins.generic.dataverse.error.unavailable', $exception->getUserMessageKey());
+        }
+    }
+
     public function testRequestErrorWithoutResponseIsReportedAsServiceUnavailable(): void
     {
         $mockHandler = new MockHandler([

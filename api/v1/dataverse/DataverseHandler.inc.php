@@ -57,7 +57,7 @@ class DataverseHandler extends APIHandler
             error_log('Dataverse API error while getting dataverse name: ' . $e->getMessage());
             return $response
                 ->withStatus($e->getCode())
-                ->withJsonError('plugins.generic.dataverse.error.unavailable');
+                ->withJsonError($e->getUserMessageKey());
         }
     }
 
@@ -73,7 +73,7 @@ class DataverseHandler extends APIHandler
             error_log('Dataverse API error while getting root name: ' . $e->getMessage());
             return $response
                 ->withStatus($e->getCode())
-                ->withJsonError('plugins.generic.dataverse.error.unavailable');
+                ->withJsonError($e->getUserMessageKey());
         }
     }
 
@@ -88,7 +88,7 @@ class DataverseHandler extends APIHandler
             error_log('Dataverse API error while getting licenses: ' . $e->getMessage());
             return $response
                 ->withStatus($e->getCode())
-                ->withJsonError('plugins.generic.dataverse.error.unavailable');
+                ->withJsonError($e->getUserMessageKey());
         }
     }
 }

@@ -11,6 +11,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             datasetCitation: '',
             datasetInReview: false,
             dataverseIsUnavailable: false,
+            dataverseErrorMessage: '',
             fileFormErrors: [],
             hasDepositedDataset: false,
             datasetIsLoading: true,
@@ -63,10 +64,16 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         }
     },
     methods: {
-        markDataverseUnavailable() {
+        markDataverseUnavailable(xhr) {
             this.dataverseIsUnavailable = true;
             this.datasetIsLoading = false;
             this.datasetCitation = '';
+
+            if (xhr && xhr.status === 401) {
+                this.dataverseErrorMessage = this.__('plugins.generic.dataverse.error.invalidToken');
+            } else if (!this.dataverseErrorMessage) {
+                this.dataverseErrorMessage = this.__('plugins.generic.dataverse.error.unavailable');
+            }
 
             if (this.components.datasetMetadata) {
                 this.components.datasetMetadata.canSubmit = false;
@@ -79,6 +86,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 
         retryDataverseRequests() {
             this.dataverseIsUnavailable = false;
+            this.dataverseErrorMessage = '';
             this.getDataverseName();
             this.getDataverseLicenses();
 
@@ -276,8 +284,8 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 					self.rootDataverseName = r.rootDataverseName;
                     self.confirmPublishDatasetMessage = self.confirmPublishDatasetMessage.replace('{$serverName}', self.rootDataverseName);
 				},
-				error: function () {
-					self.markDataverseUnavailable();
+				error: function (xhr) {
+					self.markDataverseUnavailable(xhr);
 				},
 			});
         },
@@ -304,8 +312,8 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                     let termsOfUseFieldOption = datasetFileForm.fields[1].options[0];
                     termsOfUseFieldOption.label = termsOfUseFieldOption.label.replace('{$dataverseName}', self.dataverseName);
 				},
-				error: function () {
-					self.markDataverseUnavailable();
+				error: function (xhr) {
+					self.markDataverseUnavailable(xhr);
 				},
 			});
         },
@@ -329,8 +337,8 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         }
                     }
 				},
-				error: function () {
-					self.markDataverseUnavailable();
+				error: function (xhr) {
+					self.markDataverseUnavailable(xhr);
 				},
 			});
         },
@@ -350,7 +358,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         return;
                     }
 
-                    self.markDataverseUnavailable();
+                    self.markDataverseUnavailable(xhr);
                 },
                 complete() {
                     self.datasetIsLoading = false;
@@ -367,11 +375,11 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 url: this.components.datasetFiles.apiUrl,
                 type: 'GET',
                 _uuid: this.latestGetRequest,
-                error: function (r) {
+                error: function (xhr) {
                     if (self.latestGetRequest !== this._uuid) {
                         return;
                     }
-                    self.markDataverseUnavailable();
+                    self.markDataverseUnavailable(xhr);
                 },
                 success: function (r) {
                     if (self.latestGetRequest !== this._uuid) {
@@ -430,8 +438,8 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             $.ajax({
                 url: self.datasetPluginApiUrl+'/citation',
                 type: 'GET',
-                error: function () {
-                    self.markDataverseUnavailable();
+				error: function (xhr) {
+					self.markDataverseUnavailable(xhr);
                 },
                 success: (r) => {
                     self.datasetCitation = r.citation;
@@ -447,8 +455,8 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             $.ajax({
                 url: self.datasetPluginApiUrl+'/inReview?datasetId='+this.dataset.datasetId,
                 type: 'GET',
-                error: function () {
-                    self.markDataverseUnavailable();
+                error: function (xhr) {
+                    self.markDataverseUnavailable(xhr);
                 },
                 success: (r) => {
                     self.datasetInReview = r.inReview;

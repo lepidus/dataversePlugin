@@ -37,7 +37,7 @@
         </template>
     </pkp-header>
     <div v-if="dataverseIsUnavailable" class="pkp_notification pkp_notification_warning" role="status">
-        <p>{translate key="plugins.generic.dataverse.error.unavailable"}</p>
+        <p>{{ dataverseErrorMessage }}</p>
         <pkp-button @click="retryDataverseRequests">
             {translate key="plugins.generic.dataverse.error.retry"}
         </pkp-button>
