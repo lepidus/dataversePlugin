@@ -6,6 +6,8 @@ import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 
 class NotifyDataverseTokenExpiration extends ScheduledTask
 {
+    private const MANAGER_USER_GROUP_NAME_LOCALE_KEY = 'default.groups.name.manager';
+
     public function executeActions()
     {
         $dataverseClient = new DataverseClient();
@@ -56,7 +58,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         $recipients = [];
         $users = array_merge(
             $this->getUsersByRole(ROLE_ID_SITE_ADMIN, CONTEXT_SITE),
-            $this->getUsersByRole(ROLE_ID_MANAGER, $context->getId())
+            $this->getJournalManagerUsers($context->getId())
         );
 
         foreach ($users as $user) {
@@ -77,6 +79,44 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         return iterator_to_array(Services::get('user')->getMany([
             'contextId' => $contextId,
             'roleIds' => [$roleId]
+        ]));
+    }
+
+    protected function getJournalManagerUsers(int $contextId): array
+    {
+        foreach ($this->getManagerUserGroups($contextId) as $userGroup) {
+            if (
+                !$userGroup->getDefault()
+                || $userGroup->getData('nameLocaleKey') !== self::MANAGER_USER_GROUP_NAME_LOCALE_KEY
+            ) {
+                continue;
+            }
+
+            return $this->getUsersByUserGroup($userGroup->getId(), $contextId);
+        }
+
+        return [];
+    }
+
+    protected function getManagerUserGroups(int $contextId): array
+    {
+        $userGroupDao = DAORegistry::getDAO('UserGroupDAO');
+        $managerUserGroups = [];
+
+        foreach ($userGroupDao->getByContextId($contextId)->toArray() as $userGroup) {
+            if ((int) $userGroup->getRoleId() === ROLE_ID_MANAGER) {
+                $managerUserGroups[] = $userGroup;
+            }
+        }
+
+        return $managerUserGroups;
+    }
+
+    protected function getUsersByUserGroup(int $userGroupId, int $contextId): array
+    {
+        return iterator_to_array(Services::get('user')->getMany([
+            'contextId' => $contextId,
+            'userGroupIds' => [$userGroupId]
         ]));
     }
 

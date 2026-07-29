@@ -5,13 +5,20 @@ import('plugins.generic.dataverse.classes.tasks.NotifyDataverseTokenExpiration')
 
 class NotifyDataverseTokenExpirationTest extends PKPTestCase
 {
-    public function testRecipientsIncludeSiteAdminsPrimaryContactAndManagersWithoutDuplicates(): void
+    public function testRecipientsIncludeOnlyDefaultJournalManagersWithoutDuplicates(): void
     {
         $task = (new ReflectionClass(TestableNotifyDataverseTokenExpiration::class))
             ->newInstanceWithoutConstructor();
         $task->usersByRole = [
             ROLE_ID_SITE_ADMIN => [new TokenExpirationRecipientUser('Site Admin', 'admin@example.org')],
-            ROLE_ID_MANAGER => [
+        ];
+        $task->managerUserGroups = [
+            new TokenExpirationRecipientUserGroup(10, true, 'default.groups.name.editor'),
+            new TokenExpirationRecipientUserGroup(11, false, 'default.groups.name.manager'),
+            new TokenExpirationRecipientUserGroup(12, true, 'default.groups.name.manager'),
+        ];
+        $task->usersByUserGroup = [
+            12 => [
                 new TokenExpirationRecipientUser('Duplicate Admin', 'ADMIN@example.org'),
                 new TokenExpirationRecipientUser('Journal Manager', 'manager@example.org'),
             ],
@@ -27,15 +34,20 @@ class NotifyDataverseTokenExpirationTest extends PKPTestCase
         ], $recipients);
         $this->assertSame([
             [ROLE_ID_SITE_ADMIN, CONTEXT_SITE],
-            [ROLE_ID_MANAGER, 42],
         ], $task->roleRequests);
+        $this->assertSame([[ROLE_ID_MANAGER, 42]], $task->managerGroupRequests);
+        $this->assertSame([[12, 42]], $task->userGroupRequests);
     }
 }
 
 class TestableNotifyDataverseTokenExpiration extends NotifyDataverseTokenExpiration
 {
     public $usersByRole = [];
+    public $managerUserGroups = [];
+    public $usersByUserGroup = [];
     public $roleRequests = [];
+    public $managerGroupRequests = [];
+    public $userGroupRequests = [];
 
     public function getRecipients($context): array
     {
@@ -46,6 +58,47 @@ class TestableNotifyDataverseTokenExpiration extends NotifyDataverseTokenExpirat
     {
         $this->roleRequests[] = [$roleId, $contextId];
         return $this->usersByRole[$roleId] ?? [];
+    }
+
+    protected function getManagerUserGroups(int $contextId): array
+    {
+        $this->managerGroupRequests[] = [ROLE_ID_MANAGER, $contextId];
+        return $this->managerUserGroups;
+    }
+
+    protected function getUsersByUserGroup(int $userGroupId, int $contextId): array
+    {
+        $this->userGroupRequests[] = [$userGroupId, $contextId];
+        return $this->usersByUserGroup[$userGroupId] ?? [];
+    }
+}
+
+class TokenExpirationRecipientUserGroup
+{
+    private $id;
+    private $isDefault;
+    private $nameLocaleKey;
+
+    public function __construct(int $id, bool $isDefault, string $nameLocaleKey)
+    {
+        $this->id = $id;
+        $this->isDefault = $isDefault;
+        $this->nameLocaleKey = $nameLocaleKey;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getDefault(): bool
+    {
+        return $this->isDefault;
+    }
+
+    public function getData(string $key): string
+    {
+        return $key === 'nameLocaleKey' ? $this->nameLocaleKey : '';
     }
 }
 
