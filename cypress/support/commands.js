@@ -54,7 +54,9 @@ Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, ke
 	} else {
 		cy.get(inputSelector).type('{enter}', {delay: 0});
 	}
-	cy.get(selectedSelector).within(() => {
-		cy.contains('.pkpAutosuggest__selection', keyword);
-	});
+	if (selectSuggestion) {
+		cy.get(selectedSelector).within(() => {
+			cy.contains('.pkpAutosuggest__selection', keyword);
+		});
+	}
 });
