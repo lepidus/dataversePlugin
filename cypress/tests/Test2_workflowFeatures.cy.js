@@ -88,8 +88,11 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('#datasetMetadata-datasetTitle-control').clear().type('Test metadata editing', {delay: 0});
         cy.setTinyMceContent('datasetMetadata-datasetDescription-control', 'new description');
-        cy.get('#datasetMetadata-datasetKeywords-control-en').type(submissionData.keywords[2], {delay: 0});
-		cy.get('#datasetMetadata-datasetKeywords-control-en').type('{enter}', { delay: 0 });
+		cy.addKeyword(
+			'#datasetMetadata-datasetKeywords-control-en',
+			'#datasetMetadata-datasetKeywords-selected-en',
+			submissionData.keywords[2]
+		);
         cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');

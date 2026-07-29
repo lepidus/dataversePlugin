@@ -42,3 +42,8 @@ Cypress.Commands.add('advanceSubmissionSteps', function (numberOfSteps) {
 		});
 	}
 });
+
+Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, keyword) {
+	cy.get(inputSelector).type(keyword, {delay: 0}).type('{enter}', {delay: 0});
+	cy.get(selectedSelector).contains(keyword);
+});

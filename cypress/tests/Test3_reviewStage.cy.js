@@ -35,8 +35,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
 
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         submissionData.keywords.forEach(keyword => {
-            cy.get('#titleAbstract-keywords-control-en').type(keyword, {delay: 0});
-            cy.get('#titleAbstract-keywords-control-en').type('{enter}', {delay: 0});
+			cy.addKeyword('#titleAbstract-keywords-control-en', '#titleAbstract-keywords-selected-en', keyword);
         });
         cy.get('input[name="dataStatementTypes"][value=3]').click();
         cy.contains('button', 'Continue').click();
