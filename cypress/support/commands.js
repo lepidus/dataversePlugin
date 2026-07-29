@@ -37,8 +37,13 @@ Cypress.Commands.add('waitDatasetTabLoading', function () {
 Cypress.Commands.add('advanceSubmissionSteps', function (numberOfSteps) {
 	for (let step = 0; step < numberOfSteps; step++) {
 		cy.location('hash').then((currentHash) => {
+			cy.intercept('POST', /submissions\/\d+\/submit/).as('validateSubmissionStep');
 			cy.contains('button', 'Continue').click();
-			cy.location('hash').should('not.eq', currentHash);
+			cy.location('hash').should('not.eq', currentHash).then((newHash) => {
+				if (newHash === '#review') {
+					cy.wait('@validateSubmissionStep');
+				}
+			});
 		});
 	}
 });
