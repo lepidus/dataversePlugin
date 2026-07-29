@@ -4,6 +4,7 @@ namespace APP\plugins\generic\dataverse\classes\components\forms;
 
 use APP\core\Application;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use PKP\components\forms\FieldControlledVocab;
 use PKP\components\forms\FieldRichTextarea;

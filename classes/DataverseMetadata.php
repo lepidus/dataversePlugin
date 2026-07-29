@@ -5,6 +5,7 @@ namespace APP\plugins\generic\dataverse\classes;
 use APP\core\Application;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 class DataverseMetadata

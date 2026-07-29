@@ -2,18 +2,24 @@
 
 use APP\plugins\generic\dataverse\dataverseAPI\search\DataverseSearchBuilder;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Request;
 
 class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
 {
     private const DATAVERSE_URL = 'https://test.dataverse.org/dataverse/testDataverse';
     private const SEARCH_URL = 'https://test.dataverse.org/api/search?';
 
-    private function getDataverseSearchBuilder(): DataverseSearchBuilder
+    private function getDataverseSearchBuilder(?Client $httpClient = null): DataverseSearchBuilder
     {
         $configuration = new DataverseConfiguration();
-        $httpClient = new \GuzzleHttp\Client();
+        $httpClient = $httpClient ?? new Client();
 
         $configuration->setDataverseUrl(self::DATAVERSE_URL);
+        $configuration->setAPIToken('testToken');
 
         return new DataverseSearchBuilder($configuration, $httpClient);
     }
@@ -119,6 +125,26 @@ class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
         $this->assertGreaterThan(1, count($searchUrls));
         foreach ($searchUrls as $searchUrl) {
             $this->assertStringContainsString(self::SEARCH_URL, $searchUrl);
+        }
+    }
+
+    public function testConnectionTimeoutIsReportedAsServiceUnavailable(): void
+    {
+        $mockHandler = new MockHandler([
+            new ConnectException(
+                'Connection timed out with infrastructure details',
+                new Request('GET', self::SEARCH_URL)
+            )
+        ]);
+        $searchBuilder = $this->getDataverseSearchBuilder(new Client(['handler' => $mockHandler]));
+
+        try {
+            $searchBuilder->search();
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(503, $exception->getCode());
+            $this->assertSame('plugins.generic.dataverse.error.unavailable', $exception->getUserMessageKey());
+            $this->assertStringNotContainsString('infrastructure details', $exception->getMessage());
         }
     }
 }
