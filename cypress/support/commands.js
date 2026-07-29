@@ -53,7 +53,10 @@ Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, ke
 		});
 		cy.get(inputSelector).should('have.value', '');
 	} else {
-		cy.get(inputSelector).type('{enter}', {delay: 0});
+		cy.get(inputSelector)
+			.type('{downarrow}', {delay: 0})
+			.should('have.attr', 'aria-activedescendant')
+			.type('{enter}', {delay: 0});
 	}
 	cy.get(selectedSelector).within(() => {
 		cy.contains('.pkpAutosuggest__selection', keyword);
