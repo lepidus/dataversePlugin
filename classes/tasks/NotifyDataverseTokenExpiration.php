@@ -4,6 +4,7 @@ namespace APP\plugins\generic\dataverse\classes\tasks;
 
 use PKP\scheduledTask\ScheduledTask;
 use PKP\mail\Mailable;
+use PKP\security\Role;
 use APP\core\Application;
 use APP\facades\Repo;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
@@ -43,14 +44,14 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
             'DATAVERSE_TOKEN_EXPIRATION'
         );
 
-        $admin = $this->getAdminUser($context->getId());
-        if (!$admin) {
+        $recipients = $this->getNotificationRecipients($context);
+        if (empty($recipients)) {
             return;
         }
 
         $email = new Mailable();
         $email->from($context->getData('contactEmail'), $context->getData('contactName'));
-        $email->to([['name' => $admin->getFullName(), 'email' => $admin->getEmail()]]);
+        $email->to($recipients);
         $email->subject($emailTemplate->getLocalizedData('subject'));
 
         $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
@@ -64,38 +65,47 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         Mail::send($email);
     }
 
-    private function getAdminUser($contextId)
+    protected function getNotificationRecipients($context): array
     {
-        $applicationName = Application::get()->getName();
-        $adminEnAbbrev = ($applicationName == 'ojs2' ? 'jm' : 'psm');
+        $recipients = [];
+        $users = array_merge(
+            $this->getUsersByRole(Role::ROLE_ID_SITE_ADMIN, Application::CONTEXT_SITE),
+            $this->getUsersByRole(Role::ROLE_ID_MANAGER, $context->getId())
+        );
 
-        $adminUserGroup = $this->getUserGroupByAbbrev($contextId, $adminEnAbbrev);
-        if (!$adminUserGroup) {
-            return null;
+        foreach ($users as $user) {
+            $this->addRecipient($recipients, $user->getFullName(), $user->getEmail());
         }
 
-        $adminUsers = Repo::user()->getCollector()
-            ->filterByUserGroupIds([$adminUserGroup->getId()])
-            ->getMany()
-            ->toArray();
+        $this->addRecipient(
+            $recipients,
+            $context->getData('contactName'),
+            $context->getData('contactEmail')
+        );
 
-        return array_shift($adminUsers);
+        return array_values($recipients);
     }
 
-    private function getUserGroupByAbbrev(int $contextId, string $abbrev)
+    protected function getUsersByRole(int $roleId, int $contextId): array
     {
-        $contextUserGroups = Repo::userGroup()->getCollector()
+        return Repo::user()->getCollector()
             ->filterByContextIds([$contextId])
-            ->getMany();
+            ->filterByRoleIds([$roleId])
+            ->getMany()
+            ->toArray();
+    }
 
-        foreach ($contextUserGroups as $userGroup) {
-            $userGroupAbbrev = strtolower($userGroup->getData('abbrev', 'en'));
-
-            if ($userGroupAbbrev === $abbrev) {
-                return $userGroup;
-            }
+    private function addRecipient(array &$recipients, ?string $name, ?string $email): void
+    {
+        $email = trim((string) $email);
+        $recipientKey = strtolower($email);
+        if ($email === '' || isset($recipients[$recipientKey])) {
+            return;
         }
 
-        return null;
+        $recipients[$recipientKey] = [
+            'name' => (string) $name,
+            'email' => $email,
+        ];
     }
 }
