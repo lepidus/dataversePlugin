@@ -87,12 +87,14 @@ class DataverseConfiguration extends DataObject
 
     public function getDataverseServerUrl(): string
     {
-        preg_match(
-            '/https:\/\/(.)*?(?=\/)/',
-            $this->getDataverseUrl(),
-            $matches
-        );
-        return $matches[0];
+        $parts = parse_url($this->getDataverseUrl());
+        $serverUrl = $parts['scheme'] . '://' . $parts['host'];
+
+        if (isset($parts['port'])) {
+            $serverUrl .= ':' . $parts['port'];
+        }
+
+        return $serverUrl;
     }
 
     public function getDataverseCollection(): string

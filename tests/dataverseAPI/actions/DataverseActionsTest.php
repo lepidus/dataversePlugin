@@ -15,6 +15,8 @@ use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfig
 class DataverseActionsTest extends PKPTestCase
 {
     private $configuration;
+    private $controlledDataverseProcess;
+    private $controlledDataverseUrl;
 
     protected function setUp(): void
     {
@@ -23,6 +25,16 @@ class DataverseActionsTest extends PKPTestCase
         $this->configuration = new DataverseConfiguration();
         $this->configuration->setDataverseUrl('https://test.dataverse.org/dataverses/testDataverse');
         $this->configuration->setAPIToken('apiToken');
+    }
+
+    protected function tearDown(): void
+    {
+        if (is_resource($this->controlledDataverseProcess)) {
+            proc_terminate($this->controlledDataverseProcess);
+            proc_close($this->controlledDataverseProcess);
+        }
+
+        parent::tearDown();
     }
 
     public function testNativeApiUriCreation(): void
@@ -183,5 +195,79 @@ class DataverseActionsTest extends PKPTestCase
         $this->expectExceptionCode(500);
         $this->expectExceptionMessage('Error Communicating with Server');
         $actions->nativeAPIRequest('GET', 'test');
+    }
+
+    public function testNativeApiRequestAgainstControlledDataverse(): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken('valid-token');
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, new Client()])
+            ->getMockForAbstractClass();
+
+        $response = $actions->nativeAPIRequest('GET', $actions->getCurrentDataverseURI());
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('Controlled Dataverse', json_decode($response->getBody(), true)['data']['name']);
+    }
+
+    /**
+     * @dataProvider controlledDataverseErrorProvider
+     */
+    public function testControlledDataverseErrorIsPreserved(string $token, int $code, string $message): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken($token);
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, new Client()])
+            ->getMockForAbstractClass();
+
+        $this->expectException(DataverseException::class);
+        $this->expectExceptionCode($code);
+        $this->expectExceptionMessage($message);
+        $actions->nativeAPIRequest('GET', $actions->getCurrentDataverseURI());
+    }
+
+    public function controlledDataverseErrorProvider(): array
+    {
+        return [
+            'expired token' => ['expired-token', 401, 'API token has expired'],
+            'temporarily unavailable' => ['unavailable-token', 503, 'Dataverse temporarily unavailable'],
+        ];
+    }
+
+    private function startControlledDataverse(): void
+    {
+        if (is_resource($this->controlledDataverseProcess)) {
+            return;
+        }
+
+        $socket = stream_socket_server('tcp://127.0.0.1:0', $errorCode, $errorMessage);
+        $this->assertNotFalse($socket, $errorMessage);
+        $address = stream_socket_get_name($socket, false);
+        fclose($socket);
+        $port = substr($address, strrpos($address, ':') + 1);
+        $router = __DIR__ . '/../../fixtures/controlledDataverse/router.php';
+        $log = sys_get_temp_dir() . '/controlled-dataverse-' . getmypid() . '.log';
+        $this->controlledDataverseProcess = proc_open(
+            [PHP_BINARY, '-S', '127.0.0.1:' . $port, $router],
+            [0 => ['pipe', 'r'], 1 => ['file', $log, 'a'], 2 => ['file', $log, 'a']],
+            $pipes
+        );
+        $this->assertIsResource($this->controlledDataverseProcess);
+        $this->controlledDataverseUrl = 'http://127.0.0.1:' . $port;
+
+        $ready = false;
+        for ($attempt = 0; $attempt < 50; $attempt++) {
+            $health = @file_get_contents($this->controlledDataverseUrl . '/health');
+            if ($health !== false) {
+                $ready = true;
+                break;
+            }
+            usleep(20000);
+        }
+        $this->assertTrue($ready, 'Controlled Dataverse did not become ready');
     }
 }
