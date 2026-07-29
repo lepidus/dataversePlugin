@@ -58,8 +58,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         // Step 1
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submission.abstract);
         cy.get('input[name="dataStatementTypes"][value=3]').click();
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps(1);
 
         // Step 2
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
@@ -78,7 +77,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
 				encoding: 'utf8',
 			});
 		});
-		cy.wait(1000);
+		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.contains('button', 'Add research data').click();
@@ -90,15 +89,13 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
 				encoding: 'base64',
 			});
 		});
-		cy.wait(1000);
+		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps(1);
 
         // Step 3
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps(1);
 
         // Step 4
         cy.contains('Alternative URL');
@@ -122,8 +119,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submission.title);
 
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps(1);
 
         cy.get('button:contains("Submit")').should('be.disabled');
         cy.get('h3:contains("Research data metadata")')
@@ -152,8 +148,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.get('#datasetMetadata-datasetAlternativeURL-control').type('invalid-url', {delay: 0});
         cy.get('#datasetMetadata-datasetDsDescriptionDate-control').type('june 32, 2023', {delay: 0});
 
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps(1);
 
         cy.get('button:contains("Submit")').should('be.disabled');
         cy.get('h3:contains("Research data metadata")')
@@ -183,16 +178,14 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.get('select[name="datasetPSRI1"]').select('Yes');
         cy.get('select[name="datasetPSRI2"]').select('Yes');
         
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps(1);
 
         cy.contains('button', 'Submit').click();
         cy.get('.modal__panel:visible').within(() => {
             cy.contains('button', 'Submit').click();
         });
 
-        cy.wait(7000);
-        cy.contains('h1', 'Submission complete');
+        cy.contains('h1', 'Submission complete', {timeout: 30000});
     });
 
     it('Submit dataset with custom required metadata fields in workflow page', function () {
@@ -211,9 +204,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.get('#deleteDatasetButton').click();
         cy.contains('Are you sure you want to permanently delete the research data related to this submission?');
 		cy.get('.modal__panel button:contains("Delete")').click();
-        cy.wait(7000);
-
-        cy.contains('button', 'Upload research data').click();
+        cy.contains('button', 'Upload research data', {timeout: 30000}).click();
         cy.contains('button', 'Add research data').click();
         cy.fixture('example.json', 'utf8').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
@@ -223,7 +214,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
 				encoding: 'utf8',
 			});
 		});
-        cy.wait(1000);
+		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
     
@@ -236,7 +227,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
 				encoding: 'base64'
 			});
 		});
-        cy.wait(1000);
+		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
 

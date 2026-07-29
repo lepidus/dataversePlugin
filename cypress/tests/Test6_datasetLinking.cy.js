@@ -23,13 +23,6 @@ describe('Dataverse Plugin - Dataset linking', function () {
         cy.logout();
     });
 
-	function advanceNSteps(n) {
-		for (let stepsAdvanced = 0; stepsAdvanced < n; stepsAdvanced++) {
-			cy.contains('button', 'Continue').click();
-			cy.wait(200);
-		}
-	}
-
 	function beginSubmission(submission) {
 		cy.get('input[name="locale"][value="en"]').click();
 		cy.setTinyMceContent('startSubmission-title-control', submission.title);
@@ -53,7 +46,7 @@ describe('Dataverse Plugin - Dataset linking', function () {
 				encoding,
 			});
 		});
-		cy.wait(1000);
+		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
 	}
@@ -89,11 +82,10 @@ describe('Dataverse Plugin - Dataset linking', function () {
 		cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
 		submissionData.keywords.forEach(keyword => {
 			cy.get('#titleAbstract-keywords-control-en').type(keyword, {delay: 0});
-			cy.wait(500);
 			cy.get('#titleAbstract-keywords-control-en').type('{enter}', {delay: 0});
 		});
 		cy.get('input[name="dataStatementTypes"][value=3]').click();
-		advanceNSteps(1);
+		cy.advanceSubmissionSteps(1);
 
 		cy.uploadSubmissionFiles([{
 			'file': 'dummy.pdf',
@@ -113,21 +105,19 @@ describe('Dataverse Plugin - Dataset linking', function () {
             'application/pdf',
             'base64'
         );
-		advanceNSteps(2);
+		cy.advanceSubmissionSteps(2);
 
 		cy.get('select[name="datasetLanguage"]').select('English');
 		cy.get('select[name="datasetSubject"]').select('Earth and Environmental Sciences');
 		cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
 		cy.get('select[name="datasetRelationType"]').select('Is Cited By');
-		advanceNSteps(1);
+		cy.advanceSubmissionSteps(1);
 
 		cy.contains('button', 'Submit').click();
 		cy.get('.modal__panel:visible').within(() => {
 			cy.contains('button', 'Submit').click();
 		});
-		cy.wait(7000);
-
-        cy.contains('h1', 'Submission complete');
+		cy.contains('h1', 'Submission complete', {timeout: 30000});
 	});
 
 	it('Disassociates research data from the submission', function () {

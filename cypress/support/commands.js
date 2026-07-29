@@ -32,5 +32,18 @@ Cypress.Commands.add('waitDataStatementTabLoading', function () {
 Cypress.Commands.add('waitDatasetTabLoading', function () {
 	cy.intercept('GET', /\/api\/v1\/datasets\/\d+\/citation/).as('getDatasetRequest');
 	cy.wait('@getDatasetRequest', {timeout:10000});
-	cy.wait(1000);
+});
+
+Cypress.Commands.add('advanceSubmissionSteps', function (numberOfSteps) {
+	for (let step = 0; step < numberOfSteps; step++) {
+		cy.location('hash').then((currentHash) => {
+			cy.contains('button', 'Continue').click();
+			cy.location('hash').should('not.eq', currentHash);
+		});
+	}
+});
+
+Cypress.Commands.add('waitForDatasetFileUpload', function () {
+	cy.get('#datasetFileForm-datasetFile-hiddenFileId')
+		.should('not.have.value', '');
 });

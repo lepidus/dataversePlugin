@@ -47,7 +47,6 @@ describe('Dataverse Plugin - Legacy submissions', function () {
 		cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         submissionData.keywords.forEach(keyword => {
             cy.get('#titleAbstract-keywords-control-en').type(keyword, {delay: 0});
-            cy.wait(500);
             cy.get('#titleAbstract-keywords-control-en').type('{enter}', {delay: 0});
         });
 		cy.contains('button', 'Continue').click();
@@ -74,21 +73,13 @@ describe('Dataverse Plugin - Legacy submissions', function () {
 		cy.login('ccorino', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
 
-		cy.contains('button', 'Continue').click();
-        cy.contains('button', 'Continue').click();
-		cy.contains('button', 'Continue').click();
-        cy.contains('button', 'Continue').click();
-		cy.wait(500);
+		cy.advanceSubmissionSteps(4);
 
 		cy.contains('It is required to inform the declaration of the data statement');
 		
 		cy.get('.pkpSteps__step__label:contains("Details")').click();
 		cy.get('input[name="dataStatementTypes"][value=1]').click();
-		cy.contains('button', 'Continue').click();
-        cy.contains('button', 'Continue').click();
-		cy.contains('button', 'Continue').click();
-        cy.contains('button', 'Continue').click();
-		cy.wait(500);
+		cy.advanceSubmissionSteps(4);
 
 		cy.contains('button', 'Submit').click();
         cy.get('.modal__panel:visible').within(() => {

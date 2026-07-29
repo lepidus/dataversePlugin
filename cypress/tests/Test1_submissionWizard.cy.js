@@ -1,12 +1,5 @@
 import '../support/commands.js';
 
-function advanceNSteps(n) {
-    for (let stepsAdvanced = 0; stepsAdvanced < n; stepsAdvanced++) {
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
-    }
-}
-
 function assertAdditionalInstructionsDisplay() {
 	cy.contains('1. Submit under "Research Data" any files that have been collected');
 	cy.contains('2. It is mandatory to include a file named "Readme"/"Leiame"/"Leame"');
@@ -52,7 +45,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         submissionData.keywords.forEach(keyword => {
             cy.get('#titleAbstract-keywords-control-en').type(keyword, {delay: 0});
-            cy.wait(500);
             cy.get('#titleAbstract-keywords-control-en').type('{enter}', {delay: 0});
         });
 
@@ -66,7 +58,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('input[name="dataStatementTypes"][value=2]').click();
 		cy.contains('Insert the URLs to the data');
         cy.get('#dataStatement-dataStatementUrls-control').should('be.visible');
-		advanceNSteps(4);
+		cy.advanceSubmissionSteps(4);
         cy.wait('@submissionValidation').then((interception) => {
             assert.equal(interception.response.statusCode, 400);
             assert.property(interception.response.body, 'dataStatementUrls');
@@ -90,12 +82,12 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('form[dataversepluginapiurl]').within(() => {
             cy.get('div.pkpFormLocales').should('be.visible');
         });
-		advanceNSteps(4);
+		cy.advanceSubmissionSteps(4);
 		cy.contains('It is required to inform the justification for the unavailability of the data');
 
 		cy.get('.pkpSteps__step__label:contains("Details")').click();
 		cy.get('#dataStatement-dataStatementReason-control-en').clear().type('Has sensitive data', {delay: 0});
-        advanceNSteps(4);
+        cy.advanceSubmissionSteps(4);
         
         cy.contains('li', 'The research data is available in one or more data repository(ies)');
         cy.contains('li', ' The research data cannot be made publicly available ');
@@ -109,11 +101,11 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
 
-        advanceNSteps(1);
+        cy.advanceSubmissionSteps(1);
         cy.contains('h2', 'Research data').should('not.be.visible');
-        advanceNSteps(2);
+        cy.advanceSubmissionSteps(2);
         cy.contains('h2', 'Research data metadata').should('not.be.visible');
-        advanceNSteps(1);
+        cy.advanceSubmissionSteps(1);
         cy.contains('h3', 'Research data').should('not.exist');
         cy.contains('h3', 'Research data metadata').should('not.exist');
 
@@ -121,24 +113,24 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('The research data will be sent in subsequent stages of this submission, so that it can be deposited in the repository');
 		cy.contains('a', 'Dataverse de Exemplo Lepidus');
         cy.get('input[name="dataStatementTypes"][value=3]').click();
-        advanceNSteps(1);
+        cy.advanceSubmissionSteps(1);
 
         cy.contains('h2', 'Research data');
         assertAdditionalInstructionsDisplay();
-        advanceNSteps(2);
+        cy.advanceSubmissionSteps(2);
         cy.contains('h2', 'Research data metadata');
-        advanceNSteps(1);
+        cy.advanceSubmissionSteps(1);
         cy.contains('h3', 'Research data');
         cy.contains('h3', 'Research data metadata');
     });
     it('Should add dataset files. Dataset file should not be the same as the galley file', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
-        advanceNSteps(1);
+        cy.advanceSubmissionSteps(1);
 
         cy.contains('h2', 'Research data');
         cy.contains('Use this field only for submitting research data');
-        advanceNSteps(3);
+        cy.advanceSubmissionSteps(3);
         cy.contains('h3', 'Research data');
         cy.contains("To submit research data, it is necessary to send at least one file, accompanied by a README file");
 
@@ -159,7 +151,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'base64',
 			});
 		});
-        cy.wait(1000);
+		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetFiles').contains('Data_detailing.pdf');
@@ -173,13 +165,13 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'utf8',
 			});
 		});
-		cy.wait(1000);
+		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetFiles').contains('a', 'Data_detailing.pdf');
 		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
-        advanceNSteps(3);
+        cy.advanceSubmissionSteps(3);
         cy.get('div:contains("To submit research data, it is necessary to send at least one file, accompanied by a README file")').should('not.exist');
         cy.contains('Research data and galley have the same file');
         cy.contains('a', 'Data_detailing.pdf');
@@ -192,14 +184,14 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.waitJQuery();
         cy.get('#datasetFiles').should('not.include.text', 'Data_detailing.pdf');
         
-        advanceNSteps(3);
+        cy.advanceSubmissionSteps(3);
         cy.get('a:contains("Data_detailing.pdf")').should('not.exist');
         cy.get('div:contains("Research data and galley have the same file")').should('not.exist');
     });
     it('Dataset should contain a README file and at least another file', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
-        advanceNSteps(4);
+        cy.advanceSubmissionSteps(4);
 
         cy.contains('It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files');
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
@@ -214,7 +206,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'base64',
 			});
 		});
-		cy.wait(1000);
+		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetFiles').contains('a', 'LEIAME.pdf');
@@ -224,7 +216,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.waitJQuery();
         cy.get('#datasetFiles').should('not.include.text', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
-        advanceNSteps(3);
+        cy.advanceSubmissionSteps(3);
         cy.get('div:contains("It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files")').should('not.exist');
         cy.contains('The research data cannot consist solely of the README file');
 
@@ -238,12 +230,12 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'utf8',
 			});
 		});
-		cy.wait(1000);
+		cy.waitForDatasetFileUpload();
 		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
-        advanceNSteps(3);
+        cy.advanceSubmissionSteps(3);
         cy.get('div:contains("The research data cannot consist solely of the README file")').should('not.exist');
         cy.contains('a', 'LEIAME.pdf');
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
@@ -252,7 +244,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submissionData.title);
         
-        advanceNSteps(3);
+        cy.advanceSubmissionSteps(3);
         cy.contains('h2', 'Research data metadata');
         cy.contains('Please provide the following details about the research data you are submitting');
         cy.contains('Research Data Language');
@@ -263,7 +255,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('select[name="datasetLicense"]').should('have.value', 'CC0 1.0');
         cy.get('select[name="datasetRelationType"]').should('have.value', 'IsCitedBy');
 
-        advanceNSteps(1);
+        cy.advanceSubmissionSteps(1);
         cy.contains('h3', 'Research data metadata');
         cy.contains('Research Data Language');
         cy.contains('Research Data Subject');
@@ -277,7 +269,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
         cy.get('select[name="datasetRelationType"]').select('Is Supplemented By');
 
-        advanceNSteps(1);
+        cy.advanceSubmissionSteps(1);
         cy.get('div:contains("The subject of the research data is required")').should('not.exist');
         cy.contains('French');
         cy.contains('Earth and Environmental Sciences');
@@ -288,7 +280,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('.modal__panel:visible').within(() => {
             cy.contains('button', 'Submit').click();
         });
-        cy.wait(7000);
-        cy.contains('h1', 'Submission complete');
+        cy.contains('h1', 'Submission complete', {timeout: 30000});
     });
 });
