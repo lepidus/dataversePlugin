@@ -12,12 +12,80 @@ describe('Dataverse Plugin - Workflow features', function () {
     
     before(function () {
 		submissionData = {
-			title: 'Sustainable Cities: Co-benefits of mass public transportation in climate change mitigation',
+			title: 'Workflow features with controlled research data',
 			abstract: 'Mass public transportation can be used as a way to reduce greenhouse gases emissions.',
 			keywords: [
                 'mass public transport',
-			]
+			],
+			dataStatementTypes: [2, 3, 5],
+			dataStatementUrls: [
+				'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM',
+			],
+			dataStatementReason: 'Has sensitive data',
+			datasetLanguage: 'French',
+			datasetSubject: 'Earth and Environmental Sciences',
+			datasetLicense: 'CC BY 4.0',
+			datasetRelationType: 'IsSupplementedBy',
+		};
+
+		cy.startControlledDataverse().then((controlledDataverseUrl) => {
+			cy.login('dbarnes', null, 'publicknowledge');
+			cy.ensureDataversePluginEnabled();
+			cy.configureDataverse({
+				url: controlledDataverseUrl,
+				apiToken: 'valid-token',
+				termsOfUse: 'https://example.test/terms',
+				datasetPublish: 2,
+			});
+			cy.logout();
+		});
+
+		cy.login('eostrom', null, 'publicknowledge');
+		cy.createDataverseSubmissionWithApi(submissionData);
+		cy.get('@submissionId').then((submissionId) => {
+			cy.visit(`/index.php/publicknowledge/submission?id=${submissionId}`);
+		});
+		cy.contains('button', 'Continue').click();
+		cy.uploadSubmissionFiles([{
+			file: 'dummy.pdf',
+			fileName: 'workflow-article.pdf',
+			mimeType: 'application/pdf',
+			genre: 'Article Text',
+		}]);
+		cy.addDraftDatasetFile({
+			fixture: 'example.json',
+			fileName: 'Planilha_de_dados_ÇÕÔÁÀÃ.json',
+			mimeType: 'application/json',
+			encoding: 'utf8',
+		});
+		cy.addDraftDatasetFile({
+			fixture: '../../plugins/generic/dataverse/cypress/fixtures/README.pdf',
+			fileName: 'LEIAME.pdf',
+			mimeType: 'application/pdf',
+			encoding: 'base64',
+		});
+		cy.submitPreparedSubmissionWithApi();
+		cy.logout();
+	});
+
+	after(function () {
+		const externalDataverseConfiguration = {
+			url: Cypress.env('dataverseUrl'),
+			apiToken: Cypress.env('dataverseApiToken'),
+			termsOfUse: Cypress.env('dataverseTermsOfUse'),
+		};
+		const hasExternalDataverseConfiguration = Object.values(externalDataverseConfiguration)
+			.every((value) => typeof value === 'string' && value.length > 0);
+
+		if (hasExternalDataverseConfiguration) {
+			cy.login('dbarnes', null, 'publicknowledge');
+			cy.configureDataverse({
+				...externalDataverseConfiguration,
+				datasetPublish: 2,
+			});
+			cy.logout();
 		}
+		cy.stopControlledDataverse();
 	});
 
     it('Data statement features are displayed in workflow tab', function () {
@@ -203,9 +271,8 @@ describe('Dataverse Plugin - Workflow features', function () {
 
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer').within(() => {
-			cy.get('tr:contains(File "Data_detailing.pdf" added as research data.) td').should('contain', 'Elinor Ostrom');
             cy.get('tr:contains(File "Planilha_de_dados_ÇÕÔÁÀÃ.json" added as research data.) td').should('contain', 'Elinor Ostrom');
-            cy.get('tr:contains(File "Data_detailing.pdf" deleted from research data.) td').should('contain', 'Elinor Ostrom');
+			cy.get('tr:contains(File "LEIAME.pdf" added as research data.) td').should('contain', 'Elinor Ostrom');
 			cy.get('tr:contains(Research data deposited) td').should('contain', 'Elinor Ostrom');
 			cy.get('tr:contains(Research data metadata updated) td').should('contain', 'Elinor Ostrom');
             cy.get('tr:contains(File "example.json" added as research data.) td').should('contain', 'Elinor Ostrom');
@@ -380,6 +447,6 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
         cy.get('.pkpPublication__statusPublished', {timeout: 30000}).should('have.text', 'Published');
         cy.get('#datasetTab-button').click();
-        cy.contains('Demo Dataverse, V1');
+        cy.contains('Controlled Dataverse, V1');
     });
 });

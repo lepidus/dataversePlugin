@@ -133,22 +133,36 @@ Cypress.Commands.add('createDataverseSubmissionWithApi', function (submissionDat
 			const submissionId = response.body.id;
 			cy.wrap(submissionId).as('submissionId');
 			const currentPublicationApiUrl = response.body.publications[0]._href;
+			const dataStatementTypes = submissionData.dataStatementTypes || [3];
+			const publicationData = {
+				title: {en: submissionData.title},
+				abstract: {en: submissionData.abstract},
+				keywords: {en: submissionData.keywords},
+				dataStatementTypes,
+			};
+			if (submissionData.dataStatementUrls) {
+				publicationData.dataStatementUrls = submissionData.dataStatementUrls;
+			}
+			if (submissionData.dataStatementReason) {
+				publicationData.dataStatementReason = {en: submissionData.dataStatementReason};
+			}
 			cy.request({
 				url: currentPublicationApiUrl,
 				method: 'PUT',
 				headers: {'X-Csrf-Token': csrfToken},
-				body: {
-					title: {en: submissionData.title},
-					abstract: {en: submissionData.abstract},
-					keywords: {en: submissionData.keywords},
-					dataStatementTypes: [3],
-				},
+				body: publicationData,
 			}).then((response) => {
 				expect(response.status).to.eq(200);
 				expect(response.body.title.en).to.eq(submissionData.title);
 				expect(response.body.abstract.en).to.eq(submissionData.abstract);
 				expect(response.body.keywords.en).to.deep.eq(submissionData.keywords);
-				expect(response.body.dataStatementTypes).to.deep.eq([3]);
+				expect(response.body.dataStatementTypes).to.deep.eq(dataStatementTypes);
+				if (submissionData.dataStatementUrls) {
+					expect(response.body.dataStatementUrls).to.deep.eq(submissionData.dataStatementUrls);
+				}
+				if (submissionData.dataStatementReason) {
+					expect(response.body.dataStatementReason.en).to.eq(submissionData.dataStatementReason);
+				}
 			});
 
 			if (submissionData.datasetSubject) {
