@@ -12,7 +12,7 @@ use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
-use PKP\validation\ValidatorFactory;
+use APP\plugins\generic\dataverse\classes\validation\RequiredMetadataFieldValidator;
 
 class DatasetMetadataDispatcher extends DataverseDispatcher
 {
@@ -146,44 +146,11 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
 
     private function validateFieldByType(array $field, string $metadataName, $value, array &$errors): void
     {
-        $validationRules = $this->getValidationRules($field['type']);
+        $validationErrors = (new RequiredMetadataFieldValidator())->validate($field['type'], $value);
 
-        if (empty($validationRules)) {
-            return;
+        if (!empty($validationErrors)) {
+            $errors[$metadataName] = $validationErrors;
         }
-
-        $validator = ValidatorFactory::make(
-            ['value' => $value],
-            ['value' => $validationRules['rules']]
-        );
-
-        if (!$validator->passes()) {
-            $errors[$metadataName] = $validationRules['useValidatorMessages']
-                ? $validator->errors()->getMessages()['value']
-                : [__($validationRules['errorKey'])];
-        }
-    }
-
-    private function getValidationRules(string $type): array
-    {
-        $rules = [
-            'DATE' => [
-                'rules' => ['required', 'date', 'date_format:Y-m-d'],
-                'useValidatorMessages' => true,
-            ],
-            'URL' => [
-                'rules' => ['required', 'url'],
-                'errorKey' => 'validator.url',
-                'useValidatorMessages' => false,
-            ],
-            'EMAIL' => [
-                'rules' => ['required', 'email_or_localhost'],
-                'errorKey' => 'validator.email',
-                'useValidatorMessages' => false,
-            ],
-        ];
-
-        return $rules[$type] ?? [];
     }
 
     private function getFlattenedRequiredMetadataFields(): array

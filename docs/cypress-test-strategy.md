@@ -44,7 +44,7 @@ Esta matriz registra a camada mais barata que preserva a garantia de cada cenár
 | Test7 | Configurar metadados obrigatórios customizados | API/fixture de configuração | Migrar a preparação; a tela de configuração já tem um cenário dedicado. |
 | Test7 | Exibir campos customizados | Cypress com servidor controlado | Manter porque valida schema dinâmico, tipos de campo e renderização. |
 | Test7 | Impedir envio com campos vazios | Integração de formulário + um Cypress | Migrar a matriz de obrigatoriedade; manter uma apresentação de erro na revisão. |
-| Test7 | Impedir envio com valores inválidos | Integração de formulário | Migrar URLs/datas e mensagens para teste parametrizado do formulário. |
+| Test7 | Impedir envio com valores inválidos | Unidade + integração do dispatcher | Migrado para `RequiredMetadataFieldValidatorTest` e `DatasetMetadataDispatcherTest`: URL, data e e-mail válidos/inválidos, formato ISO, tipos desconhecidos e wiring do hook; o Cypress conserva obrigatoriedade, renderização e envio válido. |
 | Test7 | Enviar com valores válidos | Cypress com servidor controlado | Manter uma prova do fluxo de correção e submissão bem-sucedida. |
 | Test7 | Depositar metadados customizados no workflow | Integração de packager + smoke externo reduzido | O packager deve provar todos os campos; conservar um campo representativo no E2E externo. |
 

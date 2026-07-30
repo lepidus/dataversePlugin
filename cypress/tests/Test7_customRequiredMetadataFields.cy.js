@@ -134,35 +134,6 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.logout();
     });
 
-    it('Can not submit with invalid metadata fields values', function () {
-        const metadataFields = {
-            'Alternative URL': 'This is not a valid URL',
-            'Description Date': 'This is not a valid date',
-        }
-
-        cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submission.title);
-
-        cy.get('#datasetMetadata-datasetAlternativeURL-control').type('invalid-url', {delay: 0});
-        cy.get('#datasetMetadata-datasetDsDescriptionDate-control').type('june 32, 2023', {delay: 0});
-
-        cy.advanceSubmissionSteps(1);
-
-        cy.get('button:contains("Submit")').should('be.disabled');
-        cy.get('h3:contains("Research data metadata")')
-            .then($h3 => {
-                Object.keys(metadataFields).forEach((field) => {
-                    cy.wrap($h3)
-                        .parents('.submissionWizard__reviewPanel')
-                        .find('h4:contains("' + field + '")')
-                        .parent()
-                        .contains(metadataFields[field]);
-                });
-            });
-
-        cy.logout();
-    });
-
     it('Submit with required metadata fields values', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submission.title);
