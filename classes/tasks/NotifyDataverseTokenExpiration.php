@@ -94,7 +94,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
             ];
         }
 
-        return $recipients;
+        return array_values($recipients);
     }
 
     protected function getUsersByRole(int $roleId, int $contextId): array
