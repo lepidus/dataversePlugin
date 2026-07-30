@@ -24,6 +24,23 @@ Cypress.Commands.add('changeAuthorEditPermissionOnPublication', function(usernam
 	cy.logout();
 });
 
+Cypress.Commands.add('changeAuthorEditPermissionOnPublicationById', function(username, fullName, context, submissionId, option) {
+	context = context || 'publicknowledge';
+	cy.login(username, null, context);
+	cy.visit(`/index.php/${context}/workflow/index/${submissionId}/1`);
+	cy.contains('span', fullName).parent().siblings('.show_extras').first().click();
+	cy.get('.pkp_linkaction_icon_edit_user:visible').click();
+
+	if (option === 'check') {
+		cy.get('input[name="canChangeMetadata"]').check();
+	} else {
+		cy.get('input[name="canChangeMetadata"]').uncheck();
+	}
+	cy.get('[id^="submitFormButton"]').contains('OK').click();
+	cy.contains('The stage assignment has been changed.');
+	cy.logout();
+});
+
 Cypress.Commands.add('advanceSubmissionSteps', function (numberOfSteps) {
 	for (let step = 0; step < numberOfSteps; step++) {
 		cy.location('hash').then((currentHash) => {

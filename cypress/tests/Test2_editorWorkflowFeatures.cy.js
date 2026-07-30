@@ -19,6 +19,7 @@ describe('Dataverse Plugin - Editor workflow features', function () {
 		datasetLicense: 'CC BY 4.0',
 		datasetRelationType: 'IsCitedBy',
 	};
+	let submissionId;
 
 	before(function () {
 		cy.startControlledDataverse('doi:10.5072/FK2/WORKFLOWEDITOR').then((controlledDataverseUrl) => {
@@ -44,6 +45,9 @@ describe('Dataverse Plugin - Editor workflow features', function () {
 			mimeType: 'application/pdf',
 			encoding: 'base64',
 		}]);
+		cy.get('@submissionId').then((id) => {
+			submissionId = id;
+		});
 	});
 
 	after(function () {
@@ -68,7 +72,7 @@ describe('Dataverse Plugin - Editor workflow features', function () {
 
 	it('Editor can delete research data in workflow', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
-		cy.findSubmission('active', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/workflow/index/${submissionId}/1`);
 
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
@@ -91,7 +95,7 @@ describe('Dataverse Plugin - Editor workflow features', function () {
 
 	it('Editor can upload research data in workflow', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
-		cy.findSubmission('active', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/workflow/index/${submissionId}/1`);
 
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
@@ -120,7 +124,7 @@ describe('Dataverse Plugin - Editor workflow features', function () {
 
 	it('Editor can keep the dataset private when publishing the submission', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
-		cy.findSubmission('active', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/workflow/index/${submissionId}/1`);
 
 		cy.get('#workflow-button').click();
 		cy.clickDecision('Send for Review');
@@ -155,7 +159,7 @@ describe('Dataverse Plugin - Editor workflow features', function () {
 
 	it('Editor publishes the dataset after publishing the submission', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
-		cy.findSubmission('archive', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/workflow/index/${submissionId}/1`);
 
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
@@ -181,7 +185,7 @@ describe('Dataverse Plugin - Editor workflow features', function () {
 
 	it('Publishing a new submission version does not republish the dataset', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
-		cy.findSubmission('archive', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/workflow/index/${submissionId}/1`);
 
 		cy.get('#publication-button').click();
 		cy.contains('button', 'Create New Version').click();

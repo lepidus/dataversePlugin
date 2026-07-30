@@ -9,6 +9,7 @@ function assertAdditionalInstructionsDisplay() {
 
 describe('Dataverse Plugin - Workflow features', function () {
 	let submissionData;
+	let submissionId;
     
     before(function () {
 		submissionData = {
@@ -52,6 +53,9 @@ describe('Dataverse Plugin - Workflow features', function () {
 			mimeType: 'application/pdf',
 			encoding: 'base64',
 		}]);
+		cy.get('@submissionId').then((id) => {
+			submissionId = id;
+		});
 	});
 
 	after(function () {
@@ -76,11 +80,11 @@ describe('Dataverse Plugin - Workflow features', function () {
 
     it('Data statement features are displayed in workflow tab', function () {
         if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-			cy.changeAuthorEditPermissionOnPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionData.title, 'check');
+			cy.changeAuthorEditPermissionOnPublicationById('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionId, 'check');
 		}
         
         cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/authorDashboard/submission/${submissionId}`);
         
         cy.get('#publication-button').click();
         cy.contains('button', 'Data statement').click();
@@ -115,7 +119,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Research data metadata editing in workflow', function () {
         cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/authorDashboard/submission/${submissionId}`);
         
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
@@ -158,7 +162,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Research data files editing in workflow', function () {
         cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/authorDashboard/submission/${submissionId}`);
 
         cy.get('#publication-button').click();
         cy.intercept({
@@ -198,7 +202,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Author can delete research data in workflow', function () {
         cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/authorDashboard/submission/${submissionId}`);
         
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
@@ -212,7 +216,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Author can upload research data in workflow', function () {
         cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/authorDashboard/submission/${submissionId}`);
         
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
@@ -253,7 +257,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Check author actions were registered in activity log', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/workflow/index/${submissionId}/1`);
 
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer').within(() => {
@@ -268,11 +272,11 @@ describe('Dataverse Plugin - Workflow features', function () {
 	});
     it('Author can not perform actions without edit permission granted', function () {
 		if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-			cy.changeAuthorEditPermissionOnPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionData.title,'uncheck');
+			cy.changeAuthorEditPermissionOnPublicationById('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionId, 'uncheck');
 		}
         
         cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+		cy.visit(`/index.php/publicknowledge/authorDashboard/submission/${submissionId}`);
 
 		cy.get('#publication-button').click();
 		cy.get('#datasetTab-button').click();
