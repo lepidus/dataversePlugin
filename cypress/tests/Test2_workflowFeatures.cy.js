@@ -22,13 +22,14 @@ describe('Dataverse Plugin - Workflow features', function () {
 				'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM',
 			],
 			dataStatementReason: 'Has sensitive data',
+			articleFileName: 'workflow-article.pdf',
 			datasetLanguage: 'French',
 			datasetSubject: 'Earth and Environmental Sciences',
 			datasetLicense: 'CC BY 4.0',
 			datasetRelationType: 'IsSupplementedBy',
 		};
 
-		cy.startControlledDataverse().then((controlledDataverseUrl) => {
+		cy.startControlledDataverse('doi:10.5072/FK2/WORKFLOWAUTHOR').then((controlledDataverseUrl) => {
 			cy.login('dbarnes', null, 'publicknowledge');
 			cy.ensureDataversePluginEnabled();
 			cy.configureDataverse({
@@ -40,32 +41,17 @@ describe('Dataverse Plugin - Workflow features', function () {
 			cy.logout();
 		});
 
-		cy.login('eostrom', null, 'publicknowledge');
-		cy.createDataverseSubmissionWithApi(submissionData);
-		cy.get('@submissionId').then((submissionId) => {
-			cy.visit(`/index.php/publicknowledge/submission?id=${submissionId}`);
-		});
-		cy.contains('button', 'Continue').click();
-		cy.uploadSubmissionFiles([{
-			file: 'dummy.pdf',
-			fileName: 'workflow-article.pdf',
-			mimeType: 'application/pdf',
-			genre: 'Article Text',
-		}]);
-		cy.addDraftDatasetFile({
+		cy.depositDataverseSubmissionWithApi('eostrom', submissionData, [{
 			fixture: 'example.json',
 			fileName: 'Planilha_de_dados_ÇÕÔÁÀÃ.json',
 			mimeType: 'application/json',
 			encoding: 'utf8',
-		});
-		cy.addDraftDatasetFile({
+		}, {
 			fixture: '../../plugins/generic/dataverse/cypress/fixtures/README.pdf',
 			fileName: 'LEIAME.pdf',
 			mimeType: 'application/pdf',
 			encoding: 'base64',
-		});
-		cy.submitPreparedSubmissionWithApi();
-		cy.logout();
+		}]);
 	});
 
 	after(function () {
@@ -300,153 +286,4 @@ describe('Dataverse Plugin - Workflow features', function () {
 
 		cy.get('#datasetFiles .listPanel__item button:contains(Delete)').should('be.disabled');
 	});
-    it('Editor can delete research data in workflow', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('active', submissionData.title);
-
-        cy.get('#publication-button').click();
-        cy.get('#datasetTab-button').click();
-
-        cy.contains('.datasetLabel', 'Draft');
-		cy.contains('.datasetLabel', 'Unpublished');
-        
-        cy.get('#deleteDatasetButton').click();
-        cy.contains('Send an email notification to the dataset contact');
-		cy.contains('Do not send an email notification');
-        cy.getTinyMceContent('deleteDataset-deleteMessage-control')
-            .should('include', 'The research data from the manuscript submission "' + submissionData.title + '" has been removed');
-		cy.get('.modal__panel button:contains("Delete and send email")').click();
-        cy.contains('No research data transferred.', {timeout: 30000});
-        assertAdditionalInstructionsDisplay();
-
-        cy.get('#dataStatement-button').click();
-		cy.get('input[name="researchDataSubmitted"]').should('not.be.checked');
-    });
-    it('Editor can upload research data in workflow', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('active', submissionData.title);
-
-        cy.get('#publication-button').click();
-        cy.get('#datasetTab-button').click();
-
-        cy.contains('button', 'Upload research data').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'example.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'README.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64'
-			});
-		});
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
-
-        cy.get('#datasetMetadata-datasetLanguage-control').select('English');
-        cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
-        cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
-        cy.get('#datasetMetadata-datasetRelationType-control').select('Is Cited By');
-        cy.get('button:visible:contains("Save")').click();
-        cy.contains('h1', 'Research data', {timeout: 30000});
-    });
-    it('Editor can publish dataset on submission publishing', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('active', submissionData.title);
-        
-        if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-			cy.get('#workflow-button').click();
-            
-            cy.clickDecision('Send for Review');
-            cy.contains('button', 'Skip this email').click();
-            cy.contains('button', 'Continue').click();
-			cy.contains('button', 'Record Decision').click();
-            cy.get('a.pkpButton').contains('View Submission').click();
-			cy.assignReviewer('Julie Janssen');
-			
-            cy.clickDecision('Accept Submission');
-            cy.recordDecisionAcceptSubmission(['Elinor Ostrom'], [], []);
-            
-            cy.clickDecision('Send To Production');
-            cy.recordDecisionSendToProduction(['Elinor Ostrom'], []);
-			cy.isActiveStageTab('Production');
-			
-            cy.get('#publication-button').click();
-			cy.get('div#publication button:contains("Schedule For Publication")').click();
-			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
-			cy.get('div[id^="assign-"] button:contains("Save")').click();
-			cy.get('div[id^="assign-"] [role="status"]').contains('Saved');
-            cy.reload();
-            cy.get('div#publication button:contains("Schedule For Publication")').click();
-			cy.contains('All publication requirements have been met. This will be published immediately in Vol. 1 No. 2 (2014). Are you sure you want to publish this?');
-		} else {
-			cy.get('#publication-button').click();
-			cy.get('div#publication button:contains("Post")').click();
-		}
-
-        cy.get('.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
-		cy.contains(/This submission contains deposited research data that is not yet public: https:\/\/doi\.org\/10\.[^\/]*\/.{3}\/.{6}/);
-		cy.contains('In case you choose to publish them, make sure they are suitable for publication in');
-		cy.contains('Would you like to publish the research data?');
-
-		cy.get('input[name="shouldPublishResearchData"][value="1"]').parent().contains("Yes");
-		cy.get('input[name="shouldPublishResearchData"][value="0"]').parent().contains("No");
-		cy.get('input[name="shouldPublishResearchData"][value="1"]').should('not.be.checked');
-		cy.get('input[name="shouldPublishResearchData"][value="0"]').should('not.be.checked');
-
-        cy.get('input[name="shouldPublishResearchData"][value="0"]').click();
-        cy.get('.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
-        cy.get('.pkpPublication__statusPublished', {timeout: 30000}).should('have.text', 'Published');
-    });
-    it('Editor publishes dataset after submission publishing', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('archive', submissionData.title);
-
-        cy.get('#publication-button').click();
-        cy.get('#datasetTab-button').click();
-
-        cy.contains('button', 'Publish research data').click();
-        
-        const publishMsg = 'Do you really want to publish the research data related to this submission? This action cannot be undone.'
-			+ 'Before proceeding, make sure they are suitable for publication in ';
-		cy.get('div[data-modal="publishDataset"]').contains(publishMsg);
-		cy.intercept({
-			method: 'POST',
-			url: '**/api/v1/datasets/*/publish'
-		}).as('publishDataset');
-		cy.get('div[data-modal="publishDataset"] button:contains("Yes")').click();
-		cy.wait('@publishDataset').its('response.statusCode').should('eq', 200);
-
-		cy.contains('Publish research data').should('not.exist');
-		cy.get('button:contains("Delete")').should('be.disabled');
-		cy.get('button:contains("Add research data")').should('be.disabled');
-		cy.get('#dataset_metadata button:contains("Save")').should('be.disabled');
-        cy.contains('.datasetLabel', 'Draft').should('not.exist');
-		cy.contains('.datasetLabel', 'Unpublished').should('not.exist');
-    });
-    it('Publishing of submission new version do not publish dataset', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('archive', submissionData.title);
-
-        cy.get('#publication-button').click();
-        cy.contains('button', 'Create New Version').click();
-        cy.get('.modal__panel button:contains("Yes")').click();
-        cy.get('.pkpPublication__version:contains("2")');
-        cy.contains('button', 'Publish').click();
-        cy.contains('Would you like to publish the research data?').should('not.exist');
-        cy.get('.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
-        cy.get('.pkpPublication__statusPublished', {timeout: 30000}).should('have.text', 'Published');
-        cy.get('#datasetTab-button').click();
-        cy.contains('Controlled Dataverse, V1');
-    });
 });

@@ -77,7 +77,7 @@ Cypress.Commands.add('configureDataverse', function (configuration) {
 	});
 });
 
-Cypress.Commands.add('startControlledDataverse', function () {
+Cypress.Commands.add('startControlledDataverse', function (persistentId = 'doi:10.5072/FK2/CONTROLLED') {
 	const host = '127.0.0.1:8099';
 	const healthUrl = `http://${host}/health`;
 	const router = 'plugins/generic/dataverse/tests/fixtures/controlledDataverse/router.php';
@@ -96,6 +96,7 @@ Cypress.Commands.add('startControlledDataverse', function () {
 			url: `http://${host}/reset`,
 			method: 'POST',
 			headers: {'X-Dataverse-key': 'valid-token'},
+			body: {persistentId},
 		});
 	}).then(() => dataverseUrl);
 });
@@ -243,4 +244,22 @@ Cypress.Commands.add('submitPreparedSubmissionWithApi', function () {
 			});
 		});
 	});
+});
+
+Cypress.Commands.add('depositDataverseSubmissionWithApi', function (username, submissionData, datasetFiles) {
+	cy.login(username, null, 'publicknowledge');
+	cy.createDataverseSubmissionWithApi(submissionData);
+	cy.get('@submissionId').then((submissionId) => {
+		cy.visit(`/index.php/publicknowledge/submission?id=${submissionId}`);
+	});
+	cy.contains('button', 'Continue').click();
+	cy.uploadSubmissionFiles([{
+		file: 'dummy.pdf',
+		fileName: submissionData.articleFileName || 'article.pdf',
+		mimeType: 'application/pdf',
+		genre: 'Article Text',
+	}]);
+	datasetFiles.forEach((file) => cy.addDraftDatasetFile(file));
+	cy.submitPreparedSubmissionWithApi();
+	cy.logout();
 });

@@ -5,8 +5,6 @@ $query = [];
 parse_str(parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY) ?? '', $query);
 $method = $_SERVER['REQUEST_METHOD'];
 $token = $_SERVER['HTTP_X_DATAVERSE_KEY'] ?? ($_SERVER['PHP_AUTH_USER'] ?? '');
-$persistentId = $query['persistentId'] ?? 'doi:10.5072/FK2/CONTROLLED';
-$persistentUri = 'https://doi.org/' . preg_replace('/^doi:/', '', $persistentId);
 
 error_log($method . ' ' . $path);
 
@@ -21,6 +19,13 @@ $statePath = sys_get_temp_dir() . '/controlled-dataverse-state.json';
 $state = is_file($statePath)
     ? json_decode(file_get_contents($statePath), true)
     : ['published' => false, 'files' => []];
+$persistentId = $query['persistentId']
+    ?? $state['persistentId']
+    ?? 'doi:10.5072/FK2/CONTROLLED';
+$persistentUri = 'https://doi.org/' . preg_replace('/^doi:/', '', $persistentId);
+$identifierParts = explode('/', preg_replace('/^doi:/', '', $persistentId), 2);
+$authority = $identifierParts[0];
+$identifier = $identifierParts[1] ?? '';
 
 $saveState = static function (array $newState) use ($statePath): void {
     file_put_contents($statePath, json_encode($newState), LOCK_EX);
@@ -74,7 +79,12 @@ if ($token !== 'valid-token') {
 }
 
 if ($method === 'POST' && $path === '/reset') {
-    $state = ['published' => false, 'files' => []];
+    $payload = json_decode(file_get_contents('php://input'), true) ?? [];
+    $state = [
+        'published' => false,
+        'files' => [],
+        'persistentId' => $payload['persistentId'] ?? 'doi:10.5072/FK2/CONTROLLED',
+    ];
     $saveState($state);
     echo json_encode(['status' => 'OK']);
     return;
@@ -145,10 +155,10 @@ if ($method === 'POST' && $path === '/api/dataverses/testDataverse/datasets') {
         'status' => 'OK',
         'data' => [
             'id' => 101,
-            'persistentId' => 'doi:10.5072/FK2/CONTROLLED',
+            'persistentId' => $persistentId,
             'protocol' => 'doi',
-            'authority' => '10.5072',
-            'identifier' => 'FK2/CONTROLLED',
+            'authority' => $authority,
+            'identifier' => $identifier,
         ],
     ]);
     return;

@@ -331,6 +331,31 @@ class DataverseActionsTest extends PKPTestCase
         $this->assertSame($persistentId, $dataset['datasetPersistentId']);
     }
 
+    public function testControlledDataverseResetSelectsNextDatasetIdentity(): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken('valid-token');
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, new Client()])
+            ->getMockForAbstractClass();
+        $persistentId = 'doi:10.5072/FK2/ISOLATED';
+
+        $actions->nativeAPIRequest('POST', $this->controlledDataverseUrl . '/reset', [
+            'json' => ['persistentId' => $persistentId],
+        ]);
+        $response = $actions->nativeAPIRequest(
+            'POST',
+            $actions->createNativeAPIURI(['dataverses', 'testDataverse', 'datasets']),
+            ['json' => ['datasetVersion' => []]]
+        );
+        $dataset = json_decode($response->getBody(), true)['data'];
+
+        $this->assertSame($persistentId, $dataset['persistentId']);
+        $this->assertSame('10.5072', $dataset['authority']);
+        $this->assertSame('FK2/ISOLATED', $dataset['identifier']);
+    }
+
     public function testControlledDataversePersistsDatasetMetadataUpdates(): void
     {
         $this->startControlledDataverse();
