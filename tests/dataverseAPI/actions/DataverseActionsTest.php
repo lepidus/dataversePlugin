@@ -351,9 +351,15 @@ class DataverseActionsTest extends PKPTestCase
         );
         $dataset = json_decode($response->getBody(), true)['data'];
 
+        $swordResponse = $actions->nativeAPIRequest(
+            'GET',
+            $this->controlledDataverseUrl . '/dvn/api/data-deposit/v1.1/swordv2/edit/study/' . urlencode($persistentId)
+        );
+
         $this->assertSame($persistentId, $dataset['persistentId']);
         $this->assertSame('10.5072', $dataset['authority']);
         $this->assertSame('FK2/ISOLATED', $dataset['identifier']);
+        $this->assertStringContainsString('https://doi.org/10.5072/FK2/ISOLATED', (string) $swordResponse->getBody());
     }
 
     public function testControlledDataversePersistsDatasetMetadataUpdates(): void
@@ -470,6 +476,25 @@ class DataverseActionsTest extends PKPTestCase
         $this->expectExceptionCode($code);
         $this->expectExceptionMessage($message);
         $actions->nativeAPIRequest('GET', $actions->getCurrentDataverseURI());
+    }
+
+    public function testControlledDataverseRejectsUnknownDataset(): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken('valid-token');
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, new Client()])
+            ->getMockForAbstractClass();
+        $uri = $actions->createNativeAPIURI(
+            ['datasets', ':persistentId', 'versions'],
+            ['persistentId' => 'doi:10.12345/FK2/BLABLA.TESTE']
+        );
+
+        $this->expectException(DataverseException::class);
+        $this->expectExceptionCode(404);
+        $this->expectExceptionMessage('Dataset not found');
+        $actions->nativeAPIRequest('GET', $uri);
     }
 
     public function controlledDataverseErrorProvider(): array

@@ -1,129 +1,95 @@
 import '../support/commands.js';
 
 describe('Dataverse Plugin - Dataset linking', function () {
-	let submissionData;
-	let currentDatasetPersistentId;
-	let previousSubmission;
-	let previousDatasetPersistentId;
+	const currentPersistentId = 'doi:10.5072/FK2/LINKCURRENT';
+	const previousPersistentId = 'doi:10.5072/FK2/LINKPREVIOUS';
+	const invalidPersistentId = 'doi:10.12345/FK2/BLABLA.TESTE';
+	const currentSubmission = {
+		title: 'Dataset linking with controlled research data',
+		abstract: 'A submission prepared to verify dataset association rules.',
+		keywords: ['dataset linking'],
+		dataStatementTypes: [3],
+		articleFileName: 'dataset-linking-article.pdf',
+		datasetLanguage: 'English',
+		datasetSubject: 'Earth and Environmental Sciences',
+		datasetLicense: 'CC BY 4.0',
+		datasetRelationType: 'IsCitedBy',
+	};
+	const previousSubmission = {
+		title: 'Submission already associated with controlled research data',
+		abstract: 'A fixture used to verify that datasets cannot be associated twice.',
+		keywords: ['existing dataset association'],
+		dataStatementTypes: [2],
+		dataStatementUrls: ['https://doi.org/10.5072/FK2/LINKPREVIOUS'],
+	};
+	let currentSubmissionId;
 
 	before(function () {
-		submissionData = {
-			title: 'Mayday: The importance of containment plans in disaster management',
-			abstract: 'Containment plans are essential to manage disasters when they happen.',
-			keywords: [
-				'containment plans',
-			]
-		}
-		previousSubmission = 'Sustainable Cities: Co-benefits of mass public transportation in climate change mitigation';
-	});
-
-	afterEach(() => {
-        cy.logout();
-    });
-
-	function beginSubmission(submission) {
-		cy.get('input[name="locale"][value="en"]').click();
-		cy.setTinyMceContent('startSubmission-title-control', submission.title);
-
-		if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-			cy.get('input[name="sectionId"][value="1"]').click();
-		}
-
-		cy.get('input[name="submissionRequirements"]').check();
-		cy.get('input[name="privacyConsent"]').check();
-		cy.contains('button', 'Begin Submission').click();
-	}
-
-	function uploadDatasetFile(file, fileName, mimeType, encoding) {
-		cy.contains('button', 'Add research data').click();
-		cy.fixture(file, encoding).then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName,
-				mimeType,
-				encoding,
+		cy.startControlledDataverse(currentPersistentId).then((controlledDataverseUrl) => {
+			cy.login('dbarnes', null, 'publicknowledge');
+			cy.ensureDataversePluginEnabled();
+			cy.configureDataverse({
+				url: controlledDataverseUrl,
+				apiToken: 'valid-token',
+				termsOfUse: 'https://example.test/terms',
+				datasetPublish: 2,
 			});
+			cy.logout();
 		});
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
-	}
 
-	function accessDatasetTab(submissionTitle, username, tab = 'active') {
-		cy.login(username, null, 'publicknowledge');
-		cy.findSubmission(tab, submissionTitle);
-		cy.get('#publication-button').click();
-		cy.get('#datasetTab-button').click();
-	}
-
-	function accessEmptyDatasetTab(submissionTitle, username, tab = 'active') {
-		cy.login(username, null, 'publicknowledge');
-		cy.findSubmission(tab, submissionTitle);
-		cy.get('#publication-button').click();
-		cy.get('#datasetTab-button').click();
-	}
-
-	function getPersistentIdFromCitation() {
-		return cy.get('#datasetData .value a[href*="doi.org"]').invoke('attr', 'href').then((persistentUri) => {
-			expect(persistentUri).to.match(/^https:\/\/doi\.org\/10\.[^/]+\/FK2\/[^/]+$/);
-			return persistentUri.replace('https://doi.org/', 'doi:');
-		});
-	}
-
-	it('Author creates a submission with research data', function () {
-		cy.login('eostrom', null, 'publicknowledge');
-		cy.get('div#myQueue a:contains("New Submission")').click();
-		beginSubmission(submissionData);
-
-		cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
-		submissionData.keywords.forEach(keyword => {
-			cy.addKeyword('#titleAbstract-keywords-control-en', '#titleAbstract-keywords-selected-en', keyword);
-		});
-		cy.get('input[name="dataStatementTypes"][value=3]').click();
-		cy.advanceSubmissionSteps(1);
-
-		cy.uploadSubmissionFiles([{
-			'file': 'dummy.pdf',
-			'fileName': 'dummy.pdf',
-			'mimeType': 'application/pdf',
-			'genre': 'Article Text'
+		cy.depositDataverseSubmissionWithApi('eostrom', currentSubmission, [{
+			fixture: 'example.json',
+			fileName: 'dataset-linking.json',
+			mimeType: 'application/json',
+			encoding: 'utf8',
+		}, {
+			fixture: '../../plugins/generic/dataverse/cypress/fixtures/README.pdf',
+			fileName: 'README.pdf',
+			mimeType: 'application/pdf',
+			encoding: 'base64',
 		}]);
-		uploadDatasetFile(
-            'example.json',
-            'mayday-dataset.json',
-            'application/json',
-            'utf8'
-        );
-		uploadDatasetFile(
-            '../../plugins/generic/dataverse/cypress/fixtures/README.pdf',
-            'README.pdf',
-            'application/pdf',
-            'base64'
-        );
-		cy.advanceSubmissionSteps(2);
-
-		cy.get('select[name="datasetLanguage"]').select('English');
-		cy.get('select[name="datasetSubject"]').select('Earth and Environmental Sciences');
-		cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
-		cy.get('select[name="datasetRelationType"]').select('Is Cited By');
-		cy.advanceSubmissionSteps(1);
-
-		cy.contains('button', 'Submit').click();
-		cy.get('.modal__panel:visible').within(() => {
-			cy.contains('button', 'Submit').click();
+		cy.get('@submissionId').then((submissionId) => {
+			currentSubmissionId = submissionId;
 		});
-		cy.contains('h1', 'Submission complete', {timeout: 30000});
+
+		cy.login('eostrom', null, 'publicknowledge');
+		cy.createDataverseSubmissionWithApi(previousSubmission);
+		cy.associateDataverseDatasetWithApi(previousPersistentId);
+		cy.logout();
 	});
+
+	after(function () {
+		cy.restoreExternalDataverseConfiguration();
+		cy.stopControlledDataverse();
+	});
+
+	afterEach(function () {
+		cy.clearCookies();
+	});
+
+	function accessDatasetTab(username, submissionId) {
+		cy.login(username, null, 'publicknowledge');
+		const submissionUrl = username === 'eostrom'
+			? `/index.php/publicknowledge/authorDashboard/submission/${submissionId}`
+			: `/index.php/publicknowledge/workflow/index/${submissionId}/1`;
+		cy.visit(submissionUrl);
+		cy.get('#publication-button').click();
+		cy.get('#datasetTab-button').click();
+	}
+
+	function assertPersistentIdInCitation(persistentId) {
+		const persistentUri = persistentId.replace('doi:', 'https://doi.org/');
+		cy.get('#datasetData .value a[href*="doi.org"]')
+			.should('have.attr', 'href', persistentUri);
+	}
 
 	it('Disassociates research data from the submission', function () {
-        accessDatasetTab(submissionData.title, 'eostrom', 'myQueue');
-        cy.contains('button', 'Disassociate').should('not.exist');
-		
-        getPersistentIdFromCitation().then((persistentId) => {
-			currentDatasetPersistentId = persistentId;
-		});
-		cy.logout();
+		accessDatasetTab('eostrom', currentSubmissionId);
+		cy.contains('button', 'Disassociate').should('not.exist');
+		assertPersistentIdInCitation(currentPersistentId);
+		cy.clearCookies();
 
-        accessDatasetTab(submissionData.title, 'dbarnes');
+		accessDatasetTab('dbarnes', currentSubmissionId);
 		cy.contains('button', 'Disassociate').click();
 		cy.get('.modal__panel:visible').within(() => {
 			cy.contains('Do you really want to disassociate the research dataset from this submission?');
@@ -136,42 +102,36 @@ describe('Dataverse Plugin - Dataset linking', function () {
 	});
 
 	it('Does not associate invalid research data', function () {
-        accessDatasetTab(previousSubmission, 'dbarnes', 'archive');
-		getPersistentIdFromCitation().then((persistentId) => {
-			previousDatasetPersistentId = persistentId;
-		});
-		cy.logout();
-
-        accessEmptyDatasetTab(submissionData.title, 'dbarnes');
+		accessDatasetTab('dbarnes', currentSubmissionId);
 
 		cy.get('#associateDatasetButton').click();
 		cy.get('.modal__panel:visible').within(() => {
-			cy.get('input[name="datasetPersistentId"]').clear().type(previousDatasetPersistentId, {delay: 0});
+			cy.get('input[name="datasetPersistentId"]').clear().type(previousPersistentId, {delay: 0});
 			cy.contains('button', 'Associate').click();
 		});
 		cy.contains('The dataset entered is already associated with a submission in this context');
 
 		cy.get('.modal__panel:visible').within(() => {
-			cy.get('input[name="datasetPersistentId"]').clear().type('doi:10.12345/FK2/BLABLA.TESTE', {delay: 0});
+			cy.get('input[name="datasetPersistentId"]').clear().type(invalidPersistentId, {delay: 0});
 			cy.contains('button', 'Associate').click();
 		});
 		cy.contains('The dataset entered is not present at the Dataverse repository');
 	});
 
 	it('Re-associates research data to the submission using its persistent id', function () {
-        accessEmptyDatasetTab(submissionData.title, 'eostrom', 'myQueue');
+		accessDatasetTab('eostrom', currentSubmissionId);
 		cy.get('#associateDatasetButton').should('not.exist');
-		cy.logout();
+		cy.clearCookies();
 
-        accessEmptyDatasetTab(submissionData.title, 'dbarnes');
+		accessDatasetTab('dbarnes', currentSubmissionId);
 		cy.get('#associateDatasetButton').click();
 		cy.get('.modal__panel:visible').within(() => {
-			cy.get('input[name="datasetPersistentId"]').type(currentDatasetPersistentId, {delay: 0});
+			cy.get('input[name="datasetPersistentId"]').type(currentPersistentId, {delay: 0});
 			cy.contains('button', 'Associate').click();
 		});
 
 		cy.contains('h1', 'Research data');
-		cy.contains('a', currentDatasetPersistentId.replace('doi:', 'https://doi.org/'));
+		assertPersistentIdInCitation(currentPersistentId);
 		cy.contains('button', 'Disassociate');
 	});
 });

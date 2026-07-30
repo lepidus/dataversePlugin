@@ -78,6 +78,12 @@ if ($token !== 'valid-token') {
     return;
 }
 
+if ($persistentId === 'doi:10.12345/FK2/BLABLA.TESTE') {
+    http_response_code(404);
+    echo json_encode(['status' => 'ERROR', 'message' => 'Dataset not found']);
+    return;
+}
+
 if ($method === 'POST' && $path === '/reset') {
     $payload = json_decode(file_get_contents('php://input'), true) ?? [];
     $state = [
@@ -252,9 +258,9 @@ if ($method === 'GET' && strpos($path, '/dvn/api/data-deposit/v1.1/swordv2/edit/
     echo '<?xml version="1.0" encoding="UTF-8"?>'
         . '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:bib="http://purl.org/net/biblio#">'
         . '<link href="one"/><link href="two"/><link href="three"/><link href="four"/>'
-        . '<link href="https://doi.org/10.5072/FK2/CONTROLLED"/>'
+        . '<link href="' . htmlspecialchars($persistentUri, ENT_XML1) . '"/>'
         . '<bib:bibliographicCitation>Controlled, Author (2099), Controlled dataset, '
-        . 'https://doi.org/10.5072/FK2/CONTROLLED</bib:bibliographicCitation>'
+        . htmlspecialchars($persistentUri, ENT_XML1) . '</bib:bibliographicCitation>'
         . '</entry>';
     return;
 }
