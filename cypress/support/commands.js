@@ -54,7 +54,7 @@ Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, ke
 	});
 });
 
-Cypress.Commands.add('configureControlledDataverse', function (datasetPublish) {
+Cypress.Commands.add('configureDataverse', function (configuration) {
 	cy.getCsrfToken();
 	cy.get('@csrfToken').then((csrfToken) => {
 		cy.request({
@@ -64,11 +64,11 @@ Cypress.Commands.add('configureControlledDataverse', function (datasetPublish) {
 			form: true,
 			body: {
 				csrfToken,
-				dataverseUrl: Cypress.env('controlledDataverseUrl'),
-				apiToken: 'valid-token',
-				'termsOfUse[en]': 'https://example.test/terms',
+				dataverseUrl: configuration.url,
+				apiToken: configuration.apiToken,
+				'termsOfUse[en]': configuration.termsOfUse,
 				'additionalInstructions[en]': '',
-				datasetPublish,
+				datasetPublish: configuration.datasetPublish,
 			},
 		}).then((response) => {
 			expect(response.status).to.eq(200);

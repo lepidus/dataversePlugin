@@ -32,13 +32,30 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		});
 
 		cy.login('dbarnes', null, 'publicknowledge');
-		cy.configureControlledDataverse(1);
+		cy.configureDataverse({
+			url: Cypress.env('controlledDataverseUrl'),
+			apiToken: 'valid-token',
+			termsOfUse: 'https://example.test/terms',
+			datasetPublish: 1,
+		});
+		cy.logout();
 	});
 
 	after(function () {
-		if (controlledDataversePid && /^\d+$/.test(controlledDataversePid)) {
-			cy.exec(`kill ${controlledDataversePid}`);
-		}
+		cy.logout();
+		cy.login('dbarnes', null, 'publicknowledge');
+		cy.configureDataverse({
+			url: Cypress.env('dataverseUrl'),
+			apiToken: Cypress.env('dataverseApiToken'),
+			termsOfUse: Cypress.env('dataverseTermsOfUse'),
+			datasetPublish: 2,
+		});
+		cy.logout();
+		cy.then(() => {
+			if (controlledDataversePid && /^\d+$/.test(controlledDataversePid)) {
+				cy.exec(`kill ${controlledDataversePid}`);
+			}
+		});
 	});
 
     function beginSubmission(submissionData) {
