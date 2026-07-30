@@ -126,6 +126,28 @@ Cypress.Commands.add('stopControlledDataverse', function () {
 	Cypress.env('controlledDataversePid', null);
 });
 
+Cypress.Commands.add('restoreExternalDataverseConfiguration', function () {
+	const configuration = {
+		url: Cypress.env('dataverseUrl'),
+		apiToken: Cypress.env('dataverseApiToken'),
+		termsOfUse: Cypress.env('dataverseTermsOfUse'),
+	};
+	const isConfigured = Object.values(configuration)
+		.every((value) => typeof value === 'string' && value.length > 0);
+
+	if (!isConfigured) {
+		return;
+	}
+
+	cy.clearCookies();
+	cy.login('dbarnes', null, 'publicknowledge');
+	cy.configureDataverse({
+		...configuration,
+		datasetPublish: 2,
+	});
+	cy.logout();
+});
+
 Cypress.Commands.add('ensureDataversePluginEnabled', function () {
 	cy.contains('a', 'Website').click();
 	cy.waitJQuery();

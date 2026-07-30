@@ -51,22 +51,7 @@ describe('Dataverse Plugin - Editor workflow features', function () {
 	});
 
 	after(function () {
-		const externalDataverseConfiguration = {
-			url: Cypress.env('dataverseUrl'),
-			apiToken: Cypress.env('dataverseApiToken'),
-			termsOfUse: Cypress.env('dataverseTermsOfUse'),
-		};
-		const hasExternalDataverseConfiguration = Object.values(externalDataverseConfiguration)
-			.every((value) => typeof value === 'string' && value.length > 0);
-
-		if (hasExternalDataverseConfiguration) {
-			cy.login('dbarnes', null, 'publicknowledge');
-			cy.configureDataverse({
-				...externalDataverseConfiguration,
-				datasetPublish: 2,
-			});
-			cy.logout();
-		}
+		cy.restoreExternalDataverseConfiguration();
 		cy.stopControlledDataverse();
 	});
 
