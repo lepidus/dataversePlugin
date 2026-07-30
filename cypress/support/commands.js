@@ -130,7 +130,8 @@ Cypress.Commands.add('createDataverseSubmissionWithApi', function (submissionDat
 			body: {sectionId: submissionData.sectionId || 1},
 		}).then((response) => {
 			expect(response.status).to.eq(200);
-			cy.wrap(response.body.id).as('submissionId');
+			const submissionId = response.body.id;
+			cy.wrap(submissionId).as('submissionId');
 			const currentPublicationApiUrl = response.body.publications[0]._href;
 			cy.request({
 				url: currentPublicationApiUrl,
@@ -148,6 +149,83 @@ Cypress.Commands.add('createDataverseSubmissionWithApi', function (submissionDat
 				expect(response.body.abstract.en).to.eq(submissionData.abstract);
 				expect(response.body.keywords.en).to.deep.eq(submissionData.keywords);
 				expect(response.body.dataStatementTypes).to.deep.eq([3]);
+			});
+
+			if (submissionData.datasetSubject) {
+				cy.request({
+					url: `/index.php/publicknowledge/api/v1/submissions/${submissionId}`,
+					method: 'PUT',
+					headers: {'X-Csrf-Token': csrfToken},
+					body: {
+						datasetLanguage: submissionData.datasetLanguage || 'English',
+						datasetSubject: submissionData.datasetSubject,
+						datasetLicense: submissionData.datasetLicense || 'CC0 1.0',
+						datasetRelationType: submissionData.datasetRelationType || 'IsCitedBy',
+					},
+				}).then((response) => {
+					expect(response.status).to.eq(200);
+					expect(response.body.datasetSubject).to.eq(submissionData.datasetSubject);
+				});
+			}
+		});
+	});
+});
+
+let draftDatasetFileRequest = 0;
+
+Cypress.Commands.add('addDraftDatasetFile', function (file) {
+	const requestId = ++draftDatasetFileRequest;
+	const uploadAlias = `uploadDraftDatasetFile${requestId}`;
+	const saveAlias = `saveDraftDatasetFile${requestId}`;
+	cy.intercept('POST', '**/api/v1/temporaryFiles*').as(uploadAlias);
+	cy.intercept('POST', '**/api/v1/draftDatasetFiles*').as(saveAlias);
+	cy.contains('button', 'Add research data').click();
+	cy.fixture(file.fixture, file.encoding).then((fileContent) => {
+		cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
+			fileContent,
+			fileName: file.fileName,
+			mimeType: file.mimeType,
+			encoding: file.encoding,
+		});
+	});
+	cy.wait(`@${uploadAlias}`).then((interception) => {
+		expect(interception.response.statusCode).to.eq(200);
+		expect(interception.response.body.id).to.be.a('number');
+		expect(interception.response.body.name).to.eq(file.fileName);
+	});
+	cy.get('input[name="termsOfUse"]').check();
+	cy.get('form:visible button:contains("Save")').click();
+	cy.wait(`@${saveAlias}`).then((interception) => {
+		expect(interception.response.statusCode).to.eq(200);
+		expect(interception.response.body.id).to.be.a('number');
+		expect(interception.response.body.fileName).to.eq(file.fileName);
+	});
+	cy.get('#datasetFiles').contains('a', file.fileName);
+});
+
+Cypress.Commands.add('associateDataverseDatasetWithApi', function (persistentId) {
+	cy.get('@submissionId').then((submissionId) => {
+		cy.get('@csrfToken').then((csrfToken) => {
+			cy.request({
+				url: `/index.php/publicknowledge/api/v1/datasets/associate?submissionId=${submissionId}`,
+				method: 'POST',
+				headers: {'X-Csrf-Token': csrfToken},
+				body: {datasetPersistentId: persistentId},
+			}).its('status').should('eq', 200);
+		});
+	});
+});
+
+Cypress.Commands.add('submitPreparedSubmissionWithApi', function () {
+	cy.get('@submissionId').then((submissionId) => {
+		cy.get('@csrfToken').then((csrfToken) => {
+			cy.request({
+				url: `/index.php/publicknowledge/api/v1/submissions/${submissionId}/submit`,
+				method: 'PUT',
+				headers: {'X-Csrf-Token': csrfToken},
+			}).then((response) => {
+				expect(response.status).to.eq(200);
+				expect(response.body.id).to.eq(submissionId);
 			});
 		});
 	});
