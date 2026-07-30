@@ -40,6 +40,13 @@ if ($token !== 'valid-token') {
     return;
 }
 
+if ($method === 'POST' && $path === '/reset') {
+    $state = ['published' => false, 'files' => []];
+    $saveState($state);
+    echo json_encode(['status' => 'OK']);
+    return;
+}
+
 if ($path === '/api/dataverses/testDataverse') {
     echo json_encode([
         'status' => 'OK',
@@ -157,6 +164,18 @@ if ($method === 'GET' && $path === '/api/datasets/:persistentId/versions/:latest
         ];
     }, $state['files']);
     echo json_encode(['status' => 'OK', 'data' => $files]);
+    return;
+}
+
+if ($method === 'GET' && $path === '/api/datasets/export') {
+    echo json_encode([
+        'status' => 'OK',
+        'datasetVersion' => [
+            'citation' => 'Controlled, Author, 2099, "Controlled dataset", Controlled Dataverse, V1, '
+                . 'https://doi.org/10.5072/FK2/CONTROLLED',
+        ],
+        'persistentUrl' => 'https://doi.org/10.5072/FK2/CONTROLLED',
+    ]);
     return;
 }
 

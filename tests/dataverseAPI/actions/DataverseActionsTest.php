@@ -8,6 +8,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ConnectException;
 use PKP\tests\PKPTestCase;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
@@ -235,6 +236,56 @@ class DataverseActionsTest extends PKPTestCase
 
         $this->assertCount(1, $defaultLicenses);
         $this->assertSame('CC0 1.0', $defaultLicenses[0]['name']);
+    }
+
+    public function testControlledDataverseResetRestoresCleanDraftState(): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken('valid-token');
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, new Client()])
+            ->getMockForAbstractClass();
+
+        $actions->nativeAPIRequest(
+            'POST',
+            $actions->createNativeAPIURI(['datasets', ':persistentId', 'actions', ':publish'])
+        );
+        $publishedResponse = $actions->nativeAPIRequest(
+            'GET',
+            $actions->createNativeAPIURI(['datasets', ':persistentId', 'versions'])
+        );
+        $this->assertSame(
+            'RELEASED',
+            json_decode($publishedResponse->getBody(), true)['data'][0]['versionState']
+        );
+
+        $actions->nativeAPIRequest('POST', $this->controlledDataverseUrl . '/reset');
+        $resetResponse = $actions->nativeAPIRequest(
+            'GET',
+            $actions->createNativeAPIURI(['datasets', ':persistentId', 'versions'])
+        );
+        $resetDataset = json_decode($resetResponse->getBody(), true)['data'][0];
+
+        $this->assertSame('DRAFT', $resetDataset['versionState']);
+        $this->assertSame([], $resetDataset['files']);
+    }
+
+    public function testControlledDataverseExposesPublishedCitation(): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken('valid-token');
+        $actions = new DatasetActions($this->configuration, new Client());
+
+        $citation = $actions->getCitation('doi:10.5072/FK2/CONTROLLED', true);
+
+        $this->assertTrue($citation['datasetIsPublished']);
+        $this->assertStringContainsString('Controlled Dataverse, V1', $citation['citation']);
+        $this->assertStringContainsString(
+            '<a href="https://doi.org/10.5072/FK2/CONTROLLED">',
+            $citation['citation']
+        );
     }
 
     /**

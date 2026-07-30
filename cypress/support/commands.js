@@ -53,3 +53,26 @@ Cypress.Commands.add('addKeyword', function (inputSelector, selectedSelector, ke
 		cy.contains('.pkpAutosuggest__selection', keyword);
 	});
 });
+
+Cypress.Commands.add('configureControlledDataverse', function (datasetPublish) {
+	cy.getCsrfToken();
+	cy.get('@csrfToken').then((csrfToken) => {
+		cy.request({
+			url: '/index.php/publicknowledge/$$$call$$$/grid/settings/plugins/settings-plugin-grid/manage'
+				+ '?verb=settings&plugin=dataverseplugin&category=generic&save=1',
+			method: 'POST',
+			form: true,
+			body: {
+				csrfToken,
+				dataverseUrl: Cypress.env('controlledDataverseUrl'),
+				apiToken: 'valid-token',
+				'termsOfUse[en]': 'https://example.test/terms',
+				'additionalInstructions[en]': '',
+				datasetPublish,
+			},
+		}).then((response) => {
+			expect(response.status).to.eq(200);
+			expect(response.body.status).to.eq(true);
+		});
+	});
+});

@@ -23,13 +23,13 @@ Esta matriz registra a camada mais barata que preserva a garantia de cada cenár
 | Test2 | Publicar conjunto ao publicar submissão | Cypress com backend controlado | Manter porque cobre o modal acrescido pelo plugin ao fluxo editorial do core. |
 | Test2 | Publicar conjunto após a submissão | Smoke Cypress com Dataverse real | Manter como prova externa de publicação e bloqueio posterior das ações. |
 | Test2 | Nova versão não republicar conjunto | Integração de evento + Cypress reduzido | Cobrir a regra negativa em PHP; manter apenas a ausência da opção no modal. |
-| Test3 | Criar submissão com dados para revisão | Fixture de estado | Migrar a preparação; o fluxo completo de depósito já deve existir em um único smoke. |
+| Test3 | Criar submissão com dados para revisão | Cypress com servidor controlado, por enquanto | A rede externa foi removida; a criação visual ainda prepara o fluxo encadeado e só deve sair após uma fixture de submissão provar o mesmo estado. |
 | Test3 | Editor selecionar arquivos para revisores | Cypress com backend controlado | Manter porque integra decisão editorial, formulário e arquivos do plugin. |
 | Test3 | Revisor visualizar arquivos selecionados | Cypress com backend controlado | Manter por envolver autorização, papel, UI e links disponibilizados. |
-| Test3 | Configurar publicação na decisão | API/fixture de configuração | Migrar a preparação; a interface de configuração já é coberta no Test0. |
-| Test3 | Recusa excluir conjunto | Integração de evento + smoke externo | Cobrir o hook e a associação em PHP; manter uma decisão editorial no fluxo E2E principal. |
+| Test3 | Configurar publicação na decisão | HTTP controlado | Migrado para configuração direta no `before`; a persistência é provada pela presença das ações de excluir/publicar nas decisões seguintes. |
+| Test3 | Recusa excluir conjunto | Cypress com servidor controlado | Manter uma decisão editorial completa; a exclusão externa real pertence ao smoke reduzido. |
 | Test3 | Reverter recusa e reenviar dados | Fixture + integração de evento | Migrar: upload e depósito já possuem cobertura própria; testar somente a transição relevante. |
-| Test3 | Aceite publicar conjunto | Smoke Cypress com Dataverse real | Manter no fluxo E2E principal porque prova decisão, hook e publicação externa. |
+| Test3 | Aceite publicar conjunto | Cypress com servidor controlado | Manter porque prova decisão, hook, publicação HTTP e releitura da citação; a compatibilidade externa continua no smoke do Test2. |
 | Test4 | Informações na página pública | Cypress sem escrita externa | Manter um teste de renderização pública e links; usar dataset controlado/fixture. |
 | Test4 | Omitir declaração quando só houve depósito | Integração de template + um Cypress | Cobrir combinações condicionais em PHP; manter uma prova pública negativa. |
 | Test5 | Desabilitar plugin | Preparação por API/CLI | Migrar; não é necessário retestar a interface genérica de plugins do PKP. |

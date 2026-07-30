@@ -2,6 +2,7 @@ import '../support/commands.js';
 
 describe('Dataverse Plugin - Features around review stage', function () {
 	let submissionData;
+	let controlledDataversePid;
     
     before(function () {
 		submissionData = {
@@ -10,6 +11,33 @@ describe('Dataverse Plugin - Features around review stage', function () {
 			keywords: [
                 'art',
 			]
+		}
+
+		const controlledDataverseHost = '127.0.0.1:8099';
+		const controlledDataverseRouter = 'plugins/generic/dataverse/tests/fixtures/controlledDataverse/router.php';
+		Cypress.env('controlledDataverseUrl', `http://${controlledDataverseHost}/dataverse/testDataverse`);
+
+		cy.exec(
+			`nohup php -S ${controlledDataverseHost} ${controlledDataverseRouter}`
+				+ ' >/tmp/dataverse-controlled-cypress.log 2>&1 & echo $!',
+			{timeout: 10000}
+		).then((result) => {
+			controlledDataversePid = result.stdout.trim();
+			expect(controlledDataversePid).to.match(/^\d+$/);
+			cy.request({
+				url: `http://${controlledDataverseHost}/reset`,
+				method: 'POST',
+				headers: {'X-Dataverse-key': 'valid-token'},
+			});
+		});
+
+		cy.login('dbarnes', null, 'publicknowledge');
+		cy.configureControlledDataverse(1);
+	});
+
+	after(function () {
+		if (controlledDataversePid && /^\d+$/.test(controlledDataversePid)) {
+			cy.exec(`kill ${controlledDataversePid}`);
 		}
 	});
 
@@ -135,21 +163,6 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.contains('a', 'README.pdf');
         cy.contains('a', 'example.json').should('not.exist');
     });
-    it('Configures plugin to publish research data in editor decision', function () {
-        const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
-
-		cy.login('dbarnes', null, 'publicknowledge');
-		cy.contains('a', 'Website').click();
-
-		cy.waitJQuery();
-		cy.get('#plugins-button').click();
-		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
-		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
-
-		cy.get('input[name="datasetPublish"][value=1]').focus().check();
-		cy.get('#dataverseConfigurationForm button:contains("OK")').click();
-		cy.contains('Your changes have been saved');
-    });
     it('Deletes research data on submission declining', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.findSubmission('active', submissionData.title);
@@ -203,7 +216,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
 				encoding: 'base64',
 			});
 		});
-		cy.get('input[name="termsOfUse"').check();
+		cy.get('input[name="termsOfUse"]').check();
 		cy.get('form:visible button:contains("Save")').click();
         cy.contains('button', 'Add research data').click();
         cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
@@ -250,6 +263,6 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
 
-        cy.get('p:contains("Demo Dataverse, V1")');
+		cy.get('p:contains("Controlled Dataverse, V1")');
     });
 });
