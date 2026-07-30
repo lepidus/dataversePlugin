@@ -77,6 +77,37 @@ Cypress.Commands.add('configureDataverse', function (configuration) {
 	});
 });
 
+Cypress.Commands.add('startControlledDataverse', function () {
+	const host = '127.0.0.1:8099';
+	const healthUrl = `http://${host}/health`;
+	const router = 'plugins/generic/dataverse/tests/fixtures/controlledDataverse/router.php';
+	const dataverseUrl = `http://${host}/dataverse/testDataverse`;
+
+	cy.exec(
+		`if curl -fsS ${healthUrl} >/dev/null; then `
+			+ 'echo managed; '
+			+ `else nohup php -S ${host} ${router} `
+			+ '>/tmp/dataverse-controlled-cypress.log 2>&1 & echo $!; fi',
+		{timeout: 10000}
+	).then((result) => {
+		const processId = result.stdout.trim();
+		Cypress.env('controlledDataversePid', /^\d+$/.test(processId) ? processId : null);
+		cy.request({
+			url: `http://${host}/reset`,
+			method: 'POST',
+			headers: {'X-Dataverse-key': 'valid-token'},
+		});
+	}).then(() => dataverseUrl);
+});
+
+Cypress.Commands.add('stopControlledDataverse', function () {
+	const processId = Cypress.env('controlledDataversePid');
+	if (processId && /^\d+$/.test(processId)) {
+		cy.exec(`kill ${processId}`);
+	}
+	Cypress.env('controlledDataversePid', null);
+});
+
 Cypress.Commands.add('ensureDataversePluginEnabled', function () {
 	cy.contains('a', 'Website').click();
 	cy.waitJQuery();

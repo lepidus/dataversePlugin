@@ -2,7 +2,6 @@ import '../support/commands.js';
 
 describe('Dataverse Plugin - Features around review stage', function () {
 	let submissionData;
-	let controlledDataversePid;
     
     before(function () {
 		submissionData = {
@@ -13,33 +12,17 @@ describe('Dataverse Plugin - Features around review stage', function () {
 			]
 		}
 
-		const controlledDataverseHost = '127.0.0.1:8099';
-		const controlledDataverseRouter = 'plugins/generic/dataverse/tests/fixtures/controlledDataverse/router.php';
-		Cypress.env('controlledDataverseUrl', `http://${controlledDataverseHost}/dataverse/testDataverse`);
-
-		cy.exec(
-			`nohup php -S ${controlledDataverseHost} ${controlledDataverseRouter}`
-				+ ' >/tmp/dataverse-controlled-cypress.log 2>&1 & echo $!',
-			{timeout: 10000}
-		).then((result) => {
-			controlledDataversePid = result.stdout.trim();
-			expect(controlledDataversePid).to.match(/^\d+$/);
-			cy.request({
-				url: `http://${controlledDataverseHost}/reset`,
-				method: 'POST',
-				headers: {'X-Dataverse-key': 'valid-token'},
+		cy.startControlledDataverse().then((controlledDataverseUrl) => {
+			cy.login('dbarnes', null, 'publicknowledge');
+			cy.ensureDataversePluginEnabled();
+			cy.configureDataverse({
+				url: controlledDataverseUrl,
+				apiToken: 'valid-token',
+				termsOfUse: 'https://example.test/terms',
+				datasetPublish: 1,
 			});
+			cy.logout();
 		});
-
-		cy.login('dbarnes', null, 'publicknowledge');
-		cy.ensureDataversePluginEnabled();
-		cy.configureDataverse({
-			url: Cypress.env('controlledDataverseUrl'),
-			apiToken: 'valid-token',
-			termsOfUse: 'https://example.test/terms',
-			datasetPublish: 1,
-		});
-		cy.logout();
 	});
 
 	after(function () {
@@ -60,11 +43,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
 			});
 			cy.logout();
 		}
-		cy.then(() => {
-			if (controlledDataversePid && /^\d+$/.test(controlledDataversePid)) {
-				cy.exec(`kill ${controlledDataversePid}`);
-			}
-		});
+		cy.stopControlledDataverse();
 	});
 
 	it('Deposits research data for a prepared submission', function () {
