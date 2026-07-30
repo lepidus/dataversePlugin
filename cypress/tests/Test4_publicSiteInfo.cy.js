@@ -7,7 +7,7 @@ describe('Dataverse Plugin - Information displayed in public site', function () 
         keywords: ['public research data'],
         datasetSubject: 'Arts and Humanities',
     };
-    const persistentId = 'doi:10.5072/FK2/CONTROLLED';
+    const persistentId = 'doi:10.5072/FK2/PUBLICINFO';
     let controlledDataverseUrl;
     let submissionId;
 
@@ -124,7 +124,7 @@ describe('Dataverse Plugin - Information displayed in public site', function () 
         cy.contains('h2', 'Data statement').should('not.exist');
         cy.contains('h2', 'Research data');
         cy.contains('Controlled dataset');
-        cy.contains('a', 'https://doi.org/10.5072/FK2/CONTROLLED');
+        cy.contains('a', 'https://doi.org/10.5072/FK2/PUBLICINFO');
         cy.contains('Controlled Dataverse, V1');
     });
 });

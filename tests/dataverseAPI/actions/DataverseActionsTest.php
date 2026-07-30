@@ -309,6 +309,28 @@ class DataverseActionsTest extends PKPTestCase
         );
     }
 
+    public function testControlledDataversePreservesRequestedPersistentId(): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken('valid-token');
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, new Client()])
+            ->getMockForAbstractClass();
+        $persistentId = 'doi:10.5072/FK2/PUBLICINFO';
+
+        $response = $actions->nativeAPIRequest(
+            'GET',
+            $actions->createNativeAPIURI(
+                ['datasets', ':persistentId', 'versions'],
+                ['persistentId' => $persistentId]
+            )
+        );
+        $dataset = json_decode($response->getBody(), true)['data'][0];
+
+        $this->assertSame($persistentId, $dataset['datasetPersistentId']);
+    }
+
     public function testControlledDataverseDatasetIncludesRelatedPublicationUsedByDatasetTab(): void
     {
         $this->startControlledDataverse();

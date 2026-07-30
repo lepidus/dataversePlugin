@@ -1,8 +1,12 @@
 <?php
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$query = [];
+parse_str(parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY) ?? '', $query);
 $method = $_SERVER['REQUEST_METHOD'];
 $token = $_SERVER['HTTP_X_DATAVERSE_KEY'] ?? ($_SERVER['PHP_AUTH_USER'] ?? '');
+$persistentId = $query['persistentId'] ?? 'doi:10.5072/FK2/CONTROLLED';
+$persistentUri = 'https://doi.org/' . preg_replace('/^doi:/', '', $persistentId);
 
 error_log($method . ' ' . $path);
 
@@ -140,7 +144,7 @@ if ($method === 'GET' && $path === '/api/datasets/:persistentId/versions') {
         'status' => 'OK',
         'data' => [[
             'datasetId' => 101,
-            'datasetPersistentId' => 'doi:10.5072/FK2/CONTROLLED',
+            'datasetPersistentId' => $persistentId,
             'versionState' => $state['published'] ? 'RELEASED' : 'DRAFT',
             'license' => ['name' => 'CC BY 4.0'],
             'metadataBlocks' => [
@@ -188,9 +192,9 @@ if ($method === 'GET' && $path === '/api/datasets/export') {
         'status' => 'OK',
         'datasetVersion' => [
             'citation' => 'Controlled, Author, 2099, "Controlled dataset", Controlled Dataverse, V1, '
-                . 'https://doi.org/10.5072/FK2/CONTROLLED',
+                . $persistentUri,
         ],
-        'persistentUrl' => 'https://doi.org/10.5072/FK2/CONTROLLED',
+        'persistentUrl' => $persistentUri,
     ]);
     return;
 }
