@@ -4,6 +4,7 @@ namespace APP\plugins\generic\dataverse\classes\tasks;
 
 use PKP\scheduledTask\ScheduledTask;
 use PKP\mail\Mailable;
+use PKP\security\Role;
 use APP\core\Application;
 use APP\facades\Repo;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Mail;
 
 class NotifyDataverseTokenExpiration extends ScheduledTask
 {
+    private const MANAGER_USER_GROUP_NAME_LOCALE_KEY = 'default.groups.name.manager';
+
     public function executeActions()
     {
         $dataverseClient = new DataverseClient();
@@ -43,14 +46,14 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
             'DATAVERSE_TOKEN_EXPIRATION'
         );
 
-        $admin = $this->getAdminUser($context->getId());
-        if (!$admin) {
+        $recipients = $this->getNotificationRecipients($context);
+        if (empty($recipients)) {
             return;
         }
 
         $email = new Mailable();
         $email->from($context->getData('contactEmail'), $context->getData('contactName'));
-        $email->to([['name' => $admin->getFullName(), 'email' => $admin->getEmail()]]);
+        $email->to($recipients);
         $email->subject($emailTemplate->getLocalizedData('subject'));
 
         $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
@@ -64,38 +67,72 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         Mail::send($email);
     }
 
-    private function getAdminUser($contextId)
+    protected function getNotificationRecipients($context): array
     {
-        $applicationName = Application::get()->getName();
-        $adminEnAbbrev = ($applicationName == 'ojs2' ? 'jm' : 'psm');
+        $users = array_merge(
+            $this->getUsersByRole(Role::ROLE_ID_SITE_ADMIN, Application::CONTEXT_SITE),
+            $this->getJournalManagerUsers($context->getId())
+        );
 
-        $adminUserGroup = $this->getUserGroupByAbbrev($contextId, $adminEnAbbrev);
-        if (!$adminUserGroup) {
-            return null;
-        }
+        $recipients = [];
+        foreach ($users as $user) {
+            $userEmail = strtolower(trim($user->getEmail()));
 
-        $adminUsers = Repo::user()->getCollector()
-            ->filterByUserGroupIds([$adminUserGroup->getId()])
-            ->getMany()
-            ->toArray();
-
-        return array_shift($adminUsers);
-    }
-
-    private function getUserGroupByAbbrev(int $contextId, string $abbrev)
-    {
-        $contextUserGroups = Repo::userGroup()->getCollector()
-            ->filterByContextIds([$contextId])
-            ->getMany();
-
-        foreach ($contextUserGroups as $userGroup) {
-            $userGroupAbbrev = strtolower($userGroup->getData('abbrev', 'en'));
-
-            if ($userGroupAbbrev === $abbrev) {
-                return $userGroup;
+            if (!isset($recipients[$userEmail])) {
+                $recipients[$userEmail] = [
+                    'name' => $user->getFullName(),
+                    'email' => $userEmail,
+                ];
             }
         }
 
-        return null;
+        $contactEmail = $context->getData('contactEmail');
+        if (!empty($contactEmail) && !isset($recipients[$contactEmail])) {
+            $recipients[$contactEmail] = [
+                'name' => $context->getData('contactName'),
+                'email' => $contactEmail,
+            ];
+        }
+
+        return array_values($recipients);
+    }
+
+    protected function getUsersByRole(int $roleId, int $contextId): array
+    {
+        return Repo::user()->getCollector()
+            ->filterByContextIds([$contextId])
+            ->filterByRoleIds([$roleId])
+            ->getMany()
+            ->toArray();
+    }
+
+    protected function getJournalManagerUsers(int $contextId): array
+    {
+        foreach ($this->getManagerUserGroups($contextId) as $userGroup) {
+            if ($userGroup->getData('nameLocaleKey') === self::MANAGER_USER_GROUP_NAME_LOCALE_KEY) {
+                return $this->getUsersByUserGroup($userGroup->getId(), $contextId);
+            }
+        }
+
+        return [];
+    }
+
+    protected function getManagerUserGroups(int $contextId): array
+    {
+        return Repo::userGroup()->getCollector()
+            ->filterByContextIds([$contextId])
+            ->filterByRoleIds([Role::ROLE_ID_MANAGER])
+            ->filterByIsDefault(true)
+            ->getMany()
+            ->toArray();
+    }
+
+    protected function getUsersByUserGroup(int $userGroupId, int $contextId): array
+    {
+        return Repo::user()->getCollector()
+            ->filterByContextIds([$contextId])
+            ->filterByUserGroupIds([$userGroupId])
+            ->getMany()
+            ->toArray();
     }
 }
