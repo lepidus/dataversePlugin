@@ -67,31 +67,13 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		});
 	});
 
-    function beginSubmission(submissionData) {
-        cy.get('input[name="locale"][value="en"]').click();
-        cy.setTinyMceContent('startSubmission-title-control', submissionData.title);
-        
-        if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-            cy.get('input[name="sectionId"][value="1"]').click();
-        }
-        
-        cy.get('input[name="submissionRequirements"]').check();
-        cy.get('input[name="privacyConsent"]').check();
-        cy.contains('button', 'Begin Submission').click();
-    }
-
-    it('Creates new submission with research data', function () {
-        cy.login('ckwantes', null, 'publicknowledge');
-        
-        cy.get('#myQueue a:contains("New Submission")').click();
-        beginSubmission(submissionData);
-
-        cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
-        submissionData.keywords.forEach(keyword => {
-			cy.addKeyword('#titleAbstract-keywords-control-en', '#titleAbstract-keywords-selected-en', keyword);
-        });
-        cy.get('input[name="dataStatementTypes"][value=3]').click();
-        cy.contains('button', 'Continue').click();
+	it('Deposits research data for a prepared submission', function () {
+		cy.login('ckwantes', null, 'publicknowledge');
+		cy.createDataverseSubmissionWithApi(submissionData);
+		cy.get('@submissionId').then((submissionId) => {
+			cy.visit(`/index.php/publicknowledge/submission?id=${submissionId}`);
+		});
+		cy.contains('button', 'Continue').click();
 
         cy.uploadSubmissionFiles([{
 			'file': 'dummy.pdf',

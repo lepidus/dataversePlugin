@@ -88,3 +88,36 @@ Cypress.Commands.add('ensureDataversePluginEnabled', function () {
 	});
 	cy.get('input[id^=select-cell-dataverseplugin]').should('be.checked');
 });
+
+Cypress.Commands.add('createDataverseSubmissionWithApi', function (submissionData) {
+	cy.getCsrfToken();
+	cy.get('@csrfToken').then((csrfToken) => {
+		cy.request({
+			url: '/index.php/publicknowledge/api/v1/submissions',
+			method: 'POST',
+			headers: {'X-Csrf-Token': csrfToken},
+			body: {sectionId: submissionData.sectionId || 1},
+		}).then((response) => {
+			expect(response.status).to.eq(200);
+			cy.wrap(response.body.id).as('submissionId');
+			const currentPublicationApiUrl = response.body.publications[0]._href;
+			cy.request({
+				url: currentPublicationApiUrl,
+				method: 'PUT',
+				headers: {'X-Csrf-Token': csrfToken},
+				body: {
+					title: {en: submissionData.title},
+					abstract: {en: submissionData.abstract},
+					keywords: {en: submissionData.keywords},
+					dataStatementTypes: [3],
+				},
+			}).then((response) => {
+				expect(response.status).to.eq(200);
+				expect(response.body.title.en).to.eq(submissionData.title);
+				expect(response.body.abstract.en).to.eq(submissionData.abstract);
+				expect(response.body.keywords.en).to.deep.eq(submissionData.keywords);
+				expect(response.body.dataStatementTypes).to.deep.eq([3]);
+			});
+		});
+	});
+});
