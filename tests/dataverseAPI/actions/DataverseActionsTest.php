@@ -8,7 +8,10 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ConnectException;
 use PKP\tests\PKPTestCase;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\classes\factories\JsonDatasetFactory;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
@@ -216,6 +219,24 @@ class DataverseActionsTest extends PKPTestCase
         );
     }
 
+    public function testControlledDataverseExposesRootCollectionUsedByAcceptanceDecision(): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken('valid-token');
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, new Client()])
+            ->getMockForAbstractClass();
+
+        $response = $actions->nativeAPIRequest('GET', $actions->getRootDataverseURI());
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(
+            'Controlled Dataverse',
+            json_decode($response->getBody(), true)['data']['name']
+        );
+    }
+
     public function testControlledDataverseExposesDefaultLicense(): void
     {
         $this->startControlledDataverse();
@@ -285,6 +306,32 @@ class DataverseActionsTest extends PKPTestCase
         $this->assertStringContainsString(
             '<a href="https://doi.org/10.5072/FK2/CONTROLLED">',
             $citation['citation']
+        );
+    }
+
+    public function testControlledDataverseDatasetIncludesRelatedPublicationUsedByDatasetTab(): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken('valid-token');
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, new Client()])
+            ->getMockForAbstractClass();
+        $response = $actions->nativeAPIRequest(
+            'GET',
+            $actions->createNativeAPIURI(['datasets', ':persistentId', 'versions'])
+        );
+        $collectionActions = Mockery::mock(DataverseCollectionActions::class);
+        $collectionActions->shouldReceive('getRequiredMetadata')->andReturn([]);
+        $dataverseClient = Mockery::mock(DataverseClient::class);
+        $dataverseClient->shouldReceive('getDataverseCollectionActions')->andReturn($collectionActions);
+
+        $dataset = (new JsonDatasetFactory($response->getBody(), $dataverseClient))->getDataset();
+
+        $this->assertSame('IsCitedBy', $dataset->getRelatedPublication()->getRelationType());
+        $this->assertSame(
+            'Controlled related publication',
+            $dataset->getRelatedPublication()->getCitation()
         );
     }
 

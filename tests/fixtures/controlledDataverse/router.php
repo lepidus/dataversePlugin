@@ -59,6 +59,18 @@ if ($path === '/api/dataverses/testDataverse') {
     return;
 }
 
+if ($path === '/api/dataverses/:root') {
+    echo json_encode([
+        'status' => 'OK',
+        'data' => [
+            'id' => 1,
+            'alias' => 'root',
+            'name' => 'Controlled Dataverse',
+        ],
+    ]);
+    return;
+}
+
 if ($method === 'GET' && $path === '/api/licenses') {
     echo json_encode([
         'status' => 'OK',
@@ -147,6 +159,10 @@ if ($method === 'GET' && $path === '/api/datasets/:persistentId/versions') {
                         ]]],
                         ['typeName' => 'subject', 'typeClass' => 'controlledVocabulary', 'value' => ['Other']],
                         ['typeName' => 'language', 'typeClass' => 'controlledVocabulary', 'value' => ['English']],
+                        ['typeName' => 'publication', 'typeClass' => 'compound', 'value' => [[
+                            'publicationRelationType' => ['value' => 'IsCitedBy'],
+                            'publicationCitation' => ['value' => 'Controlled related publication'],
+                        ]]],
                     ],
                 ],
             ],

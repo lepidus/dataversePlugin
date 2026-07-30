@@ -76,3 +76,15 @@ Cypress.Commands.add('configureDataverse', function (configuration) {
 		});
 	});
 });
+
+Cypress.Commands.add('ensureDataversePluginEnabled', function () {
+	cy.contains('a', 'Website').click();
+	cy.waitJQuery();
+	cy.get('#plugins-button').click();
+	cy.get('input[id^=select-cell-dataverseplugin]').then(($plugin) => {
+		if (!$plugin.is(':checked')) {
+			cy.wrap($plugin).check();
+		}
+	});
+	cy.get('input[id^=select-cell-dataverseplugin]').should('be.checked');
+});

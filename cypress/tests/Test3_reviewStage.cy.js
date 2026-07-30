@@ -32,6 +32,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		});
 
 		cy.login('dbarnes', null, 'publicknowledge');
+		cy.ensureDataversePluginEnabled();
 		cy.configureDataverse({
 			url: Cypress.env('controlledDataverseUrl'),
 			apiToken: 'valid-token',
@@ -42,15 +43,23 @@ describe('Dataverse Plugin - Features around review stage', function () {
 	});
 
 	after(function () {
-		cy.logout();
-		cy.login('dbarnes', null, 'publicknowledge');
-		cy.configureDataverse({
+		const externalDataverseConfiguration = {
 			url: Cypress.env('dataverseUrl'),
 			apiToken: Cypress.env('dataverseApiToken'),
 			termsOfUse: Cypress.env('dataverseTermsOfUse'),
-			datasetPublish: 2,
-		});
-		cy.logout();
+		};
+		const hasExternalDataverseConfiguration = Object.values(externalDataverseConfiguration)
+			.every((value) => typeof value === 'string' && value.length > 0);
+
+		if (hasExternalDataverseConfiguration) {
+			cy.logout();
+			cy.login('dbarnes', null, 'publicknowledge');
+			cy.configureDataverse({
+				...externalDataverseConfiguration,
+				datasetPublish: 2,
+			});
+			cy.logout();
+		}
 		cy.then(() => {
 			if (controlledDataversePid && /^\d+$/.test(controlledDataversePid)) {
 				cy.exec(`kill ${controlledDataversePid}`);
