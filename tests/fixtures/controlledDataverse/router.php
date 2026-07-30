@@ -25,6 +25,35 @@ $state = is_file($statePath)
 $saveState = static function (array $newState) use ($statePath): void {
     file_put_contents($statePath, json_encode($newState), LOCK_EX);
 };
+$defaultCitationFields = [
+    ['typeName' => 'title', 'typeClass' => 'primitive', 'value' => 'Controlled dataset'],
+    ['typeName' => 'author', 'typeClass' => 'compound', 'value' => [[
+        'authorName' => ['value' => 'Controlled, Author'],
+    ]]],
+    ['typeName' => 'datasetContact', 'typeClass' => 'compound', 'value' => [[
+        'datasetContactName' => ['value' => 'Controlled, Contact'],
+        'datasetContactEmail' => ['value' => 'contact@example.test'],
+    ]]],
+    ['typeName' => 'dsDescription', 'typeClass' => 'compound', 'value' => [[
+        'dsDescriptionValue' => ['value' => 'Controlled description'],
+    ]]],
+    ['typeName' => 'subject', 'typeClass' => 'controlledVocabulary', 'value' => ['Other']],
+    ['typeName' => 'language', 'typeClass' => 'controlledVocabulary', 'value' => ['English']],
+    ['typeName' => 'publication', 'typeClass' => 'compound', 'value' => [[
+        'publicationRelationType' => ['value' => 'IsCitedBy'],
+        'publicationCitation' => ['value' => 'Controlled related publication'],
+    ]]],
+];
+$storeDatasetVersion = static function (array $payload, array &$state) use ($saveState): void {
+    $datasetVersion = $payload['datasetVersion'] ?? $payload;
+    if (isset($datasetVersion['metadataBlocks']['citation']['fields'])) {
+        $state['citationFields'] = $datasetVersion['metadataBlocks']['citation']['fields'];
+    }
+    if (isset($datasetVersion['license'])) {
+        $state['license'] = $datasetVersion['license'];
+    }
+    $saveState($state);
+};
 
 if ($token === 'expired-token') {
     http_response_code(401);
@@ -110,7 +139,8 @@ if ($method === 'GET' && $path === '/api/users/token') {
 if ($method === 'POST' && $path === '/api/dataverses/testDataverse/datasets') {
     $state['published'] = false;
     $state['files'] = [];
-    $saveState($state);
+    $payload = json_decode(file_get_contents('php://input'), true) ?? [];
+    $storeDatasetVersion($payload, $state);
     echo json_encode([
         'status' => 'OK',
         'data' => [
@@ -146,28 +176,10 @@ if ($method === 'GET' && $path === '/api/datasets/:persistentId/versions') {
             'datasetId' => 101,
             'datasetPersistentId' => $persistentId,
             'versionState' => $state['published'] ? 'RELEASED' : 'DRAFT',
-            'license' => ['name' => 'CC BY 4.0'],
+            'license' => ['name' => $state['license'] ?? 'CC BY 4.0'],
             'metadataBlocks' => [
                 'citation' => [
-                    'fields' => [
-                        ['typeName' => 'title', 'typeClass' => 'primitive', 'value' => 'Controlled dataset'],
-                        ['typeName' => 'author', 'typeClass' => 'compound', 'value' => [[
-                            'authorName' => ['value' => 'Controlled, Author'],
-                        ]]],
-                        ['typeName' => 'datasetContact', 'typeClass' => 'compound', 'value' => [[
-                            'datasetContactName' => ['value' => 'Controlled, Contact'],
-                            'datasetContactEmail' => ['value' => 'contact@example.test'],
-                        ]]],
-                        ['typeName' => 'dsDescription', 'typeClass' => 'compound', 'value' => [[
-                            'dsDescriptionValue' => ['value' => 'Controlled description'],
-                        ]]],
-                        ['typeName' => 'subject', 'typeClass' => 'controlledVocabulary', 'value' => ['Other']],
-                        ['typeName' => 'language', 'typeClass' => 'controlledVocabulary', 'value' => ['English']],
-                        ['typeName' => 'publication', 'typeClass' => 'compound', 'value' => [[
-                            'publicationRelationType' => ['value' => 'IsCitedBy'],
-                            'publicationCitation' => ['value' => 'Controlled related publication'],
-                        ]]],
-                    ],
+                    'fields' => $state['citationFields'] ?? $defaultCitationFields,
                 ],
             ],
             'files' => $files,
@@ -200,6 +212,8 @@ if ($method === 'GET' && $path === '/api/datasets/export') {
 }
 
 if ($method === 'PUT' && $path === '/api/datasets/:persistentId/versions/:draft') {
+    $payload = json_decode(file_get_contents('php://input'), true) ?? [];
+    $storeDatasetVersion($payload, $state);
     echo json_encode(['status' => 'OK']);
     return;
 }
@@ -235,7 +249,16 @@ if ($method === 'GET' && strpos($path, '/dvn/api/data-deposit/v1.1/swordv2/edit/
     return;
 }
 
-if ($method === 'DELETE' && strpos($path, '/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/') === 0) {
+if (
+    $method === 'DELETE'
+    && preg_match('~^/dvn/api/data-deposit/v1\.1/swordv2/edit-media/file/(\d+)$~', $path, $matches)
+) {
+    $deletedFileId = (int) $matches[1];
+    $state['files'] = array_values(array_filter(
+        $state['files'],
+        static fn (array $file): bool => $file['id'] !== $deletedFileId
+    ));
+    $saveState($state);
     echo json_encode(['status' => 'OK']);
     return;
 }

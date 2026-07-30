@@ -331,6 +331,78 @@ class DataverseActionsTest extends PKPTestCase
         $this->assertSame($persistentId, $dataset['datasetPersistentId']);
     }
 
+    public function testControlledDataversePersistsDatasetMetadataUpdates(): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken('valid-token');
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, new Client()])
+            ->getMockForAbstractClass();
+        $versionsUri = $actions->createNativeAPIURI(['datasets', ':persistentId', 'versions']);
+        $draftVersionUri = $actions->createNativeAPIURI(
+            ['datasets', ':persistentId', 'versions', ':draft']
+        );
+        $updatedTitle = 'Updated controlled dataset';
+
+        $actions->nativeAPIRequest('PUT', $draftVersionUri, [
+            'json' => [
+                'license' => 'CC0 1.0',
+                'metadataBlocks' => [
+                    'citation' => [
+                        'fields' => [[
+                            'typeName' => 'title',
+                            'typeClass' => 'primitive',
+                            'value' => $updatedTitle,
+                        ]],
+                    ],
+                ],
+            ],
+        ]);
+        $response = $actions->nativeAPIRequest('GET', $versionsUri);
+        $datasetVersion = json_decode($response->getBody(), true)['data'][0];
+
+        $this->assertSame('CC0 1.0', $datasetVersion['license']['name']);
+        $this->assertSame($updatedTitle, $datasetVersion['metadataBlocks']['citation']['fields'][0]['value']);
+    }
+
+    public function testControlledDataverseRemovesDeletedDatasetFile(): void
+    {
+        $this->startControlledDataverse();
+        $this->configuration->setDataverseUrl($this->controlledDataverseUrl . '/dataverse/testDataverse');
+        $this->configuration->setAPIToken('valid-token');
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, new Client()])
+            ->getMockForAbstractClass();
+        $filesUri = $actions->createNativeAPIURI(['datasets', ':persistentId', 'versions', ':latest', 'files']);
+
+        $actions->nativeAPIRequest(
+            'POST',
+            $actions->createNativeAPIURI(['datasets', ':persistentId', 'add']),
+            ['multipart' => [[
+                'name' => 'file',
+                'contents' => '{}',
+                'filename' => 'controlled-file.json',
+            ]]]
+        );
+        $uploadedFiles = json_decode(
+            $actions->nativeAPIRequest('GET', $filesUri)->getBody(),
+            true
+        )['data'];
+        $this->assertCount(1, $uploadedFiles);
+
+        $actions->swordAPIRequest(
+            'DELETE',
+            $actions->createSWORDAPIURI('edit-media', 'file', (string) $uploadedFiles[0]['dataFile']['id'])
+        );
+        $remainingFiles = json_decode(
+            $actions->nativeAPIRequest('GET', $filesUri)->getBody(),
+            true
+        )['data'];
+
+        $this->assertSame([], $remainingFiles);
+    }
+
     public function testControlledDataverseDatasetIncludesRelatedPublicationUsedByDatasetTab(): void
     {
         $this->startControlledDataverse();
@@ -414,5 +486,8 @@ class DataverseActionsTest extends PKPTestCase
             usleep(20000);
         }
         $this->assertTrue($ready, 'Controlled Dataverse did not become ready');
+        (new Client())->post($this->controlledDataverseUrl . '/reset', [
+            'headers' => ['X-Dataverse-key' => 'valid-token'],
+        ]);
     }
 }
