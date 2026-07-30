@@ -6,6 +6,8 @@ import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 
 class NotifyDataverseTokenExpiration extends ScheduledTask
 {
+    private const MANAGER_USER_GROUP_NAME_LOCALE_KEY = 'default.groups.name.manager';
+
     public function executeActions()
     {
         $dataverseClient = new DataverseClient();
@@ -34,14 +36,14 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
     {
         $context = Application::get()->getRequest()->getContext();
 
-        $admin = $this->getAdminUser($context->getId());
-        if (!$admin) {
+        $recipients = $this->getNotificationRecipients($context);
+        if (empty($recipients)) {
             return;
         }
 
         $email = new MailTemplate('DATAVERSE_TOKEN_EXPIRATION', null, $context, false);
         $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
-        $email->setRecipients([['name' => $admin->getFullName(), 'email' => $admin->getEmail()]]);
+        $email->setRecipients($recipients);
 
         $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
         $email->sendWithParams([
@@ -51,36 +53,74 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         ]);
     }
 
-    private function getAdminUser($contextId)
+    protected function getNotificationRecipients($context): array
     {
-        $applicationName = Application::get()->getName();
-        $adminEnAbbrev = ($applicationName == 'ojs2' ? 'jm' : 'psm');
+        $users = array_merge(
+            $this->getUsersByRole(ROLE_ID_SITE_ADMIN, CONTEXT_SITE),
+            $this->getJournalManagerUsers($context->getId())
+        );
 
-        $adminUserGroup = $this->getUserGroupByAbbrev($contextId, $adminEnAbbrev);
-        if (!$adminUserGroup) {
-            return null;
-        }
+        $recipients = [];
+        foreach ($users as $user) {
+            $userEmail = strtolower(trim($user->getEmail()));
 
-        $adminUsers = Services::get('user')->getMany([
-            'contextId' => $contextId,
-            'userGroupIds' => [$adminUserGroup->getId()]
-        ]);
-
-        return $adminUsers->current();
-    }
-
-    private function getUserGroupByAbbrev(int $contextId, string $abbrev)
-    {
-        $contextUserGroups = DAORegistry::getDAO('UserGroupDAO')->getByContextId($contextId)->toArray();
-
-        foreach ($contextUserGroups as $userGroup) {
-            $userGroupAbbrev = strtolower($userGroup->getData('abbrev', 'en_US'));
-
-            if ($userGroupAbbrev === $abbrev) {
-                return $userGroup;
+            if (!isset($recipients[$userEmail])) {
+                $recipients[$userEmail] = [
+                    'name' => $user->getFullName(),
+                    'email' => $userEmail,
+                ];
             }
         }
 
-        return null;
+        $contactEmail = $context->getData('contactEmail');
+        if (!empty($contactEmail) && !isset($recipients[$contactEmail])) {
+            $recipients[$contactEmail] = [
+                'name' => $context->getData('contactName'),
+                'email' => $contactEmail,
+            ];
+        }
+
+        return array_values($recipients);
+    }
+
+    protected function getUsersByRole(int $roleId, int $contextId): array
+    {
+        return iterator_to_array(Services::get('user')->getMany([
+            'contextId' => $contextId,
+            'roleIds' => [$roleId]
+        ]));
+    }
+
+    protected function getJournalManagerUsers(int $contextId): array
+    {
+        foreach ($this->getManagerUserGroups($contextId) as $userGroup) {
+            if ($userGroup->getData('nameLocaleKey') === self::MANAGER_USER_GROUP_NAME_LOCALE_KEY) {
+                return $this->getUsersByUserGroup($userGroup->getId(), $contextId);
+            }
+        }
+
+        return [];
+    }
+
+    protected function getManagerUserGroups(int $contextId): array
+    {
+        $userGroupDao = DAORegistry::getDAO('UserGroupDAO');
+        $managerUserGroups = [];
+
+        foreach ($userGroupDao->getByContextId($contextId)->toArray() as $userGroup) {
+            if ($userGroup->getRoleId() === ROLE_ID_MANAGER) {
+                $managerUserGroups[] = $userGroup;
+            }
+        }
+
+        return $managerUserGroups;
+    }
+
+    protected function getUsersByUserGroup(int $userGroupId, int $contextId): array
+    {
+        return iterator_to_array(Services::get('user')->getMany([
+            'contextId' => $contextId,
+            'userGroupIds' => [$userGroupId]
+        ]));
     }
 }
