@@ -55,21 +55,30 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
 
     protected function getNotificationRecipients($context): array
     {
-        $recipients = [];
         $users = array_merge(
             $this->getUsersByRole(ROLE_ID_SITE_ADMIN, CONTEXT_SITE),
             $this->getJournalManagerUsers($context->getId())
         );
 
+        $recipients = [];
         foreach ($users as $user) {
-            $this->addRecipient($recipients, $user->getFullName(), $user->getEmail());
+            $userEmail = strtolower(trim($user->getEmail()));
+
+            if (!isset($recipients[$userEmail])) {
+                $recipients[$userEmail] = [
+                    'name' => $user->getFullName(),
+                    'email' => $userEmail,
+                ];
+            }
         }
 
-        $this->addRecipient(
-            $recipients,
-            $context->getData('contactName'),
-            $context->getData('contactEmail')
-        );
+        $contactEmail = $context->getData('contactEmail');
+        if (!empty($contactEmail) && !isset($recipients[$contactEmail])) {
+            $recipients[$contactEmail] = [
+                'name' => $context->getData('contactName'),
+                'email' => $contactEmail,
+            ];
+        }
 
         return array_values($recipients);
     }
@@ -85,14 +94,9 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
     protected function getJournalManagerUsers(int $contextId): array
     {
         foreach ($this->getManagerUserGroups($contextId) as $userGroup) {
-            if (
-                !$userGroup->getDefault()
-                || $userGroup->getData('nameLocaleKey') !== self::MANAGER_USER_GROUP_NAME_LOCALE_KEY
-            ) {
-                continue;
+            if ($userGroup->getData('nameLocaleKey') === self::MANAGER_USER_GROUP_NAME_LOCALE_KEY) {
+                return $this->getUsersByUserGroup($userGroup->getId(), $contextId);
             }
-
-            return $this->getUsersByUserGroup($userGroup->getId(), $contextId);
         }
 
         return [];
@@ -104,7 +108,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         $managerUserGroups = [];
 
         foreach ($userGroupDao->getByContextId($contextId)->toArray() as $userGroup) {
-            if ((int) $userGroup->getRoleId() === ROLE_ID_MANAGER) {
+            if ($userGroup->getRoleId() === ROLE_ID_MANAGER) {
                 $managerUserGroups[] = $userGroup;
             }
         }
@@ -118,19 +122,5 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
             'contextId' => $contextId,
             'userGroupIds' => [$userGroupId]
         ]));
-    }
-
-    private function addRecipient(array &$recipients, ?string $name, ?string $email): void
-    {
-        $email = trim((string) $email);
-        $recipientKey = strtolower($email);
-        if ($email === '' || isset($recipients[$recipientKey])) {
-            return;
-        }
-
-        $recipients[$recipientKey] = [
-            'name' => (string) $name,
-            'email' => $email,
-        ];
     }
 }
