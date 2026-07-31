@@ -66,9 +66,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             this.datasetCitation = '';
 
             if (xhr && xhr.status === 401) {
-                this.dataverseErrorMessage = this.__('plugins.generic.dataverse.error.invalidToken');
+                this.dataverseErrorMessage = this.errorInvalidToken;
             } else if (!this.dataverseErrorMessage) {
-                this.dataverseErrorMessage = this.__('plugins.generic.dataverse.error.unavailable');
+                this.dataverseErrorMessage = this.errorUnavailable;
             }
 
             if (this.components.datasetMetadata) {
