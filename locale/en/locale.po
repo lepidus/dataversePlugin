@@ -146,6 +146,12 @@ msgstr "The research data cannot consist solely of the README file"
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Error getting research data to Dataverse: {$error}"
 
+msgid "plugins.generic.dataverse.error.exception.unavailable"
+msgstr "Dataverse service is temporarily unavailable"
+
+msgid "plugins.generic.dataverse.error.exception.invalidToken"
+msgstr "Dataverse API token is invalid or expired"
+
 msgid "plugins.generic.dataverse.error.unavailable"
 msgstr "The research data repository is temporarily unavailable. The editorial workflow remains available, but Dataverse actions are disabled until the connection is restored."
 

@@ -57,7 +57,7 @@ describe('Plugin configuration', function () {
 		});
 
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
-		cy.contains("Unable to connect to Dataverse. Error returned: Bad API key");
+		cy.contains("Unable to connect to Dataverse. Error returned: Dataverse API token is invalid or expired");
 
 		cy.get('input[name=apiToken]').focus().clear().type(Cypress.env('dataverseApiToken'));
 
