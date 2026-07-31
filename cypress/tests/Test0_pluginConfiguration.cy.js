@@ -57,10 +57,7 @@ describe('Plugin configuration', function () {
 		});
 
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
-		cy.contains(
-			'The Dataverse API token has expired or is no longer valid. ' +
-			'Ask a journal manager or system administrator to update it in the plugin settings.'
-		);
+		cy.contains("Unable to connect to Dataverse. Error returned: Bad API key");
 
 		cy.get('input[name=apiToken]').focus().clear().type(Cypress.env('dataverseApiToken'));
 
