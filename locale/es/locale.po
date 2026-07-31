@@ -218,7 +218,7 @@ msgid "plugins.generic.dataverse.termsOfUse.label"
 msgstr "Términos de uso del Dataverse"
 
 msgid "plugins.generic.dataverse.termsOfUse.description"
-msgstr "Depositar datos de investigación <strong>{$dataverseName}</strong>, estando de acuerdo con el <a href=\"{$termsOfUseURL}\" target=\"_new\">Términos de Uso</a>."
+msgstr "Depositar datos de investigación <strong>{$dataverseName}</strong>, estando de acuerdo con el <a href=\"{$termsOfUseUrl}\" target=\"_new\">Términos de Uso</a>."
 
 msgid "plugins.generic.dataverse.termsOfUse.error"
 msgstr "Para depositar datos de investigación debe aceptar los términos de uso del Dataverse."

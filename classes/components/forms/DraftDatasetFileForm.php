@@ -51,6 +51,6 @@ class DraftDatasetFileForm extends FormComponent
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
         $termsOfUse = $configuration->getLocalizedData('termsOfUse', $locale);
 
-        return ['termsOfUserUrl' => $termsOfUse];
+        return ['termsOfUseUrl' => $termsOfUse];
     }
 }
