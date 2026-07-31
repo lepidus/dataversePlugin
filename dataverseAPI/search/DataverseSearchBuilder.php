@@ -5,6 +5,7 @@ namespace APP\plugins\generic\dataverse\dataverseAPI\search;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use GuzzleHttp\Exception\TransferException;
 
 class DataverseSearchBuilder
 {
@@ -94,22 +95,12 @@ class DataverseSearchBuilder
             $response = $this->httpClient->request('GET', $url, [
                 'headers' => [
                     'X-Dataverse-key' => $this->configuration->getAPIToken()
-                ]
+                ],
+                'connect_timeout' => 5,
+                'timeout' => 15,
             ]);
-        } catch (\GuzzleHttp\Exception\RequestException $e) {
-            $message = $e->getMessage();
-            $code = $e->getCode();
-
-            if ($e->hasResponse()) {
-                $response = $e->getResponse();
-                $code = $response->getStatusCode();
-
-                $responseBody = json_decode($response->getBody(), true);
-                if (!empty($responseBody)) {
-                    $message = $responseBody['message'];
-                }
-            }
-            throw new DataverseException($message, $code, $e);
+        } catch (TransferException $e) {
+            throw DataverseException::fromTransferException($e);
         }
 
         return new DataverseResponse(

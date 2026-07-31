@@ -146,17 +146,15 @@ class DatasetHandler extends APIHandler
         } catch (DataverseException $e) {
             if ($e->getCode() === 404) {
                 Repo::dataverseStudy()->delete($study);
+
+                return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
             }
 
-            $error = $e->getMessage();
-            $message = 'plugins.generic.dataverse.error.getFailed';
+            error_log('Dataverse API error: ' . $e->getMessage());
 
-            error_log('Dataverse API error: ' . $error);
-
-            return $response->withStatus(403)->withJsonError(
-                $message,
-                ['error' => $error]
-            );
+            return $response
+                ->withStatus($e->getCode())
+                ->withJsonError($e->getUserMessageKey());
         }
 
         return $response->withJson($dataset->getAllData(), 200);
@@ -353,7 +351,9 @@ class DatasetHandler extends APIHandler
             $datasetFiles = $dataverseClient->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
         } catch (DataverseException $e) {
             error_log('Error getting dataset files: ' . $e->getMessage());
-            return $response->withStatus($e->getCode())->withJson(['error' => $e->getMessage()]);
+            return $response
+                ->withStatus($e->getCode())
+                ->withJsonError($e->getUserMessageKey());
         }
 
         $fileActionApiUrl = $request
@@ -389,7 +389,9 @@ class DatasetHandler extends APIHandler
             $citationData = $dataverseClient->getDatasetActions()->getCitation($study->getPersistentId(), $datasetIsPublished);
         } catch (DataverseException $e) {
             error_log('Error getting citation: ' . $e->getMessage());
-            return $response->withStatus($e->getCode())->withJsonError('api.error.researchDataCitationNotFound');
+            return $response
+                ->withStatus($e->getCode())
+                ->withJsonError('api.error.researchDataCitationNotFound');
         }
 
         return $response->withJson(['citation' => $citationData['citation']], 200);
@@ -405,7 +407,9 @@ class DatasetHandler extends APIHandler
             $datasetLocks = $dataverseClient->getDatasetActions()->getDatasetLocks($datasetId);
         } catch (DataverseException $e) {
             error_log('Error getting dataset locks: ' . $e->getMessage());
-            return $response->withStatus($e->getCode());
+            return $response
+                ->withStatus($e->getCode())
+                ->withJsonError($e->getUserMessageKey());
         }
 
         foreach ($datasetLocks as $lock) {

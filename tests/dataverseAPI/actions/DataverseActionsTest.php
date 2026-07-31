@@ -120,7 +120,8 @@ class DataverseActionsTest extends PKPTestCase
             ->getMockForAbstractClass();
 
         $this->expectException(DataverseException::class);
-        $this->expectExceptionMessage('Error Communicating with Server');
+        $this->expectExceptionCode(503);
+        $this->expectExceptionMessage(__('plugins.generic.dataverse.error.exception.unavailable'));
         $actions->nativeAPIRequest('GET', 'test');
     }
 
@@ -139,7 +140,8 @@ class DataverseActionsTest extends PKPTestCase
             ->getMockForAbstractClass();
 
         $this->expectException(DataverseException::class);
-        $this->expectExceptionMessage('Failed to connect to Dataverse');
+        $this->expectExceptionCode(503);
+        $this->expectExceptionMessage(__('plugins.generic.dataverse.error.exception.unavailable'));
         $actions->nativeAPIRequest('GET', 'test');
     }
 
@@ -180,8 +182,134 @@ class DataverseActionsTest extends PKPTestCase
             ->getMockForAbstractClass();
 
         $this->expectException(DataverseException::class);
-        $this->expectExceptionCode(500);
-        $this->expectExceptionMessage('Error Communicating with Server');
+        $this->expectExceptionCode(503);
+        $this->expectExceptionMessage(__('plugins.generic.dataverse.error.exception.unavailable'));
         $actions->nativeAPIRequest('GET', 'test');
+    }
+
+    public function testHtmlChallengeResponseIsReportedAsServiceUnavailableWithoutLeakingBody(): void
+    {
+        $mockHandler = new MockHandler([
+            new RequestException(
+                '403 Forbidden',
+                new Request('GET', 'test'),
+                new Response(
+                    403,
+                    ['Content-Type' => 'text/html', 'cdn-challenge' => 'true'],
+                    '<html><title>Establishing a secure connection ...</title></html>'
+                )
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
+            ->getMockForAbstractClass();
+
+        try {
+            $actions->nativeAPIRequest('GET', 'test');
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(503, $exception->getCode());
+            $this->assertSame(__('plugins.generic.dataverse.error.exception.unavailable'), $exception->getMessage());
+            $this->assertStringNotContainsString('Establishing a secure connection', $exception->getMessage());
+        }
+    }
+
+    public function testJsonAuthenticationErrorIsReportedAsInvalidOrExpiredToken(): void
+    {
+        $mockHandler = new MockHandler([
+            new RequestException(
+                '403 Forbidden',
+                new Request('GET', 'test'),
+                new Response(403, ['Content-Type' => 'application/json'], '{"status":"ERROR","message":"Bad API key"}')
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
+            ->getMockForAbstractClass();
+
+        try {
+            $actions->nativeAPIRequest('GET', 'test');
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(401, $exception->getCode());
+            $this->assertSame(__('plugins.generic.dataverse.error.exception.invalidToken'), $exception->getMessage());
+            $this->assertSame('plugins.generic.dataverse.error.invalidToken', $exception->getUserMessageKey());
+            $this->assertStringNotContainsString('Bad API key', $exception->getMessage());
+        }
+    }
+
+    public function testUnauthorizedJsonResponseIsReportedAsInvalidOrExpiredToken(): void
+    {
+        $mockHandler = new MockHandler([
+            new RequestException(
+                '401 Unauthorized',
+                new Request('GET', 'test'),
+                new Response(401, ['Content-Type' => 'application/json'], '{"status":"ERROR","message":"Bad API key"}')
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
+            ->getMockForAbstractClass();
+
+        try {
+            $actions->nativeAPIRequest('GET', 'test');
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(401, $exception->getCode());
+            $this->assertSame('plugins.generic.dataverse.error.invalidToken', $exception->getUserMessageKey());
+        }
+    }
+
+    public function testJsonPermissionErrorIsNotReportedAsInvalidToken(): void
+    {
+        $mockHandler = new MockHandler([
+            new RequestException(
+                '403 Forbidden',
+                new Request('GET', 'test'),
+                new Response(403, ['Content-Type' => 'application/json'], '{"status":"ERROR","message":"User is not permitted"}')
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
+            ->getMockForAbstractClass();
+
+        try {
+            $actions->nativeAPIRequest('GET', 'test');
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(503, $exception->getCode());
+            $this->assertSame('plugins.generic.dataverse.error.unavailable', $exception->getUserMessageKey());
+        }
+    }
+
+    public function testRequestErrorWithoutResponseIsReportedAsServiceUnavailable(): void
+    {
+        $mockHandler = new MockHandler([
+            new ConnectException(
+                'Connection timed out with infrastructure details',
+                new Request('GET', 'test')
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $guzzleClient])
+            ->getMockForAbstractClass();
+
+        try {
+            $actions->nativeAPIRequest('GET', 'test');
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(503, $exception->getCode());
+            $this->assertSame(__('plugins.generic.dataverse.error.exception.unavailable'), $exception->getMessage());
+        }
     }
 }

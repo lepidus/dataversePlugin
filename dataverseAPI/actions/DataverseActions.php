@@ -20,7 +20,6 @@ abstract class DataverseActions
     protected $cacheManager;
 
     protected const ONE_DAY_SECONDS = 24 * 60 * 60;
-
     public function __construct(
         ?DataverseConfiguration $configuration = null,
         ?\GuzzleHttp\Client $client = null
@@ -69,23 +68,12 @@ abstract class DataverseActions
     public function nativeAPIRequest(string $method, string $uri, array $options = [], bool $returnResponse = true): ?DataverseResponse
     {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
+        $options += ['connect_timeout' => 5, 'timeout' => 15];
 
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
-            $message = $e->getMessage();
-            $code = $e->getCode();
-
-            if (method_exists($e, 'hasResponse') and $e->hasResponse()) {
-                $response = $e->getResponse();
-                $code = $response->getStatusCode();
-
-                $responseBody = json_decode($response->getBody(), true);
-                if (!empty($responseBody)) {
-                    $message = $responseBody['message'];
-                }
-            }
-            throw new DataverseException($message, $code, $e);
+            throw DataverseException::fromTransferException($e);
         }
 
         if (!$returnResponse) {
@@ -102,19 +90,12 @@ abstract class DataverseActions
     public function swordAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
     {
         $options['auth'] = [$this->apiToken, ''];
+        $options += ['connect_timeout' => 5, 'timeout' => 15];
 
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
-            $message = $e->getMessage();
-            $code = $e->getCode();
-
-            if (method_exists($e, 'hasResponse') and $e->hasResponse()) {
-                $response = $e->getResponse();
-                $code = $response->getStatusCode();
-                $message = $response->getReasonPhrase();
-            }
-            throw new DataverseException($message, $code, $e);
+            throw DataverseException::fromTransferException($e);
         }
 
         return new DataverseResponse(
@@ -128,4 +109,5 @@ abstract class DataverseActions
     {
         return null;
     }
+
 }

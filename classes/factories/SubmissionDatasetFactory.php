@@ -13,6 +13,7 @@ use APP\plugins\generic\dataverse\classes\entities\DatasetAuthor;
 use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
 use APP\plugins\generic\dataverse\classes\APACitation;
 use APP\plugins\generic\dataverse\classes\facades\Repo;

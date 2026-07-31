@@ -149,6 +149,21 @@ msgstr "Os dados da pesquisa não podem ser constituídos apenas pelo arquivo RE
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro ao obter dados de pesquisa no Dataverse: {$error}"
 
+msgid "plugins.generic.dataverse.error.exception.unavailable"
+msgstr "O serviço Dataverse está temporariamente indisponível"
+
+msgid "plugins.generic.dataverse.error.exception.invalidToken"
+msgstr "O token da API do Dataverse é inválido ou expirou"
+
+msgid "plugins.generic.dataverse.error.unavailable"
+msgstr "O repositório de dados de pesquisa está temporariamente indisponível. O fluxo editorial continua disponível, mas as ações do Dataverse ficam desabilitadas até a conexão ser restabelecida."
+
+msgid "plugins.generic.dataverse.error.invalidToken"
+msgstr "O token de API do Dataverse expirou ou não é mais válido. Solicite a um gerente da revista ou administrador do sistema que o atualize nas configurações do plugin."
+
+msgid "plugins.generic.dataverse.error.retry"
+msgstr "Tentar novamente"
+
 msgid "plugins.generic.dataverse.error.datasetDeposit"
 msgstr "Erro ao depositar dados de pesquisa no Dataverse: {$error}"
 

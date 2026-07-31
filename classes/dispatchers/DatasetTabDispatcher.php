@@ -140,6 +140,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $this->initAssociateDatasetForm($templateMgr, $associateFormAction);
 
         $templateMgr->setState([
+            'errorInvalidToken' => __('plugins.generic.dataverse.error.invalidToken'),
+            'errorUnavailable' => __('plugins.generic.dataverse.error.unavailable'),
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
             'loadingCitationMsg' => __('plugins.generic.dataverse.metadataForm.loadingDatasetCitation'),
             'hasDepositedDataset' => false
@@ -184,6 +186,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $this->addComponent($templateMgr, $deleteDatasetForm);
 
         $templateMgr->setState([
+            'errorInvalidToken' => __('plugins.generic.dataverse.error.invalidToken'),
+            'errorUnavailable' => __('plugins.generic.dataverse.error.unavailable'),
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
             'deleteDatasetLabel' => __('plugins.generic.dataverse.researchData.delete'),
             'confirmDeleteDatasetMessage' => __('plugins.generic.dataverse.modal.confirmDatasetDelete'),
