@@ -3,8 +3,8 @@
 /**
  * @file plugins/generic/dataverse/DataversePlugin.inc.php
  *
- * Copyright (c) 2019 - 2025 Lepidus Tecnologia
- * Copyright (c) 2020 - 2025 SciELO
+ * Copyright (c) 2019 - 2026 Lepidus Tecnologia
+ * Copyright (c) 2020 - 2026 SciELO
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @class DataversePlugin
