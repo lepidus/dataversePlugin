@@ -122,7 +122,7 @@ class DataverseActionsTest extends PKPTestCase
 
         $this->expectException(DataverseException::class);
         $this->expectExceptionCode(503);
-        $this->expectExceptionMessage('Dataverse service is temporarily unavailable.');
+        $this->expectExceptionMessage(__('plugins.generic.dataverse.error.exception.unavailable'));
         $actions->nativeAPIRequest('GET', 'test');
     }
 
@@ -142,7 +142,7 @@ class DataverseActionsTest extends PKPTestCase
 
         $this->expectException(DataverseException::class);
         $this->expectExceptionCode(503);
-        $this->expectExceptionMessage('Dataverse service is temporarily unavailable.');
+        $this->expectExceptionMessage(__('plugins.generic.dataverse.error.exception.unavailable'));
         $actions->nativeAPIRequest('GET', 'test');
     }
 
@@ -184,7 +184,7 @@ class DataverseActionsTest extends PKPTestCase
 
         $this->expectException(DataverseException::class);
         $this->expectExceptionCode(503);
-        $this->expectExceptionMessage('Dataverse service is temporarily unavailable.');
+        $this->expectExceptionMessage(__('plugins.generic.dataverse.error.exception.unavailable'));
         $actions->nativeAPIRequest('GET', 'test');
     }
 
@@ -212,7 +212,7 @@ class DataverseActionsTest extends PKPTestCase
             $this->fail('A DataverseException was expected');
         } catch (DataverseException $exception) {
             $this->assertSame(503, $exception->getCode());
-            $this->assertSame('Dataverse service is temporarily unavailable.', $exception->getMessage());
+            $this->assertSame(__('plugins.generic.dataverse.error.exception.unavailable'), $exception->getMessage());
             $this->assertStringNotContainsString('Establishing a secure connection', $exception->getMessage());
         }
     }
@@ -237,7 +237,7 @@ class DataverseActionsTest extends PKPTestCase
             $this->fail('A DataverseException was expected');
         } catch (DataverseException $exception) {
             $this->assertSame(401, $exception->getCode());
-            $this->assertSame('Dataverse API token is invalid or expired.', $exception->getMessage());
+            $this->assertSame(__('plugins.generic.dataverse.error.exception.invalidToken'), $exception->getMessage());
             $this->assertSame('plugins.generic.dataverse.error.invalidToken', $exception->getUserMessageKey());
             $this->assertStringNotContainsString('Bad API key', $exception->getMessage());
         }
@@ -310,7 +310,7 @@ class DataverseActionsTest extends PKPTestCase
             $this->fail('A DataverseException was expected');
         } catch (DataverseException $exception) {
             $this->assertSame(503, $exception->getCode());
-            $this->assertSame('Dataverse service is temporarily unavailable.', $exception->getMessage());
+            $this->assertSame(__('plugins.generic.dataverse.error.exception.unavailable'), $exception->getMessage());
         }
     }
 }

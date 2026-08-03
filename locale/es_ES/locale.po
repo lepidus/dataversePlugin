@@ -138,6 +138,12 @@ msgstr "Los datos de investigación no pueden consistir únicamente en el archiv
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro al obtener datos de investigación en Dataverse: {$error}"
 
+msgid "plugins.generic.dataverse.error.exception.unavailable"
+msgstr "El servicio Dataverse no está disponible temporalmente"
+
+msgid "plugins.generic.dataverse.error.exception.invalidToken"
+msgstr "El token de la API de Dataverse no es válido o ha caducado"
+
 msgid "plugins.generic.dataverse.error.unavailable"
 msgstr "El repositorio de datos de investigación no está disponible temporalmente. El flujo editorial continúa disponible, pero las acciones de Dataverse permanecen deshabilitadas hasta que se restablezca la conexión."
 

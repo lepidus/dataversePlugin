@@ -4,17 +4,17 @@ use GuzzleHttp\Exception\TransferException;
 
 class DataverseException extends Exception
 {
-    public const AUTHENTICATION_ERROR_CODE = 401;
-    private const SERVICE_UNAVAILABLE_MESSAGE = 'Dataverse service is temporarily unavailable.';
-    private const SERVICE_UNAVAILABLE_STATUS = 503;
-    private const AUTHENTICATION_ERROR_MESSAGE = 'Dataverse API token is invalid or expired.';
+    public const AUTH_ERROR_STATUS_CODE = 401;
+    private const UNAVAILABLE_STATUS_CODE = 503;
+    private const AUTHENTICATION_ERROR_MESSAGE = 'plugins.generic.dataverse.error.exception.invalidToken';
+    private const SERVICE_UNAVAILABLE_MESSAGE = 'plugins.generic.dataverse.error.exception.unavailable';
 
     public static function fromTransferException(TransferException $exception): self
     {
         if (!method_exists($exception, 'hasResponse') || !$exception->hasResponse()) {
             return new self(
-                self::SERVICE_UNAVAILABLE_MESSAGE,
-                self::SERVICE_UNAVAILABLE_STATUS,
+                __(self::SERVICE_UNAVAILABLE_MESSAGE),
+                self::UNAVAILABLE_STATUS_CODE,
                 $exception
             );
         }
@@ -25,8 +25,8 @@ class DataverseException extends Exception
 
         if (self::isAuthenticationError($statusCode, $message)) {
             return new self(
-                self::AUTHENTICATION_ERROR_MESSAGE,
-                self::AUTHENTICATION_ERROR_CODE,
+                __(self::AUTHENTICATION_ERROR_MESSAGE),
+                self::AUTH_ERROR_STATUS_CODE,
                 $exception
             );
         }
@@ -36,15 +36,15 @@ class DataverseException extends Exception
         }
 
         return new self(
-            self::SERVICE_UNAVAILABLE_MESSAGE,
-            self::SERVICE_UNAVAILABLE_STATUS,
+            __(self::SERVICE_UNAVAILABLE_MESSAGE),
+            self::UNAVAILABLE_STATUS_CODE,
             $exception
         );
     }
 
     public function getUserMessageKey(): string
     {
-        return $this->getCode() === self::AUTHENTICATION_ERROR_CODE
+        return $this->getCode() === self::AUTH_ERROR_STATUS_CODE
             ? 'plugins.generic.dataverse.error.invalidToken'
             : 'plugins.generic.dataverse.error.unavailable';
     }

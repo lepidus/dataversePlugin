@@ -121,9 +121,7 @@ class DataverseSettingsForm extends Form
         try {
             $dataverseCollectionActions->get();
         } catch (DataverseException $e) {
-            $message = $e->getCode() === DataverseException::AUTHENTICATION_ERROR_CODE
-                ? __($e->getUserMessageKey())
-                : __('plugins.generic.dataverse.settings.dataverseUrlNotValid', ['msg' => $e->getMessage()]);
+            $message = __('plugins.generic.dataverse.settings.dataverseUrlNotValid', ['msg' => $e->getMessage()]);
             error_log("Dataverse Error - $message");
             $this->addError('apiToken', $message);
 
