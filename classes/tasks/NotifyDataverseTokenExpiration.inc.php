@@ -3,6 +3,7 @@
 import('lib.pkp.classes.scheduledTask.ScheduledTask');
 import('lib.pkp.classes.mail.MailTemplate');
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
+import('plugins.generic.dataverse.classes.exception.DataverseException');
 
 class NotifyDataverseTokenExpiration extends ScheduledTask
 {
@@ -10,23 +11,28 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
 
     public function executeActions()
     {
-        $dataverseClient = new DataverseClient();
-        $tokenExpirationDate = $dataverseClient->getDataverseCollectionActions()->getApiTokenExpirationDate();
+        try {
+            $dataverseClient = new DataverseClient();
+            $tokenExpirationDate = $dataverseClient->getDataverseCollectionActions()->getApiTokenExpirationDate();
 
-        if (empty($tokenExpirationDate)) {
-            return false;
-        }
-
-        $momentsToSendNotification = ['4 weeks', '3 weeks', '2 weeks', '1 week', '1 day'];
-        $today = date('Y-m-d');
-
-        foreach ($momentsToSendNotification as $moment) {
-            $momentDate = date('Y-m-d', strtotime($tokenExpirationDate . " -$moment"));
-
-            if ($today == $momentDate) {
-                $this->sendNotificationEmail($dataverseClient, $tokenExpirationDate);
-                break;
+            if (empty($tokenExpirationDate)) {
+                return false;
             }
+
+            $momentsToSendNotification = ['4 weeks', '3 weeks', '2 weeks', '1 week', '1 day'];
+            $today = date('Y-m-d');
+
+            foreach ($momentsToSendNotification as $moment) {
+                $momentDate = date('Y-m-d', strtotime($tokenExpirationDate . " -$moment"));
+
+                if ($today == $momentDate) {
+                    $this->sendNotificationEmail($dataverseClient, $tokenExpirationDate);
+                    break;
+                }
+            }
+        } catch (DataverseException $exception) {
+            error_log('Dataverse token expiration check unavailable (HTTP ' . $exception->getCode() . ')');
+            return false;
         }
 
         return true;

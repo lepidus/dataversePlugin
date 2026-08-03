@@ -10,6 +10,8 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             dataset: null,
             datasetCitation: '',
             datasetInReview: false,
+            dataverseIsUnavailable: false,
+            dataverseErrorMessage: '',
             fileFormErrors: [],
             hasDepositedDataset: false,
             datasetIsLoading: true,
@@ -62,6 +64,39 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         }
     },
     methods: {
+        markDataverseUnavailable(xhr) {
+            this.dataverseIsUnavailable = true;
+            this.datasetIsLoading = false;
+            this.datasetCitation = '';
+
+            if (xhr && xhr.status === 401) {
+                this.dataverseErrorMessage = this.errorInvalidToken;
+            } else if (!this.dataverseErrorMessage) {
+                this.dataverseErrorMessage = this.errorUnavailable;
+            }
+
+            if (this.components.datasetMetadata) {
+                this.components.datasetMetadata.canSubmit = false;
+            }
+            if (this.components.datasetFiles) {
+                this.components.datasetFiles.canChangeFiles = false;
+                this.components.datasetFiles.isLoading = false;
+            }
+        },
+
+        retryDataverseRequests() {
+            this.dataverseIsUnavailable = false;
+            this.dataverseErrorMessage = '';
+            this.getDataverseName();
+            this.getDataverseLicenses();
+
+            if (this.hasDepositedDataset) {
+                this.getRootDataverseName();
+                this.refreshDataset();
+                this.refreshDatasetFiles();
+            }
+        },
+
         /**
 		 * Open a modal to select an issue if the user has opted to
 		 * schedule for publication before assigning to an issue
@@ -249,6 +284,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 					self.rootDataverseName = r.rootDataverseName;
                     self.confirmPublishDatasetMessage = self.confirmPublishDatasetMessage.replace('{$serverName}', self.rootDataverseName);
 				},
+				error: function (xhr) {
+					self.markDataverseUnavailable(xhr);
+				},
 			});
         },
 
@@ -274,6 +312,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                     let termsOfUseFieldOption = datasetFileForm.fields[1].options[0];
                     termsOfUseFieldOption.label = termsOfUseFieldOption.label.replace('{$dataverseName}', self.dataverseName);
 				},
+				error: function (xhr) {
+					self.markDataverseUnavailable(xhr);
+				},
 			});
         },
 
@@ -284,10 +325,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 				type: 'GET',
 				success: function (r) {
                     let datasetMetadataForm = self.components.datasetMetadata;
-
-                    for (let license of r.licenses) {
-                        self.dataverseLicenses.push({'label': license.name, 'value': license.name});
-                    }
+                    self.dataverseLicenses = r.licenses.map((license) => ({
+                        'label': license.name,
+                        'value': license.name
+                    }));
 
                     for (let formField of datasetMetadataForm.fields) {
                         if (formField.name == 'datasetLicense') {
@@ -295,6 +336,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                             break;
                         }
                     }
+				},
+				error: function (xhr) {
+					self.markDataverseUnavailable(xhr);
 				},
 			});
         },
@@ -307,6 +351,16 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 type: 'GET',
                 success(r) {
                     self.dataset = r;
+                },
+                error(xhr) {
+                    if (xhr.status === 404) {
+                        window.location.reload();
+                        return;
+                    }
+
+                    self.markDataverseUnavailable(xhr);
+                },
+                complete() {
                     self.datasetIsLoading = false;
                 }
             });
@@ -321,11 +375,11 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 url: this.components.datasetFiles.apiUrl,
                 type: 'GET',
                 _uuid: this.latestGetRequest,
-                error: function (r) {
+                error: function (xhr) {
                     if (self.latestGetRequest !== this._uuid) {
                         return;
                     }
-                    self.ajaxErrorCallback(r);
+                    self.markDataverseUnavailable(xhr);
                 },
                 success: function (r) {
                     if (self.latestGetRequest !== this._uuid) {
@@ -369,6 +423,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }
             form.canSubmit =
                 this.canEditPublication &&
+                !this.dataverseIsUnavailable &&
                 dataset.versionState !== 'RELEASED'
 
             this.components.datasetMetadata = {};
@@ -383,7 +438,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             $.ajax({
                 url: self.datasetPluginApiUrl+'/citation',
                 type: 'GET',
-                error: self.ajaxErrorCallback,
+				error: function (xhr) {
+					self.markDataverseUnavailable(xhr);
+                },
                 success: (r) => {
                     self.datasetCitation = r.citation;
                 },
@@ -398,7 +455,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             $.ajax({
                 url: self.datasetPluginApiUrl+'/inReview?datasetId='+this.dataset.datasetId,
                 type: 'GET',
-                error: self.ajaxErrorCallback,
+                error: function (xhr) {
+                    self.markDataverseUnavailable(xhr);
+                },
                 success: (r) => {
                     self.datasetInReview = r.inReview;
                 },

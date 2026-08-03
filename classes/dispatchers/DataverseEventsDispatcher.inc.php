@@ -1,5 +1,7 @@
 <?php
 
+import('plugins.generic.dataverse.classes.exception.DataverseException');
+
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.services.DatasetService');
 import('plugins.generic.dataverse.dataverseAPI.DataverseClient');

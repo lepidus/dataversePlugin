@@ -128,6 +128,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $templateMgr->setState([
             'dataversePluginApiUrl' => $dataversePluginApiUrl,
+            'errorInvalidToken' => __('plugins.generic.dataverse.error.invalidToken'),
+            'errorUnavailable' => __('plugins.generic.dataverse.error.unavailable'),
             'hasDepositedDataset' => false
         ]);
     }
@@ -183,6 +185,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
                 'serverUrl' => $configuration->getDataverseServerUrl(),
             ]),
             'loadingCitationMsg' => __('plugins.generic.dataverse.metadataForm.loadingDatasetCitation'),
+            'errorInvalidToken' => __('plugins.generic.dataverse.error.invalidToken'),
+            'errorUnavailable' => __('plugins.generic.dataverse.error.unavailable'),
             'datasetPluginApiUrl' => $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId()),
             'canSendEmail' => in_array(ROLE_ID_MANAGER, $userRoles),
             'hasDepositedDataset' => true

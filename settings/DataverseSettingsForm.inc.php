@@ -1,5 +1,7 @@
 <?php
 
+import('plugins.generic.dataverse.classes.exception.DataverseException');
+
 import('lib.pkp.classes.form.Form');
 import('plugins.generic.dataverse.classes.DataEncryption');
 import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
