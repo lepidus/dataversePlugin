@@ -357,7 +357,7 @@ class DatasetHandler extends APIHandler
             error_log('Error getting citation: ' . $e->getMessage());
             return $response
                 ->withStatus($e->getCode())
-                ->withJsonError($e->getUserMessageKey());
+                ->withJsonError('api.error.researchDataCitationNotFound');
         }
 
         return $response->withJson(['citation' => $citationData['citation']], 200);

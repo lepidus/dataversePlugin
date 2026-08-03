@@ -31,7 +31,7 @@ class DataverseException extends Exception
             );
         }
 
-        if ($message !== null && in_array($statusCode, [400, 404, 409, 422], true)) {
+        if (!is_null($message) && in_array($statusCode, [400, 404, 409, 422], true)) {
             return new self($message, $statusCode, $exception);
         }
 
@@ -61,7 +61,7 @@ class DataverseException extends Exception
 
     private static function isAuthenticationError(int $statusCode, ?string $message): bool
     {
-        if ($message === null || !in_array($statusCode, [401, 403], true)) {
+        if (is_null($message) || !in_array($statusCode, [401, 403], true)) {
             return false;
         }
 
