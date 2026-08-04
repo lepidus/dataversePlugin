@@ -38,7 +38,7 @@ class DataverseReportForm extends Form
         $todayDate = $args[1];
 
         $templateManager = TemplateManager::getManager();
-        $url = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/templates/dataverseReport.css';
+        $url = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/styles/dataverseReport.css';
         $templateManager->addStyleSheet('dataverseReportStyleSheet', $url, [
             'priority' => TemplateManager::STYLE_SEQUENCE_CORE,
             'contexts' => 'backend',

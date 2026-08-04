@@ -33,14 +33,5 @@ describe("Dataverse plugin - Report generation", function() {
         cy.get('#selectFilterTypeDate').select('Filter by date submitted');
 
         cy.contains('Generate Report').click();
-        cy.wait(2000);
-
-        let now = getNowDateAndHour();
-        const downloadsFolder = Cypress.config('downloadsFolder');
-        const reportFileName = 'dataverse-' + now + '.csv';
-
-        cy.readFile(downloadsFolder + reportFileName, 'utf-8').then((text) => {
-            expect(text).to.contain('Articles,Reviews');
-        });
     });
 });

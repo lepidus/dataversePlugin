@@ -501,11 +501,42 @@ msgstr "Es obligatorio informar el motivo de la no disponibilidad de los datos."
 msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
 msgstr "Los datos de investigación se han enviado al repositorio <strong>{$dataverseName}</strong>."
 
+
+
 msgid "plugins.generic.dataverse.report.displayName"
 msgstr "Informe de Dataverse"
 
 msgid "plugins.generic.dataverse.report.description"
 msgstr "Informe sobre la declaración de datos y el depósito de datos de investigación en Dataverse."
+
+msgid "plugins.generic.dataverse.report.period"
+msgstr "Período"
+
+msgid "plugins.generic.dataverse.report.filterMessage"
+msgstr "Seleccione el tipo de filtrado deseado:"
+
+msgid "plugins.generic.dataverse.report.filterBySubmission"
+msgstr "Filtrar por fecha de envío"
+
+msgid "plugins.generic.dataverse.report.filterByDecision"
+msgstr "Filtrar por fecha de decisión final"
+
+msgid "plugins.generic.dataverse.report.dateSubmittedInterval"
+msgstr "Intervalo de fecha de envío"
+
+msgid "plugins.generic.dataverse.report.finalDecisionDateInterval"
+msgstr "Intervalo de fecha de decisión final"
+
+msgid "plugins.generic.dataverse.report.until"
+msgstr "Hasta"
+
+msgid "plugins.generic.dataverse.report.noticeTimeGenerateReport"
+msgstr "El proceso de generación de informes puede tardar unos minutos, según los parámetros"
+" seleccionados y la cantidad de envíos presentes en el sistema. "
+"Si la demora dura más, comuníquese con el equipo de soporte."
+
+msgid "plugins.generic.dataverse.report.generate"
+msgstr "Generar Informe"
 
 msgid "plugins.generic.dataverse.report.headers.acceptedSubmissions"
 msgstr "Envíos aceptados"
