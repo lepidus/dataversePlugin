@@ -16,7 +16,7 @@ describe("Dataverse plugin - Report generation", function() {
         cy.contains('h2', 'Period');
         cy.contains('Select the desired filtering type');
         cy.get('#selectFilterTypeDate').within(() => {
-            cy.contains('option', 'Filter by date submitted');
+            cy.contains('option', 'Filter by submitted date');
             cy.contains('option', 'Filter by final decision');
         });
 
