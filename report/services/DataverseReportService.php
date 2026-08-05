@@ -10,9 +10,12 @@ use APP\plugins\generic\dataverse\dataverseAPI\search\DataverseSearchBuilder;
 
 class DataverseReportService
 {
-    public function __construct(
-        private int $contextId
-    ) {}
+    private int $contextId;
+
+    public function __construct(int $contextId)
+    {
+        $this->contextId = $contextId;
+    }
 
     public function getAcceptedSubmissionsCount(): int
     {
