@@ -9,6 +9,13 @@ class DataverseStatsReportTest extends PKPTestCase
     private DataverseStatsReport $report;
     private string $locale = 'en';
     private string $application = 'ojs2';
+    private int $acceptedSubmissions = 40;
+    private int $acceptedSubmissionsWithDataset = 35;
+    private int $declinedSubmissions = 200;
+    private int $declinedSubmissionsWithDataset = 50;
+    private int $datasetsWithDepositError = 25;
+    private int $datasetsWithPublishError = 5;
+    private int $filesInDatasets = 125;
 
     protected function setUp(): void
     {
@@ -29,7 +36,16 @@ class DataverseStatsReportTest extends PKPTestCase
     {
         $report = new DataverseStatsReport($application, $locale);
 
-        // TODO: add the remaining data
+        if ($application == 'ojs2') {
+            $report->setAcceptedCount($this->acceptedSubmissions);
+            $report->setAcceptedWithDatasetCount($this->acceptedSubmissionsWithDataset);
+        }
+
+        $report->setDeclinedCount($this->declinedSubmissions);
+        $report->setDeclinedWithDatasetCount($this->declinedSubmissionsWithDataset);
+        $report->setWithDepositErrorCount($this->datasetsWithDepositError);
+        $report->setWithPublishErrorCount($this->datasetsWithPublishError);
+        $report->setDatasetFilesCount($this->filesInDatasets);
 
         return $report;
     }
@@ -57,7 +73,16 @@ class DataverseStatsReportTest extends PKPTestCase
         );
     }
 
-    // TODO: Assertion of class data
+    public function testReportHasStatsData(): void
+    {
+        $this->assertEquals($this->acceptedSubmissions, $this->report->getAcceptedCount());
+        $this->assertEquals($this->acceptedSubmissionsWithDataset, $this->report->getAcceptedWithDatasetCount());
+        $this->assertEquals($this->declinedSubmissions, $this->report->getDeclinedCount());
+        $this->assertEquals($this->declinedSubmissionsWithDataset, $this->report->getDeclinedWithDatasetCount());
+        $this->assertEquals($this->datasetsWithDepositError, $this->report->getWithDepositErrorCount());
+        $this->assertEquals($this->datasetsWithPublishError, $this->report->getWithPublishErrorCount());
+        $this->assertEquals($this->filesInDatasets, $this->report->getDatasetFilesCount());
+    }
 
     public function testReportHasExpectedHeaders(): void
     {
@@ -78,6 +103,18 @@ class DataverseStatsReportTest extends PKPTestCase
         $expectedHeader = $this->getExpectedHeaders($this->application);
         $row = fgetcsv($csvFile);
         $this->assertEquals($expectedHeader, $row);
+
+        $expectedStatsLine = [
+            $this->acceptedSubmissions,
+            $this->acceptedSubmissionsWithDataset,
+            $this->declinedSubmissions,
+            $this->declinedSubmissionsWithDataset,
+            $this->datasetsWithDepositError,
+            $this->datasetsWithPublishError,
+            $this->filesInDatasets
+        ];
+        $row = fgetcsv($csvFile);
+        $this->assertEquals($expectedStatsLine, $row);
 
         fclose($csvFile);
         unlink($csvFilePath);
