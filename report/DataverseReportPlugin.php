@@ -40,7 +40,7 @@ class DataverseReportPlugin extends ReportPlugin
             $reportParams = $request->getUserVars();
             $validationResult = $form->validateReportData($reportParams);
             if ($validationResult) {
-                $form->generateReport($request);
+                $form->generateReport();
             }
         } else {
             $dateStart = date('Y-01-01');

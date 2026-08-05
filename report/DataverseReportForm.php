@@ -7,6 +7,7 @@ use APP\template\TemplateManager;
 use PKP\form\Form;
 use PKP\form\validation\FormValidatorCSRF;
 use PKP\form\validation\FormValidatorPost;
+use APP\plugins\generic\dataverse\report\classes\DataverseStatsReportBuilder;
 
 class DataverseReportForm extends Form
 {
@@ -17,7 +18,7 @@ class DataverseReportForm extends Form
     public function __construct($plugin)
     {
         $this->plugin = $plugin;
-        $this->application = substr(Application::getName(), 0, 3);
+        $this->application = Application::getName();
         $request = Application::get()->getRequest();
         $this->contextId = $request->getContext()->getId();
 
@@ -64,19 +65,14 @@ class DataverseReportForm extends Form
         $templateManager->display($this->plugin->getTemplateResource($template));
     }
 
-    // public function generateReport($args, $request)
-    // {
-    //     $context = $request->getContext();
+    public function generateReport()
+    {
+        $reportBuilder = new DataverseStatsReportBuilder();
+        $report = $reportBuilder->createReport($this->application, $this->contextId);
 
-    //     $reportService = new DataverseReportService();
+        header('content-type: text/comma-separated-values');
+        header('content-disposition: attachment; filename=dataverse-' . date('Ymd') . '.csv');
 
-    //     $overview = $reportService->getOverview($context->getId());
-
-    //     header('content-type: text/comma-separated-values');
-    //     header('content-disposition: attachment; filename=dataverse-' . date('Ymd') . '.csv');
-    //     $fp = fopen('php://output', 'wt');
-    //     fputcsv($fp, $reportService->getReportHeaders());
-    //     fputcsv($fp, $overview);
-    //     fclose($fp);
-    // }
+        $report->writeReport('php://output');
+    }
 }

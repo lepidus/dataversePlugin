@@ -46,6 +46,26 @@ class DataverseReportService
         ]);
     }
 
+    public function getDatasetsWithDepositErrorCount(): int
+    {
+        return $this->countDatasetsWithError(
+            [
+                'plugins.generic.dataverse.error.depositFailed',
+                'plugins.generic.dataverse.error.datasetDeposit',
+                'plugins.generic.dataverse.error.datasetFileDeposit'
+            ],
+            ['contextIds' => [$this->contextId]]
+        );
+    }
+
+    public function getDatasetsWithPublishErrorCount(): int
+    {
+        return $this->countDatasetsWithError(
+            ['plugins.generic.dataverse.error.publishFailed'],
+            ['contextIds' => [$this->contextId]]
+        );
+    }
+
     private function countSubmissions(array $args = []): int
     {
         return $this->getQueryBuilder($args)->getQuery()->count();
@@ -56,7 +76,7 @@ class DataverseReportService
         return $this->getQueryBuilder($args)->getWithDataset()->count();
     }
 
-    public function countDatasetsWithError(array $messages, array $args = []): int
+    private function countDatasetsWithError(array $messages, array $args = []): int
     {
         return $this->getQueryBuilder($args)->countDatasetsWithError($messages);
     }
@@ -75,13 +95,13 @@ class DataverseReportService
         return $queryBuilder;
     }
 
-    public function countDatasetFiles(int $contextId): int
+    public function countDatasetFiles(): int
     {
         $submissionsWithDataset = $this->getQueryBuilder([
-            'contextIds' => [$contextId]
+            'contextIds' => [$this->contextId]
         ])->getWithDataset()->get();
 
-        $searchBuilder = $this->getDataverseSearchBuilder($contextId)->addType('file');
+        $searchBuilder = $this->getDataverseSearchBuilder()->addType('file');
 
         foreach ($submissionsWithDataset as $submission) {
             $searchBuilder->addFilterQuery('parentIdentifier', $submission->persistent_id);
@@ -90,9 +110,9 @@ class DataverseReportService
         return $searchBuilder->count();
     }
 
-    public function getDataverseSearchBuilder(int $contextId): DataverseSearchBuilder
+    public function getDataverseSearchBuilder(): DataverseSearchBuilder
     {
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($this->contextId);
         $httpClient = Application::get()->getHttpClient();
 
         return new DataverseSearchBuilder($configuration, $httpClient);

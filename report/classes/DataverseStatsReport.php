@@ -4,7 +4,7 @@ namespace APP\plugins\generic\dataverse\report\classes;
 
 class DataverseStatsReport
 {
-    private const OJS_APP_NAME = 'ojs2';
+    public const OJS_APP_NAME = 'ojs2';
 
     private $UTF8_BOM;
     private int $acceptedCount;
