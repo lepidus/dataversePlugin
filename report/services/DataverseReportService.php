@@ -52,26 +52,6 @@ class DataverseReportService
         ]);
     }
 
-    public function getReportHeaders(): array
-    {
-        $headers = [];
-
-        if (Application::get()->getName() == 'ojs2') {
-            $headers = array_merge($headers, [
-                __('plugins.generic.dataverse.report.headers.acceptedSubmissions'),
-                __('plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset'),
-            ]);
-        }
-
-        return array_merge($headers, [
-            __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
-            __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
-            __('plugins.generic.dataverse.report.headers.datasetsWithDepositError'),
-            __('plugins.generic.dataverse.report.headers.datasetsWithPublishError'),
-            __('plugins.generic.dataverse.report.headers.filesInDatasets'),
-        ]);
-    }
-
     public function countSubmissions(array $args = []): int
     {
         return $this->getQueryBuilder($args)->getQuery()->count();

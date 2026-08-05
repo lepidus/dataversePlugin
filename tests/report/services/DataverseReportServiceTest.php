@@ -3,11 +3,9 @@
 use PKP\tests\DatabaseTestCase;
 use APP\core\Application;
 use PKP\core\Core;
-use PKP\plugins\Hook;
 use APP\submission\Submission;
 use APP\publication\Publication;
 use APP\decision\Decision;
-use APP\log\event\SubmissionEventLogEntry;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
@@ -66,29 +64,6 @@ class DataverseReportServiceTest extends DatabaseTestCase
             DataverseReportQueryBuilder::class,
             $reportService->getQueryBuilder()
         );
-    }
-
-    public function testGetReportHeaders(): void
-    {
-        $reportService = new DataverseReportService();
-        $headers = [];
-
-        if (Application::get()->getName() == 'ojs2') {
-            $headers = array_merge($headers, [
-                __('plugins.generic.dataverse.report.headers.acceptedSubmissions'),
-                __('plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset'),
-            ]);
-        }
-
-        $headers = array_merge($headers, [
-            __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
-            __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
-            __('plugins.generic.dataverse.report.headers.datasetsWithDepositError'),
-            __('plugins.generic.dataverse.report.headers.datasetsWithPublishError'),
-            __('plugins.generic.dataverse.report.headers.filesInDatasets')
-        ]);
-
-        $this->assertEquals($headers, $reportService->getReportHeaders());
     }
 
     public function testCountSubmissions(): void
