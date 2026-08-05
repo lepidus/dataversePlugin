@@ -10,54 +10,48 @@ use APP\plugins\generic\dataverse\dataverseAPI\search\DataverseSearchBuilder;
 
 class DataverseReportService
 {
-    public function getOverview(int $contextId): array
+    public function __construct(
+        private int $contextId
+    ) {}
+
+    public function getAcceptedSubmissionsCount(): int
     {
-        $overview = [];
-
-        if (Application::get()->getName() == 'ojs2') {
-            $overview = array_merge($overview, [
-                'acceptedSubmissions' => $this->countSubmissions([
-                    'contextIds' => [$contextId],
-                    'decisions' => [Decision::ACCEPT]
-                ]),
-                'acceptedSubmissionsWithDataset' => $this->countSubmissionsWithDataset([
-                    'contextIds' => [$contextId],
-                    'decisions' => [Decision::ACCEPT]
-                ])
-            ]);
-        }
-
-        return array_merge($overview, [
-            'declinedSubmissions' => $this->countSubmissions([
-                'contextIds' => [$contextId],
-                'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
-            ]),
-            'declinedSubmissionsWithDataset' => $this->countSubmissionsWithDataset([
-                'contextIds' => [$contextId],
-                'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
-            ]),
-            'datasetsWithDepositError' => $this->countDatasetsWithError(
-                [
-                    'plugins.generic.dataverse.error.depositFailed',
-                    'plugins.generic.dataverse.error.datasetDeposit',
-                    'plugins.generic.dataverse.error.datasetFileDeposit'
-                ],
-                ['contextIds' => [$contextId],]
-            ),
-            'datasetsWithPublishError' => $this->countDatasetsWithError(
-                ['plugins.generic.dataverse.error.publishFailed'],
-                ['contextIds' => [$contextId],]
-            ),
-            'filesInDatasets' => $this->countDatasetFiles($contextId),
+        return $this->countSubmissions([
+            'contextIds' => [$this->contextId],
+            'decisions' => [Decision::ACCEPT]
         ]);
     }
 
-    public function countSubmissions(array $args = []): int
+    public function getDeclinedSubmissionsCount(): int
+    {
+        return $this->countSubmissions([
+            'contextIds' => [$this->contextId],
+            'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
+        ]);
+    }
+
+    public function getAcceptedSubmissionsWithDatasetCount(): int
+    {
+        return $this->countSubmissionsWithDataset([
+            'contextIds' => [$this->contextId],
+            'decisions' => [Decision::ACCEPT]
+        ]);
+    }
+
+    public function getDeclinedSubmissionsWithDatasetCount(): int
+    {
+        return $this->countSubmissionsWithDataset([
+            'contextIds' => [$this->contextId],
+            'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
+        ]);
+    }
+
+    private function countSubmissions(array $args = []): int
     {
         return $this->getQueryBuilder($args)->getQuery()->count();
     }
 
-    public function countSubmissionsWithDataset(array $args = []): int
+    private function countSubmissionsWithDataset(array $args = []): int
     {
         return $this->getQueryBuilder($args)->getWithDataset()->count();
     }

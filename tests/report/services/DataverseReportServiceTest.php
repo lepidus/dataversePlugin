@@ -43,23 +43,59 @@ class DataverseReportServiceTest extends DatabaseTestCase
         return $context;
     }
 
-    private function createTestSubmission($context, $data): Submission
+    private function addDecision(int $decisionType, int $submissionId)
+    {
+        $decision = Repo::decision()->newDataObject([
+            'decision' => $decisionType,
+            'submissionId' => $submissionId,
+            'dateDecided' => date(Core::getCurrentDate()),
+            'editorId' => 1,
+        ]);
+        Repo::decision()->dao->insert($decision);
+    }
+
+    private function addStudy(int $submissionId)
+    {
+        $study = Repo::dataverseStudy()->newDataObject();
+        $study->setAllData([
+            'submissionId' => $submissionId,
+            'persistentId' => 'testId',
+            'persistentUri' => 'testUri',
+            'editUri' => 'testEditUri',
+            'editMediaUri' => 'testEditMediaUri',
+            'statementUri' => 'testStatementUri',
+        ]);
+        Repo::dataverseStudy()->add($study);
+    }
+
+    private function createTestSubmission(int $status, ?int $decision = null, bool $withDataset = false): Submission
     {
         $submission = new Submission();
-        $submission->setAllData($data);
-        $submission->setData('contextId', $context->getId());
+        $submission->setAllData([
+            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
+            'contextId' => $this->context->getId(),
+            'status' => $status
+        ]);
 
         $publication = new Publication();
 
-        $submissionId = Repo::submission()->add($submission, $publication, $context);
+        $submissionId = Repo::submission()->add($submission, $publication, $this->context);
         $submission->setId($submissionId);
+
+        if ($decision) {
+            $this->addDecision($decision, $submission->getId());
+        }
+
+        if ($withDataset) {
+            $this->addStudy($submission->getId());
+        }
 
         return $submission;
     }
 
     public function testGetQueryBuilder(): void
     {
-        $reportService = new DataverseReportService();
+        $reportService = new DataverseReportService($this->context->getId());
         $this->assertInstanceOf(
             DataverseReportQueryBuilder::class,
             $reportService->getQueryBuilder()
@@ -68,62 +104,24 @@ class DataverseReportServiceTest extends DatabaseTestCase
 
     public function testCountSubmissions(): void
     {
-        $submission = $this->createTestSubmission($this->context, [
-            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
-        ]);
+        $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT);
 
-        $acceptDecision = Repo::decision()->newDataObject([
-            'decision' => Decision::ACCEPT,
-            'submissionId' => $submission->getId(),
-            'dateDecided' => date(Core::getCurrentDate()),
-            'editorId' => 1,
-        ]);
-        Repo::decision()->dao->insert($acceptDecision);
+        $reportService = new DataverseReportService($this->context->getId());
+        $this->assertEquals(1, $reportService->getAcceptedSubmissionsCount());
+        $this->assertEquals(0, $reportService->getDeclinedSubmissionsCount());
 
-        $reportService = new DataverseReportService();
-        $acceptedSubmissions = $reportService->countSubmissions([
-            'contextIds' => [$this->context->getId()],
-            'decisions' => [Decision::ACCEPT],
-        ]);
-        $declinedSubmissions = $reportService->countSubmissions([
-            'contextIds' => [$this->context->getId()],
-            'decisions' => [Decision::DECLINE],
-        ]);
-
-        $this->assertEquals(1, $acceptedSubmissions);
-        $this->assertEquals(0, $declinedSubmissions);
+        $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::DECLINE);
+        $this->assertEquals(0, $reportService->getDeclinedSubmissionsCount());
     }
 
     public function testCountSubmissionsWithDataset(): void
     {
-        $submission = $this->createTestSubmission($this->context, [
-            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
-            'status' => Submission::STATUS_DECLINED
-        ]);
+        $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE, true);
+        $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::DECLINE, false);
+        $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT, true);
 
-        $study = Repo::dataverseStudy()->newDataObject();
-        $study->setAllData([
-            'submissionId' => $submission->getId(),
-            'persistentId' => 'testId',
-            'persistentUri' => 'testUri',
-            'editUri' => 'testEditUri',
-            'editMediaUri' => 'testEditMediaUri',
-            'statementUri' => 'testStatementUri',
-        ]);
-        Repo::dataverseStudy()->add($study);
-
-        $declineDecision = Repo::decision()->newDataObject([
-            'decision' => Decision::DECLINE,
-            'submissionId' => $submission->getId(),
-            'dateDecided' => date(Core::getCurrentDate()),
-            'editorId' => 1,
-        ]);
-        Repo::decision()->dao->insert($declineDecision);
-
-        $reportService = new DataverseReportService();
-        $this->assertEquals(1, $reportService->countSubmissionsWithDataset([
-            'contextIds' => [$this->context->getId()],
-            'decisions' => [Decision::DECLINE],
-        ]));
+        $reportService = new DataverseReportService($this->context->getId());
+        $this->assertEquals(1, $reportService->getAcceptedSubmissionsWithDatasetCount());
+        $this->assertEquals(1, $reportService->getDeclinedSubmissionsWithDatasetCount());
     }
 }
