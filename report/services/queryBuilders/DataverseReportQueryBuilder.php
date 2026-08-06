@@ -63,7 +63,7 @@ class DataverseReportQueryBuilder
         return $query;
     }
 
-    public function countDatasetsWithError(array $messages): int
+    public function countSubmissionsWithEventLog(array $messages): int
     {
         $query = $this->getQuery();
 

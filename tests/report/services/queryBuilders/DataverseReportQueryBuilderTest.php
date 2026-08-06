@@ -185,11 +185,11 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
         $depositErrorsCount = $this->getQueryBuilder()
             ->filterByContexts($this->context->getId())
-            ->countDatasetsWithError(['plugins.generic.dataverse.error.datasetDeposit']);
+            ->countSubmissionsWithEventLog(['plugins.generic.dataverse.error.datasetDeposit']);
 
         $publishErrorsCount = $this->getQueryBuilder()
             ->filterByContexts($this->context->getId())
-            ->countDatasetsWithError(['plugins.generic.dataverse.error.publishFailed']);
+            ->countSubmissionsWithEventLog(['plugins.generic.dataverse.error.publishFailed']);
 
         $this->assertEquals(1, $depositErrorsCount);
         $this->assertEquals(1, $publishErrorsCount);

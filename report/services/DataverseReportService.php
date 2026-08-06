@@ -51,7 +51,7 @@ class DataverseReportService
 
     public function getDatasetsWithDepositErrorCount(): int
     {
-        return $this->countDatasetsWithError(
+        return $this->countSubmissionsWithEventLog(
             [
                 'plugins.generic.dataverse.error.depositFailed',
                 'plugins.generic.dataverse.error.datasetDeposit',
@@ -63,7 +63,7 @@ class DataverseReportService
 
     public function getDatasetsWithPublishErrorCount(): int
     {
-        return $this->countDatasetsWithError(
+        return $this->countSubmissionsWithEventLog(
             ['plugins.generic.dataverse.error.publishFailed'],
             ['contextIds' => [$this->contextId]]
         );
@@ -79,9 +79,9 @@ class DataverseReportService
         return $this->getQueryBuilder($args)->getWithDataset()->count();
     }
 
-    private function countDatasetsWithError(array $messages, array $args = []): int
+    private function countSubmissionsWithEventLog(array $messages, array $args = []): int
     {
-        return $this->getQueryBuilder($args)->countDatasetsWithError($messages);
+        return $this->getQueryBuilder($args)->countSubmissionsWithEventLog($messages);
     }
 
     public function getQueryBuilder($args = []): DataverseReportQueryBuilder
