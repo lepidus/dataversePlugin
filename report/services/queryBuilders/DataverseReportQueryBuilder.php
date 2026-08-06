@@ -42,11 +42,12 @@ class DataverseReportQueryBuilder
 
     public function getCount(): int
     {
-        $query = $this->getQuery();
+        return $this->getQuery()->count();
+    }
 
-        $query->select(DB::raw('COUNT(DISTINCT s.submission_id) as count'));
-
-        return $query->get()->first()->count;
+    public function getSubmissionIds(): array
+    {
+        return $this->getQuery()->pluck('s.submission_id')->toArray();
     }
 
     public function getQuery(): Builder

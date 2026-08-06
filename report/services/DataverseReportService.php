@@ -43,10 +43,23 @@ class DataverseReportService
 
     public function getDeclinedSubmissionsWithDatasetCount(): int
     {
-        return $this->countSubmissionsWithDataset([
+        $declinedArgs = [
             'contextIds' => [$this->contextId],
             'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
-        ]);
+        ];
+        $declinedWithDatasetIds = $this->getQueryBuilder($declinedArgs)
+            ->filterWithDataset()
+            ->getSubmissionIds();
+
+        $declinedWithDepositLogIds = $this->getQueryBuilder($declinedArgs)
+            ->filterWithEventLogs(['plugins.generic.dataverse.log.researchDataDeposited'])
+            ->getSubmissionIds();
+
+        $totalDeclined = array_unique(
+            array_merge($declinedWithDatasetIds, $declinedWithDepositLogIds)
+        );
+
+        return count($totalDeclined);
     }
 
     public function getDatasetsWithDepositErrorCount(): int
@@ -71,17 +84,22 @@ class DataverseReportService
 
     private function countSubmissions(array $args = []): int
     {
-        return $this->getQueryBuilder($args)->getQuery()->count();
+        return $this->getQueryBuilder($args)
+            ->getCount();
     }
 
     private function countSubmissionsWithDataset(array $args = []): int
     {
-        return $this->getQueryBuilder($args)->getWithDataset()->count();
+        return $this->getQueryBuilder($args)
+            ->filterWithDataset()
+            ->getCount();
     }
 
     private function countSubmissionsWithEventLog(array $messages, array $args = []): int
     {
-        return $this->getQueryBuilder($args)->countSubmissionsWithEventLog($messages);
+        return $this->getQueryBuilder($args)
+            ->filterWithEventLogs($messages)
+            ->getCount();
     }
 
     public function getQueryBuilder($args = []): DataverseReportQueryBuilder

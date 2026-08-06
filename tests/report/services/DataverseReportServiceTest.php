@@ -142,14 +142,19 @@ class DataverseReportServiceTest extends DatabaseTestCase
 
     public function testCountsDeclinedSubmissionsAfterDatasetDeletion(): void
     {
-        $declinedSubmission = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE, true);
-        $declinedSubmissionWhichHadDataset = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE, false);
+        $declinedSubWithDataset = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE, true);
+        $declinedSubWithLog = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE, false);
         $this->addEventLogToSubmission(
-            $declinedSubmissionWhichHadDataset->getId(),
+            $declinedSubWithLog->getId(),
+            'plugins.generic.dataverse.log.researchDataDeposited'
+        );
+        $declinedSubWithLogAndDataset = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE, true);
+        $this->addEventLogToSubmission(
+            $declinedSubWithLogAndDataset->getId(),
             'plugins.generic.dataverse.log.researchDataDeposited'
         );
 
         $reportService = new DataverseReportService($this->context->getId());
-        $this->assertEquals(2, $reportService->getDeclinedSubmissionsWithDatasetCount());
+        $this->assertEquals(3, $reportService->getDeclinedSubmissionsWithDatasetCount());
     }
 }
