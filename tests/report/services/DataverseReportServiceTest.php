@@ -6,6 +6,7 @@ use PKP\core\Core;
 use APP\submission\Submission;
 use APP\publication\Publication;
 use APP\decision\Decision;
+use APP\log\event\SubmissionEventLogEntry;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
@@ -93,6 +94,20 @@ class DataverseReportServiceTest extends DatabaseTestCase
         return $submission;
     }
 
+    private function addEventLogToSubmission(int $submissionId, string $message)
+    {
+        $eventLog = Repo::eventLog()->newDataObject();
+        $eventLog->setAllData([
+            'assocType' => Application::ASSOC_TYPE_SUBMISSION,
+            'assocId' => $submissionId,
+            'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_SUBMISSION_SUBMIT,
+            'message' => $message,
+            'isTranslated' => false,
+            'dateLogged' => Core::getCurrentDate()
+        ]);
+        Repo::eventLog()->add($eventLog);
+    }
+
     public function testGetQueryBuilder(): void
     {
         $reportService = new DataverseReportService($this->context->getId());
@@ -123,5 +138,18 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $reportService = new DataverseReportService($this->context->getId());
         $this->assertEquals(1, $reportService->getAcceptedSubmissionsWithDatasetCount());
         $this->assertEquals(1, $reportService->getDeclinedSubmissionsWithDatasetCount());
+    }
+
+    public function testCountsDeclinedSubmissionsAfterDatasetDeletion(): void
+    {
+        $declinedSubmission = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE, true);
+        $declinedSubmissionWhichHadDataset = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE, false);
+        $this->addEventLogToSubmission(
+            $declinedSubmissionWhichHadDataset->getId(),
+            'plugins.generic.dataverse.log.researchDataDeposited'
+        );
+
+        $reportService = new DataverseReportService($this->context->getId());
+        $this->assertEquals(2, $reportService->getDeclinedSubmissionsWithDatasetCount());
     }
 }

@@ -126,7 +126,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         );
     }
 
-    public function testGetSubmissionsWithDataset(): void
+    public function testFilterSubmissionsWithDataset(): void
     {
         $submission = $this->createTestSubmission($this->context, [
             'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
@@ -149,7 +149,8 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
         $query = $this->getQueryBuilder()
             ->filterByContexts($this->context->getId())
-            ->getWithDataset();
+            ->filterWithDataset()
+            ->getQuery();
 
         $this->assertEquals(
             $datasetSubmission->getId(),
@@ -185,11 +186,13 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
         $depositErrorsCount = $this->getQueryBuilder()
             ->filterByContexts($this->context->getId())
-            ->countSubmissionsWithEventLog(['plugins.generic.dataverse.error.datasetDeposit']);
+            ->filterWithEventLogs(['plugins.generic.dataverse.error.datasetDeposit'])
+            ->getCount();
 
         $publishErrorsCount = $this->getQueryBuilder()
             ->filterByContexts($this->context->getId())
-            ->countSubmissionsWithEventLog(['plugins.generic.dataverse.error.publishFailed']);
+            ->filterWithEventLogs(['plugins.generic.dataverse.error.publishFailed'])
+            ->getCount();
 
         $this->assertEquals(1, $depositErrorsCount);
         $this->assertEquals(1, $publishErrorsCount);

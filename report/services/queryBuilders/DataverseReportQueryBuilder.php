@@ -13,6 +13,8 @@ class DataverseReportQueryBuilder
 
     protected $contextIds = [];
     protected $decisions = [];
+    protected $withDataset = false;
+    protected $eventLogs = [];
 
     public function filterByContexts($contextIds): self
     {
@@ -24,6 +26,27 @@ class DataverseReportQueryBuilder
     {
         $this->decisions = is_array($decisions) ? $decisions : [$decisions];
         return $this;
+    }
+
+    public function filterWithDataset(): self
+    {
+        $this->withDataset = true;
+        return $this;
+    }
+
+    public function filterWithEventLogs(array $eventLogMessages): self
+    {
+        $this->eventLogs = $eventLogMessages;
+        return $this;
+    }
+
+    public function getCount(): int
+    {
+        $query = $this->getQuery();
+
+        $query->select(DB::raw('COUNT(DISTINCT s.submission_id) as count'));
+
+        return $query->get()->first()->count;
     }
 
     public function getQuery(): Builder
@@ -46,32 +69,20 @@ class DataverseReportQueryBuilder
             }
         }
 
+        if ($this->withDataset) {
+            $query->leftJoin('dataverse_studies as ds', 'ds.submission_id', '=', 's.submission_id')
+                ->whereNotNull('ds.study_id');
+        }
+
+        if (!empty($this->eventLogs)) {
+            $query->leftJoin('event_log as el', 'el.assoc_id', '=', 's.submission_id')
+                ->whereIn('el.message', $this->eventLogs);
+        }
+
         $query->leftJoin('publications as pi', 'pi.submission_id', '=', 's.submission_id');
 
         $query->where('s.submission_progress', '=', self::SUBMISSION_PROGRESS_COMPLETE);
 
         return $query;
-    }
-
-    public function getWithDataset(): Builder
-    {
-        $query = $this->getQuery();
-
-        $query->leftJoin('dataverse_studies as ds', 'ds.submission_id', '=', 's.submission_id')
-            ->whereNotNull('ds.study_id');
-
-        return $query;
-    }
-
-    public function countSubmissionsWithEventLog(array $messages): int
-    {
-        $query = $this->getQuery();
-
-        $query->leftJoin('event_log as el', 'el.assoc_id', '=', 's.submission_id')
-            ->whereIn('el.message', $messages);
-
-        $query->select(DB::raw('COUNT(DISTINCT s.submission_id) as count'));
-
-        return $query->get()->first()->count;
     }
 }
