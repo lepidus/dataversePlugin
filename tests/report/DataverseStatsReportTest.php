@@ -83,11 +83,27 @@ class DataverseStatsReportTest extends PKPTestCase
         );
     }
 
-    public function testReportHasStatsData(): void
+    public function testReportHasStatsDataForOjs(): void
     {
         $expectedStatsData = [
             $this->acceptedSubmissions,
             $this->acceptedSubmissionsWithDataset,
+            $this->declinedSubmissions,
+            $this->declinedSubmissionsWithDataset,
+            $this->datasetsWithDepositError,
+            $this->datasetsWithPublishError,
+            $this->filesInDatasets
+        ];
+
+        $this->assertEquals($expectedStatsData, $this->report->getStatsData());
+    }
+
+    public function testReportHasStatsDataForOps(): void
+    {
+        $this->report = $this->createTestReport(DataverseStatsReport::OPS_APP_NAME, $this->locale);
+        $expectedStatsData = [
+            $this->publishedSubmissions,
+            $this->publishedSubmissionsWithDataset,
             $this->declinedSubmissions,
             $this->declinedSubmissionsWithDataset,
             $this->datasetsWithDepositError,

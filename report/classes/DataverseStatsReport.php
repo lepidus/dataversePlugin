@@ -54,6 +54,11 @@ class DataverseStatsReport
                 $this->stats['acceptedCount'],
                 $this->stats['acceptedWithDatasetCount'],
             ];
+        } elseif ($this->application == self::OPS_APP_NAME) {
+            $statsData = [
+                $this->stats['publishedCount'],
+                $this->stats['publishedWithDatasetCount'],
+            ];
         }
 
         return array_merge(
