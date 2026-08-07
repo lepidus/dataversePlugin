@@ -4,6 +4,7 @@ namespace APP\plugins\generic\dataverse\report\services;
 
 use APP\core\Application;
 use APP\decision\Decision;
+use APP\submission\Submission;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
 use APP\plugins\generic\dataverse\dataverseAPI\search\DataverseSearchBuilder;
@@ -29,7 +30,8 @@ class DataverseReportService
     {
         return $this->countSubmissions([
             'contextIds' => [$this->contextId],
-            'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
+            'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE],
+            'statuses' => [Submission::STATUS_DECLINED]
         ]);
     }
 
@@ -45,7 +47,8 @@ class DataverseReportService
     {
         $declinedArgs = [
             'contextIds' => [$this->contextId],
-            'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
+            'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE],
+            'statuses' => [Submission::STATUS_DECLINED]
         ];
         $declinedWithDatasetIds = $this->getQueryBuilder($declinedArgs)
             ->filterWithDataset()
@@ -111,6 +114,9 @@ class DataverseReportService
         }
         if (!empty($args['decisions'])) {
             $queryBuilder->filterByDecisions($args['decisions']);
+        }
+        if (!empty($args['statuses'])) {
+            $queryBuilder->filterByStatuses($args['statuses']);
         }
 
         return $queryBuilder;

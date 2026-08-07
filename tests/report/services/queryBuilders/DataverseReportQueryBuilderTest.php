@@ -2,13 +2,9 @@
 
 use PKP\tests\DatabaseTestCase;
 use APP\core\Application;
-use PKP\core\Core;
 use APP\submission\Submission;
-use APP\publication\Publication;
 use APP\decision\Decision;
-use APP\log\event\SubmissionEventLogEntry;
 use APP\plugins\generic\dataverse\tests\report\traits\ReportTestsHelperTrait;
-use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
 use APP\plugins\generic\dataverse\DataversePlugin;
@@ -56,8 +52,9 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
     public function testFilterSubmissionByDecisions(): void
     {
         $acceptedSubmission = $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT);
-        $declinedSubmissionIncorrectStatus = $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::DECLINE);
         $declinedSubmission = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE);
+        $queuedWithDeclineDecisionSub = $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::DECLINE);
+        $publishedWithDeclineDecisionSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::DECLINE);
 
         $query = $this->getQueryBuilder()
             ->filterByContexts($this->context->getId());
@@ -72,11 +69,13 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             $acceptedSubmission->getId(),
             $acceptedQuery->get()->first()->submission_id
         );
+        $this->assertEquals(1, $acceptedQuery->count());
 
         $this->assertEquals(
             $declinedSubmission->getId(),
             $declinedQuery->get()->first()->submission_id
         );
+        $this->assertEquals(3, $declinedQuery->count());
     }
 
     public function testFilterSubmissionsWithDataset(): void
@@ -93,6 +92,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             $submissionWithDataset->getId(),
             $query->get()->first()->submission_id
         );
+        $this->assertEquals(1, $query->count());
     }
 
     public function testFiltersSubmissionsWithEventLogs(): void
@@ -120,5 +120,21 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
         $this->assertEquals(1, $depositErrorsCount);
         $this->assertEquals(1, $publishErrorsCount);
+    }
+
+    public function testFilterSubmissionsByStatus(): void
+    {
+        $publishedNoDecisionSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED);
+        $publishedAcceptDecisionSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::ACCEPT);
+        $publishedDeclineDecisionSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::DECLINE);
+
+        $publishedSubmissionIds = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->filterByStatuses([Submission::STATUS_PUBLISHED])
+            ->getSubmissionIds();
+
+        $this->assertTrue(in_array($publishedNoDecisionSub->getId(), $publishedSubmissionIds));
+        $this->assertTrue(in_array($publishedAcceptDecisionSub->getId(), $publishedSubmissionIds));
+        $this->assertTrue(in_array($publishedDeclineDecisionSub->getId(), $publishedSubmissionIds));
     }
 }

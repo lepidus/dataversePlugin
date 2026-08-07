@@ -13,8 +13,9 @@ class DataverseReportQueryBuilder
 
     protected $contextIds = [];
     protected $decisions = [];
-    protected $withDataset = false;
     protected $eventLogs = [];
+    protected $statuses = [];
+    protected $withDataset = false;
 
     public function filterByContexts($contextIds): self
     {
@@ -40,6 +41,12 @@ class DataverseReportQueryBuilder
         return $this;
     }
 
+    public function filterByStatuses(array $statuses): self
+    {
+        $this->statuses = $statuses;
+        return $this;
+    }
+
     public function getCount(): int
     {
         return $this->getQuery()->count();
@@ -61,18 +68,15 @@ class DataverseReportQueryBuilder
         if (!empty($this->decisions)) {
             $query->leftJoin('edit_decisions as ed', 's.submission_id', '=', 'ed.submission_id')
                 ->whereIn('ed.decision', $this->decisions);
-
-            $declineDecisions = [Decision::DECLINE, Decision::INITIAL_DECLINE];
-            if (count(array_intersect($declineDecisions, $this->decisions))) {
-                $query->where('s.status', '=', Submission::STATUS_DECLINED);
-            } else {
-                $query->where('s.status', '!=', Submission::STATUS_DECLINED);
-            }
         }
 
         if ($this->withDataset) {
             $query->leftJoin('dataverse_studies as ds', 'ds.submission_id', '=', 's.submission_id')
                 ->whereNotNull('ds.study_id');
+        }
+
+        if (!empty($this->statuses)) {
+            $query->whereIn('s.status', $this->statuses);
         }
 
         if (!empty($this->eventLogs)) {
