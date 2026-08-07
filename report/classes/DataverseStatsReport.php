@@ -29,24 +29,24 @@ class DataverseStatsReport
 
         if ($this->application == self::OJS_APP_NAME) {
             $headers = [
-                __('plugins.generic.dataverse.report.headers.acceptedSubmissions'),
-                __('plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset'),
+                __('plugins.generic.dataverse.report.headers.acceptedSubmissions', [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset', [], $this->locale),
             ];
         } elseif ($this->application == self::OPS_APP_NAME) {
             $headers = [
-                __('plugins.generic.dataverse.report.headers.publishedSubmissions'),
-                __('plugins.generic.dataverse.report.headers.publishedSubmissionsWithDataset'),
+                __('plugins.generic.dataverse.report.headers.publishedSubmissions', [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.publishedSubmissionsWithDataset', [], $this->locale),
             ];
         }
 
         return array_merge(
             $headers,
             [
-                __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
-                __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
-                __('plugins.generic.dataverse.report.headers.datasetsWithDepositError'),
-                __('plugins.generic.dataverse.report.headers.datasetsWithPublishError'),
-                __('plugins.generic.dataverse.report.headers.filesInDatasets')
+                __('plugins.generic.dataverse.report.headers.declinedSubmissions', [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset', [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.datasetsWithDepositError', [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.datasetsWithPublishError', [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.filesInDatasets', [], $this->locale)
             ]
         );
     }
