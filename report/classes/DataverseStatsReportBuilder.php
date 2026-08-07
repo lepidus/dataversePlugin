@@ -12,19 +12,19 @@ class DataverseStatsReportBuilder
     {
         $locale = Locale::getLocale();
         $reportService = new DataverseReportService($contextId);
-        $report = new DataverseStatsReport($applicationName, $locale);
+        $stats = [];
 
         if ($applicationName == DataverseStatsReport::OJS_APP_NAME) {
-            $report->setAcceptedCount($reportService->getAcceptedSubmissionsCount());
-            $report->setAcceptedWithDatasetCount($reportService->getAcceptedSubmissionsWithDatasetCount());
+            $stats['acceptedCount'] = $reportService->getAcceptedSubmissionsCount();
+            $stats['acceptedWithDatasetCount'] = $reportService->getAcceptedSubmissionsWithDatasetCount();
         }
 
-        $report->setDeclinedCount($reportService->getDeclinedSubmissionsCount());
-        $report->setDeclinedWithDatasetCount($reportService->getDeclinedSubmissionsWithDatasetCount());
-        $report->setWithDepositErrorCount($reportService->getDatasetsWithDepositErrorCount());
-        $report->setWithPublishErrorCount($reportService->getDatasetsWithPublishErrorCount());
-        $report->setDatasetFilesCount($reportService->countDatasetFiles());
+        $stats['declinedCount'] = $reportService->getDeclinedSubmissionsCount();
+        $stats['declinedWithDatasetCount'] = $reportService->getDeclinedSubmissionsWithDatasetCount();
+        $stats['withDepositErrorCount'] = $reportService->getDatasetsWithDepositErrorCount();
+        $stats['withPublishErrorCount'] = $reportService->getDatasetsWithPublishErrorCount();
+        $stats['datasetFilesCount'] = $reportService->countDatasetFiles();
 
-        return $report;
+        return new DataverseStatsReport($applicationName, $locale, $stats);
     }
 }

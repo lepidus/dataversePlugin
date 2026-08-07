@@ -36,23 +36,23 @@ class DataverseStatsReportTest extends PKPTestCase
 
     private function createTestReport(string $application, string $locale): DataverseStatsReport
     {
-        $report = new DataverseStatsReport($application, $locale);
+        $stats = [
+            'declinedCount' => $this->declinedSubmissions,
+            'declinedWithDatasetCount' => $this->declinedSubmissionsWithDataset,
+            'withDepositErrorCount' => $this->datasetsWithDepositError,
+            'withPublishErrorCount' => $this->datasetsWithPublishError,
+            'datasetFilesCount' => $this->filesInDatasets,
+        ];
 
         if ($application == DataverseStatsReport::OJS_APP_NAME) {
-            $report->setAcceptedCount($this->acceptedSubmissions);
-            $report->setAcceptedWithDatasetCount($this->acceptedSubmissionsWithDataset);
+            $stats['acceptedCount'] = $this->acceptedSubmissions;
+            $stats['acceptedWithDatasetCount'] = $this->acceptedSubmissionsWithDataset;
         } elseif ($application == DataverseStatsReport::OPS_APP_NAME) {
-            $report->setPublishedCount($this->publishedSubmissions);
-            $report->setPublishedWithDatasetCount($this->publishedSubmissionsWithDataset);
+            $stats['publishedCount'] = $this->publishedSubmissions;
+            $stats['publishedWithDatasetCount'] = $this->publishedSubmissionsWithDataset;
         }
 
-        $report->setDeclinedCount($this->declinedSubmissions);
-        $report->setDeclinedWithDatasetCount($this->declinedSubmissionsWithDataset);
-        $report->setWithDepositErrorCount($this->datasetsWithDepositError);
-        $report->setWithPublishErrorCount($this->datasetsWithPublishError);
-        $report->setDatasetFilesCount($this->filesInDatasets);
-
-        return $report;
+        return new DataverseStatsReport($application, $locale, $stats);
     }
 
     private function getExpectedHeaders(string $application): array
@@ -85,21 +85,17 @@ class DataverseStatsReportTest extends PKPTestCase
 
     public function testReportHasStatsData(): void
     {
-        $this->assertEquals($this->acceptedSubmissions, $this->report->getAcceptedCount());
-        $this->assertEquals($this->acceptedSubmissionsWithDataset, $this->report->getAcceptedWithDatasetCount());
-        $this->assertEquals($this->declinedSubmissions, $this->report->getDeclinedCount());
-        $this->assertEquals($this->declinedSubmissionsWithDataset, $this->report->getDeclinedWithDatasetCount());
-        $this->assertEquals($this->datasetsWithDepositError, $this->report->getWithDepositErrorCount());
-        $this->assertEquals($this->datasetsWithPublishError, $this->report->getWithPublishErrorCount());
-        $this->assertEquals($this->filesInDatasets, $this->report->getDatasetFilesCount());
-    }
+        $expectedStatsData = [
+            $this->acceptedSubmissions,
+            $this->acceptedSubmissionsWithDataset,
+            $this->declinedSubmissions,
+            $this->declinedSubmissionsWithDataset,
+            $this->datasetsWithDepositError,
+            $this->datasetsWithPublishError,
+            $this->filesInDatasets
+        ];
 
-    public function testReportHasSpecificStatsDataForOps(): void
-    {
-        $this->report = $this->createTestReport(DataverseStatsReport::OPS_APP_NAME, $this->locale);
-
-        $this->assertEquals($this->publishedSubmissions, $this->report->getPublishedCount());
-        $this->assertEquals($this->publishedSubmissionsWithDataset, $this->report->getPublishedWithDatasetCount());
+        $this->assertEquals($expectedStatsData, $this->report->getStatsData());
     }
 
     public function testReportHasExpectedHeaders(): void

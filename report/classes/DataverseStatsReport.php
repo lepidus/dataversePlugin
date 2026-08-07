@@ -8,19 +8,11 @@ class DataverseStatsReport
     public const OPS_APP_NAME = 'ops';
 
     private $UTF8_BOM;
-    private int $acceptedCount;
-    private int $acceptedWithDatasetCount;
-    private int $publishedCount;
-    private int $publishedWithDatasetCount;
-    private int $declinedCount;
-    private int $declinedWithDatasetCount;
-    private int $withDepositErrorCount;
-    private int $withPublishErrorCount;
-    private int $datasetFilesCount;
 
     public function __construct(
         private string $application,
-        private string $locale
+        private string $locale,
+        private array $stats
     ) {
         $this->UTF8_BOM = chr(0xEF) . chr(0xBB) . chr(0xBF);
     }
@@ -53,115 +45,25 @@ class DataverseStatsReport
         );
     }
 
-    public function setAcceptedCount(int $acceptedCount): void
-    {
-        $this->acceptedCount = $acceptedCount;
-    }
-
-    public function getAcceptedCount(): int
-    {
-        return $this->acceptedCount;
-    }
-
-    public function setAcceptedWithDatasetCount(int $acceptedWithDatasetCount): void
-    {
-        $this->acceptedWithDatasetCount = $acceptedWithDatasetCount;
-    }
-
-    public function getAcceptedWithDatasetCount(): int
-    {
-        return $this->acceptedWithDatasetCount;
-    }
-
-    public function setPublishedCount(int $publishedCount): void
-    {
-        $this->publishedCount = $publishedCount;
-    }
-
-    public function getPublishedCount(): int
-    {
-        return $this->publishedCount;
-    }
-
-    public function setPublishedWithDatasetCount(int $publishedWithDatasetCount): void
-    {
-        $this->publishedWithDatasetCount = $publishedWithDatasetCount;
-    }
-
-    public function getPublishedWithDatasetCount(): int
-    {
-        return $this->publishedWithDatasetCount;
-    }
-
-    public function setDeclinedCount(int $declinedCount): void
-    {
-        $this->declinedCount = $declinedCount;
-    }
-
-    public function getDeclinedCount(): int
-    {
-        return $this->declinedCount;
-    }
-
-    public function setDeclinedWithDatasetCount(int $declinedWithDatasetCount): void
-    {
-        $this->declinedWithDatasetCount = $declinedWithDatasetCount;
-    }
-
-    public function getDeclinedWithDatasetCount(): int
-    {
-        return $this->declinedWithDatasetCount;
-    }
-
-    public function setWithDepositErrorCount(int $withDepositErrorCount): void
-    {
-        $this->withDepositErrorCount = $withDepositErrorCount;
-    }
-
-    public function getWithDepositErrorCount(): int
-    {
-        return $this->withDepositErrorCount;
-    }
-
-    public function setWithPublishErrorCount(int $withPublishErrorCount): void
-    {
-        $this->withPublishErrorCount = $withPublishErrorCount;
-    }
-
-    public function getWithPublishErrorCount(): int
-    {
-        return $this->withPublishErrorCount;
-    }
-
-    public function setDatasetFilesCount(int $datasetFilesCount): void
-    {
-        $this->datasetFilesCount = $datasetFilesCount;
-    }
-
-    public function getDatasetFilesCount(): int
-    {
-        return $this->datasetFilesCount;
-    }
-
     public function getStatsData(): array
     {
         $statsData = [];
 
         if ($this->application == self::OJS_APP_NAME) {
             $statsData = [
-                $this->acceptedCount,
-                $this->acceptedWithDatasetCount,
+                $this->stats['acceptedCount'],
+                $this->stats['acceptedWithDatasetCount'],
             ];
         }
 
         return array_merge(
             $statsData,
             [
-                $this->declinedCount,
-                $this->declinedWithDatasetCount,
-                $this->withDepositErrorCount,
-                $this->withPublishErrorCount,
-                $this->datasetFilesCount
+                $this->stats['declinedCount'],
+                $this->stats['declinedWithDatasetCount'],
+                $this->stats['withDepositErrorCount'],
+                $this->stats['withPublishErrorCount'],
+                $this->stats['datasetFilesCount']
             ]
         );
     }
