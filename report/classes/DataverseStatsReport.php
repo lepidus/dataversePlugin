@@ -10,6 +10,8 @@ class DataverseStatsReport
     private $UTF8_BOM;
     private int $acceptedCount;
     private int $acceptedWithDatasetCount;
+    private int $publishedCount;
+    private int $publishedWithDatasetCount;
     private int $declinedCount;
     private int $declinedWithDatasetCount;
     private int $withDepositErrorCount;
@@ -69,6 +71,26 @@ class DataverseStatsReport
     public function getAcceptedWithDatasetCount(): int
     {
         return $this->acceptedWithDatasetCount;
+    }
+
+    public function setPublishedCount(int $publishedCount): void
+    {
+        $this->publishedCount = $publishedCount;
+    }
+
+    public function getPublishedCount(): int
+    {
+        return $this->publishedCount;
+    }
+
+    public function setPublishedWithDatasetCount(int $publishedWithDatasetCount): void
+    {
+        $this->publishedWithDatasetCount = $publishedWithDatasetCount;
+    }
+
+    public function getPublishedWithDatasetCount(): int
+    {
+        return $this->publishedWithDatasetCount;
     }
 
     public function setDeclinedCount(int $declinedCount): void

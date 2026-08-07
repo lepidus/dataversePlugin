@@ -8,7 +8,9 @@ class DataverseStatsReportTest extends PKPTestCase
 {
     private DataverseStatsReport $report;
     private string $locale = 'en';
-    private string $application = 'ojs2';
+    private string $application = DataverseStatsReport::OJS_APP_NAME;
+    private int $publishedSubmissions = 70;
+    private int $publishedSubmissionsWithDataset = 45;
     private int $acceptedSubmissions = 40;
     private int $acceptedSubmissionsWithDataset = 35;
     private int $declinedSubmissions = 200;
@@ -36,9 +38,12 @@ class DataverseStatsReportTest extends PKPTestCase
     {
         $report = new DataverseStatsReport($application, $locale);
 
-        if ($application == 'ojs2') {
+        if ($application == DataverseStatsReport::OJS_APP_NAME) {
             $report->setAcceptedCount($this->acceptedSubmissions);
             $report->setAcceptedWithDatasetCount($this->acceptedSubmissionsWithDataset);
+        } elseif ($application == DataverseStatsReport::OPS_APP_NAME) {
+            $report->setPublishedCount($this->publishedSubmissions);
+            $report->setPublishedWithDatasetCount($this->publishedSubmissionsWithDataset);
         }
 
         $report->setDeclinedCount($this->declinedSubmissions);
@@ -54,12 +59,12 @@ class DataverseStatsReportTest extends PKPTestCase
     {
         $headers = [];
 
-        if ($application == 'ojs2') {
+        if ($application == DataverseStatsReport::OJS_APP_NAME) {
             $headers = [
                 __('plugins.generic.dataverse.report.headers.acceptedSubmissions'),
                 __('plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset'),
             ];
-        } elseif ($application == 'ops') {
+        } elseif ($application == DataverseStatsReport::OPS_APP_NAME) {
             $headers = [
                 __('plugins.generic.dataverse.report.headers.publishedSubmissions'),
                 __('plugins.generic.dataverse.report.headers.publishedSubmissionsWithDataset'),
@@ -89,13 +94,21 @@ class DataverseStatsReportTest extends PKPTestCase
         $this->assertEquals($this->filesInDatasets, $this->report->getDatasetFilesCount());
     }
 
+    public function testReportHasSpecificStatsDataForOps(): void
+    {
+        $this->report = $this->createTestReport(DataverseStatsReport::OPS_APP_NAME, $this->locale);
+
+        $this->assertEquals($this->publishedSubmissions, $this->report->getPublishedCount());
+        $this->assertEquals($this->publishedSubmissionsWithDataset, $this->report->getPublishedWithDatasetCount());
+    }
+
     public function testReportHasExpectedHeaders(): void
     {
-        $expectedOjsHeaders = $this->getExpectedHeaders('ojs2');
+        $expectedOjsHeaders = $this->getExpectedHeaders(DataverseStatsReport::OJS_APP_NAME);
         $this->assertEquals($expectedOjsHeaders, $this->report->getHeaders());
 
-        $this->report = $this->createTestReport('ops', $this->locale);
-        $expectedOpsHeaders = $this->getExpectedHeaders('ops');
+        $this->report = $this->createTestReport(DataverseStatsReport::OPS_APP_NAME, $this->locale);
+        $expectedOpsHeaders = $this->getExpectedHeaders(DataverseStatsReport::OPS_APP_NAME);
         $this->assertEquals($expectedOpsHeaders, $this->report->getHeaders());
     }
 
