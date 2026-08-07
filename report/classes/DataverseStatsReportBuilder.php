@@ -17,7 +17,11 @@ class DataverseStatsReportBuilder
         if ($applicationName == DataverseStatsReport::OJS_APP_NAME) {
             $stats['acceptedCount'] = $reportService->getAcceptedSubmissionsCount();
             $stats['acceptedWithDatasetCount'] = $reportService->getAcceptedSubmissionsWithDatasetCount();
+        } elseif ($applicationName == DataverseStatsReport::OPS_APP_NAME) {
+            $stats['publishedCount'] = $reportService->getPublishedSubmissionsCount();
+            $stats['publishedWithDatasetCount'] = $reportService->getPublishedSubmissionsWithDatasetCount();
         }
+
 
         $stats['declinedCount'] = $reportService->getDeclinedSubmissionsCount();
         $stats['declinedWithDatasetCount'] = $reportService->getDeclinedSubmissionsWithDatasetCount();
