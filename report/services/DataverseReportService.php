@@ -35,6 +35,14 @@ class DataverseReportService
         ]);
     }
 
+    public function getPublishedSubmissionsCount(): int
+    {
+        return $this->countSubmissions([
+            'contextIds' => [$this->contextId],
+            'statuses' => [Submission::STATUS_PUBLISHED]
+        ]);
+    }
+
     public function getAcceptedSubmissionsWithDatasetCount(): int
     {
         return $this->countSubmissionsWithDataset([
@@ -63,6 +71,14 @@ class DataverseReportService
         );
 
         return count($totalDeclined);
+    }
+
+    public function getPublishedSubmissionsWithDatasetCount(): int
+    {
+        return $this->countSubmissionsWithDataset([
+            'contextIds' => [$this->contextId],
+            'statuses' => [Submission::STATUS_PUBLISHED]
+        ]);
     }
 
     public function getDatasetsWithDepositErrorCount(): int

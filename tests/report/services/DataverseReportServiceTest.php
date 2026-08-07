@@ -55,6 +55,16 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $this->assertEquals(2, $reportService->getDeclinedSubmissionsCount());
     }
 
+    public function testCountPublishedSubmissions(): void
+    {
+        $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::ACCEPT);
+        $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::DECLINE);
+        $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::INITIAL_DECLINE);
+
+        $reportService = new DataverseReportService($this->context->getId());
+        $this->assertEquals(3, $reportService->getPublishedSubmissionsCount());
+    }
+
     public function testCountSubmissionsWithDataset(): void
     {
         $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE, true);
@@ -66,6 +76,16 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $reportService = new DataverseReportService($this->context->getId());
         $this->assertEquals(1, $reportService->getAcceptedSubmissionsWithDatasetCount());
         $this->assertEquals(1, $reportService->getDeclinedSubmissionsWithDatasetCount());
+    }
+
+    public function testCountPublishedSubmissionsWithDataset(): void
+    {
+        $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::ACCEPT, true);
+        $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::DECLINE, true);
+        $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::INITIAL_DECLINE, true);
+
+        $reportService = new DataverseReportService($this->context->getId());
+        $this->assertEquals(3, $reportService->getPublishedSubmissionsWithDatasetCount());
     }
 
     public function testCountsDeclinedSubmissionsAfterDatasetDeletion(): void
