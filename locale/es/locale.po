@@ -544,6 +544,12 @@ msgstr "Envíos aceptados"
 msgid "plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset"
 msgstr "Envíos aceptados con dataset"
 
+msgid "plugins.generic.dataverse.report.headers.publishedSubmissions"
+msgstr "Envíos postados"
+
+msgid "plugins.generic.dataverse.report.headers.publishedSubmissionsWithDataset"
+msgstr "Envíos postados con dataset"
+
 msgid "plugins.generic.dataverse.report.headers.declinedSubmissions"
 msgstr "Envíos rechazados"
 

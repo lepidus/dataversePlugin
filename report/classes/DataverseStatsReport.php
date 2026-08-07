@@ -5,6 +5,7 @@ namespace APP\plugins\generic\dataverse\report\classes;
 class DataverseStatsReport
 {
     public const OJS_APP_NAME = 'ojs2';
+    public const OPS_APP_NAME = 'ops';
 
     private $UTF8_BOM;
     private int $acceptedCount;
@@ -30,6 +31,11 @@ class DataverseStatsReport
             $headers = [
                 __('plugins.generic.dataverse.report.headers.acceptedSubmissions'),
                 __('plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset'),
+            ];
+        } elseif ($this->application == self::OPS_APP_NAME) {
+            $headers = [
+                __('plugins.generic.dataverse.report.headers.publishedSubmissions'),
+                __('plugins.generic.dataverse.report.headers.publishedSubmissionsWithDataset'),
             ];
         }
 

@@ -537,6 +537,12 @@ msgstr "Accepted submissions"
 msgid "plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset"
 msgstr "Accepted submissions with dataset"
 
+msgid "plugins.generic.dataverse.report.headers.publishedSubmissions"
+msgstr "Posted submissions"
+
+msgid "plugins.generic.dataverse.report.headers.publishedSubmissionsWithDataset"
+msgstr "Posted submissions with dataset"
+
 msgid "plugins.generic.dataverse.report.headers.declinedSubmissions"
 msgstr "Declined submissions"
 

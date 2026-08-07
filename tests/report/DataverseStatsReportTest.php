@@ -59,6 +59,11 @@ class DataverseStatsReportTest extends PKPTestCase
                 __('plugins.generic.dataverse.report.headers.acceptedSubmissions'),
                 __('plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset'),
             ];
+        } elseif ($application == 'ops') {
+            $headers = [
+                __('plugins.generic.dataverse.report.headers.publishedSubmissions'),
+                __('plugins.generic.dataverse.report.headers.publishedSubmissionsWithDataset'),
+            ];
         }
 
         return array_merge(
@@ -88,6 +93,10 @@ class DataverseStatsReportTest extends PKPTestCase
     {
         $expectedOjsHeaders = $this->getExpectedHeaders('ojs2');
         $this->assertEquals($expectedOjsHeaders, $this->report->getHeaders());
+
+        $this->report = $this->createTestReport('ops', $this->locale);
+        $expectedOpsHeaders = $this->getExpectedHeaders('ops');
+        $this->assertEquals($expectedOpsHeaders, $this->report->getHeaders());
     }
 
     public function testReportWritesToCsvFile(): void

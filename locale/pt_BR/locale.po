@@ -540,6 +540,12 @@ msgstr "Submissões aceitas"
 msgid "plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset"
 msgstr "Submissões aceitas com dataset"
 
+msgid "plugins.generic.dataverse.report.headers.publishedSubmissions"
+msgstr "Submissões postadas"
+
+msgid "plugins.generic.dataverse.report.headers.publishedSubmissionsWithDataset"
+msgstr "Submissões postadas com dataset"
+
 msgid "plugins.generic.dataverse.report.headers.declinedSubmissions"
 msgstr "Submissões rejeitadas"
 
