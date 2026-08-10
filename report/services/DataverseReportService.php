@@ -87,6 +87,13 @@ class DataverseReportService
         ]);
     }
 
+    public function getTotalSubmissionsCount(): int
+    {
+        return $this->countSubmissions([
+            'contextIds' => [$this->contextId],
+        ]);
+    }
+
     public function getDatasetsWithDepositErrorCount(): int
     {
         return $this->countSubmissionsWithEventLog(

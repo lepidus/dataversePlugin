@@ -4,8 +4,6 @@ namespace APP\plugins\generic\dataverse\report\services\queryBuilders;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
-use APP\decision\Decision;
-use APP\submission\Submission;
 
 class DataverseReportQueryBuilder
 {

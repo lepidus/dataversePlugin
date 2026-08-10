@@ -25,6 +25,7 @@ class DataverseStatsReportBuilder
 
         $stats['declinedCount'] = $reportService->getDeclinedSubmissionsCount();
         $stats['declinedWithDatasetCount'] = $reportService->getDeclinedSubmissionsWithDatasetCount();
+        $stats['totalSubmissionsCount'] = $reportService->getTotalSubmissionsCount();
         $stats['withDepositErrorCount'] = $reportService->getDatasetsWithDepositErrorCount();
         $stats['withPublishErrorCount'] = $reportService->getDatasetsWithPublishErrorCount();
         $stats['datasetFilesCount'] = $reportService->countDatasetFiles();

@@ -111,4 +111,19 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $reportService = new DataverseReportService($this->context->getId());
         $this->assertEquals(4, $reportService->getDeclinedSubmissionsWithDatasetCount());
     }
+
+    public function testCountsTotalSubmissions(): void
+    {
+        $this->createTestSubmission(Submission::STATUS_QUEUED);
+        $this->createTestSubmission(Submission::STATUS_QUEUED);
+        $this->createTestSubmission(Submission::STATUS_QUEUED, null, true);
+        $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE);
+        $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::INITIAL_DECLINE);
+        $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::ACCEPT, true);
+        $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::DECLINE, false);
+        $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::INITIAL_DECLINE, false);
+
+        $reportService = new DataverseReportService($this->context->getId());
+        $this->assertEquals(8, $reportService->getTotalSubmissionsCount());
+    }
 }
