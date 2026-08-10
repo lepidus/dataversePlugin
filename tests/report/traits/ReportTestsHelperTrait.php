@@ -12,7 +12,6 @@ use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQ
 
 trait ReportTestsHelperTrait
 {
-
     private function createTestContext()
     {
         $contextDAO = Application::getContextDAO();
