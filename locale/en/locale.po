@@ -549,6 +549,9 @@ msgstr "Declined submissions"
 msgid "plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset"
 msgstr "Declined submissions with dataset"
 
+msgid "plugins.generic.dataverse.report.headers.totalSubmissions"
+msgstr "Total submissions (excluding incomplete)"
+
 msgid "plugins.generic.dataverse.report.headers.datasetsWithDepositError"
 msgstr "Datasets with error in the deposit"
 

@@ -15,6 +15,7 @@ class DataverseStatsReportTest extends PKPTestCase
     private int $acceptedSubmissionsWithDataset = 35;
     private int $declinedSubmissions = 200;
     private int $declinedSubmissionsWithDataset = 50;
+    private int $totalSubmissions = 300;
     private int $datasetsWithDepositError = 25;
     private int $datasetsWithPublishError = 5;
     private int $filesInDatasets = 125;
@@ -39,6 +40,7 @@ class DataverseStatsReportTest extends PKPTestCase
         $stats = [
             'declinedCount' => $this->declinedSubmissions,
             'declinedWithDatasetCount' => $this->declinedSubmissionsWithDataset,
+            'totalSubmissionsCount' => $this->totalSubmissions,
             'withDepositErrorCount' => $this->datasetsWithDepositError,
             'withPublishErrorCount' => $this->datasetsWithPublishError,
             'datasetFilesCount' => $this->filesInDatasets,
@@ -76,6 +78,7 @@ class DataverseStatsReportTest extends PKPTestCase
             [
                 __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
                 __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
+                __('plugins.generic.dataverse.report.headers.totalSubmissions'),
                 __('plugins.generic.dataverse.report.headers.datasetsWithDepositError'),
                 __('plugins.generic.dataverse.report.headers.datasetsWithPublishError'),
                 __('plugins.generic.dataverse.report.headers.filesInDatasets')
@@ -90,6 +93,7 @@ class DataverseStatsReportTest extends PKPTestCase
             $this->acceptedSubmissionsWithDataset,
             $this->declinedSubmissions,
             $this->declinedSubmissionsWithDataset,
+            $this->totalSubmissions,
             $this->datasetsWithDepositError,
             $this->datasetsWithPublishError,
             $this->filesInDatasets
@@ -106,6 +110,7 @@ class DataverseStatsReportTest extends PKPTestCase
             $this->publishedSubmissionsWithDataset,
             $this->declinedSubmissions,
             $this->declinedSubmissionsWithDataset,
+            $this->totalSubmissions,
             $this->datasetsWithDepositError,
             $this->datasetsWithPublishError,
             $this->filesInDatasets
@@ -143,6 +148,7 @@ class DataverseStatsReportTest extends PKPTestCase
             $this->acceptedSubmissionsWithDataset,
             $this->declinedSubmissions,
             $this->declinedSubmissionsWithDataset,
+            $this->totalSubmissions,
             $this->datasetsWithDepositError,
             $this->datasetsWithPublishError,
             $this->filesInDatasets

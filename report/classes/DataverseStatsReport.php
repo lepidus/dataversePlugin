@@ -38,6 +38,7 @@ class DataverseStatsReport
             [
                 __('plugins.generic.dataverse.report.headers.declinedSubmissions', [], $this->locale),
                 __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset', [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.totalSubmissions', [], $this->locale),
                 __('plugins.generic.dataverse.report.headers.datasetsWithDepositError', [], $this->locale),
                 __('plugins.generic.dataverse.report.headers.datasetsWithPublishError', [], $this->locale),
                 __('plugins.generic.dataverse.report.headers.filesInDatasets', [], $this->locale)
@@ -66,6 +67,7 @@ class DataverseStatsReport
             [
                 $this->stats['declinedCount'],
                 $this->stats['declinedWithDatasetCount'],
+                $this->stats['totalSubmissionsCount'],
                 $this->stats['withDepositErrorCount'],
                 $this->stats['withPublishErrorCount'],
                 $this->stats['datasetFilesCount']

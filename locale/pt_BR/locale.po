@@ -552,6 +552,9 @@ msgstr "Submissões rejeitadas"
 msgid "plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset"
 msgstr "Submissões rejeitadas com dataset"
 
+msgid "plugins.generic.dataverse.report.headers.totalSubmissions"
+msgstr "Total de submissões (excluindo incompletas)"
+
 msgid "plugins.generic.dataverse.report.headers.datasetsWithDepositError"
 msgstr "Datasets com erro no depósito"
 
