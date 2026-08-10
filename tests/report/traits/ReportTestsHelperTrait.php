@@ -50,7 +50,7 @@ trait ReportTestsHelperTrait
         Repo::dataverseStudy()->add($study);
     }
 
-    private function addEventLogToSubmission(int $submissionId, string $message)
+    private function addEventLogToSubmission(int $submissionId, string $message, bool $isTranslated = false)
     {
         $eventLog = Repo::eventLog()->newDataObject();
         $eventLog->setAllData([
@@ -58,7 +58,7 @@ trait ReportTestsHelperTrait
             'assocId' => $submissionId,
             'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_SUBMISSION_SUBMIT,
             'message' => $message,
-            'isTranslated' => false,
+            'isTranslated' => $isTranslated,
             'dateLogged' => Core::getCurrentDate()
         ]);
         Repo::eventLog()->add($eventLog);

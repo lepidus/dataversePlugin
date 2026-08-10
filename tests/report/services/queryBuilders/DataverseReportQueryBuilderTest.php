@@ -99,6 +99,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
     {
         $submissionErrorDeposit = $this->createTestSubmission(Submission::STATUS_QUEUED, null, true);
         $submissionErrorPublish = $this->createTestSubmission(Submission::STATUS_QUEUED, null, true);
+        $submissionWithTranslatedLog = $this->createTestSubmission(Submission::STATUS_QUEUED, null, true);
         $this->addEventLogToSubmission(
             $submissionErrorDeposit->getId(),
             'plugins.generic.dataverse.error.datasetDeposit'
@@ -106,6 +107,10 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         $this->addEventLogToSubmission(
             $submissionErrorPublish->getId(),
             'plugins.generic.dataverse.error.publishFailed'
+        );
+        $this->addEventLogToSubmission(
+            $submissionWithTranslatedLog->getId(),
+            'Dataset deposited: doi:10.1234'
         );
 
         $depositErrorsCount = $this->getQueryBuilder()
@@ -118,8 +123,14 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             ->filterWithEventLogs(['plugins.generic.dataverse.error.publishFailed'])
             ->getCount();
 
+        $translatedLogsCount = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->filterWithEventLogs(['Dataset deposited'])
+            ->getCount();
+
         $this->assertEquals(1, $depositErrorsCount);
         $this->assertEquals(1, $publishErrorsCount);
+        $this->assertEquals(1, $translatedLogsCount);
     }
 
     public function testFilterSubmissionsByStatus(): void

@@ -81,7 +81,11 @@ class DataverseReportQueryBuilder
 
         if (!empty($this->eventLogs)) {
             $query->leftJoin('event_log as el', 'el.assoc_id', '=', 's.submission_id')
-                ->whereIn('el.message', $this->eventLogs);
+                ->where(function (Builder $query) {
+                    foreach ($this->eventLogs as $eventLogMessage) {
+                        $query->orWhere('el.message', 'like', "%{$eventLogMessage}%");
+                    }
+                });
         }
 
         $query->leftJoin('publications as pi', 'pi.submission_id', '=', 's.submission_id');

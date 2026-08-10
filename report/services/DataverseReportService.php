@@ -62,8 +62,14 @@ class DataverseReportService
             ->filterWithDataset()
             ->getSubmissionIds();
 
+        $possibleDepositMessages = [
+            'plugins.generic.dataverse.log.researchDataDeposited',
+            'Research data deposited',
+            'Datos de investigación depositados',
+            'Dados de pesquisa depositados'
+        ];
         $declinedWithDepositLogIds = $this->getQueryBuilder($declinedArgs)
-            ->filterWithEventLogs(['plugins.generic.dataverse.log.researchDataDeposited'])
+            ->filterWithEventLogs($possibleDepositMessages)
             ->getSubmissionIds();
 
         $totalDeclined = array_unique(
