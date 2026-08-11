@@ -75,7 +75,7 @@ trait ReportTestsHelperTrait
         $publication = new Publication();
 
         $submissionId = Repo::submission()->add($submission, $publication, $this->context);
-        $submission->setId($submissionId);
+        $submission = Repo::submission()->get($submissionId);
 
         if ($decision) {
             $this->addDecision($decision, $submission->getId());

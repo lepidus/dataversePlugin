@@ -4,9 +4,11 @@ use PKP\tests\DatabaseTestCase;
 use APP\core\Application;
 use APP\submission\Submission;
 use APP\decision\Decision;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\tests\report\traits\ReportTestsHelperTrait;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\DataversePlugin;
 
 class DataverseReportQueryBuilderTest extends DatabaseTestCase
@@ -33,6 +35,14 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
     private function getQueryBuilder(): DataverseReportQueryBuilder
     {
         return new DataverseReportQueryBuilder();
+    }
+
+    private function addDataStatementTypesToSubmission(Submission $submission, array $dataStatementTypes)
+    {
+        $publication = $submission->getCurrentPublication();
+
+        $publication->setData('dataStatementTypes', $dataStatementTypes);
+        Repo::publication()->dao->update($publication);
     }
 
     public function testFilterSubmissionByContexts(): void
@@ -147,5 +157,37 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         $this->assertTrue(in_array($publishedNoDecisionSub->getId(), $publishedSubmissionIds));
         $this->assertTrue(in_array($publishedAcceptDecisionSub->getId(), $publishedSubmissionIds));
         $this->assertTrue(in_array($publishedDeclineDecisionSub->getId(), $publishedSubmissionIds));
+    }
+
+    public function testGetsSubmissionsDataStatementTypes(): void
+    {
+        $publishedSubmission = $this->createTestSubmission(Submission::STATUS_PUBLISHED);
+        $acceptedSubmission = $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT);
+
+        $publishedSubmissionTypes = [
+            DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT,
+            DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE
+        ];
+        $acceptedSubmissionTypes = [
+            DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND,
+            DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE
+        ];
+
+        $this->addDataStatementTypesToSubmission($publishedSubmission, $publishedSubmissionTypes);
+        $this->addDataStatementTypesToSubmission($acceptedSubmission, $acceptedSubmissionTypes);
+
+        $retrievedPublishedStatementTypes = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->filterByStatuses([Submission::STATUS_PUBLISHED])
+            ->getDataStatementTypes();
+
+        $retrievedAcceptedStatementTypes = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->filterByStatuses([Submission::STATUS_QUEUED])
+            ->filterByDecisions([Decision::ACCEPT])
+            ->getDataStatementTypes();
+
+        $this->assertEquals($publishedSubmissionTypes, $retrievedPublishedStatementTypes[0]);
+        $this->assertEquals($acceptedSubmissionTypes, $retrievedAcceptedStatementTypes[0]);
     }
 }

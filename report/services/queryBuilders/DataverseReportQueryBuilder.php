@@ -55,6 +55,22 @@ class DataverseReportQueryBuilder
         return $this->getQuery()->pluck('s.submission_id')->toArray();
     }
 
+    public function getDataStatementTypes(): array
+    {
+        $query = $this->getQuery();
+
+        $query->leftJoin('publications as p', 's.current_publication_id', '=', 'p.publication_id')
+            ->leftJoin('publication_settings as ps', 'p.publication_id', '=', 'ps.publication_id')
+            ->where('ps.setting_name', '=', 'dataStatementTypes');
+
+        $dataStatementTypes = $query->pluck('ps.setting_value')->toArray();
+
+        return array_map(
+            fn ($dataStatementType) => json_decode($dataStatementType, true),
+            $dataStatementTypes
+        );
+    }
+
     public function getQuery(): Builder
     {
         $query = DB::table('submissions as s');
