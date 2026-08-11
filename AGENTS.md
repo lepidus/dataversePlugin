@@ -42,9 +42,14 @@ npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests/Tes
 
 Prerequisites for the E2E suite:
 
-- `cypress.env.json` at the application root with `baseUrl`, `dataverseUrl`, `dataverseApiToken`,
-  `dataverseTermsOfUse`, `dataverseAdditionalInstructions`. The specs hit a **real Dataverse instance**
+- `cypress.env.json` at the application root. The keys the specs actually read are `dataverseUrl`,
+  `dataverseApiToken` and `dataverseTermsOfUse`, plus the host application's own `baseUrl` and
+  `contextTitles` (used to branch between OJS and OPS). The specs hit a **real Dataverse instance**
   (e.g. `https://demo.dataverse.org/dataverse/<alias>`) — there is no mock or fixture server.
+- `dataverseCustomRequiredMetadataFieldsUrl` is optional but load-bearing: it must point at a collection whose
+  required metadata fields are customized. Without it `Test7_customRequiredMetadataFields` **silently
+  self-skips** (it logs a skip message and passes), so a green run does not mean that feature was covered.
+  `README.md` also lists `dataverseAdditionalInstructions`, but no spec reads it.
 - Specs are numbered and stateful: `Test0_pluginConfiguration` configures the plugin, later specs depend on it.
 - Application and OS locale must be `en` — assertions match English UI strings.
 
@@ -65,7 +70,10 @@ What the plugin actually does, in workflow order:
    Review step. Each of these adds its own `Submission::validateSubmit` rules.
 3. **Deposit**: on the `SubmissionSubmitted` event, `DatasetDepositOnSubmission` creates the dataset in
    Dataverse (as a draft), uploads the draft files, and records a `DataverseStudy` linking the submission to
-   the new persistent ID.
+   the new persistent ID. It bails out silently unless three conditions hold: the publication's
+   `dataStatementTypes` includes `DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED`, the assembled `Dataset` has at
+   least one file, and it has a subject. A submission that "should have deposited but didn't" almost always
+   failed one of these, not the API call.
 4. **Workflow "Research Data" tab**: view/edit dataset metadata, add and delete files, delete the dataset, or
    associate the submission with a dataset that already exists in the repository.
 5. **Data availability statement tab**: a publication-level statement whose type is one of the
@@ -77,18 +85,26 @@ What the plugin actually does, in workflow order:
 7. **Editorial decisions** (`ProcessDataverseDecisionsActions` + decision-step forms): *external review* adds
    the file-selection step, *accept* can publish the dataset, *decline* offers to delete it.
 8. **Publication**: on `Publication::publish` the dataset is published (when configured that way), and the
-   public article/preprint page shows the dataset citation. Crossref deposits get a `<relation>` node pointing
-   at the dataset DOI.
+   public article/preprint page shows the dataset citation. Crossref deposits get a `relations` program with
+   an `inter_work_relation` node (`relationship-type="isSupplementedBy"`), whose `identifier-type` is `doi`
+   for datasets deposited by the plugin and `url` for externally hosted ones.
 9. **Report**: a CSV report of submissions with research data, exposed as a report sub-plugin.
-10. **Token expiration warning**: a scheduled task that notifies managers before the Dataverse API token expires.
+10. **Token expiration warning**: a scheduled task that emails site administrators, journal/server managers and
+    the context contact address at fixed intervals (4, 3, 2 and 1 weeks, then 1 day) before the API token expires.
 
 ## Architecture
 
-### Registration is gated on configuration
+### Registration is gated
 
 `DataversePlugin::register()` always registers `DataverseConfigurationDAO`, but wires the dispatchers and the
-report sub-plugin **only if** `hasConfiguration($contextId)` is true. If a context has no Dataverse URL/token,
-the plugin adds nothing to the UI. Check this first when the plugin "does nothing".
+report sub-plugin only after passing three gates, in order:
+
+1. `Application::isUnderMaintenance()` — returns early, nothing else is registered;
+2. a non-null request context — site-level pages (admin area, site index) get no plugin behaviour;
+3. `hasConfiguration($contextId)` — no Dataverse URL/token saved for that context, no hooks.
+
+Any of the three explains a "the plugin does nothing" report; check them before suspecting the hooks
+themselves. Gate 2 in particular means plugin code must not assume a context exists.
 
 ### Dispatchers are the hook layer
 
@@ -131,20 +147,30 @@ serializes a `Dataset` into the JSON the Native API expects; `search/DataverseSe
   `DatasetIdentifier`, `DatasetRelatedPublication`, `DataverseCollection`, `DataverseResponse`). These mirror
   Dataverse's model and are **not** persisted locally.
 - `classes/factories/` — build a `Dataset` from a source. `JsonDatasetFactory` from a Dataverse API response,
-  `SubmissionDatasetFactory` from an OJS/OPS submission + publication. Both extend `DatasetFactory` and
-  implement `sanitizeProps()`; `getDataset()` is final. New dataset sources should be new factories.
+  `SubmissionDatasetFactory` from a submission (its constructor takes the `Submission` only; the publication is
+  passed separately to `getDatasetRelatedPublication()`, and the draft-file repository is swappable via
+  `setDraftDatasetFileRepo()` for tests). Both extend `DatasetFactory` and implement `sanitizeProps()`;
+  `getDataset()` is final. New dataset sources should be new factories.
 - `classes/dataverseStudy/` and `classes/draftDatasetFile/` — the only two locally persisted entities, each
   with `DAO` + `Repository`, reached through `classes/facades/Repo` (extends the application `Repo`, adding
-  `Repo::dataverseStudy()` and `Repo::draftDatasetFile()`). **Import the plugin's `Repo` facade** in plugin
-  code, never `APP\facades\Repo` directly.
+  `Repo::dataverseStudy()` and `Repo::draftDatasetFile()`). Import the plugin's `Repo` facade whenever you
+  touch a plugin repository — since it extends the application facade it covers core repositories too, so it
+  is the safe default. (`NotifyDataverseTokenExpiration` imports `APP\facades\Repo` directly because it only
+  uses core repositories.)
 
 `DataverseStudy` is the local link between a submission and its deposited dataset (`persistentId`,
 `persistentUri`, SWORD edit/statement URIs). `Repo::dataverseStudy()->getBySubmissionId()` returning null is
 the canonical "this submission has no dataset" test, used all over the dispatchers.
 
-`DraftDatasetFile` is a file uploaded during the wizard but not yet deposited; it is described by
-`schemas/draftDatasetFile.json` (loaded via the `Schema::get::draftDatasetFile` hook) and validated by
-`DraftDatasetFilesValidator`.
+`DraftDatasetFile` is a file uploaded during the wizard but not yet deposited; its properties are described by
+`schemas/draftDatasetFile.json`, loaded via the `Schema::get::draftDatasetFile` hook.
+
+Despite the name, `DraftDatasetFilesValidator` does **not** validate that schema. It holds two wizard business
+rules: `galleyContainsResearchData()` (compares galley files against dataset files by size + MD5, to warn when
+research data was also uploaded as a manuscript file) and `datasetHasReadmeFile()` (looks for a PDF or plain
+text file whose name contains a readme keyword — `readme`, `leiame`, `leia-me`, `leame` — and prunes draft
+records whose temporary file has vanished). Schema/field validation belongs in the schema JSON and the
+component form classes, not here.
 
 Both tables (`dataverse_studies`, `draft_dataset_files`) are created by
 `classes/migrations/DataverseMigration`. `upgrade.xml` lists migrations applied to existing installs.
@@ -180,8 +206,15 @@ CSV of submissions with research data through `DataverseReportService` and `Data
 
 ### Scheduled task
 
-`classes/tasks/NotifyDataverseTokenExpiration`, declared in `scheduledTasks.xml`, warns managers before the
-Dataverse API token expires. Email bodies come from `emailTemplates.xml`.
+`classes/tasks/NotifyDataverseTokenExpiration`, declared in `scheduledTasks.xml`, runs daily and emails when
+today matches exactly 4, 3, 2 or 1 weeks — or 1 day — before the token expiry date reported by Dataverse.
+Recipients are site administrators, the context's default manager user group, and the context contact address,
+de-duplicated by email.
+
+`emailTemplates.xml` registers `DATAVERSE_TOKEN_EXPIRATION` (and `DATASET_DELETE_NOTIFICATION`), but the task
+only takes the **subject** from that template — the body is rendered directly from the
+`emails.dataverseTokenExpiration.body` locale string with `contextName`, `dataverseName` and
+`keyExpirationDate` parameters. Editing the installed email template in the UI will not change the body.
 
 ### Secrets
 
@@ -192,10 +225,12 @@ The API token is stored encrypted in the application database. `classes/DataEncr
 ## Tests
 
 `tests/` mirrors the source layout (`tests/factories/`, `tests/dataverseAPI/actions/`, `tests/dispatchers/`, …)
-and runs under the PKP PHPUnit harness. API-facing tests inject a mocked Guzzle client and a
-`DataverseConfiguration` into the action classes' constructor — that optional-argument pair exists precisely so
-tests never hit the network. Response payloads and Crossref XML live in `tests/fixtures/`, including
-`expected/` files for XML comparisons.
+and runs under the PKP PHPUnit harness. The action classes take `(?DataverseConfiguration, ?Client)` — in that
+order — precisely so tests can construct them without a request context: pass a hand-built
+`DataverseConfiguration` first, and where a test exercises HTTP, a Guzzle `Client` backed by a `MockHandler`
+second. Tests that only cover pure helpers pass a bare `Client` and never issue a request. Elsewhere
+`DataverseClient` and the action classes are replaced with PHPUnit doubles. Response payloads and Crossref XML
+live in `tests/fixtures/`, including `expected/` files for XML comparisons.
 
 `cypress/` holds the E2E suite plus plugin-specific commands in `cypress/support/commands.js`
 (`findSubmission`, `waitDatasetTabLoading`, `waitDataStatementTabLoading`, …) that wrap the PKP base commands.
@@ -205,7 +240,8 @@ tests never hit the network. Response payloads and Crossref XML live in `tests/f
 Pushing a `v*` tag triggers `.github/workflows/generate-package.yml`, which **fails** unless:
 
 - `version/application` in `version.xml` is `dataverse`;
-- `version/release` is a prefix of the tag with the leading `v` stripped;
+- the tag, with the leading `v` stripped, is a **prefix of** `version/release` (the check is
+  `[[ $release != $tag* ]]`). Tag `v3.4.5` passes for release `3.4.5.2`; tag `v3.4.5.2.1` fails;
 - `version/date` equals the day the workflow runs.
 
 Update `version.xml` (release **and** date) in the commit you tag. The generated tarball excludes `tests/`
