@@ -73,45 +73,13 @@ class DataverseCollectionActionsTest extends PKPTestCase
             ]],
         ]);
         $response = new DataverseResponse(200, 'OK', $responseBody);
-        $cache = new class () {
-            public function getContents()
-            {
-                return null;
-            }
 
-            public function getCacheTime(): int
-            {
-                return 0;
-            }
-
-            public function flush(): void
-            {
-            }
-
-            public function setEntireCache(array $contents): void
-            {
-            }
-        };
-        $cacheManager = new class ($cache) {
-            private $cache;
-
-            public function __construct($cache)
-            {
-                $this->cache = $cache;
-            }
-
-            public function getFileCache(...$args)
-            {
-                return $this->cache;
-            }
-        };
-        $actions = new class ($configuration, new Client(), $cacheManager, $response) extends DataverseCollectionActions {
+        $actions = new class ($configuration, new Client(), $response) extends DataverseCollectionActions {
             private $metadataResponse;
 
-            public function __construct($configuration, $client, $cacheManager, $metadataResponse)
+            public function __construct($configuration, $client, $metadataResponse)
             {
                 parent::__construct($configuration, $client);
-                $this->cacheManager = $cacheManager;
                 $this->metadataResponse = $metadataResponse;
             }
 

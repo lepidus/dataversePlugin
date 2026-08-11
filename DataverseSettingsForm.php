@@ -5,8 +5,7 @@ namespace APP\plugins\generic\dataverse;
 use PKP\form\Form;
 use PKP\plugins\Plugin;
 use APP\core\Application;
-use PKP\cache\CacheManager;
-use PKP\cache\FileCache;
+use Illuminate\Support\Facades\Cache;
 use APP\template\TemplateManager;
 use PKP\db\DAORegistry;
 use PKP\form\validation\FormValidatorUrl;
@@ -171,21 +170,15 @@ class DataverseSettingsForm extends Form
 
     private function flushCache(): void
     {
-        $cache = $this->getCache('dataverse_required_metadata');
-        $cache->flush();
-    }
+        $cacheIds = [
+            'dataverse_collection',
+            'root_dataverse_collection',
+            'dataverse_licenses',
+            'dataverse_required_metadata',
+        ];
 
-    private function getCache(string $cacheId)
-    {
-        $cacheManager = CacheManager::getManager();
-        $cache = $cacheManager->getFileCache(
-            $this->contextId,
-            $cacheId,
-            function (FileCache $cache) {
-                $cache->setEntireCache([]);
-                return [];
-            }
-        );
-        return $cache;
+        foreach ($cacheIds as $cacheId) {
+            Cache::forget(DataverseCollectionActions::getCacheKey($cacheId, $this->contextId));
+        }
     }
 }

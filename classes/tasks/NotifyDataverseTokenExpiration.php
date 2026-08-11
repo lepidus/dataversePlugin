@@ -15,7 +15,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
 {
     private const MANAGER_USER_GROUP_NAME_LOCALE_KEY = 'default.groups.name.manager';
 
-    public function executeActions()
+    protected function executeActions(): bool
     {
         try {
             $dataverseClient = new DataverseClient();
@@ -76,7 +76,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
     protected function getNotificationRecipients($context): array
     {
         $users = array_merge(
-            $this->getUsersByRole(Role::ROLE_ID_SITE_ADMIN, Application::CONTEXT_SITE),
+            $this->getUsersByRole(Role::ROLE_ID_SITE_ADMIN, Application::SITE_CONTEXT_ID),
             $this->getJournalManagerUsers($context->getId())
         );
 
@@ -103,7 +103,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         return array_values($recipients);
     }
 
-    protected function getUsersByRole(int $roleId, int $contextId): array
+    protected function getUsersByRole(int $roleId, ?int $contextId): array
     {
         return Repo::user()->getCollector()
             ->filterByContextIds([$contextId])

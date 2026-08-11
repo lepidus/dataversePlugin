@@ -10,25 +10,18 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 {
     public function get(): DataverseCollection
     {
-        $cache = $this->cacheManager->getFileCache(
-            $this->contextId,
-            'dataverse_collection',
-            [$this, 'cacheDismiss']
-        );
+        $cachedData = $this->getCached('dataverse_collection');
 
-        $dataverseCollection = $cache->getContents();
-        $currentCacheTime = time() - $cache->getCacheTime();
+        if (!is_null($cachedData)) {
+            return $this->createCollectionFromData($cachedData);
+        }
 
-        if (is_null($dataverseCollection) || $currentCacheTime > self::ONE_DAY_SECONDS) {
-            $cache->flush();
+        $uri = $this->getCurrentDataverseURI();
+        $response = $this->nativeAPIRequest('GET', $uri);
+        $dataverseCollection = $this->createDataverseCollection($response);
 
-            $uri = $this->getCurrentDataverseURI();
-            $response = $this->nativeAPIRequest('GET', $uri);
-            $dataverseCollection = $this->createDataverseCollection($response);
-
-            if (!empty($dataverseCollection->getName())) {
-                $cache->setEntireCache($dataverseCollection);
-            }
+        if (!empty($dataverseCollection->getName())) {
+            $this->putCached('dataverse_collection', $dataverseCollection->getAllData());
         }
 
         return $dataverseCollection;
@@ -36,25 +29,18 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
     public function getRoot(): DataverseCollection
     {
-        $cache = $this->cacheManager->getFileCache(
-            $this->contextId,
-            'root_dataverse_collection',
-            [$this, 'cacheDismiss']
-        );
+        $cachedData = $this->getCached('root_dataverse_collection');
 
-        $rootDataverseCollection = $cache->getContents();
-        $currentCacheTime = time() - $cache->getCacheTime();
+        if (!is_null($cachedData)) {
+            return $this->createCollectionFromData($cachedData);
+        }
 
-        if (is_null($rootDataverseCollection) || $currentCacheTime > self::ONE_DAY_SECONDS) {
-            $cache->flush();
+        $uri = $this->getRootDataverseURI();
+        $response = $this->nativeAPIRequest('GET', $uri);
+        $rootDataverseCollection = $this->createDataverseCollection($response);
 
-            $uri = $this->getRootDataverseURI();
-            $response = $this->nativeAPIRequest('GET', $uri);
-            $rootDataverseCollection = $this->createDataverseCollection($response);
-
-            if (!empty($rootDataverseCollection->getName())) {
-                $cache->setEntireCache($rootDataverseCollection);
-            }
+        if (!empty($rootDataverseCollection->getName())) {
+            $this->putCached('root_dataverse_collection', $rootDataverseCollection->getAllData());
         }
 
         return $rootDataverseCollection;
@@ -62,23 +48,14 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
     public function getLicenses(): array
     {
-        $cache = $this->cacheManager->getFileCache(
-            $this->contextId,
-            'dataverse_licenses',
-            [$this, 'cacheDismiss']
-        );
+        $dataverseLicenses = $this->getCached('dataverse_licenses');
 
-        $dataverseLicenses = $cache->getContents();
-        $currentCacheTime = time() - $cache->getCacheTime();
-
-        if (is_null($dataverseLicenses) || $currentCacheTime > self::ONE_DAY_SECONDS) {
-            $cache->flush();
-
+        if (is_null($dataverseLicenses)) {
             $uri = $this->createNativeAPIURI(['licenses']);
             $response = $this->nativeAPIRequest('GET', $uri);
             $dataverseLicenses = json_decode($response->getBody(), true);
 
-            $cache->setEntireCache($dataverseLicenses);
+            $this->putCached('dataverse_licenses', $dataverseLicenses);
         }
 
         return $dataverseLicenses['data'] ?? [];
@@ -98,18 +75,9 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
     public function getRequiredMetadata(): array
     {
-        $cache = $this->cacheManager->getFileCache(
-            $this->contextId,
-            'dataverse_required_metadata',
-            [$this, 'cacheDismiss']
-        );
+        $dataverseRequiredMetadata = $this->getCached('dataverse_required_metadata');
 
-        $dataverseRequiredMetadata = $cache->getContents();
-        $currentCacheTime = time() - $cache->getCacheTime();
-
-        if (is_null($dataverseRequiredMetadata) || $currentCacheTime > self::ONE_DAY_SECONDS) {
-            $cache->flush();
-
+        if (is_null($dataverseRequiredMetadata)) {
             $args = 'returnDatasetFieldTypes=true';
             $uri = $this->getCurrentDataverseURI() . '/metadatablocks?' . $args;
             $response = $this->nativeAPIRequest('GET', $uri);
@@ -118,7 +86,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
             $dataverseRequiredMetadata = $this->extractRequiredMetadata($metadataBlocks);
 
-            $cache->setEntireCache($dataverseRequiredMetadata);
+            $this->putCached('dataverse_required_metadata', $dataverseRequiredMetadata);
         }
 
         return $dataverseRequiredMetadata;
@@ -143,9 +111,13 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
             return $dummyDataverseCollection;
         }
 
-        $dataverseCollectionData = $jsonContent['data'];
+        return $this->createCollectionFromData($jsonContent['data']);
+    }
+
+    private function createCollectionFromData(array $data): DataverseCollection
+    {
         $dataverseCollection = new DataverseCollection();
-        $dataverseCollection->setAllData($dataverseCollectionData);
+        $dataverseCollection->setAllData($data);
 
         return $dataverseCollection;
     }

@@ -2,7 +2,6 @@
 
 use PKP\doi\Doi;
 use PKP\tests\DatabaseTestCase;
-use APP\core\Application;
 use APP\publication\Publication;
 use APP\submission\Submission;
 use APP\plugins\generic\dataverse\classes\CrossrefXmlEditor;
@@ -12,12 +11,15 @@ use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
+use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
 use APP\plugins\generic\dataverse\DataversePlugin;
 
 class CrossrefXmlEditorTest extends DatabaseTestCase
 {
+    use CreatesTestContext;
+
     private CrossrefXmlEditor $xmlEditor;
-    private $contextId = 1;
+    private $context;
     private ?Submission $submission = null;
     private ?Publication $publication = null;
     private ?int $doiId = null;
@@ -33,6 +35,7 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $plugin = new DataversePlugin();
         $dispatcher = new DataStatementDispatcher($plugin);
 
+        $this->context = $this->createTestContext();
         $this->createTestSubmission();
         $this->study = $this->createDataverseStudy();
         $this->dataset = $this->createTestDataset();
@@ -48,21 +51,21 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         if ($doi) {
             Repo::doi()->delete($doi);
         }
+
+        $this->deleteTestContext($this->context);
     }
 
     private function createTestSubmission()
     {
-        $context = Application::getContextDAO()->getById($this->contextId);
-
         $submission = new Submission();
-        $submission->setData('contextId', $this->contextId);
+        $submission->setData('contextId', $this->context->getId());
         $publication = new Publication();
 
-        $submissionId = Repo::submission()->add($submission, $publication, $context);
+        $submissionId = Repo::submission()->add($submission, $publication, $this->context);
         $this->submission = Repo::submission()->get($submissionId);
 
         $doi = Repo::doi()->newDataObject([
-            'contextId' => $this->contextId,
+            'contextId' => $this->context->getId(),
             'doi' => $this->doi,
             'status' => Doi::STATUS_REGISTERED,
         ]);
@@ -173,7 +176,7 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $depositXml = new DOMDocument();
         $depositXml->load(__DIR__ . '/fixtures/crossref/' . $fixture);
 
-        $result = $this->xmlEditor->addDatasetRelationToDepositXml($depositXml, $this->contextId);
+        $result = $this->xmlEditor->addDatasetRelationToDepositXml($depositXml, $this->context->getId());
 
         $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/' . $expectedFixture);
 

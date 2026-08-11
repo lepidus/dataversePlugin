@@ -6,10 +6,14 @@ use APP\submission\Submission;
 use APP\publication\Publication;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
+use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
 use APP\plugins\generic\dataverse\DataversePlugin;
 
 class DataStatementDispatcherTest extends DatabaseTestCase
 {
+    use CreatesTestContext;
+
+    private $context;
     private $submissionId;
 
     protected function setUp(): void
@@ -17,6 +21,7 @@ class DataStatementDispatcherTest extends DatabaseTestCase
         parent::setUp();
         $plugin = new DataversePlugin();
         $dispatcher = new DataStatementDispatcher($plugin);
+        $this->context = $this->createTestContext();
     }
 
     protected function tearDown(): void
@@ -24,19 +29,17 @@ class DataStatementDispatcherTest extends DatabaseTestCase
         parent::tearDown();
         $submission = Repo::submission()->get($this->submissionId);
         Repo::submission()->delete($submission);
+        $this->deleteTestContext($this->context);
     }
 
     private function createTestPublication(array $data): int
     {
-        $contextId = 1;
-        $context = DAORegistry::getDAO('JournalDAO')->getById($contextId);
-
         $submission = new Submission();
-        $submission->setData('contextId', $contextId);
+        $submission->setData('contextId', $this->context->getId());
         $publication = new Publication();
         $publication->setAllData($data);
 
-        $this->submissionId = Repo::submission()->add($submission, $publication, $context);
+        $this->submissionId = Repo::submission()->add($submission, $publication, $this->context);
         $submission = Repo::submission()->get($this->submissionId);
 
         return $submission->getData('currentPublicationId');
