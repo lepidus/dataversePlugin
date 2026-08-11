@@ -8,6 +8,7 @@ use APP\plugins\generic\dataverse\tests\report\traits\ReportTestsHelperTrait;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
 use APP\plugins\generic\dataverse\report\services\DataverseReportService;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\DataversePlugin;
 
 class DataverseReportServiceTest extends DatabaseTestCase
@@ -125,5 +126,81 @@ class DataverseReportServiceTest extends DatabaseTestCase
 
         $reportService = new DataverseReportService($this->context->getId());
         $this->assertEquals(8, $reportService->getTotalSubmissionsCount());
+    }
+
+    public function testGetsSubmissionsStatementStats(): void
+    {
+        $firstAcceptedSub = $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT);
+        $secondAcceptedSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::ACCEPT);
+
+        $firstDeclinedSub = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE);
+        $secondDeclinedSub = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::INITIAL_DECLINE);
+
+        $this->addDataStatementTypesToSubmission($firstAcceptedSub, [
+            DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT,
+            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED
+        ]);
+        $this->addDataStatementTypesToSubmission($secondAcceptedSub, [
+            DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE,
+            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED
+        ]);
+        $this->addDataStatementTypesToSubmission($firstDeclinedSub, [
+            DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND,
+            DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE
+        ]);
+        $this->addDataStatementTypesToSubmission($secondDeclinedSub, [
+            DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT,
+            DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE
+        ]);
+
+        $reportService = new DataverseReportService($this->context->getId());
+        $acceptedStatementStats = $reportService->getAcceptedStatementStatistics();
+        $declinedStatementStats = $reportService->getDeclinedStatementStatistics();
+
+        $this->assertEquals([1, 1, 2, 0, 0], $acceptedStatementStats->getStats());
+        $this->assertEquals([1, 0, 0, 1, 2], $declinedStatementStats->getStats());
+    }
+
+    public function testGetsPublishedSubmissionsStatementStats(): void
+    {
+        $firstPublishedSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::ACCEPT);
+        $secondPublishedSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::ACCEPT);
+
+        $this->addDataStatementTypesToSubmission($firstPublishedSub, [
+            DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT,
+            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED
+        ]);
+        $this->addDataStatementTypesToSubmission($secondPublishedSub, [
+            DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE,
+            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED
+        ]);
+
+        $reportService = new DataverseReportService($this->context->getId());
+        $publishedStatementStats = $reportService->getPublishedStatementStatistics();
+
+        $this->assertEquals([1, 1, 2, 0, 0], $publishedStatementStats->getStats());
+    }
+
+    public function testGetsTotalSubmissionsStatementStats(): void
+    {
+        $firstSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::ACCEPT);
+        $secondSub = $this->createTestSubmission(Submission::STATUS_QUEUED);
+        $thirdSub = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE);
+
+        $this->addDataStatementTypesToSubmission($firstSub, [
+            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED
+        ]);
+        $this->addDataStatementTypesToSubmission($secondSub, [
+            DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE,
+            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED
+        ]);
+        $this->addDataStatementTypesToSubmission($thirdSub, [
+            DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE,
+        ]);
+
+        $reportService = new DataverseReportService($this->context->getId());
+        $publishedStatementStats = $reportService->getPublishedStatementStatistics();
+
+        $this->assertEquals([0, 1, 2, 0, 1], $publishedStatementStats->getStats());
     }
 }

@@ -63,6 +63,14 @@ trait ReportTestsHelperTrait
         Repo::eventLog()->add($eventLog);
     }
 
+    private function addDataStatementTypesToSubmission(Submission $submission, array $dataStatementTypes)
+    {
+        $publication = $submission->getCurrentPublication();
+
+        $publication->setData('dataStatementTypes', $dataStatementTypes);
+        Repo::publication()->dao->update($publication);
+    }
+
     private function createTestSubmission(?int $status = null, ?int $decision = null, bool $withDataset = false): Submission
     {
         $submission = new Submission();

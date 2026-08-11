@@ -4,7 +4,6 @@ use PKP\tests\DatabaseTestCase;
 use APP\core\Application;
 use APP\submission\Submission;
 use APP\decision\Decision;
-use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\tests\report\traits\ReportTestsHelperTrait;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
@@ -35,14 +34,6 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
     private function getQueryBuilder(): DataverseReportQueryBuilder
     {
         return new DataverseReportQueryBuilder();
-    }
-
-    private function addDataStatementTypesToSubmission(Submission $submission, array $dataStatementTypes)
-    {
-        $publication = $submission->getCurrentPublication();
-
-        $publication->setData('dataStatementTypes', $dataStatementTypes);
-        Repo::publication()->dao->update($publication);
     }
 
     public function testFilterSubmissionByContexts(): void
