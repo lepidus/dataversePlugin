@@ -5,6 +5,7 @@ namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 use APP\core\Application;
 use PKP\db\DAORegistry;
 use GuzzleHttp\Exception\TransferException;
+use Illuminate\Support\Facades\Cache;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
@@ -37,9 +38,25 @@ abstract class DataverseActions
         $this->client = $client;
     }
 
-    public static function getCacheKey(string $cacheId, ?int $contextId): string
+    public static function getCacheKey(string $cacheId, int $contextId): string
     {
-        return $cacheId . '_' . (int) $contextId;
+        return $cacheId . '_' . $contextId;
+    }
+
+    protected function getCached(string $cacheId)
+    {
+        return is_null($this->contextId)
+            ? null
+            : Cache::get(self::getCacheKey($cacheId, $this->contextId));
+    }
+
+    protected function putCached(string $cacheId, $contents): void
+    {
+        if (is_null($this->contextId)) {
+            return;
+        }
+
+        Cache::put(self::getCacheKey($cacheId, $this->contextId), $contents, self::ONE_DAY_SECONDS);
     }
 
     public function createNativeAPIURI(array $pathParams, array $queryParams = []): string

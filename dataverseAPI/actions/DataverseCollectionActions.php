@@ -2,7 +2,6 @@
 
 namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
-use Illuminate\Support\Facades\Cache;
 use APP\plugins\generic\dataverse\classes\entities\DataverseCollection;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DataverseCollectionActionsInterface;
@@ -11,17 +10,18 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 {
     public function get(): DataverseCollection
     {
-        $cacheKey = self::getCacheKey('dataverse_collection', $this->contextId);
-        $dataverseCollection = Cache::get($cacheKey);
+        $cachedData = $this->getCached('dataverse_collection');
 
-        if (is_null($dataverseCollection)) {
-            $uri = $this->getCurrentDataverseURI();
-            $response = $this->nativeAPIRequest('GET', $uri);
-            $dataverseCollection = $this->createDataverseCollection($response);
+        if (!is_null($cachedData)) {
+            return $this->createCollectionFromData($cachedData);
+        }
 
-            if (!empty($dataverseCollection->getName())) {
-                Cache::put($cacheKey, $dataverseCollection, self::ONE_DAY_SECONDS);
-            }
+        $uri = $this->getCurrentDataverseURI();
+        $response = $this->nativeAPIRequest('GET', $uri);
+        $dataverseCollection = $this->createDataverseCollection($response);
+
+        if (!empty($dataverseCollection->getName())) {
+            $this->putCached('dataverse_collection', $dataverseCollection->getAllData());
         }
 
         return $dataverseCollection;
@@ -29,17 +29,18 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
     public function getRoot(): DataverseCollection
     {
-        $cacheKey = self::getCacheKey('root_dataverse_collection', $this->contextId);
-        $rootDataverseCollection = Cache::get($cacheKey);
+        $cachedData = $this->getCached('root_dataverse_collection');
 
-        if (is_null($rootDataverseCollection)) {
-            $uri = $this->getRootDataverseURI();
-            $response = $this->nativeAPIRequest('GET', $uri);
-            $rootDataverseCollection = $this->createDataverseCollection($response);
+        if (!is_null($cachedData)) {
+            return $this->createCollectionFromData($cachedData);
+        }
 
-            if (!empty($rootDataverseCollection->getName())) {
-                Cache::put($cacheKey, $rootDataverseCollection, self::ONE_DAY_SECONDS);
-            }
+        $uri = $this->getRootDataverseURI();
+        $response = $this->nativeAPIRequest('GET', $uri);
+        $rootDataverseCollection = $this->createDataverseCollection($response);
+
+        if (!empty($rootDataverseCollection->getName())) {
+            $this->putCached('root_dataverse_collection', $rootDataverseCollection->getAllData());
         }
 
         return $rootDataverseCollection;
@@ -47,15 +48,14 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
     public function getLicenses(): array
     {
-        $cacheKey = self::getCacheKey('dataverse_licenses', $this->contextId);
-        $dataverseLicenses = Cache::get($cacheKey);
+        $dataverseLicenses = $this->getCached('dataverse_licenses');
 
         if (is_null($dataverseLicenses)) {
             $uri = $this->createNativeAPIURI(['licenses']);
             $response = $this->nativeAPIRequest('GET', $uri);
             $dataverseLicenses = json_decode($response->getBody(), true);
 
-            Cache::put($cacheKey, $dataverseLicenses, self::ONE_DAY_SECONDS);
+            $this->putCached('dataverse_licenses', $dataverseLicenses);
         }
 
         return $dataverseLicenses['data'] ?? [];
@@ -75,8 +75,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
     public function getRequiredMetadata(): array
     {
-        $cacheKey = self::getCacheKey('dataverse_required_metadata', $this->contextId);
-        $dataverseRequiredMetadata = Cache::get($cacheKey);
+        $dataverseRequiredMetadata = $this->getCached('dataverse_required_metadata');
 
         if (is_null($dataverseRequiredMetadata)) {
             $args = 'returnDatasetFieldTypes=true';
@@ -87,7 +86,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
 
             $dataverseRequiredMetadata = $this->extractRequiredMetadata($metadataBlocks);
 
-            Cache::put($cacheKey, $dataverseRequiredMetadata, self::ONE_DAY_SECONDS);
+            $this->putCached('dataverse_required_metadata', $dataverseRequiredMetadata);
         }
 
         return $dataverseRequiredMetadata;
@@ -112,9 +111,13 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
             return $dummyDataverseCollection;
         }
 
-        $dataverseCollectionData = $jsonContent['data'];
+        return $this->createCollectionFromData($jsonContent['data']);
+    }
+
+    private function createCollectionFromData(array $data): DataverseCollection
+    {
         $dataverseCollection = new DataverseCollection();
-        $dataverseCollection->setAllData($dataverseCollectionData);
+        $dataverseCollection->setAllData($data);
 
         return $dataverseCollection;
     }

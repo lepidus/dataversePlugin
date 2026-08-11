@@ -5,11 +5,6 @@ namespace APP\plugins\generic\dataverse\tests\helpers;
 use APP\core\Application;
 use PKP\context\Context;
 
-/**
- * Creates a context (journal/server) to be used by tests that need to persist
- * submissions or plugin settings. Since OJS/OPS 3.5 those tables have foreign
- * keys to the context table, so tests can no longer rely on arbitrary ids.
- */
 trait CreatesTestContext
 {
     protected function createTestContext(): Context

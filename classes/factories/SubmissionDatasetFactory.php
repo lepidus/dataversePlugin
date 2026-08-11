@@ -86,7 +86,7 @@ class SubmissionDatasetFactory extends DatasetFactory
     {
         return new DatasetAuthor(
             $author->getFullName(false, true),
-            $author->getLocalizedAffiliationNamesAsString(),
+            $author->getLocalizedAffiliationNamesAsString() ?: null,
             DatasetAuthor::IDENTIFIER_SCHEME_ORCID,
             $this->getAuthorOrcidNumber($author->getOrcid())
         );
@@ -111,7 +111,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $name = $contact->getFullName(false, true);
         $email = $contact->getEmail();
         $affiliation = $contact instanceof Author
-            ? $contact->getLocalizedAffiliationNamesAsString()
+            ? $contact->getLocalizedAffiliationNamesAsString() ?: null
             : $contact->getLocalizedData('affiliation');
 
         return new DatasetContact($name, $email, $affiliation);

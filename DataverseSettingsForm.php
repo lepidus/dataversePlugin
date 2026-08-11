@@ -170,8 +170,15 @@ class DataverseSettingsForm extends Form
 
     private function flushCache(): void
     {
-        Cache::forget(
-            DataverseCollectionActions::getCacheKey('dataverse_required_metadata', $this->contextId)
-        );
+        $cacheIds = [
+            'dataverse_collection',
+            'root_dataverse_collection',
+            'dataverse_licenses',
+            'dataverse_required_metadata',
+        ];
+
+        foreach ($cacheIds as $cacheId) {
+            Cache::forget(DataverseCollectionActions::getCacheKey($cacheId, $this->contextId));
+        }
     }
 }
