@@ -2,6 +2,8 @@
 
 namespace APP\plugins\generic\dataverse\report\classes;
 
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
+
 class DataStatementStats
 {
     public function __construct(
@@ -15,11 +17,11 @@ class DataStatementStats
         }
 
         return [
-            $this->stats['inManuscriptCount'],
-            $this->stats['repoAvailableCount'],
-            $this->stats['dataverseSubmittedCount'],
-            $this->stats['onDemandCount'],
-            $this->stats['publiclyUnavailableCount']
+            $this->stats[DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT],
+            $this->stats[DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE],
+            $this->stats[DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED],
+            $this->stats[DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND],
+            $this->stats[DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE]
         ];
     }
 }

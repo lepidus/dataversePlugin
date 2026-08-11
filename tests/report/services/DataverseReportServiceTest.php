@@ -199,7 +199,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
         ]);
 
         $reportService = new DataverseReportService($this->context->getId());
-        $publishedStatementStats = $reportService->getPublishedStatementStatistics();
+        $publishedStatementStats = $reportService->getTotalStatementStatistics();
 
         $this->assertEquals([0, 1, 2, 0, 1], $publishedStatementStats->getStats());
     }

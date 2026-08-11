@@ -1,6 +1,7 @@
 <?php
 
 use PKP\tests\PKPTestCase;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\report\classes\DataStatementStats;
 
 class DataStatementStatsTest extends PKPTestCase
@@ -14,11 +15,11 @@ class DataStatementStatsTest extends PKPTestCase
     public function testStatementClassReturnsAllCounts(): void
     {
         $stats = [
-            'inManuscriptCount' => $this->inManuscriptCount,
-            'repoAvailableCount' => $this->repoAvailableCount,
-            'dataverseSubmittedCount' => $this->dataverseSubmittedCount,
-            'onDemandCount' => $this->onDemandCount,
-            'publiclyUnavailableCount' => $this->publiclyUnavailableCount
+            DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT => $this->inManuscriptCount,
+            DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE => $this->repoAvailableCount,
+            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED => $this->dataverseSubmittedCount,
+            DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND => $this->onDemandCount,
+            DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE => $this->publiclyUnavailableCount
         ];
         $statementStats = new DataStatementStats($stats);
 

@@ -8,6 +8,8 @@ use APP\submission\Submission;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
 use APP\plugins\generic\dataverse\dataverseAPI\search\DataverseSearchBuilder;
+use APP\plugins\generic\dataverse\report\classes\DataStatementStats;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 
 class DataverseReportService
 {
@@ -132,6 +134,60 @@ class DataverseReportService
         return $this->getQueryBuilder($args)
             ->filterWithEventLogs($messages)
             ->getCount();
+    }
+
+    public function getAcceptedStatementStatistics()
+    {
+        return $this->getStatementStatistics([
+            'contextIds' => [$this->contextId],
+            'decisions' => [Decision::ACCEPT]
+        ]);
+    }
+
+    public function getDeclinedStatementStatistics()
+    {
+        return $this->getStatementStatistics([
+            'contextIds' => [$this->contextId],
+            'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE],
+            'statuses' => [Submission::STATUS_DECLINED]
+        ]);
+    }
+
+    public function getPublishedStatementStatistics()
+    {
+        return $this->getStatementStatistics([
+            'contextIds' => [$this->contextId],
+            'statuses' => [Submission::STATUS_PUBLISHED]
+        ]);
+    }
+
+    public function getTotalStatementStatistics()
+    {
+        return $this->getStatementStatistics([
+            'contextIds' => [$this->contextId]
+        ]);
+    }
+
+    private function getStatementStatistics(array $args): DataStatementStats
+    {
+        $submissionsStatementTypes = $this->getQueryBuilder($args)
+            ->getDataStatementTypes();
+
+        $statementTypesCounts = [
+            DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT => 0,
+            DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE => 0,
+            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED => 0,
+            DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND => 0,
+            DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE => 0
+        ];
+
+        foreach ($submissionsStatementTypes as $statementTypes) {
+            foreach ($statementTypes as $statementType) {
+                $statementTypesCounts[$statementType]++;
+            }
+        }
+
+        return new DataStatementStats($statementTypesCounts);
     }
 
     public function getQueryBuilder($args = []): DataverseReportQueryBuilder
