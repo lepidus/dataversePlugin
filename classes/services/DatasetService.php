@@ -260,7 +260,7 @@ class DatasetService extends DataverseService
             $this->registerAndNotifyError(
                 $submission,
                 'plugins.generic.dataverse.error.publishFailed',
-                ['error' => $e->getMessage()]
+                ['dataverseError' => $e->getMessage()]
             );
             return;
         }

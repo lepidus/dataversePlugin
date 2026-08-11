@@ -185,7 +185,7 @@ msgid "plugins.generic.dataverse.error.deleteFailed"
 msgstr "Erro al excluir datos de investigación en Dataverse: {$error}"
 
 msgid "plugins.generic.dataverse.error.publishFailed"
-msgstr "Erro al publicar datos de investigación en Dataverse: {$error}"
+msgstr "Erro al publicar datos de investigación en Dataverse: {$dataverseError}"
 
 msgid  "plugins.generic.dataverse.error.addFileFailed"
 msgstr "Erro al añadir el archivo de datos de investigación \"{$filename}\": {$error}"

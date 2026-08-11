@@ -156,8 +156,9 @@ class DraftDatasetFileHandler extends APIHandler
             'assocId' => $draftDatasetFile->getSubmissionId(),
             'userId' => Validation::loggedInAs() ?? $user->getId(),
             'eventType' => SubmissionFileEventLogEntry::SUBMISSION_LOG_FILE_UPLOAD,
-            'message' => __($messageKey, ['filename' => $draftDatasetFile->getData('fileName')]),
-            'isTranslated' => true,
+            'message' => $messageKey,
+            'isTranslated' => false,
+            'filename' => $draftDatasetFile->getData('fileName'),
             'dateLogged' => Core::getCurrentDate(),
         ]);
         Repo::eventLog()->add($eventLog);

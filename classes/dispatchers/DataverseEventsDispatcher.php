@@ -32,14 +32,30 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         Event::subscribe(new ProcessDataverseDecisionsActions());
 
         Hook::add('Schema::get::draftDatasetFile', [$this, 'loadDraftDatasetFileSchema']);
-        Hook::add('Dispatcher::dispatch', [$this, 'setupDataverseAPIHandlers']);
         Hook::add('Schema::get::submission', [$this, 'modifySubmissionSchema']);
+        Hook::add('Schema::get::eventLog', [$this, 'modifyEventLogSchema']);
+        Hook::add('Dispatcher::dispatch', [$this, 'setupDataverseAPIHandlers']);
         Hook::add('Form::config::before', [$this, 'addDatasetPublishNoticeInPublishing']);
         Hook::add('Publication::publish', [$this, 'publishDeposit'], Hook::SEQUENCE_CORE);
         Hook::add('TemplateManager::display', [$this, 'editDecisions']);
         Hook::add('LoadComponentHandler', [$this, 'setupDataverseComponentHandlers']);
         Hook::add('Publication::edit', [$this, 'updateDatasetOnPublicationUpdate']);
         Hook::add('AcronPlugin::parseCronTab', [$this, 'addDataverseTasksToCrontab']);
+    }
+
+    public function loadDraftDatasetFileSchema($hookname, $params): bool
+    {
+        $schema = &$params[0];
+        $draftDatasetFileSchemaFile = BASE_SYS_DIR . '/plugins/generic/dataverse/schemas/draftDatasetFile.json';
+
+        if (file_exists($draftDatasetFileSchemaFile)) {
+            $schema = json_decode(file_get_contents($draftDatasetFileSchemaFile));
+            if (!$schema) {
+                fatalError('Schema failed to decode. This usually means it is invalid JSON. Requested: ' . $draftDatasetFileSchemaFile . '. Last JSON error: ' . json_last_error());
+            }
+        }
+
+        return Hook::CONTINUE;
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -77,7 +93,23 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             error_log('Dataverse Error while modifying submission schema: ' . $e->getMessage());
         }
 
-        return false;
+        return Hook::CONTINUE;
+    }
+
+    public function modifyEventLogSchema(string $hookName, array $params): bool
+    {
+        $schema = &$params[0];
+        $messageParams = ['dataverseError', 'filename', 'persistentId'];
+
+        foreach ($messageParams as $param) {
+            $schema->properties->{$param} = (object) [
+                'type' => 'string',
+                'apiSummary' => true,
+                'validation' => ['nullable'],
+            ];
+        }
+
+        return Hook::CONTINUE;
     }
 
     private function addDatasetPublishFieldsToForm(FormComponent $form, $params)
@@ -393,21 +425,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $router->setHandler($handler);
         $handler->getApp()->run();
         exit;
-    }
-
-    public function loadDraftDatasetFileSchema($hookname, $params): bool
-    {
-        $schema = &$params[0];
-        $draftDatasetFileSchemaFile = BASE_SYS_DIR . '/plugins/generic/dataverse/schemas/draftDatasetFile.json';
-
-        if (file_exists($draftDatasetFileSchemaFile)) {
-            $schema = json_decode(file_get_contents($draftDatasetFileSchemaFile));
-            if (!$schema) {
-                fatalError('Schema failed to decode. This usually means it is invalid JSON. Requested: ' . $draftDatasetFileSchemaFile . '. Last JSON error: ' . json_last_error());
-            }
-        }
-
-        return false;
     }
 
     public function setupDataverseComponentHandlers($hookName, $params): bool
