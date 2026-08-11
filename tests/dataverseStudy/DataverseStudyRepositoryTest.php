@@ -6,10 +6,14 @@ use APP\publication\Publication;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
+use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
 use APP\plugins\generic\dataverse\DataversePlugin;
 
 class DataverseStudyRepositoryTest extends DatabaseTestCase
 {
+    use CreatesTestContext;
+
+    private $context;
     private $study;
     private $submissionId;
     private $editUri;
@@ -24,6 +28,7 @@ class DataverseStudyRepositoryTest extends DatabaseTestCase
         $plugin = new DataversePlugin();
         $dispatcher = new DataStatementDispatcher($plugin);
 
+        $this->context = $this->createTestContext();
         $this->submissionId = $this->createSubmission();
         $this->editUri = "https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:00.00000/ABC/DFG8HI";
         $this->editMediaUri = "https://demo.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/doi:00.00000/ABC/DFG8HI";
@@ -39,6 +44,7 @@ class DataverseStudyRepositoryTest extends DatabaseTestCase
         parent::tearDown();
         $submission = Repo::submission()->get($this->submissionId);
         Repo::submission()->delete($submission);
+        $this->deleteTestContext($this->context);
     }
 
     protected function getAffectedTables(): array
@@ -48,14 +54,11 @@ class DataverseStudyRepositoryTest extends DatabaseTestCase
 
     private function createSubmission(): int
     {
-        $contextId = 1;
-        $context = DAORegistry::getDAO('JournalDAO')->getById($contextId);
-
         $submission = new Submission();
-        $submission->setData('contextId', $contextId);
+        $submission->setData('contextId', $this->context->getId());
         $publication = new Publication();
 
-        return Repo::submission()->add($submission, $publication, $context);
+        return Repo::submission()->add($submission, $publication, $this->context);
     }
 
     private function createDataverseStudy(): DataverseStudy

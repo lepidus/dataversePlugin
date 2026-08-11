@@ -7,9 +7,10 @@ use APP\author\Author;
 use PKP\doi\Doi;
 use PKP\user\User;
 use APP\core\Request;
+use APP\core\Application;
 use PKP\core\Registry;
-use APP\journal\Journal;
-use APP\journal\JournalDAO;
+use PKP\affiliation\Affiliation;
+use PKP\author\Repository as AuthorRepository;
 use PKP\file\TemporaryFile;
 use PKP\file\TemporaryFileDAO;
 use PKP\db\DAORegistry;
@@ -35,7 +36,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
     private $author;
     private $locale;
     private $user;
-    private $journal;
+    private $context;
     private $temporaryFile;
     private $draftDatasetFile;
     private $mockDraftDatasetFileRepo;
@@ -49,8 +50,9 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $this->submission = $this->createTestSubmission();
 
         $this->registerMockRequest();
-        $this->registerMockJournalDAO();
+        $this->registerMockContextDAO();
         $this->registerMockTemporaryFileDAO();
+        $this->registerMockAuthorRepository();
         $this->mockDraftDatasetFileRepo = $this->createMockDraftDatasetFileRepo();
         $this->mockDataverseClient = $this->createMockDataverseClient();
     }
@@ -62,7 +64,22 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
     protected function getMockedDAOs(): array
     {
-        return ['JournalDAO', 'TemporaryFileDAO'];
+        return [$this->getContextDAOName(), 'TemporaryFileDAO'];
+    }
+
+    protected function getMockedContainerKeys(): array
+    {
+        return [...parent::getMockedContainerKeys(), AuthorRepository::class];
+    }
+
+    private function isJournalApplication(): bool
+    {
+        return Application::get()->getName() === 'ojs2';
+    }
+
+    private function getContextDAOName(): string
+    {
+        return $this->isJournalApplication() ? 'JournalDAO' : 'ServerDAO';
     }
 
     private function createMockDataverseClient(): DataverseClient
@@ -89,31 +106,35 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
             ->getMock();
         $mockRequest->expects($this->any())
             ->method('getUser')
-            ->will($this->returnValue($this->user));
+            ->willReturn($this->user);
         $mockRequest->expects($this->any())
             ->method('getUserVar')
-            ->will($this->returnValue(null));
+            ->willReturn(null);
         $mockRequest->expects($this->any())
             ->method('getContext')
-            ->will($this->returnValue(null));
+            ->willReturn(null);
         Registry::set('request', $mockRequest);
     }
 
-    private function registerMockJournalDAO(): void
+    private function registerMockContextDAO(): void
     {
-        $journalDAO = $this->getMockBuilder(JournalDAO::class)
-            ->setMethods(['getById'])
+        $contextDAOClass = $this->isJournalApplication()
+            ? \APP\journal\JournalDAO::class
+            : \APP\server\ServerDAO::class;
+
+        $contextDAO = $this->getMockBuilder($contextDAOClass)
+            ->onlyMethods(['getById'])
             ->getMock();
 
-        $this->journal = new Journal();
-        $this->journal->setPrimaryLocale($this->locale);
-        $this->journal->setName('Dataverse Preprints', $this->locale);
+        $this->context = $contextDAO->newDataObject();
+        $this->context->setPrimaryLocale($this->locale);
+        $this->context->setName('Dataverse Preprints', $this->locale);
 
-        $journalDAO->expects($this->any())
+        $contextDAO->expects($this->any())
             ->method('getById')
-            ->will($this->returnValue($this->journal));
+            ->willReturn($this->context);
 
-        DAORegistry::registerDAO('JournalDAO', $journalDAO);
+        DAORegistry::registerDAO($this->getContextDAOName(), $contextDAO);
     }
 
     private function createMockDraftDatasetFileRepo()
@@ -122,7 +143,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $draftDatasetFileDao = new DraftDatasetFileDao($schemaService);
         $draftDatasetFileRepo = $this->getMockBuilder(DraftDatasetFileRepo::class)
             ->setConstructorArgs([$draftDatasetFileDao])
-            ->setMethods(['getBySubmissionId'])
+            ->onlyMethods(['getBySubmissionId'])
             ->getMock();
 
         $draftDatasetFile = new DraftDatasetFile();
@@ -139,15 +160,23 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
         $draftDatasetFileRepo->expects($this->any())
             ->method('getBySubmissionId')
-            ->will($this->returnValue($collectionFiles));
+            ->willReturn($collectionFiles);
 
         return $draftDatasetFileRepo;
+    }
+
+    private function registerMockAuthorRepository(): void
+    {
+        $authorRepo = Mockery::mock(AuthorRepository::class);
+        $authorRepo->shouldReceive('get')->andReturn($this->author);
+
+        app()->instance(AuthorRepository::class, $authorRepo);
     }
 
     private function registerMockTemporaryFileDAO(): void
     {
         $temporaryFileDAO = $this->getMockBuilder(TemporaryFileDAO::class)
-            ->setMethods(['getTemporaryFile'])
+            ->onlyMethods(['getTemporaryFile'])
             ->getMock();
 
         $this->temporaryFile = new TemporaryFile();
@@ -157,7 +186,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
         $temporaryFileDAO->expects($this->any())
             ->method('getTemporaryFile')
-            ->will($this->returnValue($this->temporaryFile));
+            ->willReturn($this->temporaryFile);
 
         DAORegistry::registerDAO('TemporaryFileDAO', $temporaryFileDAO);
     }
@@ -176,11 +205,16 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
         $author = new Author();
         $author->setId(rand());
+        $author->setData('submissionLocale', $this->locale);
         $author->setGivenName('Iris', $this->locale);
         $author->setFamilyName('Castanheiras', $this->locale);
         $author->setEmail('iris@testmail.com');
-        $author->setAffiliation('Dataverse', $this->locale);
         $author->setOrcid('https://orcid.org/0000-0000-0000-0000');
+
+        $affiliation = new Affiliation();
+        $affiliation->setAuthorId($author->getId());
+        $affiliation->setName('Dataverse', $this->locale);
+        $author->addAffiliation($affiliation);
 
         $collectionAuthors = LazyCollection::make(function () use ($author) {
             yield $author->getId() => $author;
@@ -218,17 +252,17 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
         $datasetAuthor = new DatasetAuthor(
             $this->author->getFullName(false, true),
-            $this->author->getLocalizedData('affiliation'),
+            'Dataverse',
             DatasetAuthor::IDENTIFIER_SCHEME_ORCID,
             explode('https://orcid.org/', $this->author->getOrcid())[1]
         );
         $datasetContact = new DatasetContact(
             $this->author->getFullName(false, true),
             $this->author->getEmail(),
-            $this->author->getLocalizedData('affiliation')
+            'Dataverse'
         );
         $datasetDepositor = $this->user->getFullName(false, true)
-            . ' (via ' . $this->journal->getLocalizedName() . ')';
+            . ' (via ' . $this->context->getLocalizedName() . ')';
 
         $apaCitation = new APACitation();
         $submissionCitation = $apaCitation->getFormattedCitationBySubmission($this->submission);

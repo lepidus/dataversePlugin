@@ -54,7 +54,7 @@ class TestableNotifyDataverseTokenExpiration extends NotifyDataverseTokenExpirat
         return $this->getNotificationRecipients($context);
     }
 
-    protected function getUsersByRole(int $roleId, int $contextId): array
+    protected function getUsersByRole(int $roleId, ?int $contextId): array
     {
         return $this->usersByRole[$roleId] ?? [];
     }

@@ -182,7 +182,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return;
         }
 
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getData('contextId'));
         if ($configuration->getDatasetPublish() === DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
             return;
         }

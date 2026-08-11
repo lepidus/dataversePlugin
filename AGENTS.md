@@ -25,11 +25,11 @@ All commands run from the **host application root**, not from the plugin directo
 php tools/upgrade.php upgrade
 
 # All plugin unit tests
-find plugins/generic/dataverse -name tests -type d \
-  -exec php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit-env2.xml -v "{}" ";"
+php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml \
+  plugins/generic/dataverse/tests
 
 # A single test class
-php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit-env2.xml \
+php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml \
   plugins/generic/dataverse/tests/factories/JsonDatasetFactoryTest.php
 
 # Cypress (headless / interactive)
@@ -231,6 +231,15 @@ order — precisely so tests can construct them without a request context: pass 
 second. Tests that only cover pure helpers pass a bare `Client` and never issue a request. Elsewhere
 `DataverseClient` and the action classes are replaced with PHPUnit doubles. Response payloads and Crossref XML
 live in `tests/fixtures/`, including `expected/` files for XML comparisons.
+
+Since 3.5 nothing may be persisted against a hard-coded context id: `submissions` and `plugin_settings` have
+foreign keys to the context table. Tests that touch the database create their own context through the
+`CreatesTestContext` trait (`tests/helpers/`) and drop it in `tearDown`. The suite must pass on **both** OJS
+and OPS, so tests never name an application-specific class directly — resolve the context DAO through
+`Application::getContextDAO()` (or branch on `Application::get()->getName() === 'ojs2'`) instead of
+`JournalDAO`/`Journal`. Running the suite in OPS only requires the plugin directory to be reachable at
+`plugins/generic/dataverse` of the OPS installation (a symlink works) and `tools/upgrade.php upgrade` to have
+created the plugin tables there.
 
 `cypress/` holds the E2E suite plus plugin-specific commands in `cypress/support/commands.js`
 (`findSubmission`, `waitDatasetTabLoading`, `waitDataStatementTabLoading`, …) that wrap the PKP base commands.

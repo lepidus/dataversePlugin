@@ -5,8 +5,6 @@ use PKP\doi\Doi;
 use APP\submission\Submission;
 use APP\publication\Publication;
 use APP\author\Author;
-use APP\journal\Journal;
-use APP\journal\JournalDAO;
 use PKP\db\DAORegistry;
 use Illuminate\Support\LazyCollection;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
@@ -30,7 +28,7 @@ class APACitationTest extends PKPTestCase
             $request->setRouter($router);
         }
 
-        $this->registerMockJournalDAO();
+        $this->registerMockContextDAO();
         $this->createTestSubmission();
         $this->createAuthors();
         $this->createTestPublication();
@@ -39,24 +37,38 @@ class APACitationTest extends PKPTestCase
 
     protected function getMockedDAOs(): array
     {
-        return array('JournalDAO');
+        return array($this->getContextDAOName());
     }
 
-    private function registerMockJournalDAO(): void
+    private function isJournalApplication(): bool
     {
-        $journalDAO = $this->getMockBuilder(JournalDAO::class)
-            ->setMethods(array('getById'))
+        return Application::get()->getName() === 'ojs2';
+    }
+
+    private function getContextDAOName(): string
+    {
+        return $this->isJournalApplication() ? 'JournalDAO' : 'ServerDAO';
+    }
+
+    private function registerMockContextDAO(): void
+    {
+        $contextDAOClass = $this->isJournalApplication()
+            ? \APP\journal\JournalDAO::class
+            : \APP\server\ServerDAO::class;
+
+        $contextDAO = $this->getMockBuilder($contextDAOClass)
+            ->onlyMethods(array('getById'))
             ->getMock();
 
-        $journal = new Journal();
-        $journal->setPrimaryLocale('pt_BR');
-        $journal->setName('Preprints da Lepidus', 'pt_BR');
+        $context = $contextDAO->newDataObject();
+        $context->setPrimaryLocale('pt_BR');
+        $context->setName('Preprints da Lepidus', 'pt_BR');
 
-        $journalDAO->expects($this->any())
+        $contextDAO->expects($this->any())
             ->method('getById')
-            ->will($this->returnValue($journal));
+            ->willReturn($context);
 
-        DAORegistry::registerDAO('JournalDAO', $journalDAO);
+        DAORegistry::registerDAO($this->getContextDAOName(), $contextDAO);
     }
 
     private function createAuthors(): void

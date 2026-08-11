@@ -11,10 +11,13 @@ use APP\log\event\SubmissionEventLogEntry;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
+use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
 use APP\plugins\generic\dataverse\DataversePlugin;
 
 class DataverseReportQueryBuilderTest extends DatabaseTestCase
 {
+    use CreatesTestContext;
+
     private $context;
 
     public function setUp(): void
@@ -28,25 +31,12 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-        $contextDAO = Application::getContextDAO();
-        $contextDAO->deleteObject($this->context);
+        $this->deleteTestContext($this->context);
     }
 
     private function getQueryBuilder(): DataverseReportQueryBuilder
     {
         return new DataverseReportQueryBuilder();
-    }
-
-    private function createTestContext()
-    {
-        $contextDAO = Application::getContextDAO();
-        $context = $contextDAO->newDataObject();
-        $context->setPath('test');
-        $context->setPrimaryLocale('en');
-        $id = $contextDAO->insertObject($context);
-        $context->setId($id);
-
-        return $context;
     }
 
     private function createTestSubmission($context, $data): Submission

@@ -86,7 +86,7 @@ class SubmissionDatasetFactory extends DatasetFactory
     {
         return new DatasetAuthor(
             $author->getFullName(false, true),
-            $author->getLocalizedData('affiliation'),
+            $author->getLocalizedAffiliationNamesAsString(),
             DatasetAuthor::IDENTIFIER_SCHEME_ORCID,
             $this->getAuthorOrcidNumber($author->getOrcid())
         );
@@ -110,7 +110,9 @@ class SubmissionDatasetFactory extends DatasetFactory
 
         $name = $contact->getFullName(false, true);
         $email = $contact->getEmail();
-        $affiliation = $contact->getLocalizedData('affiliation');
+        $affiliation = $contact instanceof Author
+            ? $contact->getLocalizedAffiliationNamesAsString()
+            : $contact->getLocalizedData('affiliation');
 
         return new DatasetContact($name, $email, $affiliation);
     }
@@ -120,7 +122,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $submissionUser = Application::get()->getRequest()->getUser();
         $userName = $submissionUser->getFullName(false, true);
 
-        $context = Application::getContextDAO()->getById($this->submission->getContextId());
+        $context = Application::getContextDAO()->getById($this->submission->getData('contextId'));
         $contextName = $context->getLocalizedName();
 
         return $userName . ' (via ' . $contextName . ')';
