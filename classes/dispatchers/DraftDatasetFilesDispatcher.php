@@ -83,12 +83,11 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
             __('plugins.generic.dataverse.researchData.files'),
-            $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
                 'additionalInstructions' => $configuration->getLocalizedAdditionalInstructions(),
                 'fileListUrl' => $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]),
-                'fileActionUrl' => $this->getApiUrl('draftDatasetFiles'),
+                'fileActionUrl' => $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]),
                 'items' => $items,
                 'addFileModalTitle' => __('plugins.generic.dataverse.modal.addFile.title'),
                 'title' => __('plugins.generic.dataverse.researchData'),
@@ -106,12 +105,14 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     private function getDatasetFiles($request, $submissionId): array
     {
         $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submissionId)->toArray();
-        $datasetFilesApiUrl = $this->getApiUrl('draftDatasetFiles');
         $datasetFilesProps = [];
 
         foreach ($draftDatasetFiles as $draftDatasetFile) {
             $props = $draftDatasetFile->getAllData();
-            $props['downloadUrl'] = $datasetFilesApiUrl . '/' . $draftDatasetFile->getId() . '/download';
+            $props['downloadUrl'] = $this->getApiUrl(
+                'draftDatasetFiles/' . $draftDatasetFile->getId() . '/download',
+                ['submissionId' => $submissionId]
+            );
             $datasetFilesProps[] = $props;
         }
         ksort($datasetFilesProps);

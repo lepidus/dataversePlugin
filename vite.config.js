@@ -4,10 +4,10 @@ import vue from '@vitejs/plugin-vue';
 import i18nExtractKeys from './i18nExtractKeys.vite.js';
 
 export default defineConfig({
-    target: 'es2016',
     publicDir: false,
     plugins: [i18nExtractKeys(), vue()],
     build: {
+        target: 'es2016',
         lib: {
             entry: resolve(import.meta.dirname, 'resources/js/main.js'),
             name: 'DataversePlugin',

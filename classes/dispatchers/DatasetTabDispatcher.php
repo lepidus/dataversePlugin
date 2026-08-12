@@ -222,7 +222,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
             __('plugins.generic.dataverse.researchData.files'),
-            $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
                 'dataversePluginApiUrl' => $args['dataversePluginApiUrl'],

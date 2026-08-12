@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
+import {computed, ref, toRaw} from 'vue';
 import DatasetFileAddModal from './DatasetFileAddModal.vue';
 
 const {useLocalize} = pkp.modules.useLocalize;
@@ -75,7 +75,7 @@ const emit = defineEmits(['set']);
 const {t} = useLocalize();
 const {openSideModal, closeSideModal, openDialog} = useModal();
 
-const activeForm = ref({...props.form});
+const activeForm = ref(null);
 const refreshedItems = ref(null);
 
 const currentItems = computed(() => refreshedItems.value ?? props.items);
@@ -104,13 +104,13 @@ async function refreshItems() {
 }
 
 function openAddFileModal() {
-	activeForm.value = {...props.form};
+	activeForm.value = structuredClone(toRaw(props.form));
 
 	openSideModal(DatasetFileAddModal, {
 		title: props.addFileModalTitle,
 		form: activeForm.value,
 		onUpdateForm: (formId, data) => {
-			activeForm.value = {...activeForm.value, ...data};
+			Object.assign(activeForm.value, data);
 		},
 		onFormSuccess: () => {
 			closeSideModal(DatasetFileAddModal);

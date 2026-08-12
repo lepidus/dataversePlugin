@@ -13,12 +13,11 @@ use PKP\core\PKPBaseController;
 use PKP\core\PKPRequest;
 use PKP\file\TemporaryFileManager;
 use PKP\log\event\SubmissionFileEventLogEntry;
-use PKP\security\authorization\PolicySet;
-use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
+use PKP\security\authorization\ContextAccessPolicy;
+use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\authorization\UserRolesRequiredPolicy;
 use PKP\security\Role;
 use PKP\security\Validation;
-use PKP\services\PKPSchemaService;
 
 class DraftDatasetFileController extends PKPBaseController
 {
@@ -67,28 +66,18 @@ class DraftDatasetFileController extends PKPBaseController
     public function authorize(PKPRequest $request, array &$args, array $roleAssignments): bool
     {
         $this->addPolicy(new UserRolesRequiredPolicy($request), true);
-
-        $rolePolicy = new PolicySet(PolicySet::COMBINING_PERMIT_OVERRIDES);
-
-        foreach ($roleAssignments as $role => $operations) {
-            $rolePolicy->addPolicy(new RoleBasedHandlerOperationPolicy($request, $role, $operations));
-        }
-        $this->addPolicy($rolePolicy);
+        $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
+        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
 
         return parent::authorize($request, $args, $roleAssignments);
     }
 
     public function getMany(IlluminateRequest $illuminateRequest): JsonResponse
     {
-        $submissionId = $illuminateRequest->query('submissionId');
-
-        $draftDatasetFileRepo = Repo::draftDatasetFile();
-        $result = is_null($submissionId)
-            ? $draftDatasetFileRepo->getAll()
-            : $draftDatasetFileRepo->getBySubmissionId((int) $submissionId);
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
 
         $items = [];
-        foreach ($result as $draftDatasetFile) {
+        foreach (Repo::draftDatasetFile()->getBySubmissionId($submission->getId()) as $draftDatasetFile) {
             $items[] = $this->getFullProperties($draftDatasetFile);
         }
 
@@ -99,7 +88,7 @@ class DraftDatasetFileController extends PKPBaseController
 
     public function get(IlluminateRequest $illuminateRequest): JsonResponse
     {
-        $draftDatasetFile = Repo::draftDatasetFile()->get((int) $illuminateRequest->route('fileId'));
+        $draftDatasetFile = $this->getSubmissionDraftDatasetFile($illuminateRequest->route('fileId'));
 
         if (!$draftDatasetFile) {
             return response()->json(['error' => __('api.404.resourceNotFound')], Response::HTTP_NOT_FOUND);
@@ -110,7 +99,7 @@ class DraftDatasetFileController extends PKPBaseController
 
     public function download(IlluminateRequest $illuminateRequest): JsonResponse
     {
-        $draftDatasetFile = Repo::draftDatasetFile()->get((int) $illuminateRequest->route('fileId'));
+        $draftDatasetFile = $this->getSubmissionDraftDatasetFile($illuminateRequest->route('fileId'));
 
         if (!$draftDatasetFile) {
             return response()->json(['error' => __('api.404.resourceNotFound')], Response::HTTP_NOT_FOUND);
@@ -136,27 +125,27 @@ class DraftDatasetFileController extends PKPBaseController
 
     public function add(IlluminateRequest $illuminateRequest): JsonResponse
     {
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
         $temporaryFileId = $illuminateRequest->input('datasetFile')['temporaryFileId'] ?? null;
-        $submissionId = $illuminateRequest->query('submissionId');
-        $userId = $illuminateRequest->query('userId');
 
-        if (!$temporaryFileId || !$submissionId || !$userId) {
+        if (!$temporaryFileId) {
             return response()->json(
                 ['error' => __('api.400.paramNotSupported')],
                 Response::HTTP_BAD_REQUEST
             );
         }
 
-        $temporaryFileManager = new TemporaryFileManager();
-        $file = $temporaryFileManager->getFile((int) $temporaryFileId, (int) $userId);
+        $userId = $this->getRequest()->getUser()->getId();
+        $file = (new TemporaryFileManager())->getFile((int) $temporaryFileId, $userId);
 
         if (!$file) {
             return response()->json(['error' => __('api.404.resourceNotFound')], Response::HTTP_NOT_FOUND);
         }
 
-        $params = app()->get('schema')->sanitize(self::SCHEMA_NAME, [
-            'submissionId' => (int) $submissionId,
-            'userId' => $file->getUserId(),
+        $schemaService = app()->get('schema');
+        $params = $schemaService->sanitize(self::SCHEMA_NAME, [
+            'submissionId' => $submission->getId(),
+            'userId' => $userId,
             'fileId' => $file->getId(),
             'fileName' => $file->getOriginalFileName(),
         ]);
@@ -172,7 +161,7 @@ class DraftDatasetFileController extends PKPBaseController
 
     public function delete(IlluminateRequest $illuminateRequest): JsonResponse
     {
-        $draftDatasetFile = Repo::draftDatasetFile()->get((int) $illuminateRequest->query('fileId'));
+        $draftDatasetFile = $this->getSubmissionDraftDatasetFile($illuminateRequest->query('fileId'));
 
         if (!$draftDatasetFile) {
             return response()->json(
@@ -189,9 +178,25 @@ class DraftDatasetFileController extends PKPBaseController
         return response()->json($draftDatasetFileProps, Response::HTTP_OK);
     }
 
+    private function getSubmissionDraftDatasetFile($fileId)
+    {
+        if (!$fileId) {
+            return null;
+        }
+
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+        $draftDatasetFile = Repo::draftDatasetFile()->get((int) $fileId);
+
+        if (!$draftDatasetFile || $draftDatasetFile->getSubmissionId() != $submission->getId()) {
+            return null;
+        }
+
+        return $draftDatasetFile;
+    }
+
     private function createFileEventLog($draftDatasetFile, string $messageKey): void
     {
-        $user = Application::get()->getRequest()->getUser();
+        $user = $this->getRequest()->getUser();
 
         $eventLog = Repo::eventLog()->newDataObject([
             'assocType' => Application::ASSOC_TYPE_SUBMISSION,
@@ -207,7 +212,6 @@ class DraftDatasetFileController extends PKPBaseController
 
     private function getFullProperties($object): array
     {
-        /** @var PKPSchemaService $schemaService */
         $schemaService = app()->get('schema');
         $props = $schemaService->getFullProps(self::SCHEMA_NAME);
 
@@ -223,7 +227,10 @@ class DraftDatasetFileController extends PKPBaseController
                 $request,
                 Application::ROUTE_API,
                 $request->getContext()->getPath(),
-                'draftDatasetFiles/' . $object->getId() . '/download'
+                'draftDatasetFiles/' . $object->getId() . '/download',
+                null,
+                null,
+                ['submissionId' => $object->getSubmissionId()]
             );
 
         return $objectProps;
