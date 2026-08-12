@@ -59,31 +59,57 @@ class DataverseStatsReportTest extends PKPTestCase
 
     private function getExpectedHeaders(string $application): array
     {
-        $headers = [];
+        $pubOrAcpt = ($application == DataverseStatsReport::OPS_APP_NAME)
+            ? 'published'
+            : 'accepted';
+        $statementSectionColumns = [
+            __('plugins.generic.dataverse.report.headers.statement.inManuscript'),
+            __('plugins.generic.dataverse.report.headers.statement.repoAvailable'),
+            __('plugins.generic.dataverse.report.headers.statement.onDemand'),
+            __('plugins.generic.dataverse.report.headers.statement.publiclyUnavailable')
+        ];
 
-        if ($application == DataverseStatsReport::OJS_APP_NAME) {
-            $headers = [
-                __('plugins.generic.dataverse.report.headers.acceptedSubmissions'),
-                __('plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset'),
-            ];
-        } elseif ($application == DataverseStatsReport::OPS_APP_NAME) {
-            $headers = [
-                __('plugins.generic.dataverse.report.headers.publishedSubmissions'),
-                __('plugins.generic.dataverse.report.headers.publishedSubmissionsWithDataset'),
-            ];
-        }
+        $firstHeadersLine = [
+            __('navigation.submissions'),
+            '',
+            '',
+            __('plugins.generic.dataverse.report.headers.submissionsWithDataset'),
+            '',
+            __("plugins.generic.dataverse.report.headers.statement.$pubOrAcpt"),
+            '',
+            '',
+            '',
+            __('plugins.generic.dataverse.report.headers.statement.declined'),
+            '',
+            '',
+            '',
+            __('plugins.generic.dataverse.report.headers.statement.total'),
+            '',
+            '',
+            '',
+            __('plugins.generic.dataverse.report.headers.datasetsMetrics'),
+            '',
+            '',
+        ];
 
-        return array_merge(
-            $headers,
-            [
-                __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
-                __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
-                __('plugins.generic.dataverse.report.headers.totalSubmissions'),
-                __('plugins.generic.dataverse.report.headers.datasetsWithDepositError'),
-                __('plugins.generic.dataverse.report.headers.datasetsWithPublishError'),
-                __('plugins.generic.dataverse.report.headers.filesInDatasets')
-            ]
-        );
+        $secondHeadersLine = [
+            __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}Submissions"),
+            __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
+            __('plugins.generic.dataverse.report.headers.totalSubmissions'),
+            __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}SubmissionsWithDataset"),
+            __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
+            ...$statementSectionColumns,
+            ...$statementSectionColumns,
+            ...$statementSectionColumns,
+            __('plugins.generic.dataverse.report.headers.datasetsWithDepositError'),
+            __('plugins.generic.dataverse.report.headers.datasetsWithPublishError'),
+            __('plugins.generic.dataverse.report.headers.filesInDatasets')
+        ];
+
+        return [
+            $firstHeadersLine,
+            $secondHeadersLine
+        ];
     }
 
     public function testReportHasStatsDataForOjs(): void
@@ -122,11 +148,15 @@ class DataverseStatsReportTest extends PKPTestCase
     public function testReportHasExpectedHeaders(): void
     {
         $expectedOjsHeaders = $this->getExpectedHeaders(DataverseStatsReport::OJS_APP_NAME);
-        $this->assertEquals($expectedOjsHeaders, $this->report->getHeaders());
+        $ojsHeaders = $this->report->getHeaders();
+        $this->assertEquals($expectedOjsHeaders[0], $ojsHeaders[0]);
+        $this->assertEquals($expectedOjsHeaders[1], $ojsHeaders[1]);
 
         $this->report = $this->createTestReport(DataverseStatsReport::OPS_APP_NAME, $this->locale);
         $expectedOpsHeaders = $this->getExpectedHeaders(DataverseStatsReport::OPS_APP_NAME);
-        $this->assertEquals($expectedOpsHeaders, $this->report->getHeaders());
+        $opsHeaders = $this->report->getHeaders();
+        $this->assertEquals($expectedOpsHeaders[0], $opsHeaders[0]);
+        $this->assertEquals($expectedOpsHeaders[1], $opsHeaders[1]);
     }
 
     public function testReportWritesToCsvFile(): void
@@ -139,9 +169,11 @@ class DataverseStatsReportTest extends PKPTestCase
         $UTF8_BOM = chr(0xEF) . chr(0xBB) . chr(0xBF);
         fread($csvFile, strlen($UTF8_BOM));
 
-        $expectedHeader = $this->getExpectedHeaders($this->application);
+        $expectedHeaders = $this->getExpectedHeaders($this->application);
         $row = fgetcsv($csvFile);
-        $this->assertEquals($expectedHeader, $row);
+        $this->assertEquals($expectedHeaders[0], $row);
+        $row = fgetcsv($csvFile);
+        $this->assertEquals($expectedHeaders[1], $row);
 
         $expectedStatsLine = [
             $this->acceptedSubmissions,

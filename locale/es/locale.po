@@ -538,6 +538,24 @@ msgstr "El proceso de generación de informes puede tardar unos minutos, según 
 msgid "plugins.generic.dataverse.report.generate"
 msgstr "Generar Informe"
 
+msgid "plugins.generic.dataverse.report.headers.submissionsWithDataset"
+msgstr "Envíos con dataset"
+
+msgid "plugins.generic.dataverse.report.headers.statement.accepted"
+msgstr "Declaración de datos (aceptados)"
+
+msgid "plugins.generic.dataverse.report.headers.statement.published"
+msgstr "Declaración de datos (postados)"
+
+msgid "plugins.generic.dataverse.report.headers.statement.declined"
+msgstr "Declaración de datos (rechazados)"
+
+msgid "plugins.generic.dataverse.report.headers.statement.total"
+msgstr "Declaración de datos (total)"
+
+msgid "plugins.generic.dataverse.report.headers.datasetsMetrics"
+msgstr "Métricas de datasets"
+
 msgid "plugins.generic.dataverse.report.headers.acceptedSubmissions"
 msgstr "Envíos aceptados"
 
@@ -567,3 +585,15 @@ msgstr "Datasets con error en la publicación"
 
 msgid "plugins.generic.dataverse.report.headers.filesInDatasets"
 msgstr "Archivos en datasets"
+
+msgid "plugins.generic.dataverse.report.headers.statement.inManuscript"
+msgstr "En el manuscrito"
+
+msgid "plugins.generic.dataverse.report.headers.statement.repoAvailable"
+msgstr "En uno o más repositorio/s"
+
+msgid "plugins.generic.dataverse.report.headers.statement.onDemand"
+msgstr "A petición"
+
+msgid "plugins.generic.dataverse.report.headers.statement.publiclyUnavailable"
+msgstr "Indisponibles públicamente"
