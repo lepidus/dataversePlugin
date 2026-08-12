@@ -181,4 +181,22 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         $this->assertEquals($publishedSubmissionTypes, $retrievedPublishedStatementTypes[0]);
         $this->assertEquals($acceptedSubmissionTypes, $retrievedAcceptedStatementTypes[0]);
     }
+
+    public function testGetsSubmissionsWithinDateSubmittedInterval(): void
+    {
+        $beforeIntervalSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED, null, false, '2026-06-11');
+        $withinIntervalSub = $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT, false, '2026-06-13');
+        $afterIntervalSub = $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT, false, '2026-06-16');
+
+        $startInterval = '2026-06-12';
+        $endInterval = '2026-06-15';
+
+        $submissionIds = $this->getQueryBuilder()
+            ->withinDateSubmittedInterval($startInterval, $endInterval)
+            ->getSubmissionIds();
+
+        $this->assertContains($withinIntervalSub->getId(), $submissionIds);
+        $this->assertNotContains($beforeIntervalSub->getId(), $submissionIds);
+        $this->assertNotContains($afterIntervalSub->getId(), $submissionIds);
+    }
 }

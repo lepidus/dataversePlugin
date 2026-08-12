@@ -14,6 +14,8 @@ class DataverseReportQueryBuilder
     protected $eventLogs = [];
     protected $statuses = [];
     protected $withDataset = false;
+    protected $beginSubmissionInterval;
+    protected $endSubmissionInterval;
 
     public function filterByContexts($contextIds): self
     {
@@ -45,6 +47,13 @@ class DataverseReportQueryBuilder
         return $this;
     }
 
+    public function withinDateSubmittedInterval(string $beginning, string $ending): self
+    {
+        $this->beginSubmissionInterval = $beginning;
+        $this->endSubmissionInterval = $ending;
+        return $this;
+    }
+
     public function getCount(): int
     {
         return $this->getQuery()->count();
@@ -66,17 +75,27 @@ class DataverseReportQueryBuilder
         $dataStatementTypes = $query->pluck('ps.setting_value')->toArray();
 
         return array_map(
-            fn ($dataStatementType) => json_decode($dataStatementType, true),
+            fn($dataStatementType) => json_decode($dataStatementType, true),
             $dataStatementTypes
         );
     }
 
     public function getQuery(): Builder
     {
-        $query = DB::table('submissions as s');
+        $query = DB::table('submissions as s')
+            ->where('s.submission_progress', '=', self::SUBMISSION_PROGRESS_COMPLETE);
 
         if (!empty($this->contextIds)) {
             $query->whereIn('s.context_id', $this->contextIds);
+        }
+
+        if (!empty($this->statuses)) {
+            $query->whereIn('s.status', $this->statuses);
+        }
+
+        if (!empty($this->beginSubmissionInterval) && !empty($this->endSubmissionInterval)) {
+            $query->where('s.date_submitted', '>=', $this->beginSubmissionInterval)
+                ->where('s.date_submitted', '<=', $this->endSubmissionInterval);
         }
 
         if (!empty($this->decisions)) {
@@ -89,10 +108,6 @@ class DataverseReportQueryBuilder
                 ->whereNotNull('ds.study_id');
         }
 
-        if (!empty($this->statuses)) {
-            $query->whereIn('s.status', $this->statuses);
-        }
-
         if (!empty($this->eventLogs)) {
             $query->leftJoin('event_log as el', 'el.assoc_id', '=', 's.submission_id')
                 ->where(function (Builder $query) {
@@ -101,8 +116,6 @@ class DataverseReportQueryBuilder
                     }
                 });
         }
-
-        $query->where('s.submission_progress', '=', self::SUBMISSION_PROGRESS_COMPLETE);
 
         return $query;
     }

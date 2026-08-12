@@ -71,13 +71,18 @@ trait ReportTestsHelperTrait
         Repo::publication()->dao->update($publication);
     }
 
-    private function createTestSubmission(?int $status = null, ?int $decision = null, bool $withDataset = false): Submission
-    {
+    private function createTestSubmission(
+        ?int $status = null,
+        ?int $decision = null,
+        bool $withDataset = false,
+        ?string $dateSubmitted = null
+    ): Submission {
         $submission = new Submission();
         $submission->setAllData([
             'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
             'contextId' => $this->context->getId(),
-            'status' => $status
+            'status' => $status,
+            'dateSubmitted' => $dateSubmitted ?? Core::getCurrentDate()
         ]);
 
         $publication = new Publication();
