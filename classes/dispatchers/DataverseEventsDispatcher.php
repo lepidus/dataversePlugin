@@ -11,7 +11,8 @@ use PKP\components\forms\FormComponent;
 use Illuminate\Support\Facades\Event;
 use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
 use APP\plugins\generic\dataverse\api\v1\dataverse\DataverseHandler;
-use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileHandler;
+use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileController;
+use PKP\handler\APIHandler;
 use APP\plugins\generic\dataverse\classes\components\forms\SelectDataFilesForReviewForm;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
@@ -39,7 +40,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         Hook::add('TemplateManager::display', [$this, 'editDecisions']);
         Hook::add('LoadComponentHandler', [$this, 'setupDataverseComponentHandlers']);
         Hook::add('Publication::edit', [$this, 'updateDatasetOnPublicationUpdate']);
-        Hook::add('AcronPlugin::parseCronTab', [$this, 'addDataverseTasksToCrontab']);
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -378,12 +378,17 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return;
         }
 
+        if (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
+            $handler = new APIHandler(new DraftDatasetFileController());
+            $router->setHandler($handler);
+            $handler->runRoutes();
+            exit;
+        }
+
         if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
             $handler = new DatasetHandler();
         } elseif (str_contains($request->getRequestPath(), 'api/v1/dataverse')) {
             $handler = new DataverseHandler();
-        } elseif (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
-            $handler = new DraftDatasetFileHandler();
         }
 
         if (!isset($handler)) {
@@ -420,12 +425,5 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return true;
         }
         return false;
-    }
-
-    public function addDataverseTasksToCrontab($hookName, $params)
-    {
-        $taskFilesPath = &$params[0];
-        $taskFilesPath[] = $this->plugin->getPluginPath() . DIRECTORY_SEPARATOR . 'scheduledTasks.xml';
-        return Hook::CONTINUE;
     }
 }

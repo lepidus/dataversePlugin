@@ -6,7 +6,6 @@ use PKP\plugins\Hook;
 use APP\core\Application;
 use APP\template\TemplateManager;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
-use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\classes\components\forms\DataStatementForm;
 
 class DataStatementTabDispatcher extends DataverseDispatcher
@@ -14,7 +13,6 @@ class DataStatementTabDispatcher extends DataverseDispatcher
     protected function registerHooks(): void
     {
         Hook::add('TemplateManager::display', [$this, 'addDataStatementTabResources']);
-        Hook::add('Template::Workflow::Publication', [$this, 'addDataStatementTab']);
     }
 
     public function addDataStatementTabResources(string $hookName, array $params): bool
@@ -29,23 +27,7 @@ class DataStatementTabDispatcher extends DataverseDispatcher
             return false;
         }
 
-        $templateMgr->addJavaScript(
-            'dataStatementForm',
-            $this->plugin->getPluginFullPath() . '/js/ui/components/DataStatementForm.js',
-            [
-                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
-                'contexts' => ['backend']
-            ]
-        );
-
-        $templateMgr->addJavaScript(
-            'field-controlled-vocab-url',
-            $this->plugin->getPluginFullPath() . '/js/ui/components/FieldControlledVocabUrl.js',
-            [
-                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
-                'contexts' => ['backend']
-            ]
-        );
+        $this->addPluginAssets($templateMgr);
 
         $request = Application::get()->getRequest();
         $context = $request->getContext();

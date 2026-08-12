@@ -22,7 +22,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        Hook::add('Template::Workflow::Publication', [$this, 'addResearchDataTab']);
         Hook::add('TemplateManager::display', [$this, 'loadResourcesToWorkflow']);
     }
 
@@ -218,14 +217,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
     private function initDatasetFilesList($templateMgr, $submission, $args): void
     {
-        $templateMgr->addJavaScript(
-            'dataset-files-list-panel',
-            $this->plugin->getPluginFullPath() . '/js/ui/components/DatasetFilesListPanel.js',
-            [
-                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
-                'contexts' => ['backend']
-            ]
-        );
+        $this->addPluginAssets($templateMgr);
 
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
