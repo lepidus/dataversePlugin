@@ -239,6 +239,9 @@ CSV of submissions with research data through `DataverseReportService` and `Data
 `classes/tasks/NotifyDataverseTokenExpiration`, registered through `DataversePlugin::registerSchedules()`
 (`PKP\plugins\interfaces\HasTaskScheduler`), runs daily and emails when
 today matches exactly 4, 3, 2 or 1 weeks — or 1 day — before the token expiry date reported by Dataverse.
+Plugin schedules are only registered under the CLI runner, where there is no request context, so the task
+iterates the contexts itself and builds `DataverseCollectionActions` with an explicit `DataverseConfiguration`
+per context instead of going through `DataverseClient`.
 Recipients are site administrators, the context's default manager user group, and the context contact address,
 de-duplicated by email.
 

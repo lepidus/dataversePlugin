@@ -7,9 +7,13 @@ use PKP\mail\Mailable;
 use PKP\security\Role;
 use APP\core\Application;
 use APP\facades\Repo;
-use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use Illuminate\Support\Facades\Mail;
+use PKP\db\DAORegistry;
+use PKP\userGroup\UserGroup;
 
 class NotifyDataverseTokenExpiration extends ScheduledTask
 {
@@ -17,12 +21,30 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
 
     protected function executeActions(): bool
     {
+        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO')
+            ?? DAORegistry::registerDAO('DataverseConfigurationDAO', new DataverseConfigurationDAO());
+
+        $contexts = Application::getContextDAO()->getAll(true);
+
+        while ($context = $contexts->next()) {
+            if (!$configurationDAO->hasConfiguration($context->getId())) {
+                continue;
+            }
+
+            $this->notifyContext($context, $configurationDAO->get($context->getId()));
+        }
+
+        return true;
+    }
+
+    protected function notifyContext($context, DataverseConfiguration $configuration): void
+    {
         try {
-            $dataverseClient = new DataverseClient();
-            $tokenExpirationDate = $dataverseClient->getDataverseCollectionActions()->getApiTokenExpirationDate();
+            $collectionActions = new DataverseCollectionActions($configuration);
+            $tokenExpirationDate = $collectionActions->getApiTokenExpirationDate();
 
             if (empty($tokenExpirationDate)) {
-                return false;
+                return;
             }
 
             $momentsToSendNotification = ['4 weeks', '3 weeks', '2 weeks', '1 week', '1 day'];
@@ -32,21 +54,17 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
                 $momentDate = date('Y-m-d', strtotime($tokenExpirationDate . " -$moment"));
 
                 if ($today == $momentDate) {
-                    $this->sendNotificationEmail($dataverseClient, $tokenExpirationDate);
+                    $this->sendNotificationEmail($collectionActions, $tokenExpirationDate, $context);
                     break;
                 }
             }
         } catch (DataverseException $exception) {
             error_log('Dataverse token expiration check unavailable (HTTP ' . $exception->getCode() . ')');
-            return false;
         }
-
-        return true;
     }
 
-    private function sendNotificationEmail($dataverseClient, $tokenExpirationDate)
+    private function sendNotificationEmail($collectionActions, $tokenExpirationDate, $context)
     {
-        $context = Application::get()->getRequest()->getContext();
         $emailTemplate = Repo::emailTemplate()->getByKey(
             $context->getId(),
             'DATAVERSE_TOKEN_EXPIRATION'
@@ -62,7 +80,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         $email->to($recipients);
         $email->subject($emailTemplate->getLocalizedData('subject'));
 
-        $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
+        $dataverseCollection = $collectionActions->get();
         $emailBody = __('emails.dataverseTokenExpiration.body', [
             'contextName' => $context->getLocalizedName(),
             'dataverseName' => $dataverseCollection->getName(),
@@ -115,8 +133,8 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
     protected function getJournalManagerUsers(int $contextId): array
     {
         foreach ($this->getManagerUserGroups($contextId) as $userGroup) {
-            if ($userGroup->getData('nameLocaleKey') === self::MANAGER_USER_GROUP_NAME_LOCALE_KEY) {
-                return $this->getUsersByUserGroup($userGroup->getId(), $contextId);
+            if ($userGroup->nameLocaleKey === self::MANAGER_USER_GROUP_NAME_LOCALE_KEY) {
+                return $this->getUsersByUserGroup($userGroup->id, $contextId);
             }
         }
 
@@ -125,12 +143,12 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
 
     protected function getManagerUserGroups(int $contextId): array
     {
-        return Repo::userGroup()->getCollector()
-            ->filterByContextIds([$contextId])
-            ->filterByRoleIds([Role::ROLE_ID_MANAGER])
-            ->filterByIsDefault(true)
-            ->getMany()
-            ->toArray();
+        return UserGroup::query()
+            ->withContextIds([$contextId])
+            ->withRoleIds([Role::ROLE_ID_MANAGER])
+            ->isDefault(true)
+            ->get()
+            ->all();
     }
 
     protected function getUsersByUserGroup(int $userGroupId, int $contextId): array
