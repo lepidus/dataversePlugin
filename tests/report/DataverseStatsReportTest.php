@@ -1,6 +1,8 @@
 <?php
 
 use PKP\tests\PKPTestCase;
+use APP\plugins\generic\dataverse\report\classes\DataStatementStats;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\report\classes\DataverseStatsReport;
 use APP\plugins\generic\dataverse\DataversePlugin;
 
@@ -10,15 +12,21 @@ class DataverseStatsReportTest extends PKPTestCase
     private string $locale = 'en';
     private string $application = DataverseStatsReport::OJS_APP_NAME;
     private int $publishedSubmissions = 70;
-    private int $publishedSubmissionsWithDataset = 45;
     private int $acceptedSubmissions = 40;
-    private int $acceptedSubmissionsWithDataset = 35;
     private int $declinedSubmissions = 200;
-    private int $declinedSubmissionsWithDataset = 50;
     private int $totalSubmissions = 300;
+    private int $publishedSubmissionsWithDataset = 45;
+    private int $acceptedSubmissionsWithDataset = 35;
+    private int $declinedSubmissionsWithDataset = 50;
     private int $datasetsWithDepositError = 25;
     private int $datasetsWithPublishError = 5;
     private int $filesInDatasets = 125;
+    private array $dataStatementValues = [
+        DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT => 3,
+        DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE => 7,
+        DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND => 15,
+        DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE => 20
+    ];
 
     protected function setUp(): void
     {
@@ -44,14 +52,18 @@ class DataverseStatsReportTest extends PKPTestCase
             'withDepositErrorCount' => $this->datasetsWithDepositError,
             'withPublishErrorCount' => $this->datasetsWithPublishError,
             'datasetFilesCount' => $this->filesInDatasets,
+            'declinedStatementCount' => (new DataStatementStats($this->dataStatementValues)),
+            'totalStatementCount' => (new DataStatementStats($this->dataStatementValues))
         ];
 
         if ($application == DataverseStatsReport::OJS_APP_NAME) {
             $stats['acceptedCount'] = $this->acceptedSubmissions;
             $stats['acceptedWithDatasetCount'] = $this->acceptedSubmissionsWithDataset;
+            $stats['acceptedStatementCount'] = (new DataStatementStats($this->dataStatementValues));
         } elseif ($application == DataverseStatsReport::OPS_APP_NAME) {
             $stats['publishedCount'] = $this->publishedSubmissions;
             $stats['publishedWithDatasetCount'] = $this->publishedSubmissionsWithDataset;
+            $stats['publishedStatementCount'] = (new DataStatementStats($this->dataStatementValues));
         }
 
         return new DataverseStatsReport($application, $locale, $stats);
@@ -116,10 +128,13 @@ class DataverseStatsReportTest extends PKPTestCase
     {
         $expectedStatsData = [
             $this->acceptedSubmissions,
-            $this->acceptedSubmissionsWithDataset,
             $this->declinedSubmissions,
-            $this->declinedSubmissionsWithDataset,
             $this->totalSubmissions,
+            $this->acceptedSubmissionsWithDataset,
+            $this->declinedSubmissionsWithDataset,
+            ...array_values($this->dataStatementValues),
+            ...array_values($this->dataStatementValues),
+            ...array_values($this->dataStatementValues),
             $this->datasetsWithDepositError,
             $this->datasetsWithPublishError,
             $this->filesInDatasets
@@ -133,10 +148,13 @@ class DataverseStatsReportTest extends PKPTestCase
         $this->report = $this->createTestReport(DataverseStatsReport::OPS_APP_NAME, $this->locale);
         $expectedStatsData = [
             $this->publishedSubmissions,
-            $this->publishedSubmissionsWithDataset,
             $this->declinedSubmissions,
-            $this->declinedSubmissionsWithDataset,
             $this->totalSubmissions,
+            $this->publishedSubmissionsWithDataset,
+            $this->declinedSubmissionsWithDataset,
+            ...array_values($this->dataStatementValues),
+            ...array_values($this->dataStatementValues),
+            ...array_values($this->dataStatementValues),
             $this->datasetsWithDepositError,
             $this->datasetsWithPublishError,
             $this->filesInDatasets
@@ -177,10 +195,13 @@ class DataverseStatsReportTest extends PKPTestCase
 
         $expectedStatsLine = [
             $this->acceptedSubmissions,
-            $this->acceptedSubmissionsWithDataset,
             $this->declinedSubmissions,
-            $this->declinedSubmissionsWithDataset,
             $this->totalSubmissions,
+            $this->acceptedSubmissionsWithDataset,
+            $this->declinedSubmissionsWithDataset,
+            ...array_values($this->dataStatementValues),
+            ...array_values($this->dataStatementValues),
+            ...array_values($this->dataStatementValues),
             $this->datasetsWithDepositError,
             $this->datasetsWithPublishError,
             $this->filesInDatasets

@@ -17,11 +17,16 @@ class DataverseStatsReport
         $this->UTF8_BOM = chr(0xEF) . chr(0xBB) . chr(0xBF);
     }
 
-    public function getHeaders(): array
+    private function getPubOrAcpt(): string
     {
-        $pubOrAcpt = ($this->application == DataverseStatsReport::OPS_APP_NAME)
+        return $this->application == DataverseStatsReport::OPS_APP_NAME
             ? 'published'
             : 'accepted';
+    }
+
+    public function getHeaders(): array
+    {
+        $pubOrAcpt = $this->getPubOrAcpt();
         $statementSectionColumns = [
             __('plugins.generic.dataverse.report.headers.statement.inManuscript', [], $this->locale),
             __('plugins.generic.dataverse.report.headers.statement.repoAvailable', [], $this->locale),
@@ -74,31 +79,21 @@ class DataverseStatsReport
 
     public function getStatsData(): array
     {
-        $statsData = [];
+        $pubOrAcpt = $this->getPubOrAcpt();
 
-        if ($this->application == self::OJS_APP_NAME) {
-            $statsData = [
-                $this->stats['acceptedCount'],
-                $this->stats['acceptedWithDatasetCount'],
-            ];
-        } elseif ($this->application == self::OPS_APP_NAME) {
-            $statsData = [
-                $this->stats['publishedCount'],
-                $this->stats['publishedWithDatasetCount'],
-            ];
-        }
-
-        return array_merge(
-            $statsData,
-            [
-                $this->stats['declinedCount'],
-                $this->stats['declinedWithDatasetCount'],
-                $this->stats['totalSubmissionsCount'],
-                $this->stats['withDepositErrorCount'],
-                $this->stats['withPublishErrorCount'],
-                $this->stats['datasetFilesCount']
-            ]
-        );
+        return [
+            $this->stats["{$pubOrAcpt}Count"],
+            $this->stats['declinedCount'],
+            $this->stats['totalSubmissionsCount'],
+            $this->stats["{$pubOrAcpt}WithDatasetCount"],
+            $this->stats['declinedWithDatasetCount'],
+            ...$this->stats["{$pubOrAcpt}StatementCount"]->getStats(),
+            ...$this->stats["declinedStatementCount"]->getStats(),
+            ...$this->stats["totalStatementCount"]->getStats(),
+            $this->stats['withDepositErrorCount'],
+            $this->stats['withPublishErrorCount'],
+            $this->stats['datasetFilesCount']
+        ];
     }
 
     public function writeReport(string $filePath)
