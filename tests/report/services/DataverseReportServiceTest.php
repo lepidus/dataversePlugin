@@ -138,18 +138,18 @@ class DataverseReportServiceTest extends DatabaseTestCase
 
         $this->addDataStatementTypesToSubmission($firstAcceptedSub, [
             DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT,
-            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED
+            DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE
         ]);
         $this->addDataStatementTypesToSubmission($secondAcceptedSub, [
             DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE,
-            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED
+            DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND
         ]);
         $this->addDataStatementTypesToSubmission($firstDeclinedSub, [
             DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND,
             DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE
         ]);
         $this->addDataStatementTypesToSubmission($secondDeclinedSub, [
-            DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT,
+            DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND,
             DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE
         ]);
 
@@ -157,8 +157,8 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $acceptedStatementStats = $reportService->getAcceptedStatementStatistics();
         $declinedStatementStats = $reportService->getDeclinedStatementStatistics();
 
-        $this->assertEquals([1, 1, 2, 0, 0], $acceptedStatementStats->getStats());
-        $this->assertEquals([1, 0, 0, 1, 2], $declinedStatementStats->getStats());
+        $this->assertEquals([1, 2, 1, 0], $acceptedStatementStats->getStats());
+        $this->assertEquals([0, 0, 2, 2], $declinedStatementStats->getStats());
     }
 
     public function testGetsPublishedSubmissionsStatementStats(): void
@@ -178,7 +178,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $reportService = new DataverseReportService($this->context->getId());
         $publishedStatementStats = $reportService->getPublishedStatementStatistics();
 
-        $this->assertEquals([1, 1, 2, 0, 0], $publishedStatementStats->getStats());
+        $this->assertEquals([1, 1, 0, 0], $publishedStatementStats->getStats());
     }
 
     public function testGetsTotalSubmissionsStatementStats(): void
@@ -188,11 +188,11 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $thirdSub = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE);
 
         $this->addDataStatementTypesToSubmission($firstSub, [
-            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED
+            DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT
         ]);
         $this->addDataStatementTypesToSubmission($secondSub, [
-            DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE,
-            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED
+            DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT,
+            DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE
         ]);
         $this->addDataStatementTypesToSubmission($thirdSub, [
             DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE,
@@ -201,6 +201,6 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $reportService = new DataverseReportService($this->context->getId());
         $publishedStatementStats = $reportService->getTotalStatementStatistics();
 
-        $this->assertEquals([0, 1, 2, 0, 1], $publishedStatementStats->getStats());
+        $this->assertEquals([2, 1, 0, 1], $publishedStatementStats->getStats());
     }
 }

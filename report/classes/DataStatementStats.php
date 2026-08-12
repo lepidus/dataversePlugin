@@ -19,7 +19,6 @@ class DataStatementStats
         return [
             $this->stats[DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT],
             $this->stats[DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE],
-            $this->stats[DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED],
             $this->stats[DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND],
             $this->stats[DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE]
         ];

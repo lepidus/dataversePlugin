@@ -176,14 +176,15 @@ class DataverseReportService
         $statementTypesCounts = [
             DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT => 0,
             DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE => 0,
-            DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED => 0,
             DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND => 0,
             DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE => 0
         ];
 
         foreach ($submissionsStatementTypes as $statementTypes) {
             foreach ($statementTypes as $statementType) {
-                $statementTypesCounts[$statementType]++;
+                if (isset($statementTypesCounts[$statementType])) {
+                    $statementTypesCounts[$statementType]++;
+                }
             }
         }
 
