@@ -28,8 +28,36 @@ class DataverseReportForm extends Form
         $this->addCheck(new FormValidatorCSRF($this));
     }
 
-    public function validateReportData($reportParams)
+    public function readInputData()
     {
+        $this->readUserVars([
+            'selectFilterTypeDate',
+            'startSubmissionDateInterval',
+            'endSubmissionDateInterval',
+            'startFinalDecisionDateInterval',
+            'endFinalDecisionDateInterval'
+        ]);
+    }
+
+    public function validateReportData()
+    {
+        $selectedFilter = $this->getData('selectFilterTypeDate');
+        $startDate = $endDate = '';
+
+        if ($selectedFilter == 'filterBySubmission') {
+            $startDate = $this->getData('startSubmissionDateInterval');
+            $endDate = $this->getData('endSubmissionDateInterval');
+        } elseif ($selectedFilter == 'filterByFinalDecision') {
+            $startDate = $this->getData('startFinalDecisionDateInterval');
+            $endDate = $this->getData('endFinalDecisionDateInterval');
+        } else {
+            return false;
+        }
+
+        if ($startDate > $endDate) {
+            return false;
+        }
+
         return true;
     }
 
@@ -68,6 +96,19 @@ class DataverseReportForm extends Form
     public function generateReport()
     {
         $reportBuilder = new DataverseStatsReportBuilder();
+        $selectedFilter = $this->getData('selectFilterTypeDate');
+
+        if ($selectedFilter == 'filterBySubmission') {
+            $reportBuilder->setDateSubmittedInterval(
+                $this->getData('startSubmissionDateInterval'),
+                $this->getData('endSubmissionDateInterval')
+            );
+        } elseif ($selectedFilter == 'filterByFinalDecision') {
+            $reportBuilder->setFinalDecisionDateInterval(
+                $this->getData('startFinalDecisionDateInterval'),
+                $this->getData('endFinalDecisionDateInterval')
+            );
+        }
         $report = $reportBuilder->createReport($this->application, $this->contextId);
 
         header('content-type: text/comma-separated-values');

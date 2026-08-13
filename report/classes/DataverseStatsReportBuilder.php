@@ -8,12 +8,19 @@ use APP\plugins\generic\dataverse\report\services\DataverseReportService;
 
 class DataverseStatsReportBuilder
 {
+    private string $beginSubmissionInterval = '';
+    private string $endSubmissionInterval = '';
+
     public function createReport(string $applicationName, int $contextId): DataverseStatsReport
     {
         $locale = Locale::getLocale();
         $reportService = new DataverseReportService($contextId);
-        $stats = [];
 
+        if (!empty($this->beginSubmissionInterval) && !empty($this->endSubmissionInterval)) {
+            $reportService->setDateSubmittedInterval($this->beginSubmissionInterval, $this->endSubmissionInterval);
+        }
+
+        $stats = [];
         if ($applicationName == DataverseStatsReport::OJS_APP_NAME) {
             $stats['acceptedCount'] = $reportService->getAcceptedSubmissionsCount();
             $stats['acceptedWithDatasetCount'] = $reportService->getAcceptedSubmissionsWithDatasetCount();
@@ -34,5 +41,11 @@ class DataverseStatsReportBuilder
         $stats['totalStatementCount'] = $reportService->getTotalStatementStatistics();
 
         return new DataverseStatsReport($applicationName, $locale, $stats);
+    }
+
+    public function setDateSubmittedInterval(string $beginDate, string $endDate)
+    {
+        $this->beginSubmissionInterval = $beginDate;
+        $this->endSubmissionInterval = $endDate;
     }
 }
