@@ -199,4 +199,41 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         $this->assertNotContains($beforeIntervalSub->getId(), $submissionIds);
         $this->assertNotContains($afterIntervalSub->getId(), $submissionIds);
     }
+
+    public function testGetsSubmissionsWithFinalDecisionWithinDateInterval(): void
+    {
+        $acceptedFinalDecisionSub = $this->createTestSubmission();
+        $declinedFinalDecisionSub = $this->createTestSubmission();
+        $initialDeclineFinalDecisionSub = $this->createTestSubmission();
+        $historicalFinalDecisionSub = $this->createTestSubmission();
+        $outsideIntervalFinalDecisionSub = $this->createTestSubmission();
+
+        $this->addDecision(Decision::EXTERNAL_REVIEW, $acceptedFinalDecisionSub->getId(), '2026-06-11 10:00:00');
+        $this->addDecision(Decision::ACCEPT, $acceptedFinalDecisionSub->getId(), '2026-06-13 10:00:00');
+
+        $this->addDecision(Decision::EXTERNAL_REVIEW, $declinedFinalDecisionSub->getId(), '2026-06-11 10:00:00');
+        $this->addDecision(Decision::DECLINE, $declinedFinalDecisionSub->getId(), '2026-06-14 10:00:00');
+
+        $this->addDecision(Decision::EXTERNAL_REVIEW, $initialDeclineFinalDecisionSub->getId(), '2026-06-11 10:00:00');
+        $this->addDecision(Decision::INITIAL_DECLINE, $initialDeclineFinalDecisionSub->getId(), '2026-06-15 10:00:00');
+
+        $this->addDecision(Decision::ACCEPT, $historicalFinalDecisionSub->getId(), '2026-06-13 10:00:00');
+        $this->addDecision(Decision::EXTERNAL_REVIEW, $historicalFinalDecisionSub->getId(), '2026-06-14 10:00:00');
+
+        $this->addDecision(Decision::ACCEPT, $outsideIntervalFinalDecisionSub->getId(), '2026-06-11 10:00:00');
+
+        $submissionIds = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->withinFinalDecisionDateInterval(
+                '2026-06-12 00:00:00',
+                '2026-06-15 23:59:59'
+            )
+            ->getSubmissionIds();
+
+        $this->assertContains($acceptedFinalDecisionSub->getId(), $submissionIds);
+        $this->assertContains($declinedFinalDecisionSub->getId(), $submissionIds);
+        $this->assertContains($initialDeclineFinalDecisionSub->getId(), $submissionIds);
+        $this->assertNotContains($historicalFinalDecisionSub->getId(), $submissionIds);
+        $this->assertNotContains($outsideIntervalFinalDecisionSub->getId(), $submissionIds);
+    }
 }

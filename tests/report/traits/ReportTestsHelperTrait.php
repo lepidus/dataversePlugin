@@ -24,12 +24,12 @@ trait ReportTestsHelperTrait
         return $context;
     }
 
-    private function addDecision(int $decisionType, int $submissionId)
+    private function addDecision(int $decisionType, int $submissionId, ?string $dateDecided = null)
     {
         $decision = Repo::decision()->newDataObject([
             'decision' => $decisionType,
             'submissionId' => $submissionId,
-            'dateDecided' => date(Core::getCurrentDate()),
+            'dateDecided' => $dateDecided ?? date(Core::getCurrentDate()),
             'editorId' => 1,
         ]);
         Repo::decision()->dao->insert($decision);

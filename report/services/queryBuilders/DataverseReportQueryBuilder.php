@@ -2,6 +2,7 @@
 
 namespace APP\plugins\generic\dataverse\report\services\queryBuilders;
 
+use APP\decision\Decision;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
 
@@ -16,6 +17,8 @@ class DataverseReportQueryBuilder
     protected $withDataset = false;
     protected $beginSubmissionInterval;
     protected $endSubmissionInterval;
+    protected $beginFinalDecisionInterval;
+    protected $endFinalDecisionInterval;
 
     public function filterByContexts($contextIds): self
     {
@@ -51,6 +54,13 @@ class DataverseReportQueryBuilder
     {
         $this->beginSubmissionInterval = $beginning;
         $this->endSubmissionInterval = $ending;
+        return $this;
+    }
+
+    public function withinFinalDecisionDateInterval(string $beginning, string $ending): self
+    {
+        $this->beginFinalDecisionInterval = $beginning;
+        $this->endFinalDecisionInterval = $ending;
         return $this;
     }
 
@@ -96,6 +106,27 @@ class DataverseReportQueryBuilder
         if (!empty($this->beginSubmissionInterval) && !empty($this->endSubmissionInterval)) {
             $query->where('s.date_submitted', '>=', $this->beginSubmissionInterval)
                 ->where('s.date_submitted', '<=', $this->endSubmissionInterval);
+        }
+
+        if (!empty($this->beginFinalDecisionInterval) && !empty($this->endFinalDecisionInterval)) {
+            $query->join('edit_decisions as last_ed', function ($join) {
+                $join->on('last_ed.submission_id', '=', 's.submission_id')
+                    ->where('last_ed.edit_decision_id', function (Builder $query) {
+                        $query->from('edit_decisions as ed2')
+                            ->where('ed2.submission_id', '=', DB::raw('s.submission_id'))
+                            ->orderBy('ed2.date_decided', 'DESC')
+                            ->orderBy('ed2.edit_decision_id', 'DESC')
+                            ->limit(1)
+                            ->select('ed2.edit_decision_id');
+                    });
+            })
+                ->whereIn('last_ed.decision', [
+                    Decision::ACCEPT,
+                    Decision::DECLINE,
+                    Decision::INITIAL_DECLINE
+                ])
+                ->where('last_ed.date_decided', '>=', $this->beginFinalDecisionInterval)
+                ->where('last_ed.date_decided', '<=', $this->endFinalDecisionInterval);
         }
 
         if (!empty($this->decisions)) {
