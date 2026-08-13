@@ -14,10 +14,18 @@ use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 class DataverseReportService
 {
     private int $contextId;
+    private $beginSubmissionInterval;
+    private $endSubmissionInterval;
 
     public function __construct(int $contextId)
     {
         $this->contextId = $contextId;
+    }
+
+    public function setDateSubmittedInterval(string $beginning, string $ending)
+    {
+        $this->beginSubmissionInterval = $beginning;
+        $this->endSubmissionInterval = $ending;
     }
 
     public function getAcceptedSubmissionsCount(): int
@@ -203,6 +211,13 @@ class DataverseReportService
         }
         if (!empty($args['statuses'])) {
             $queryBuilder->filterByStatuses($args['statuses']);
+        }
+
+        if (!empty($this->beginSubmissionInterval) && !empty($this->endSubmissionInterval)) {
+            $queryBuilder->withinDateSubmittedInterval(
+                $this->beginSubmissionInterval,
+                $this->endSubmissionInterval
+            );
         }
 
         return $queryBuilder;

@@ -203,4 +203,31 @@ class DataverseReportServiceTest extends DatabaseTestCase
 
         $this->assertEquals([2, 1, 0, 1], $publishedStatementStats->getStats());
     }
+
+    public function testConsidersDateSubmittedInterval(): void
+    {
+        $beforePublishedSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED, null, false, '2026-06-11');
+        $beforeDeclinedSub = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE, false, '2026-06-11');
+        $withinAcceptedSub = $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT, false, '2026-06-13');
+        $withinDeclinedSub = $this->createTestSubmission(Submission::STATUS_DECLINED, Decision::DECLINE, false, '2026-06-13');
+        $withinPublishedSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED, null, false, '2026-06-13');
+        $afterAcceptedSub = $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT, false, '2026-06-16');
+
+        $startInterval = '2026-06-12';
+        $endInterval = '2026-06-15';
+
+        $reportService = new DataverseReportService($this->context->getId());
+
+        $this->assertEquals(2, $reportService->getAcceptedSubmissionsCount());
+        $this->assertEquals(2, $reportService->getDeclinedSubmissionsCount());
+        $this->assertEquals(2, $reportService->getPublishedSubmissionsCount());
+        $this->assertEquals(6, $reportService->getTotalSubmissionsCount());
+
+        $reportService->setDateSubmittedInterval($startInterval, $endInterval);
+
+        $this->assertEquals(1, $reportService->getAcceptedSubmissionsCount());
+        $this->assertEquals(1, $reportService->getDeclinedSubmissionsCount());
+        $this->assertEquals(1, $reportService->getPublishedSubmissionsCount());
+        $this->assertEquals(3, $reportService->getTotalSubmissionsCount());
+    }
 }
