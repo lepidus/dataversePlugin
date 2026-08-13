@@ -75,7 +75,7 @@ class DataverseReportQueryBuilder
         $dataStatementTypes = $query->pluck('ps.setting_value')->toArray();
 
         return array_map(
-            fn($dataStatementType) => json_decode($dataStatementType, true),
+            fn ($dataStatementType) => json_decode($dataStatementType, true),
             $dataStatementTypes
         );
     }

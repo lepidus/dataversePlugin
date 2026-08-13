@@ -17,21 +17,19 @@ describe("Dataverse plugin - Report generation", function() {
         cy.contains('Select the desired filtering type');
         cy.get('#selectFilterTypeDate').within(() => {
             cy.contains('option', 'Filter by submitted date');
-            cy.contains('option', 'Filter by final decision');
+            cy.contains('option', 'Filter by final decision date');
         });
 
         cy.contains('legend', 'Submitted date range');
         cy.get('input#startSubmissionDateInterval');
         cy.get('input#endSubmissionDateInterval');
 
-        cy.get('#selectFilterTypeDate').select('Filter by final decision');
+        cy.get('#selectFilterTypeDate').select('Filter by final decision date');
 
         cy.contains('legend', 'Final decision date range');
         cy.get('input#startFinalDecisionDateInterval');
         cy.get('input#endFinalDecisionDateInterval');
 
-        cy.get('#selectFilterTypeDate').select('Filter by date submitted');
-
-        cy.contains('Generate Report').click();
+        cy.contains('Generate Report');
     });
 });

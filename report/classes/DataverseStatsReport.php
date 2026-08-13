@@ -61,7 +61,7 @@ class DataverseStatsReport
             __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}Submissions", [], $this->locale),
             __('plugins.generic.dataverse.report.headers.declinedSubmissions', [], $this->locale),
             __('plugins.generic.dataverse.report.headers.totalSubmissions', [], $this->locale),
-            __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}SubmissionsWithDataset",  [], $this->locale),
+            __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}SubmissionsWithDataset", [], $this->locale),
             __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset', [], $this->locale),
             ...$statementSectionColumns,
             ...$statementSectionColumns,

@@ -8,7 +8,8 @@ class DataStatementStats
 {
     public function __construct(
         private array $stats
-    ) {}
+    ) {
+    }
 
     public function getStats(): array
     {
