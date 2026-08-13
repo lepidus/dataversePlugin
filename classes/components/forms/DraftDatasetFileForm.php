@@ -8,6 +8,7 @@ use PKP\components\forms\FieldUpload;
 use PKP\components\forms\FormComponent;
 use PKP\db\DAORegistry;
 use PKP\facades\Locale;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 
 class DraftDatasetFileForm extends FormComponent
 {
@@ -51,6 +52,9 @@ class DraftDatasetFileForm extends FormComponent
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
         $termsOfUse = $configuration->getLocalizedData('termsOfUse', $locale);
 
-        return ['termsOfUseUrl' => $termsOfUse];
+        return [
+            'termsOfUseUrl' => $termsOfUse,
+            'dataverseName' => (new DataStatementService())->getDataverseName() ?? '',
+        ];
     }
 }

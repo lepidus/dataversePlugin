@@ -9,6 +9,7 @@ use APP\plugins\generic\dataverse\classes\components\forms\DraftDatasetFileForm;
 class DatasetFilesListPanel extends ListPanel
 {
     public $addFileLabel = '';
+    public $additionalInstructions = '';
     public $dataversePluginApiUrl = '';
     public $fileListUrl = '';
     public $fileActionUrl = '';
@@ -16,13 +17,6 @@ class DatasetFilesListPanel extends ListPanel
     public $canChangeFiles = true;
     public $addFileModalTitle = '';
     public $title = '';
-    private $submission;
-
-    public function __construct($id, $title, $submission, $args = [])
-    {
-        parent::__construct($id, $title, $args);
-        $this->submission = $submission;
-    }
 
     public function getConfig()
     {
@@ -33,6 +27,7 @@ class DatasetFilesListPanel extends ListPanel
             $config,
             [
                 'addFileLabel' => $this->addFileLabel,
+                'additionalInstructions' => $this->additionalInstructions,
                 'dataversePluginApiUrl' => $this->dataversePluginApiUrl,
                 'fileListUrl' => $this->fileListUrl,
                 'fileActionUrl' => $this->fileActionUrl,
@@ -52,16 +47,9 @@ class DatasetFilesListPanel extends ListPanel
     private function getForm(): DraftDatasetFileForm
     {
         $request = Application::get()->getRequest();
-        $addFileUrl = $this->fileActionUrl;
-
-        if (str_contains($this->fileActionUrl, '/draftDatasetFiles')) {
-            $submissionId = $this->submission->getId();
-            $userId = $request->getUser()->getId();
-            $addFileUrl .= '?' . http_build_query(['submissionId' => $submissionId, 'userId' => $userId]);
-        }
 
         return new DraftDatasetFileForm(
-            $addFileUrl,
+            $this->fileActionUrl,
             $request->getContext()
         );
     }

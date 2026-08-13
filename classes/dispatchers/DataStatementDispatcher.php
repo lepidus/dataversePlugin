@@ -6,7 +6,6 @@ use PKP\plugins\Hook;
 use APP\core\Application;
 use APP\template\TemplateManager;
 use APP\pages\submission\SubmissionHandler;
-use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\classes\components\forms\DataStatementForm;
@@ -39,10 +38,6 @@ class DataStatementDispatcher extends DataverseDispatcher
         $dataStatementService = new DataStatementService();
         $templateMgr->setConstants($dataStatementService->getConstantsForTemplates());
         $templateMgr->setConstants(['dataStatementTypes' => $dataStatementService->getDataStatementTypes()]);
-
-        $templateMgr->setLocaleKeys([
-            'validator.active_url'
-        ]);
     }
 
     public function addDataStatementResources(string $hookName, array $params): bool
@@ -80,44 +75,34 @@ class DataStatementDispatcher extends DataverseDispatcher
             return false;
         }
 
-        $templateMgr->addJavaScript(
-            'dataStatementForm',
-            $this->plugin->getPluginFullPath() . '/js/ui/components/DataStatementForm.js',
-            [
-                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
-                'contexts' => ['backend']
-            ]
-        );
-
-        $templateMgr->addJavaScript(
-            'field-controlled-vocab-url',
-            $this->plugin->getPluginFullPath() . '/js/ui/components/FieldControlledVocabUrl.js',
-            [
-                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
-                'contexts' => ['backend']
-            ]
-        );
+        $this->addPluginAssets($templateMgr);
 
         $publication = $submission->getLatestPublication();
         $publicationEndpoint = 'submissions/' . $submission->getId() . '/publications/' . $publication->getId();
         $saveFormUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), $publicationEndpoint);
-        $dataStatementForm = new DataStatementForm($saveFormUrl, $publication, 'submission');
+
+        $locales = $this->getSubmissionLocales($context, $submission);
+        $dataStatementForm = new DataStatementForm($saveFormUrl, $publication, 'submission', $locales);
+        $formConfig = $this->localizeFormConfig($dataStatementForm->getConfig(), $submission->getData('locale'), $locales);
 
         $steps = $templateMgr->getState('steps');
-        $steps = array_map(function ($step) use ($dataStatementForm) {
+        $steps = array_map(function ($step) use ($formConfig) {
             if ($step['id'] === 'details') {
                 $step['sections'][] = [
                     'id' => 'dataStatement',
                     'name' => __('plugins.generic.dataverse.dataStatement.title'),
                     'description' => __('plugins.generic.dataverse.dataStatement.description'),
                     'type' => SubmissionHandler::SECTION_TYPE_FORM,
-                    'form' => $dataStatementForm->getConfig(),
+                    'form' => $formConfig,
                 ];
             }
             return $step;
         }, $steps);
 
-        $templateMgr->setState(['steps' => $steps]);
+        $templateMgr->setState([
+            'dataStatementTypeLabels' => (new DataStatementService())->getDataStatementTypes(),
+            'steps' => $steps,
+        ]);
 
         return false;
     }
@@ -174,6 +159,8 @@ class DataStatementDispatcher extends DataverseDispatcher
         $step = $params[0]['step'];
         $templateMgr = $params[1];
         $output = &$params[2];
+
+        $this->assignDataStatementConstants($templateMgr);
 
         if ($step === 'details') {
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review/dataStatement.tpl'));

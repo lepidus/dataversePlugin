@@ -32,6 +32,10 @@ php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/php
 php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml \
   plugins/generic/dataverse/tests/factories/JsonDatasetFactoryTest.php
 
+# Front-end bundle (run inside plugins/generic/dataverse)
+npm install
+npm run build
+
 # Cypress (headless / interactive)
 npx cypress run  --config specPattern=plugins/generic/dataverse/cypress/tests
 npx cypress open --config specPattern=plugins/generic/dataverse/cypress/tests
@@ -106,6 +110,12 @@ report sub-plugin only after passing three gates, in order:
 Any of the three explains a "the plugin does nothing" report; check them before suspecting the hooks
 themselves. Gate 2 in particular means plugin code must not assume a context exists.
 
+A fourth cause looks identical from the outside: `Hook::add()` throws for hooks listed in
+`Hook::addUnsupportedHooks()`, and `PluginRegistry::register()` swallows the exception. Registration then stops
+at whichever dispatcher raised it, so the dispatchers before it work and everything after it silently does not.
+Cross-check new hook names against `lib/pkp/classes/core/PKPApplication.php` and confirm through the web
+interface — a CLI run has no context, so gate 2 short-circuits before any hook is registered.
+
 ### Dispatchers are the hook layer
 
 Every hook registration lives in `classes/dispatchers/`. Each class extends `DataverseDispatcher`, whose
@@ -118,8 +128,8 @@ there. Roughly one dispatcher per surface:
 | `DraftDatasetFilesDispatcher` | Wizard Files step — research data uploads before deposit |
 | `DatasetMetadataDispatcher` | Wizard dataset metadata fields |
 | `DataStatementDispatcher` | Data availability statement: publication schema, wizard, public page |
-| `DataStatementTabDispatcher` | Data statement tab in the workflow |
-| `DatasetTabDispatcher` | "Research Data" tab in the workflow |
+| `DataStatementTabDispatcher` | Data statement tab in the workflow (inactive on 3.5) |
+| `DatasetTabDispatcher` | "Research Data" tab in the workflow (inactive on 3.5) |
 | `DatasetReviewDispatcher` | Research data shown to reviewers in the review steps |
 | `DatasetInformationDispatcher` | Dataset citation on the public article/preprint page |
 | `CrossrefDispatcher` | Dataset relation injected into Crossref export XML (`CrossrefXmlEditor`) |
@@ -184,20 +194,40 @@ entry, and an `error_log('Dataverse API error: …')` line. Keep that trio consi
 
 ### Plugin REST API
 
-Three handlers under `api/v1/`: `datasets`, `dataverse`, `draftDatasetFiles`. They are not registered through
+Three endpoints under `api/v1/`: `draftDatasetFiles`, `datasets` and `dataverse`. None is registered through
 the application's normal API routing — `DataverseEventsDispatcher::setupDataverseAPIHandlers()` intercepts the
-request, matches the path, and installs the plugin handler. The JS calls these endpoints with URLs produced by
-`DataverseDispatcher::getApiUrl()`. Role restrictions are declared per endpoint inside each handler (reviewers,
-for example, may download dataset files but nothing else).
+request, matches the path, and installs the plugin handler. The JS calls them with URLs produced by
+`DataverseDispatcher::getApiUrl()`.
+
+`draftDatasetFiles` is a `PKPBaseController` (`DraftDatasetFileController`) wrapped in the application's
+`APIHandler`, with roles declared in `getRouteGroupMiddleware()`. `datasets` and `dataverse` are still the
+pre-3.5 Slim-style `APIHandler` subclasses with an `$_endpoints` array; they only serve the workflow tabs and
+have to be ported the same way when those tabs are rebuilt.
 
 ### Front end
 
-No build step and no `package.json`. `js/` holds plain scripts registered by dispatchers via
-`$templateMgr->addJavaScript()`; they extend the globals the host application exposes
-(`pkp.controllers.WorkflowPage`, `pkp.Vue.component(...)`, `pkp.controllers.Container.components.PkpForm`) and
-call the plugin API with jQuery `$.ajax`. Smarty templates live in `templates/`, stylesheets in `styles/`,
-and the PHP-side form / list-panel definitions in `classes/components/` (`forms/`, `listPanel/`) — a UI change
-usually touches a component class, a template, and a JS file together.
+Vue 3 single file components live in `resources/js/` and are bundled by Vite into
+`public/build/build.iife.js` (+ `build.css`), which `DataverseDispatcher::addPluginAssets()` registers on
+backend pages. `resources/js/main.js` registers every component through `pkp.registry.registerComponent()`;
+form fields are registered under the name their PHP `Field` subclass declares in `$component`. Run
+`npm run build` **inside the plugin directory** after touching anything under `resources/js`, and commit the
+generated `public/build` and `registry/uiLocaleKeysBackend.json` (the latter feeds `UITranslator`, which is
+how locale keys used by `t()` reach the browser — `TemplateManager::setLocaleKeys()` is gone in 3.5).
+
+`js/DataverseWorkflowPage.js` is the last remaining legacy script; it belongs to the workflow tabs, which are
+still Vue 2 code and inactive on 3.5.
+
+Smarty templates live in `templates/`, stylesheets in `styles/`, and the PHP-side form / list-panel
+definitions in `classes/components/` (`forms/`, `listPanel/`) — a UI change usually touches a component
+class, a template, and an SFC together.
+
+Two things bite when writing templates that the application compiles as Vue markup at runtime:
+
+- expressions are evaluated against the component instance, not the global scope, so `pkp.const.X` does not
+  resolve. Render the value from PHP instead (`assignDataStatementConstants()`) or put it in the page state.
+- output appended through `Template::SubmissionWizard::Section` lands between the core template's
+  `v-if`/`v-else-if` siblings. OPS injects its galleys section through the same hook, so the plugin registers
+  its callback with `Hook::SEQUENCE_LAST` to keep that chain intact.
 
 ### Report sub-plugin
 
@@ -206,8 +236,12 @@ CSV of submissions with research data through `DataverseReportService` and `Data
 
 ### Scheduled task
 
-`classes/tasks/NotifyDataverseTokenExpiration`, declared in `scheduledTasks.xml`, runs daily and emails when
+`classes/tasks/NotifyDataverseTokenExpiration`, registered through `DataversePlugin::registerSchedules()`
+(`PKP\plugins\interfaces\HasTaskScheduler`), runs daily and emails when
 today matches exactly 4, 3, 2 or 1 weeks — or 1 day — before the token expiry date reported by Dataverse.
+Plugin schedules are only registered under the CLI runner, where there is no request context, so the task
+iterates the contexts itself and builds `DataverseCollectionActions` with an explicit `DataverseConfiguration`
+per context instead of going through `DataverseClient`.
 Recipients are site administrators, the context's default manager user group, and the context contact address,
 de-duplicated by email.
 

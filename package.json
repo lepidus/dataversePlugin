@@ -1,0 +1,17 @@
+{
+  "name": "dataverseplugin",
+  "version": "1.0.0",
+  "description": "Dataverse plugin for Open Journal Systems and Open Preprint Systems",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch --minify=false",
+    "build": "vite build"
+  },
+  "author": "",
+  "license": "GPL-3",
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.8",
+    "vite": "^8.2.1"
+  }
+}

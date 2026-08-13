@@ -4,7 +4,6 @@ namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
 use PKP\plugins\Hook;
 use APP\core\Application;
-use APP\template\TemplateManager;
 use PKP\file\TemporaryFileManager;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
@@ -17,7 +16,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
-        Hook::add('Template::SubmissionWizard::Section', [$this, 'addDraftDatasetFilesSection']);
+        Hook::add('Template::SubmissionWizard::Section', [$this, 'addDraftDatasetFilesSection'], Hook::SEQUENCE_LAST);
         Hook::add('TemplateManager::display', [$this, 'addToFilesStep']);
         Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewStep']);
         Hook::add('Submission::validateSubmit', [$this, 'validateSubmissionFields']);
@@ -25,14 +24,8 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
     public function addDraftDatasetFilesSection(string $hookName, array $params)
     {
-        $submission = $params[0]['submission'];
         $templateMgr = $params[1];
         $output = &$params[2];
-
-        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
-        $configuration = $configurationDAO->get($submission->getData('contextId'));
-        $additionalInstructions = $configuration->getLocalizedAdditionalInstructions();
-        $templateMgr->assign('dataverseAdditionalInstructions', $additionalInstructions);
 
         $output .= $templateMgr->fetch($this->plugin->getTemplateResource('draftDatasetFiles.tpl'));
     }
@@ -47,12 +40,6 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             return false;
         }
 
-        $templateMgr->addStyleSheet(
-            'dataverseSubmissionWizard',
-            $this->plugin->getPluginFullPath() . '/styles/submissionWizard.css',
-            ['contexts' => ['backend']]
-        );
-
         $submission = $request
             ->getRouter()
             ->getHandler()
@@ -62,6 +49,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             return false;
         }
 
+        $this->addPluginAssets($templateMgr);
         $this->addDatasetFilesList($templateMgr, $request, $submission);
         $addGalleyLabel = __('submission.upload.uploadFiles');
 
@@ -89,36 +77,25 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     {
         $items = $this->getDatasetFiles($request, $submission->getId());
 
-        $dataversePluginApiUrl = $this->getApiUrl('dataverse');
-        $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
-        $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles');
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')
+            ->get($submission->getData('contextId'));
 
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
             __('plugins.generic.dataverse.researchData.files'),
-            $submission,
             [
                 'addFileLabel' => __('plugins.generic.dataverse.addResearchData'),
-                'dataversePluginApiUrl' => $dataversePluginApiUrl,
-                'fileListUrl' => $fileListApiUrl,
-                'fileActionUrl' => $fileActionApiUrl,
+                'additionalInstructions' => $configuration->getLocalizedAdditionalInstructions(),
+                'fileListUrl' => $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]),
+                'fileActionUrl' => $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]),
                 'items' => $items,
-                'modalTitle' => __('plugins.generic.dataverse.modal.addFile.title'),
+                'addFileModalTitle' => __('plugins.generic.dataverse.modal.addFile.title'),
                 'title' => __('plugins.generic.dataverse.researchData'),
             ]
         );
 
         $wizardComponents = $templateMgr->getState('components');
         $wizardComponents[$datasetFilesListPanel->id] = $datasetFilesListPanel->getConfig();
-
-        $templateMgr->addJavaScript(
-            'dataset-files-list-panel',
-            $this->plugin->getPluginFullPath() . '/js/ui/components/DatasetFilesListPanel.js',
-            [
-                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
-                'contexts' => ['backend']
-            ]
-        );
 
         $templateMgr->setState([
             'components' => $wizardComponents,
@@ -128,12 +105,14 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     private function getDatasetFiles($request, $submissionId): array
     {
         $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submissionId)->toArray();
-        $datasetFilesApiUrl = $this->getApiUrl('draftDatasetFiles');
         $datasetFilesProps = [];
 
         foreach ($draftDatasetFiles as $draftDatasetFile) {
             $props = $draftDatasetFile->getAllData();
-            $props['downloadUrl'] = $datasetFilesApiUrl . '/' . $draftDatasetFile->getId() . '/download';
+            $props['downloadUrl'] = $this->getApiUrl(
+                'draftDatasetFiles/' . $draftDatasetFile->getId() . '/download',
+                ['submissionId' => $submissionId]
+            );
             $datasetFilesProps[] = $props;
         }
         ksort($datasetFilesProps);
@@ -146,6 +125,8 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $step = $params[0]['step'];
         $templateMgr = $params[1];
         $output = &$params[2];
+
+        $this->assignDataStatementConstants($templateMgr);
 
         if ($step === 'files') {
             $output .= $templateMgr->fetch($this->plugin->getTemplateResource('review/draftDatasetFiles.tpl'));

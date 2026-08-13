@@ -3,14 +3,12 @@
 namespace APP\plugins\generic\dataverse\classes\components\forms;
 
 use PKP\components\forms\FieldOptions;
-use PKP\components\forms\FieldText;
 use PKP\components\forms\FormComponent;
 use APP\core\Application;
-use PKP\db\DAORegistry;
-use PKP\facades\Locale;
-use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\classes\components\forms\FieldControlledVocabUrl;
+use APP\plugins\generic\dataverse\classes\components\forms\FieldDataStatementReason;
+use APP\plugins\generic\dataverse\classes\components\forms\FieldDataStatementTypes;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DataStatementForm extends FormComponent
@@ -18,20 +16,20 @@ class DataStatementForm extends FormComponent
     public $id = 'dataStatement';
     public $method = 'PUT';
 
-    public function __construct($action, $publication, $page)
+    public function __construct($action, $publication, $page, ?array $locales = null)
     {
         $request = Application::get()->getRequest();
         $context = $request->getContext();
 
         $this->action = $action;
-        $this->locales = $this->getFormLocales($context);
+        $this->locales = $locales ?? $this->getFormLocales($context);
 
         $dataStatementOptions = $this->getDataStatementOptions($page);
 
         $this->dataversePluginApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'dataverse');
         $vocabApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'vocabs');
 
-        $this->addField(new FieldOptions('dataStatementTypes', [
+        $this->addField(new FieldDataStatementTypes('dataStatementTypes', [
             'label' => __('plugins.generic.dataverse.dataStatement.title'),
             'isRequired' => true,
             'value' => $publication->getData('dataStatementTypes') ?? [],
@@ -44,10 +42,11 @@ class DataStatementForm extends FormComponent
             'apiUrl' => $vocabApiUrl,
             'value' => $publication->getData('dataStatementUrls') ?? [],
         ]))
-        ->addField(new FieldText('dataStatementReason', [
+        ->addField(new FieldDataStatementReason('dataStatementReason', [
             'label' => __('plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason'),
             'description' => __('plugins.generic.dataverse.dataStatement.publiclyUnavailable.reason.description'),
             'isMultilingual' => true,
+            'isRequired' => true,
             'value' => $publication->getData('dataStatementReason'),
             'size' => 'large'
         ]));
@@ -59,7 +58,7 @@ class DataStatementForm extends FormComponent
                     [
                         'value' => true,
                         'label' => __('plugins.generic.dataverse.dataStatement.researchDataSubmitted', [
-                            'dataverseName' => '',
+                            'dataverseName' => (new DataStatementService())->getDataverseName() ?? '',
                         ]),
                         'disabled' => true,
                     ],
@@ -85,14 +84,13 @@ class DataStatementForm extends FormComponent
 
     private function getFormLocales($context): array
     {
-        $supportedFormLocales = $context->getSupportedFormLocales();
-        $localeNames = array_map(fn ($localeMetadata) => $localeMetadata->getDisplayName(), Locale::getLocales());
+        $localeNames = $context->getSupportedSubmissionMetadataLocaleNames();
 
-        $formLocales = array_map(function ($localeKey) use ($localeNames) {
-            return ['key' => $localeKey, 'label' => $localeNames[$localeKey]];
-        }, $supportedFormLocales);
-
-        return $formLocales;
+        return array_map(
+            fn (string $key, string $label) => ['key' => $key, 'label' => $label],
+            array_keys($localeNames),
+            array_values($localeNames)
+        );
     }
 
     private function getDataStatementOptions($page): array

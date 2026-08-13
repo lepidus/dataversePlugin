@@ -72,23 +72,13 @@ class TestableNotifyDataverseTokenExpiration extends NotifyDataverseTokenExpirat
 
 class TestableUserGroup
 {
-    private int $id;
-    private string $nameLocaleKey;
+    public int $id;
+    public string $nameLocaleKey;
 
     public function __construct(int $id, string $nameLocaleKey)
     {
         $this->id = $id;
         $this->nameLocaleKey = $nameLocaleKey;
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function getData(string $key): string
-    {
-        return $key === 'nameLocaleKey' ? $this->nameLocaleKey : '';
     }
 }
 

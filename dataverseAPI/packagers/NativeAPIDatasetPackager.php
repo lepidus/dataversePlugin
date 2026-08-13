@@ -269,7 +269,7 @@ class NativeAPIDatasetPackager
         $newChildFields = $this->buildChildFieldValues($field['childFields'], $datasetData);
 
         if ($field['multiple']) {
-            $currentFieldValue[0] = array_merge($currentFieldValue[0], $newChildFields);
+            $currentFieldValue[0] = array_merge($currentFieldValue[0] ?? [], $newChildFields);
         } else {
             $currentFieldValue = array_merge($currentFieldValue, $newChildFields);
         }

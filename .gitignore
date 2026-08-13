@@ -1,4 +1,5 @@
 .vscode/settings.json
+node_modules/
 cypress/plugins/*
 cypress/screenshots/*
 cypress/videos/*

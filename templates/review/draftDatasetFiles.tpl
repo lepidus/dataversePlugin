@@ -1,6 +1,7 @@
-<div 
-    v-if="publication.dataStatementTypes && publication.dataStatementTypes.includes(pkp.const.DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED)"
+<div
+    v-if="publication.dataStatementTypes && publication.dataStatementTypes.includes({$DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED})"
     class="submissionWizard__reviewPanel"
+    data-cy="dataverse-review-research-data"
 >
     <div class="submissionWizard__reviewPanel__header">
         <h3 id="review-plugin-draft-dataset-files">
@@ -9,7 +10,7 @@
         <pkp-button
             aria-describedby="review-plugin-draft-dataset-files"
             class="submissionWizard__reviewPanel__edit"
-            @click="openStep('{$step.id}')"
+            @click="openStep('{$step.id|escape}')"
         >
             {translate key="common.edit"}
         </pkp-button>
@@ -20,7 +21,7 @@
             :key="i"
             type="warning"
         >
-            <icon icon="exclamation-triangle" :inline="true"></icon>
+            <icon icon="Error" class="h-5 w-5" :inline="true"></icon>
             {{ error }}
         </notification>
         <ul class="submissionWizard__reviewPanel__list">
@@ -29,11 +30,11 @@
                 :key="datasetFile.id"
                 class="submissionWizard__reviewPanel__item__value"
             >
-                <a 
+                <a
                     :href="datasetFile.downloadUrl"
                     class="submissionWizard__reviewPanel__fileLink"
                 >
-                    {{ datasetFile.fileName}}
+                    {{ datasetFile.fileName }}
                 </a>
             </li>
         </ul>
