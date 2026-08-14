@@ -11,6 +11,9 @@ use APP\plugins\generic\dataverse\report\classes\DataverseStatsReportBuilder;
 
 class DataverseReportForm extends Form
 {
+    private const DAY_BEGINNING = ' 00:00:00';
+    private const DAY_ENDING = ' 23:59:59';
+
     private $plugin;
     private $contextId;
     private $application;
@@ -100,13 +103,13 @@ class DataverseReportForm extends Form
 
         if ($selectedFilter == 'filterBySubmission') {
             $reportBuilder->setDateSubmittedInterval(
-                $this->getData('startSubmissionDateInterval'),
-                $this->getData('endSubmissionDateInterval')
+                $this->getData('startSubmissionDateInterval') . self::DAY_BEGINNING,
+                $this->getData('endSubmissionDateInterval') . self::DAY_ENDING
             );
         } elseif ($selectedFilter == 'filterByFinalDecision') {
             $reportBuilder->setFinalDecisionDateInterval(
-                $this->getData('startFinalDecisionDateInterval'),
-                $this->getData('endFinalDecisionDateInterval')
+                $this->getData('startFinalDecisionDateInterval') . self::DAY_BEGINNING,
+                $this->getData('endFinalDecisionDateInterval') . self::DAY_ENDING
             );
         }
         $report = $reportBuilder->createReport($this->application, $this->contextId);

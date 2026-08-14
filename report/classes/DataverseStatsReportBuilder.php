@@ -10,14 +10,22 @@ class DataverseStatsReportBuilder
 {
     private string $beginSubmissionInterval = '';
     private string $endSubmissionInterval = '';
+    private string $beginFinalDecisionInterval = '';
+    private string $endFinalDecisionInterval = '';
 
     public function createReport(string $applicationName, int $contextId): DataverseStatsReport
     {
         $locale = Locale::getLocale();
-        $reportService = new DataverseReportService($contextId);
+        $reportService = new DataverseReportService($contextId, $applicationName);
 
         if (!empty($this->beginSubmissionInterval) && !empty($this->endSubmissionInterval)) {
             $reportService->setDateSubmittedInterval($this->beginSubmissionInterval, $this->endSubmissionInterval);
+        }
+        if (!empty($this->beginFinalDecisionInterval) && !empty($this->endFinalDecisionInterval)) {
+            $reportService->setFinalDecisionDateInterval(
+                $this->beginFinalDecisionInterval,
+                $this->endFinalDecisionInterval
+            );
         }
 
         $stats = [];
@@ -47,5 +55,11 @@ class DataverseStatsReportBuilder
     {
         $this->beginSubmissionInterval = $beginDate;
         $this->endSubmissionInterval = $endDate;
+    }
+
+    public function setFinalDecisionDateInterval(string $beginDate, string $endDate)
+    {
+        $this->beginFinalDecisionInterval = $beginDate;
+        $this->endFinalDecisionInterval = $endDate;
     }
 }
