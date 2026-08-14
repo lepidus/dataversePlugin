@@ -9,6 +9,7 @@ use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\DataversePlugin;
+use Illuminate\Support\Facades\DB;
 
 class DataverseReportQueryBuilderTest extends DatabaseTestCase
 {
@@ -31,9 +32,16 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         $contextDAO->deleteObject($this->context);
     }
 
-    private function getQueryBuilder(): DataverseReportQueryBuilder
+    private function getQueryBuilder($applicationName = 'ojs2'): DataverseReportQueryBuilder
     {
-        return new DataverseReportQueryBuilder();
+        return new DataverseReportQueryBuilder($applicationName);
+    }
+
+    private function setPublicationDate(int $submissionId, string $datePublished): void
+    {
+        DB::table('publications')
+            ->where('submission_id', '=', $submissionId)
+            ->update(['date_published' => $datePublished]);
     }
 
     public function testFilterSubmissionByContexts(): void
@@ -200,7 +208,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         $this->assertNotContains($afterIntervalSub->getId(), $submissionIds);
     }
 
-    public function testGetsSubmissionsWithFinalDecisionWithinDateInterval(): void
+    public function testGetsSubmissionsWithFinalDecisionWithinDateIntervalInOjs(): void
     {
         $acceptedFinalDecisionSub = $this->createTestSubmission();
         $declinedFinalDecisionSub = $this->createTestSubmission();
@@ -235,5 +243,35 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         $this->assertContains($initialDeclineFinalDecisionSub->getId(), $submissionIds);
         $this->assertNotContains($historicalFinalDecisionSub->getId(), $submissionIds);
         $this->assertNotContains($outsideIntervalFinalDecisionSub->getId(), $submissionIds);
+    }
+
+    public function testGetsSubmissionsWithFinalDecisionWithinDateIntervalInOps(): void
+    {
+        $publishedWithinSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED);
+        $declinedWithinSub = $this->createTestSubmission(Submission::STATUS_DECLINED);
+        $initialDeclinedWithinSub = $this->createTestSubmission(Submission::STATUS_DECLINED);
+        $publishedBeforeSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED);
+        $declinedAfterSub = $this->createTestSubmission(Submission::STATUS_DECLINED);
+
+        $this->setPublicationDate($publishedWithinSub->getId(), '2026-06-13');
+        $this->setPublicationDate($publishedBeforeSub->getId(), '2026-06-11');
+
+        $this->addDecision(Decision::DECLINE, $declinedWithinSub->getId(), '2026-06-14 10:00:00');
+        $this->addDecision(Decision::INITIAL_DECLINE, $initialDeclinedWithinSub->getId(), '2026-06-15 10:00:00');
+        $this->addDecision(Decision::DECLINE, $declinedAfterSub->getId(), '2026-06-16 10:00:00');
+
+        $submissionIds = $this->getQueryBuilder('ops')
+            ->filterByContexts($this->context->getId())
+            ->withinFinalDecisionDateInterval(
+                '2026-06-12 00:00:00',
+                '2026-06-15 23:59:59'
+            )
+            ->getSubmissionIds();
+
+        $this->assertContains($publishedWithinSub->getId(), $submissionIds);
+        $this->assertContains($declinedWithinSub->getId(), $submissionIds);
+        $this->assertContains($initialDeclinedWithinSub->getId(), $submissionIds);
+        $this->assertNotContains($publishedBeforeSub->getId(), $submissionIds);
+        $this->assertNotContains($declinedAfterSub->getId(), $submissionIds);
     }
 }

@@ -5,6 +5,7 @@ namespace APP\plugins\generic\dataverse\report\services\queryBuilders;
 use APP\decision\Decision;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
+use APP\plugins\generic\dataverse\report\classes\DataverseStatsReport;
 
 class DataverseReportQueryBuilder
 {
@@ -19,6 +20,10 @@ class DataverseReportQueryBuilder
     protected $endSubmissionInterval;
     protected $beginFinalDecisionInterval;
     protected $endFinalDecisionInterval;
+
+    public function __construct(private string $applicationName)
+    {
+    }
 
     public function filterByContexts($contextIds): self
     {
@@ -109,24 +114,7 @@ class DataverseReportQueryBuilder
         }
 
         if (!empty($this->beginFinalDecisionInterval) && !empty($this->endFinalDecisionInterval)) {
-            $query->join('edit_decisions as last_ed', function ($join) {
-                $join->on('last_ed.submission_id', '=', 's.submission_id')
-                    ->where('last_ed.edit_decision_id', function (Builder $query) {
-                        $query->from('edit_decisions as ed2')
-                            ->where('ed2.submission_id', '=', DB::raw('s.submission_id'))
-                            ->orderBy('ed2.date_decided', 'DESC')
-                            ->orderBy('ed2.edit_decision_id', 'DESC')
-                            ->limit(1)
-                            ->select('ed2.edit_decision_id');
-                    });
-            })
-                ->whereIn('last_ed.decision', [
-                    Decision::ACCEPT,
-                    Decision::DECLINE,
-                    Decision::INITIAL_DECLINE
-                ])
-                ->where('last_ed.date_decided', '>=', $this->beginFinalDecisionInterval)
-                ->where('last_ed.date_decided', '<=', $this->endFinalDecisionInterval);
+            $this->filterByFinalDecisionDate($query);
         }
 
         if (!empty($this->decisions)) {
@@ -149,5 +137,74 @@ class DataverseReportQueryBuilder
         }
 
         return $query;
+    }
+
+    private function filterByFinalDecisionDate(Builder $query): void
+    {
+        if ($this->applicationName == DataverseStatsReport::OPS_APP_NAME) {
+            $this->filterByOpsFinalDecisionDate($query);
+            return;
+        }
+
+        $this->joinLatestDecision($query);
+        $this->filterByLatestDecisionDate($query, 'whereIn', [
+            Decision::ACCEPT,
+            Decision::DECLINE,
+            Decision::INITIAL_DECLINE
+        ]);
+    }
+
+    private function filterByOpsFinalDecisionDate(Builder $query): void
+    {
+        $this->joinLatestDecision($query, true);
+
+        $query->where(function (Builder $query) {
+            $query->whereExists(function (Builder $query) {
+                $query->from('publications as p')
+                    ->where('p.submission_id', '=', DB::raw('s.submission_id'))
+                    ->where('p.date_published', '>=', $this->beginFinalDecisionInterval)
+                    ->where('p.date_published', '<=', $this->endFinalDecisionInterval)
+                    ->select('p.date_published');
+            });
+
+            $this->filterByLatestDecisionDate($query, 'orWhere', [
+                Decision::DECLINE,
+                Decision::INITIAL_DECLINE
+            ]);
+        });
+    }
+
+    private function joinLatestDecision(Builder $query, bool $leftJoin = false): void
+    {
+        $joinMethod = $leftJoin ? 'leftJoin' : 'join';
+
+        $query->{$joinMethod}('edit_decisions as last_ed', function ($join) {
+            $join->on('last_ed.submission_id', '=', 's.submission_id')
+                ->where('last_ed.edit_decision_id', function (Builder $query) {
+                    $query->from('edit_decisions as ed2')
+                        ->where('ed2.submission_id', '=', DB::raw('s.submission_id'))
+                        ->orderBy('ed2.date_decided', 'DESC')
+                        ->orderBy('ed2.edit_decision_id', 'DESC')
+                        ->limit(1)
+                        ->select('ed2.edit_decision_id');
+                });
+        });
+    }
+
+    private function filterByLatestDecisionDate(Builder $query, string $method, array $decisions): void
+    {
+        if ($method == 'whereIn') {
+            $query->whereIn('last_ed.decision', $decisions)
+                ->where('last_ed.date_decided', '>=', $this->beginFinalDecisionInterval)
+                ->where('last_ed.date_decided', '<=', $this->endFinalDecisionInterval);
+
+            return;
+        }
+
+        $query->{$method}(function (Builder $query) use ($decisions) {
+            $query->whereIn('last_ed.decision', $decisions)
+                ->where('last_ed.date_decided', '>=', $this->beginFinalDecisionInterval)
+                ->where('last_ed.date_decided', '<=', $this->endFinalDecisionInterval);
+        });
     }
 }
