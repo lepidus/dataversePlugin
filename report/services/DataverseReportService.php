@@ -14,18 +14,28 @@ use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 class DataverseReportService
 {
     private int $contextId;
+    private string $applicationName;
     private $beginSubmissionInterval;
     private $endSubmissionInterval;
+    private $beginFinalDecisionInterval;
+    private $endFinalDecisionInterval;
 
-    public function __construct(int $contextId)
+    public function __construct(int $contextId, string $applicationName)
     {
         $this->contextId = $contextId;
+        $this->applicationName = $applicationName;
     }
 
     public function setDateSubmittedInterval(string $beginning, string $ending)
     {
         $this->beginSubmissionInterval = $beginning;
         $this->endSubmissionInterval = $ending;
+    }
+
+    public function setFinalDecisionDateInterval(string $beginning, string $ending)
+    {
+        $this->beginFinalDecisionInterval = $beginning;
+        $this->endFinalDecisionInterval = $ending;
     }
 
     public function getAcceptedSubmissionsCount(): int
@@ -201,7 +211,7 @@ class DataverseReportService
 
     public function getQueryBuilder($args = []): DataverseReportQueryBuilder
     {
-        $queryBuilder = new DataverseReportQueryBuilder();
+        $queryBuilder = new DataverseReportQueryBuilder($this->applicationName);
 
         if (!empty($args['contextIds'])) {
             $queryBuilder->filterByContexts($args['contextIds']);
@@ -217,6 +227,13 @@ class DataverseReportService
             $queryBuilder->withinDateSubmittedInterval(
                 $this->beginSubmissionInterval,
                 $this->endSubmissionInterval
+            );
+        }
+
+        if (!empty($this->beginFinalDecisionInterval) && !empty($this->endFinalDecisionInterval)) {
+            $queryBuilder->withinFinalDecisionDateInterval(
+                $this->beginFinalDecisionInterval,
+                $this->endFinalDecisionInterval
             );
         }
 

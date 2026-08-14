@@ -8,8 +8,10 @@ use APP\plugins\generic\dataverse\tests\report\traits\ReportTestsHelperTrait;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
 use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
 use APP\plugins\generic\dataverse\report\services\DataverseReportService;
+use APP\plugins\generic\dataverse\report\classes\DataverseStatsReport;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\DataversePlugin;
+use Illuminate\Support\Facades\DB;
 
 class DataverseReportServiceTest extends DatabaseTestCase
 {
@@ -32,9 +34,26 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $contextDAO->deleteObject($this->context);
     }
 
+    private function getReportService(): DataverseReportService
+    {
+        return new DataverseReportService($this->context->getId(), DataverseStatsReport::OJS_APP_NAME);
+    }
+
+    private function getOpsReportService(): DataverseReportService
+    {
+        return new DataverseReportService($this->context->getId(), DataverseStatsReport::OPS_APP_NAME);
+    }
+
+    private function setPublicationDate(int $submissionId, string $datePublished): void
+    {
+        DB::table('publications')
+            ->where('submission_id', '=', $submissionId)
+            ->update(['date_published' => $datePublished]);
+    }
+
     public function testGetQueryBuilder(): void
     {
-        $reportService = new DataverseReportService($this->context->getId());
+        $reportService = $this->getReportService();
         $this->assertInstanceOf(
             DataverseReportQueryBuilder::class,
             $reportService->getQueryBuilder()
@@ -46,7 +65,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT);
         $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::ACCEPT);
 
-        $reportService = new DataverseReportService($this->context->getId());
+        $reportService = $this->getReportService();
         $this->assertEquals(2, $reportService->getAcceptedSubmissionsCount());
         $this->assertEquals(0, $reportService->getDeclinedSubmissionsCount());
 
@@ -62,7 +81,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::DECLINE);
         $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::INITIAL_DECLINE);
 
-        $reportService = new DataverseReportService($this->context->getId());
+        $reportService = $this->getReportService();
         $this->assertEquals(3, $reportService->getPublishedSubmissionsCount());
     }
 
@@ -74,7 +93,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT, true);
         $this->createTestSubmission(Submission::STATUS_QUEUED, Decision::ACCEPT, false);
 
-        $reportService = new DataverseReportService($this->context->getId());
+        $reportService = $this->getReportService();
         $this->assertEquals(1, $reportService->getAcceptedSubmissionsWithDatasetCount());
         $this->assertEquals(1, $reportService->getDeclinedSubmissionsWithDatasetCount());
     }
@@ -85,7 +104,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::DECLINE, true);
         $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::INITIAL_DECLINE, true);
 
-        $reportService = new DataverseReportService($this->context->getId());
+        $reportService = $this->getReportService();
         $this->assertEquals(3, $reportService->getPublishedSubmissionsWithDatasetCount());
     }
 
@@ -109,7 +128,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
             'plugins.generic.dataverse.log.researchDataDeposited'
         );
 
-        $reportService = new DataverseReportService($this->context->getId());
+        $reportService = $this->getReportService();
         $this->assertEquals(4, $reportService->getDeclinedSubmissionsWithDatasetCount());
     }
 
@@ -124,7 +143,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::DECLINE, false);
         $this->createTestSubmission(Submission::STATUS_PUBLISHED, Decision::INITIAL_DECLINE, false);
 
-        $reportService = new DataverseReportService($this->context->getId());
+        $reportService = $this->getReportService();
         $this->assertEquals(8, $reportService->getTotalSubmissionsCount());
     }
 
@@ -153,7 +172,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
             DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE
         ]);
 
-        $reportService = new DataverseReportService($this->context->getId());
+        $reportService = $this->getReportService();
         $acceptedStatementStats = $reportService->getAcceptedStatementStatistics();
         $declinedStatementStats = $reportService->getDeclinedStatementStatistics();
 
@@ -175,7 +194,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
             DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED
         ]);
 
-        $reportService = new DataverseReportService($this->context->getId());
+        $reportService = $this->getReportService();
         $publishedStatementStats = $reportService->getPublishedStatementStatistics();
 
         $this->assertEquals([1, 1, 0, 0], $publishedStatementStats->getStats());
@@ -198,7 +217,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
             DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE,
         ]);
 
-        $reportService = new DataverseReportService($this->context->getId());
+        $reportService = $this->getReportService();
         $publishedStatementStats = $reportService->getTotalStatementStatistics();
 
         $this->assertEquals([2, 1, 0, 1], $publishedStatementStats->getStats());
@@ -216,7 +235,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $startInterval = '2026-06-12';
         $endInterval = '2026-06-15';
 
-        $reportService = new DataverseReportService($this->context->getId());
+        $reportService = $this->getReportService();
 
         $this->assertEquals(2, $reportService->getAcceptedSubmissionsCount());
         $this->assertEquals(2, $reportService->getDeclinedSubmissionsCount());
@@ -228,6 +247,67 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $this->assertEquals(1, $reportService->getAcceptedSubmissionsCount());
         $this->assertEquals(1, $reportService->getDeclinedSubmissionsCount());
         $this->assertEquals(1, $reportService->getPublishedSubmissionsCount());
+        $this->assertEquals(3, $reportService->getTotalSubmissionsCount());
+    }
+
+    public function testConsidersFinalDecisionDateIntervalInOjs(): void
+    {
+        $beforeAcceptedSub = $this->createTestSubmission(Submission::STATUS_QUEUED);
+        $withinAcceptedSub = $this->createTestSubmission(Submission::STATUS_QUEUED);
+        $afterAcceptedSub = $this->createTestSubmission(Submission::STATUS_QUEUED);
+        $beforeDeclinedSub = $this->createTestSubmission(Submission::STATUS_DECLINED);
+        $withinDeclinedSub = $this->createTestSubmission(Submission::STATUS_DECLINED);
+
+        $this->addDecision(Decision::ACCEPT, $beforeAcceptedSub->getId(), '2026-06-11 10:00:00');
+        $this->addDecision(Decision::ACCEPT, $withinAcceptedSub->getId(), '2026-06-13 10:00:00');
+        $this->addDecision(Decision::ACCEPT, $afterAcceptedSub->getId(), '2026-06-16 10:00:00');
+        $this->addDecision(Decision::DECLINE, $beforeDeclinedSub->getId(), '2026-06-11 10:00:00');
+        $this->addDecision(Decision::DECLINE, $withinDeclinedSub->getId(), '2026-06-14 10:00:00');
+
+        $reportService = $this->getReportService();
+
+        $this->assertEquals(3, $reportService->getAcceptedSubmissionsCount());
+        $this->assertEquals(2, $reportService->getDeclinedSubmissionsCount());
+        $this->assertEquals(5, $reportService->getTotalSubmissionsCount());
+
+        $reportService->setFinalDecisionDateInterval(
+            '2026-06-12 00:00:00',
+            '2026-06-15 23:59:59'
+        );
+
+        $this->assertEquals(1, $reportService->getAcceptedSubmissionsCount());
+        $this->assertEquals(1, $reportService->getDeclinedSubmissionsCount());
+        $this->assertEquals(2, $reportService->getTotalSubmissionsCount());
+    }
+
+    public function testConsidersFinalDecisionDateIntervalInOps(): void
+    {
+        $beforePublishedSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED);
+        $withinPublishedSub = $this->createTestSubmission(Submission::STATUS_PUBLISHED);
+        $withinDeclinedSub = $this->createTestSubmission(Submission::STATUS_DECLINED);
+        $withinInitialDeclineSub = $this->createTestSubmission(Submission::STATUS_DECLINED);
+        $afterDeclinedSub = $this->createTestSubmission(Submission::STATUS_DECLINED);
+
+        $this->setPublicationDate($beforePublishedSub->getId(), '2026-06-11');
+        $this->setPublicationDate($withinPublishedSub->getId(), '2026-06-13');
+
+        $this->addDecision(Decision::DECLINE, $withinDeclinedSub->getId(), '2026-06-14 10:00:00');
+        $this->addDecision(Decision::INITIAL_DECLINE, $withinInitialDeclineSub->getId(), '2026-06-15 10:00:00');
+        $this->addDecision(Decision::DECLINE, $afterDeclinedSub->getId(), '2026-06-16 10:00:00');
+
+        $reportService = $this->getOpsReportService();
+
+        $this->assertEquals(2, $reportService->getPublishedSubmissionsCount());
+        $this->assertEquals(3, $reportService->getDeclinedSubmissionsCount());
+        $this->assertEquals(5, $reportService->getTotalSubmissionsCount());
+
+        $reportService->setFinalDecisionDateInterval(
+            '2026-06-12 00:00:00',
+            '2026-06-15 23:59:59'
+        );
+
+        $this->assertEquals(1, $reportService->getPublishedSubmissionsCount());
+        $this->assertEquals(2, $reportService->getDeclinedSubmissionsCount());
         $this->assertEquals(3, $reportService->getTotalSubmissionsCount());
     }
 }
