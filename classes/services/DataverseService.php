@@ -21,7 +21,7 @@ abstract class DataverseService
         Submission $submission,
         string $message,
         array $params = [],
-        int $type = null
+        ?int $type = null
     ): void {
         $user = Application::get()->getRequest()->getUser();
 
@@ -30,9 +30,10 @@ abstract class DataverseService
             'assocId' => $submission->getId(),
             'userId' => Validation::loggedInAs() ?? $user->getId(),
             'eventType' => $type ?? SubmissionEventLogEntry::SUBMISSION_LOG_METADATA_UPDATE,
-            'message' => __($message, $params),
-            'isTranslated' => true,
+            'message' => $message,
+            'isTranslated' => false,
             'dateLogged' => Core::getCurrentDate(),
+            ...$params
         ]);
         Repo::eventLog()->add($eventLog);
     }

@@ -237,14 +237,12 @@ class DatasetHandler extends APIHandler
             $dataverseClient->getDatasetActions()->publish($study->getPersistentId());
             $dataset->setVersionState(Dataset::VERSION_STATE_RELEASED);
         } catch (DataverseException $e) {
-            $request = $this->getRequest();
-            $submission = Repo::submission()->get($study->getSubmissionId());
             $error = $e->getMessage();
             $message = 'plugins.generic.dataverse.error.publishFailed';
 
             error_log('Dataverse API error: ' . $error);
 
-            $this->createEventLog($study, $message, ['error' => $error]);
+            $this->createEventLog($study, $message, ['dataverseError' => $error]);
 
             return $response->withStatus(403)->withJsonError(
                 $message,
@@ -480,9 +478,10 @@ class DatasetHandler extends APIHandler
             'assocId' => $study->getSubmissionId(),
             'userId' => Validation::loggedInAs() ?? $user->getId(),
             'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_METADATA_UPDATE,
-            'message' => __($messageKey, $params),
-            'isTranslated' => true,
+            'message' => $messageKey,
+            'isTranslated' => false,
             'dateLogged' => Core::getCurrentDate(),
+            ...$params
         ]);
         Repo::eventLog()->add($eventLog);
     }
