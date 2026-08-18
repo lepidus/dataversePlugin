@@ -68,7 +68,7 @@ class DatasetHandler extends APIHandler
                 [
                     'pattern' => $this->getEndpointPattern() . '/associate',
                     'handler' => [$this, 'associateDataset'],
-                    'roles' => $roles
+                    'roles' => $managerRoles
                 ],
                 [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
@@ -90,7 +90,7 @@ class DatasetHandler extends APIHandler
                 [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/publish',
                     'handler' => [$this, 'publishDataset'],
-                    'roles' => $roles
+                    'roles' => $managerRoles
                 ],
             ],
             'DELETE' => [
