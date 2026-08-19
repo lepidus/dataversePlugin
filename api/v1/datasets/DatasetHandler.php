@@ -8,6 +8,7 @@ use PKP\security\Validation;
 use PKP\facades\Locale;
 use PKP\security\authorization\PolicySet;
 use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
+use PKP\db\DAORegistry;
 use APP\core\Application;
 use APP\log\event\SubmissionEventLogEntry;
 use PKP\core\Core;
@@ -25,11 +26,12 @@ use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DatasetHandler extends APIHandler
 {
+    private const MANAGER_ROLES = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR];
+
     public function __construct()
     {
         $this->_handlerPath = 'datasets';
         $roles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_AUTHOR];
-        $managerRoles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR];
 
         $this->_endpoints = [
             'GET' => [
@@ -68,7 +70,7 @@ class DatasetHandler extends APIHandler
                 [
                     'pattern' => $this->getEndpointPattern() . '/associate',
                     'handler' => [$this, 'associateDataset'],
-                    'roles' => $roles
+                    'roles' => self::MANAGER_ROLES
                 ],
                 [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
@@ -85,12 +87,12 @@ class DatasetHandler extends APIHandler
                 [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/disassociate',
                     'handler' => [$this, 'disassociateDataset'],
-                    'roles' => $managerRoles
+                    'roles' => self::MANAGER_ROLES
                 ],
                 [
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/publish',
                     'handler' => [$this, 'publishDataset'],
-                    'roles' => $roles
+                    'roles' => self::MANAGER_ROLES
                 ],
             ],
             'DELETE' => [
@@ -121,6 +123,32 @@ class DatasetHandler extends APIHandler
         return parent::authorize($request, $args, $roleAssignments);
     }
 
+    private function userHasManagerRole(): bool
+    {
+        $request = Application::get()->getRequest();
+        $user = $request->getUser();
+        $context = $request->getContext();
+
+        if (!$user || !$context) {
+            return false;
+        }
+
+        $roleDao = DAORegistry::getDAO('RoleDAO');
+        return (bool) $roleDao->userHasRole($context->getId(), $user->getId(), self::MANAGER_ROLES);
+    }
+
+    private function userIsAssignedToSubmission(int $submissionId): bool
+    {
+        $user = Application::get()->getRequest()->getUser();
+
+        if (!$user) {
+            return false;
+        }
+
+        $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
+        return (bool) $stageAssignmentDao->getBySubmissionAndUserIdAndStageId($submissionId, $user->getId())->next();
+    }
+
     private function mapServiceStatusToHttpCode(string $status): ?int
     {
         $map = [
@@ -138,6 +166,11 @@ class DatasetHandler extends APIHandler
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $submissionId = $study->getSubmissionId();
+        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
         }
 
         try {
@@ -168,6 +201,11 @@ class DatasetHandler extends APIHandler
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $submissionId = $study->getSubmissionId();
+        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
         }
 
         $data = [];
@@ -263,6 +301,10 @@ class DatasetHandler extends APIHandler
         $locale = Locale::getLocale();
 
         $submissionId = $queryParams['submissionId'];
+        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
+        }
+
         $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submissionId)->toArray();
 
         if (empty($draftDatasetFiles)) {
@@ -344,6 +386,11 @@ class DatasetHandler extends APIHandler
         $study = Repo::dataverseStudy()->get($args['studyId']);
         $request = Application::get()->getRequest();
 
+        $submissionId = $study->getSubmissionId();
+        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
+        }
+
         try {
             $dataverseClient = new DataverseClient();
             $datasetFiles = $dataverseClient->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
@@ -374,9 +421,13 @@ class DatasetHandler extends APIHandler
     public function getCitation($slimRequest, $response, $args)
     {
         $study = Repo::dataverseStudy()->get((int) $args['studyId']);
-
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $submissionId = $study->getSubmissionId();
+        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
         }
 
         $queryParams = $slimRequest->getQueryParams();
@@ -428,6 +479,11 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
+        $submissionId = $study->getSubmissionId();
+        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
+        }
+
         $datasetFileService = new DatasetFileService();
         $datasetFileService->delete($study, $queryParams['fileId'], $queryParams['fileName']);
 
@@ -441,6 +497,11 @@ class DatasetHandler extends APIHandler
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $submissionId = $study->getSubmissionId();
+        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
         }
 
         $requestParams = $slimRequest->getParsedBody();
