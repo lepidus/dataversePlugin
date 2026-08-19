@@ -168,6 +168,11 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
+        $submissionId = $study->getSubmissionId();
+        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
+        }
+
         try {
             $dataverseClient = new DataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
@@ -381,6 +386,11 @@ class DatasetHandler extends APIHandler
         $study = Repo::dataverseStudy()->get($args['studyId']);
         $request = Application::get()->getRequest();
 
+        $submissionId = $study->getSubmissionId();
+        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
+        }
+
         try {
             $dataverseClient = new DataverseClient();
             $datasetFiles = $dataverseClient->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
@@ -411,9 +421,13 @@ class DatasetHandler extends APIHandler
     public function getCitation($slimRequest, $response, $args)
     {
         $study = Repo::dataverseStudy()->get((int) $args['studyId']);
-
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $submissionId = $study->getSubmissionId();
+        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
         }
 
         $queryParams = $slimRequest->getQueryParams();
