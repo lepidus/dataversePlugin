@@ -1,10 +1,32 @@
 <?php
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 import('lib.pkp.tests.DatabaseTestCase');
 import('plugins.generic.dataverse.report.services.queryBuilders.DataverseReportQueryBuilder');
+import('plugins.generic.dataverse.tests.report.traits.ReportTestsHelperTrait');
+import('plugins.generic.dataverse.DataversePlugin');
+import('plugins.generic.dataverse.classes.dispatchers.DataStatementDispatcher');
 
 class DataverseReportQueryBuilderTest extends DatabaseTestCase
 {
+    use ReportTestsHelperTrait;
+
+    private $context;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $plugin = new DataversePlugin();
+        $dispatcher = new DataStatementDispatcher($plugin);
+        HookRegistry::register(
+            'Schema::get::publication',
+            [$dispatcher, 'addDataStatementToPublicationSchema']
+        );
+        $this->context = $this->createTestContext();
+    }
+
     protected function getAffectedTables(): array
     {
         return [
@@ -17,51 +39,24 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         ];
     }
 
-    private function getQueryBuilder(): DataverseReportQueryBuilder
+    private function getQueryBuilder($applicationName = 'ojs2'): DataverseReportQueryBuilder
     {
-        return new DataverseReportQueryBuilder();
+        return new DataverseReportQueryBuilder($applicationName);
     }
 
-    private function createTestContext(): int
+    private function setPublicationDate(int $submissionId, string $datePublished): void
     {
-        $contextDAO = Application::getContextDAO();
-        $context = $contextDAO->newDataObject();
-        $context->setPath('test');
-        $context->setPrimaryLocale('en_US');
-        return $contextDAO->insertObject($context);
-    }
-
-    private function createTestSubmission(array $data): Submission
-    {
-        $plugin = new DataversePlugin();
-        $dispatcher = new DataStatementDispatcher($plugin);
-
-        HookRegistry::register(
-            'Schema::get::publication',
-            [$dispatcher, 'addDataStatementToPublicationSchema']
-        );
-
-        $submission = DAORegistry::getDAO('SubmissionDAO')->newDataObject();
-        $submission->setAllData($data);
-        DAORegistry::getDAO('SubmissionDAO')->insertObject($submission);
-
-        $publication = DAORegistry::getDAO('PublicationDAO')->newDataObject();
-        $publication->setData('submissionId', $submission->getId());
-        DAORegistry::getDAO('PublicationDAO')->insertObject($publication);
-
-        return $submission;
+        Capsule::table('publications')
+            ->where('submission_id', '=', $submissionId)
+            ->update(['date_published' => $datePublished]);
     }
 
     public function testFilterSubmissionByContexts(): void
     {
-        $contextId = $this->createTestContext();
-        $submission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
-        ]);
+        $submission = $this->createTestSubmission();
 
         $query = $this->getQueryBuilder()
-            ->filterByContexts($contextId)
+            ->filterByContexts($this->context->getId())
             ->getQuery();
 
         $this->assertEquals(
@@ -72,37 +67,13 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
 
     public function testFilterSubmissionByDecisions(): void
     {
-        $contextId = $this->createTestContext();
-
-        $acceptedSubmission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
-        ]);
-
-        $declinedSubmission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
-        ]);
-
-        DAORegistry::getDAO('EditDecisionDAO')->updateEditorDecision($acceptedSubmission->getId(), [
-            'editDecisionId' => null,
-            'editorId' => 1,
-            'decision' => SUBMISSION_EDITOR_DECISION_ACCEPT,
-            'dateDecided' => date(Core::getCurrentDate())
-        ]);
-
-        DAORegistry::getDAO('EditDecisionDAO')->updateEditorDecision($declinedSubmission->getId(), [
-            'editDecisionId' => null,
-            'editorId' => 1,
-            'decision' => SUBMISSION_EDITOR_DECISION_DECLINE,
-            'dateDecided' => date(Core::getCurrentDate())
-        ]);
-
-        $declinedSubmission->setStatus(STATUS_DECLINED);
-        DAORegistry::getDAO('SubmissionDAO')->updateObject($declinedSubmission);
+        $acceptedSubmission = $this->createTestSubmission(STATUS_QUEUED, SUBMISSION_EDITOR_DECISION_ACCEPT);
+        $declinedSubmission = $this->createTestSubmission(STATUS_DECLINED, SUBMISSION_EDITOR_DECISION_DECLINE);
+        $queuedWithDeclineDecisionSub = $this->createTestSubmission(STATUS_QUEUED, SUBMISSION_EDITOR_DECISION_DECLINE);
+        $publishedWithDeclineDecisionSub = $this->createTestSubmission(STATUS_PUBLISHED, SUBMISSION_EDITOR_DECISION_DECLINE);
 
         $query = $this->getQueryBuilder()
-            ->filterByContexts($contextId);
+            ->filterByContexts($this->context->getId());
 
         $acceptedQuery = $query->filterByDecisions([SUBMISSION_EDITOR_DECISION_ACCEPT])
             ->getQuery();
@@ -114,91 +85,201 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             $acceptedSubmission->getId(),
             $acceptedQuery->get()->first()->submission_id
         );
+        $this->assertEquals(1, $acceptedQuery->count());
 
         $this->assertEquals(
             $declinedSubmission->getId(),
             $declinedQuery->get()->first()->submission_id
         );
+        $this->assertEquals(3, $declinedQuery->count());
     }
 
-    public function testGetSubmissionsWithDataset(): void
+    public function testFilterSubmissionsWithDataset(): void
     {
-        $contextId = $this->createTestContext();
-
-        $submission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
-        ]);
-
-        $datasetSubmission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
-        ]);
-
-        $studyDAO = new DataverseStudyDAO();
-        $study = $studyDAO->newDataObject();
-        $study->setAllData([
-            'submissionId' => $datasetSubmission->getId(),
-            'persistentId' => 'testId',
-            'persistentUri' => 'testUri',
-            'editUri' => 'testEditUri',
-            'editMediaUri' => 'testEditMediaUri',
-            'statementUri' => 'testStatementUri',
-        ]);
-        $studyDAO->insertStudy($study);
+        $submissionWithDataset = $this->createTestSubmission(STATUS_QUEUED, null, true);
+        $submissionWithoutDataset = $this->createTestSubmission(STATUS_QUEUED, null, false);
 
         $query = $this->getQueryBuilder()
-            ->filterByContexts($contextId)
-            ->getWithDataset();
+            ->filterByContexts($this->context->getId())
+            ->filterWithDataset()
+            ->getQuery();
 
         $this->assertEquals(
-            $datasetSubmission->getId(),
+            $submissionWithDataset->getId(),
             $query->get()->first()->submission_id
         );
+        $this->assertEquals(1, $query->count());
     }
 
-    public function testCountDatasetsWithDepositError(): void
+    public function testFiltersSubmissionsWithEventLogs(): void
     {
-        $contextId = $this->createTestContext();
-
-        $submission = $this->createTestSubmission([
-            'contextId' => $contextId,
-            'submissionProgress' => SUBMISSION_PROGRESS_COMPLETE,
-        ]);
-
-        import('classes.log.SubmissionEventLogEntry');
-
-        $submissionEventLogDao = DAORegistry::getDAO('SubmissionEventLogDAO');
-        $depositErrorEntry = $submissionEventLogDao->newDataObject();
-        $depositErrorEntry->setDateLogged(Core::getCurrentDate());
-        $depositErrorEntry->setUserId(rand());
-        $depositErrorEntry->setSubmissionId($submission->getId());
-        $depositErrorEntry->setEventType(SUBMISSION_LOG_METADATA_UPDATE);
-        $depositErrorEntry->setMessage('plugins.generic.dataverse.error.depositFailed');
-        $depositErrorEntry->setParams([]);
-        $depositErrorEntry->setIsTranslated(0);
-        $submissionEventLogDao->insertObject($depositErrorEntry);
-
-        $submissionEventLogDao = DAORegistry::getDAO('SubmissionEventLogDAO');
-        $publishErrorEntry = $submissionEventLogDao->newDataObject();
-        $publishErrorEntry->setDateLogged(Core::getCurrentDate());
-        $publishErrorEntry->setUserId(rand());
-        $publishErrorEntry->setSubmissionId($submission->getId());
-        $publishErrorEntry->setEventType(SUBMISSION_LOG_METADATA_UPDATE);
-        $publishErrorEntry->setMessage('plugins.generic.dataverse.error.publishFailed');
-        $publishErrorEntry->setParams([]);
-        $publishErrorEntry->setIsTranslated(0);
-        $submissionEventLogDao->insertObject($publishErrorEntry);
+        $submissionErrorDeposit = $this->createTestSubmission(STATUS_QUEUED, null, true);
+        $submissionErrorPublish = $this->createTestSubmission(STATUS_QUEUED, null, true);
+        $submissionWithTranslatedLog = $this->createTestSubmission(STATUS_QUEUED, null, true);
+        $this->addEventLogToSubmission(
+            $submissionErrorDeposit->getId(),
+            'plugins.generic.dataverse.error.datasetDeposit'
+        );
+        $this->addEventLogToSubmission(
+            $submissionErrorPublish->getId(),
+            'plugins.generic.dataverse.error.publishFailed'
+        );
+        $this->addEventLogToSubmission(
+            $submissionWithTranslatedLog->getId(),
+            'Dataset deposited: doi:10.1234'
+        );
 
         $depositErrorsCount = $this->getQueryBuilder()
-            ->filterByContexts($contextId)
-            ->countDatasetsWithError(['plugins.generic.dataverse.error.depositFailed']);
+            ->filterByContexts($this->context->getId())
+            ->filterWithEventLogs(['plugins.generic.dataverse.error.datasetDeposit'])
+            ->getCount();
 
         $publishErrorsCount = $this->getQueryBuilder()
-            ->filterByContexts($contextId)
-            ->countDatasetsWithError(['plugins.generic.dataverse.error.publishFailed']);
+            ->filterByContexts($this->context->getId())
+            ->filterWithEventLogs(['plugins.generic.dataverse.error.publishFailed'])
+            ->getCount();
+
+        $translatedLogsCount = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->filterWithEventLogs(['Dataset deposited'])
+            ->getCount();
 
         $this->assertEquals(1, $depositErrorsCount);
         $this->assertEquals(1, $publishErrorsCount);
+        $this->assertEquals(1, $translatedLogsCount);
     }
+
+    public function testFilterSubmissionsByStatus(): void
+    {
+        $publishedNoDecisionSub = $this->createTestSubmission(STATUS_PUBLISHED);
+        $publishedAcceptDecisionSub = $this->createTestSubmission(STATUS_PUBLISHED, SUBMISSION_EDITOR_DECISION_ACCEPT);
+        $publishedDeclineDecisionSub = $this->createTestSubmission(STATUS_PUBLISHED, SUBMISSION_EDITOR_DECISION_DECLINE);
+
+        $publishedSubmissionIds = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->filterByStatuses([STATUS_PUBLISHED])
+            ->getSubmissionIds();
+
+        $this->assertTrue(in_array($publishedNoDecisionSub->getId(), $publishedSubmissionIds));
+        $this->assertTrue(in_array($publishedAcceptDecisionSub->getId(), $publishedSubmissionIds));
+        $this->assertTrue(in_array($publishedDeclineDecisionSub->getId(), $publishedSubmissionIds));
+    }
+
+    public function testGetsSubmissionsDataStatementTypes(): void
+    {
+        $publishedSubmission = $this->createTestSubmission(STATUS_PUBLISHED);
+        $acceptedSubmission = $this->createTestSubmission(STATUS_QUEUED, SUBMISSION_EDITOR_DECISION_ACCEPT);
+
+        $publishedSubmissionTypes = [
+            DATA_STATEMENT_TYPE_IN_MANUSCRIPT,
+            DATA_STATEMENT_TYPE_REPO_AVAILABLE
+        ];
+        $acceptedSubmissionTypes = [
+            DATA_STATEMENT_TYPE_ON_DEMAND,
+            DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE
+        ];
+
+        $this->addDataStatementTypesToSubmission($publishedSubmission, $publishedSubmissionTypes);
+        $this->addDataStatementTypesToSubmission($acceptedSubmission, $acceptedSubmissionTypes);
+
+        $retrievedPublishedStatementTypes = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->filterByStatuses([STATUS_PUBLISHED])
+            ->getDataStatementTypes();
+
+        $retrievedAcceptedStatementTypes = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->filterByStatuses([STATUS_QUEUED])
+            ->filterByDecisions([SUBMISSION_EDITOR_DECISION_ACCEPT])
+            ->getDataStatementTypes();
+
+        $this->assertEquals($publishedSubmissionTypes, $retrievedPublishedStatementTypes[0]);
+        $this->assertEquals($acceptedSubmissionTypes, $retrievedAcceptedStatementTypes[0]);
+    }
+
+    public function testGetsSubmissionsWithinDateSubmittedInterval(): void
+    {
+        $beforeIntervalSub = $this->createTestSubmission(STATUS_PUBLISHED, null, false, '2026-06-11');
+        $withinIntervalSub = $this->createTestSubmission(STATUS_QUEUED, SUBMISSION_EDITOR_DECISION_ACCEPT, false, '2026-06-13');
+        $afterIntervalSub = $this->createTestSubmission(STATUS_QUEUED, SUBMISSION_EDITOR_DECISION_ACCEPT, false, '2026-06-16');
+
+        $startInterval = '2026-06-12';
+        $endInterval = '2026-06-15';
+
+        $submissionIds = $this->getQueryBuilder()
+            ->withinDateSubmittedInterval($startInterval, $endInterval)
+            ->getSubmissionIds();
+
+        $this->assertContains($withinIntervalSub->getId(), $submissionIds);
+        $this->assertNotContains($beforeIntervalSub->getId(), $submissionIds);
+        $this->assertNotContains($afterIntervalSub->getId(), $submissionIds);
+    }
+
+    public function testGetsSubmissionsWithFinalDecisionWithinDateIntervalInOjs(): void
+    {
+        $acceptedFinalDecisionSub = $this->createTestSubmission();
+        $declinedFinalDecisionSub = $this->createTestSubmission();
+        $initialDeclineFinalDecisionSub = $this->createTestSubmission();
+        $historicalFinalDecisionSub = $this->createTestSubmission();
+        $outsideIntervalFinalDecisionSub = $this->createTestSubmission();
+
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_EXTERNAL_REVIEW, $acceptedFinalDecisionSub->getId(), '2026-06-11 10:00:00');
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_ACCEPT, $acceptedFinalDecisionSub->getId(), '2026-06-13 10:00:00');
+
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_EXTERNAL_REVIEW, $declinedFinalDecisionSub->getId(), '2026-06-11 10:00:00');
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_DECLINE, $declinedFinalDecisionSub->getId(), '2026-06-14 10:00:00');
+
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_EXTERNAL_REVIEW, $initialDeclineFinalDecisionSub->getId(), '2026-06-11 10:00:00');
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE, $initialDeclineFinalDecisionSub->getId(), '2026-06-15 10:00:00');
+
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_ACCEPT, $historicalFinalDecisionSub->getId(), '2026-06-13 10:00:00');
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_EXTERNAL_REVIEW, $historicalFinalDecisionSub->getId(), '2026-06-14 10:00:00');
+
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_ACCEPT, $outsideIntervalFinalDecisionSub->getId(), '2026-06-11 10:00:00');
+
+        $submissionIds = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->withinFinalDecisionDateInterval(
+                '2026-06-12 00:00:00',
+                '2026-06-15 23:59:59'
+            )
+            ->getSubmissionIds();
+
+        $this->assertContains($acceptedFinalDecisionSub->getId(), $submissionIds);
+        $this->assertContains($declinedFinalDecisionSub->getId(), $submissionIds);
+        $this->assertContains($initialDeclineFinalDecisionSub->getId(), $submissionIds);
+        $this->assertNotContains($historicalFinalDecisionSub->getId(), $submissionIds);
+        $this->assertNotContains($outsideIntervalFinalDecisionSub->getId(), $submissionIds);
+    }
+
+    public function testGetsSubmissionsWithFinalDecisionWithinDateIntervalInOps(): void
+    {
+        $publishedWithinSub = $this->createTestSubmission(STATUS_PUBLISHED);
+        $declinedWithinSub = $this->createTestSubmission(STATUS_DECLINED);
+        $initialDeclinedWithinSub = $this->createTestSubmission(STATUS_DECLINED);
+        $publishedBeforeSub = $this->createTestSubmission(STATUS_PUBLISHED);
+        $declinedAfterSub = $this->createTestSubmission(STATUS_DECLINED);
+
+        $this->setPublicationDate($publishedWithinSub->getId(), '2026-06-13');
+        $this->setPublicationDate($publishedBeforeSub->getId(), '2026-06-11');
+
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_DECLINE, $declinedWithinSub->getId(), '2026-06-14 10:00:00');
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_INITIAL_DECLINE, $initialDeclinedWithinSub->getId(), '2026-06-15 10:00:00');
+        $this->addDecision(SUBMISSION_EDITOR_DECISION_DECLINE, $declinedAfterSub->getId(), '2026-06-16 10:00:00');
+
+        $submissionIds = $this->getQueryBuilder('ops')
+            ->filterByContexts($this->context->getId())
+            ->withinFinalDecisionDateInterval(
+                '2026-06-12 00:00:00',
+                '2026-06-15 23:59:59'
+            )
+            ->getSubmissionIds();
+
+        $this->assertContains($publishedWithinSub->getId(), $submissionIds);
+        $this->assertContains($declinedWithinSub->getId(), $submissionIds);
+        $this->assertContains($initialDeclinedWithinSub->getId(), $submissionIds);
+        $this->assertNotContains($publishedBeforeSub->getId(), $submissionIds);
+        $this->assertNotContains($declinedAfterSub->getId(), $submissionIds);
+    }
+
 }
