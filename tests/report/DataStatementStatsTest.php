@@ -6,10 +6,10 @@ import('plugins.generic.dataverse.report.classes.DataStatementStats');
 
 class DataStatementStatsTest extends PKPTestCase
 {
-    private int $inManuscriptCount = 3;
-    private int $repoAvailableCount = 5;
-    private int $onDemandCount = 17;
-    private int $publiclyUnavailableCount = 10;
+    private $inManuscriptCount = 3;
+    private $repoAvailableCount = 5;
+    private $onDemandCount = 17;
+    private $publiclyUnavailableCount = 10;
 
     public function testStatementClassReturnsAllCounts(): void
     {
