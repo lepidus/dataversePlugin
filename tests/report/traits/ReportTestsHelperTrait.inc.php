@@ -73,7 +73,7 @@ trait ReportTestsHelperTrait
         ?int $status = null,
         ?int $decision = null,
         bool $withDataset = false,
-        ?string $dateSubmitted = null,
+        ?string $dateSubmitted = null
     ): Submission {
         $submissionDao = DAORegistry::getDAO('SubmissionDAO');
         $submission = $submissionDao->newDataObject();
