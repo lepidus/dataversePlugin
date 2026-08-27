@@ -8,20 +8,20 @@ import('plugins.generic.dataverse.DataversePlugin');
 
 class DataverseStatsReportTest extends PKPTestCase
 {
-    private DataverseStatsReport $report;
-    private string $locale = 'en_US';
-    private string $application = DataverseStatsReport::OJS_APP_NAME;
-    private int $publishedSubmissions = 70;
-    private int $acceptedSubmissions = 40;
-    private int $declinedSubmissions = 200;
-    private int $totalSubmissions = 300;
-    private int $publishedSubmissionsWithDataset = 45;
-    private int $acceptedSubmissionsWithDataset = 35;
-    private int $declinedSubmissionsWithDataset = 50;
-    private int $datasetsWithDepositError = 25;
-    private int $datasetsWithPublishError = 5;
-    private int $filesInDatasets = 125;
-    private array $dataStatementValues = [
+    private $report;
+    private $locale = 'en_US';
+    private $application = DataverseStatsReport::OJS_APP_NAME;
+    private $publishedSubmissions = 70;
+    private $acceptedSubmissions = 40;
+    private $declinedSubmissions = 200;
+    private $totalSubmissions = 300;
+    private $publishedSubmissionsWithDataset = 45;
+    private $acceptedSubmissionsWithDataset = 35;
+    private $declinedSubmissionsWithDataset = 50;
+    private $datasetsWithDepositError = 25;
+    private $datasetsWithPublishError = 5;
+    private $filesInDatasets = 125;
+    private $dataStatementValues = [
         DATA_STATEMENT_TYPE_IN_MANUSCRIPT => 3,
         DATA_STATEMENT_TYPE_REPO_AVAILABLE => 7,
         DATA_STATEMENT_TYPE_ON_DEMAND => 15,
