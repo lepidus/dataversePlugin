@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.classes.form.Form');
-// import('plugins.generic.dataverse.report.classes.DataverseStatsReportBuilder');
+import('plugins.generic.dataverse.report.classes.DataverseStatsReportBuilder');
 
 class DataverseReportForm extends Form
 {
