@@ -104,19 +104,23 @@ class DataverseStatsReportTest extends PKPTestCase
             '',
         ];
 
-        $secondHeadersLine = [
-            __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}Submissions"),
-            __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
-            __('plugins.generic.dataverse.report.headers.totalSubmissions'),
-            __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}SubmissionsWithDataset"),
-            __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
-            ...$statementSectionColumns,
-            ...$statementSectionColumns,
-            ...$statementSectionColumns,
-            __('plugins.generic.dataverse.report.headers.datasetsWithDepositError'),
-            __('plugins.generic.dataverse.report.headers.datasetsWithPublishError'),
-            __('plugins.generic.dataverse.report.headers.filesInDatasets')
-        ];
+        $secondHeadersLine = array_merge(
+            [
+                __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}Submissions"),
+                __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
+                __('plugins.generic.dataverse.report.headers.totalSubmissions'),
+                __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}SubmissionsWithDataset"),
+                __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
+            ],
+            $statementSectionColumns,
+            $statementSectionColumns,
+            $statementSectionColumns,
+            [
+                __('plugins.generic.dataverse.report.headers.datasetsWithDepositError'),
+                __('plugins.generic.dataverse.report.headers.datasetsWithPublishError'),
+                __('plugins.generic.dataverse.report.headers.filesInDatasets')
+            ]
+        );
 
         return [
             $firstHeadersLine,
