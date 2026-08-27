@@ -1,7 +1,7 @@
 <?php
 
 import('lib.pkp.classes.plugins.ReportPlugin');
-import('plugins.generic.dataverse.report.services.queryBuilders.DataverseReportQueryBuilder');
+import('plugins.generic.dataverse.report.DataverseReportForm');
 
 class DataverseReportPlugin extends ReportPlugin
 {
@@ -31,18 +31,17 @@ class DataverseReportPlugin extends ReportPlugin
 
     public function display($args, $request)
     {
-        $context = $request->getContext();
-
-        import('plugins.generic.dataverse.report.services.DataverseReportService');
-        $reportService = new DataverseReportService();
-
-        $overview = $reportService->getOverview($context->getId());
-
-        header('content-type: text/comma-separated-values');
-        header('content-disposition: attachment; filename=dataverse-' . date('Ymd') . '.csv');
-        $fp = fopen('php://output', 'wt');
-        fputcsv($fp, $reportService->getReportHeaders());
-        fputcsv($fp, $overview);
-        fclose($fp);
+        $form = new DataverseReportForm($this);
+        $form->initData();
+        if ($request->isPost($request)) {
+            $form->readInputData();
+            if ($form->validateReportData()) {
+                $form->generateReport();
+            }
+        } else {
+            $dateStart = date('Y-01-01');
+            $dateEnd = date('Y-m-d');
+            $form->display($request, 'dataverseReport.tpl', [$dateStart, $dateEnd]);
+        }
     }
 }

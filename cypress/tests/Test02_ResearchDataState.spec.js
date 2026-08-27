@@ -16,6 +16,10 @@ describe('Research data state', function () {
 		}
 	});
 
+	afterEach(function () {
+		cy.logout();
+	});
+
 	it('Check data statement in submission wizard', function () {
 		cy.login('eostrom', null, 'publicknowledge');
 

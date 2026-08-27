@@ -1,0 +1,78 @@
+#dataverseReportForm {
+    padding: 0 10px 0 30px;
+}
+
+#dataverseReportForm h2{
+    margin-bottom: 16px;
+}
+
+.data label, input{
+    padding: 0 5px 2px 0;
+}
+
+.data h2 {
+    margin-bottom: 16px;
+}
+
+#filterTypeField {
+    display: flex;
+    align-items: baseline;
+}
+
+#filterTypeField p {
+    margin-bottom: 24px;
+    margin-right: 8px;
+}
+
+#actionsButton {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#submittedDateFields, #finalDecisionDateFields {
+    margin-bottom: 12px;
+    border: 1px solid rgba(0,0,0,0.84);
+    border-radius: 10px;
+    padding: 0 20px 20px;
+    width: 45%;
+}
+
+.search_advanced legend {
+    padding: 10px 20px;
+    margin: 0;
+    color: rgba(0,0,0,0.84);
+    line-height: 20px;
+}
+
+.date_range .from {
+    margin-bottom: 10px;
+}
+
+.date_range .from .label, .date_range .to .label {
+    padding: 0 2px;
+    display: block;
+    font-size: 14px;
+    font-weight: 400;
+    font-style: italic;
+}
+
+.date_range .from input, .date_range .to input {
+    padding: 0 .5em;
+    height: 35px;
+    border: 1px solid #DDD;
+    border-radius: 3px;
+    font-size: 16px;
+    line-height: 28px;
+}
+
+#selectFilterTypeDate {
+    margin-bottom: 24px;
+}
+
+#noticeTimeGenerateReport {
+    font-style: italic;
+    line-height: 22px;
+    margin-bottom: 0px;
+    margin-top: 28px;
+}
