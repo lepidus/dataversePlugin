@@ -58,19 +58,23 @@ class DataverseStatsReport
             '',
         ];
 
-        $secondHeadersLine = [
-            __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}Submissions", [], $this->locale),
-            __('plugins.generic.dataverse.report.headers.declinedSubmissions', [], $this->locale),
-            __('plugins.generic.dataverse.report.headers.totalSubmissions', [], $this->locale),
-            __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}SubmissionsWithDataset", [], $this->locale),
-            __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset', [], $this->locale),
-            ...$statementSectionColumns,
-            ...$statementSectionColumns,
-            ...$statementSectionColumns,
-            __('plugins.generic.dataverse.report.headers.datasetsWithDepositError', [], $this->locale),
-            __('plugins.generic.dataverse.report.headers.datasetsWithPublishError', [], $this->locale),
-            __('plugins.generic.dataverse.report.headers.filesInDatasets', [], $this->locale)
-        ];
+        $secondHeadersLine = array_merge(
+            [
+                __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}Submissions", [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.declinedSubmissions', [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.totalSubmissions', [], $this->locale),
+                __("plugins.generic.dataverse.report.headers.{$pubOrAcpt}SubmissionsWithDataset", [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset', [], $this->locale),
+            ],
+            $statementSectionColumns,
+            $statementSectionColumns,
+            $statementSectionColumns,
+            [
+                __('plugins.generic.dataverse.report.headers.datasetsWithDepositError', [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.datasetsWithPublishError', [], $this->locale),
+                __('plugins.generic.dataverse.report.headers.filesInDatasets', [], $this->locale)
+            ]
+        );
 
         return [
             $firstHeadersLine,
@@ -82,19 +86,23 @@ class DataverseStatsReport
     {
         $pubOrAcpt = $this->getPubOrAcpt();
 
-        return [
-            $this->stats["{$pubOrAcpt}Count"],
-            $this->stats['declinedCount'],
-            $this->stats['totalSubmissionsCount'],
-            $this->stats["{$pubOrAcpt}WithDatasetCount"],
-            $this->stats['declinedWithDatasetCount'],
-            ...$this->stats["{$pubOrAcpt}StatementCount"]->getStats(),
-            ...$this->stats["declinedStatementCount"]->getStats(),
-            ...$this->stats["totalStatementCount"]->getStats(),
-            $this->stats['withDepositErrorCount'],
-            $this->stats['withPublishErrorCount'],
-            $this->stats['datasetFilesCount']
-        ];
+        return array_merge(
+            [
+                $this->stats["{$pubOrAcpt}Count"],
+                $this->stats['declinedCount'],
+                $this->stats['totalSubmissionsCount'],
+                $this->stats["{$pubOrAcpt}WithDatasetCount"],
+                $this->stats['declinedWithDatasetCount'],
+            ],
+            $this->stats["{$pubOrAcpt}StatementCount"]->getStats(),
+            $this->stats["declinedStatementCount"]->getStats(),
+            $this->stats["totalStatementCount"]->getStats(),
+            [
+                $this->stats['withDepositErrorCount'],
+                $this->stats['withPublishErrorCount'],
+                $this->stats['datasetFilesCount']
+            ]
+        );
     }
 
     public function writeReport(string $filePath)

@@ -130,19 +130,23 @@ class DataverseStatsReportTest extends PKPTestCase
 
     public function testReportHasStatsDataForOjs(): void
     {
-        $expectedStatsData = [
-            $this->acceptedSubmissions,
-            $this->declinedSubmissions,
-            $this->totalSubmissions,
-            $this->acceptedSubmissionsWithDataset,
-            $this->declinedSubmissionsWithDataset,
-            ...array_values($this->dataStatementValues),
-            ...array_values($this->dataStatementValues),
-            ...array_values($this->dataStatementValues),
-            $this->datasetsWithDepositError,
-            $this->datasetsWithPublishError,
-            $this->filesInDatasets
-        ];
+        $expectedStatsData = array_merge(
+            [
+                $this->acceptedSubmissions,
+                $this->declinedSubmissions,
+                $this->totalSubmissions,
+                $this->acceptedSubmissionsWithDataset,
+                $this->declinedSubmissionsWithDataset,
+            ],
+            array_values($this->dataStatementValues),
+            array_values($this->dataStatementValues),
+            array_values($this->dataStatementValues),
+            [
+                $this->datasetsWithDepositError,
+                $this->datasetsWithPublishError,
+                $this->filesInDatasets
+            ]
+        );
 
         $this->assertEquals($expectedStatsData, $this->report->getStatsData());
     }
@@ -150,19 +154,23 @@ class DataverseStatsReportTest extends PKPTestCase
     public function testReportHasStatsDataForOps(): void
     {
         $this->report = $this->createTestReport(DataverseStatsReport::OPS_APP_NAME, $this->locale);
-        $expectedStatsData = [
-            $this->publishedSubmissions,
-            $this->declinedSubmissions,
-            $this->totalSubmissions,
-            $this->publishedSubmissionsWithDataset,
-            $this->declinedSubmissionsWithDataset,
-            ...array_values($this->dataStatementValues),
-            ...array_values($this->dataStatementValues),
-            ...array_values($this->dataStatementValues),
-            $this->datasetsWithDepositError,
-            $this->datasetsWithPublishError,
-            $this->filesInDatasets
-        ];
+        $expectedStatsData = array_merge(
+            [
+                $this->publishedSubmissions,
+                $this->declinedSubmissions,
+                $this->totalSubmissions,
+                $this->publishedSubmissionsWithDataset,
+                $this->declinedSubmissionsWithDataset,
+            ],
+            array_values($this->dataStatementValues),
+            array_values($this->dataStatementValues),
+            array_values($this->dataStatementValues),
+            [
+                $this->datasetsWithDepositError,
+                $this->datasetsWithPublishError,
+                $this->filesInDatasets
+            ]
+        );
 
         $this->assertEquals($expectedStatsData, $this->report->getStatsData());
     }
@@ -197,19 +205,23 @@ class DataverseStatsReportTest extends PKPTestCase
         $row = fgetcsv($csvFile);
         $this->assertEquals($expectedHeaders[1], $row);
 
-        $expectedStatsLine = [
-            $this->acceptedSubmissions,
-            $this->declinedSubmissions,
-            $this->totalSubmissions,
-            $this->acceptedSubmissionsWithDataset,
-            $this->declinedSubmissionsWithDataset,
-            ...array_values($this->dataStatementValues),
-            ...array_values($this->dataStatementValues),
-            ...array_values($this->dataStatementValues),
-            $this->datasetsWithDepositError,
-            $this->datasetsWithPublishError,
-            $this->filesInDatasets
-        ];
+        $expectedStatsLine = array_merge(
+            [
+                $this->acceptedSubmissions,
+                $this->declinedSubmissions,
+                $this->totalSubmissions,
+                $this->acceptedSubmissionsWithDataset,
+                $this->declinedSubmissionsWithDataset,
+            ],
+            array_values($this->dataStatementValues),
+            array_values($this->dataStatementValues),
+            array_values($this->dataStatementValues),
+            [
+                $this->datasetsWithDepositError,
+                $this->datasetsWithPublishError,
+                $this->filesInDatasets
+            ]
+        );
         $row = fgetcsv($csvFile);
         $this->assertEquals($expectedStatsLine, $row);
 
