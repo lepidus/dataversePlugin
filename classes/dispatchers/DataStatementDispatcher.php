@@ -28,16 +28,14 @@ class DataStatementDispatcher extends DataverseDispatcher
     public function addDataStatementResourcesToBackend(string $hookName): void
     {
         $request = Application::get()->getRequest();
-        $backendPagesToInsert = ['submission', 'workflow', 'authorDashboard', 'reviewer'];
+        $backendPagesToInsert = ['submission', 'dashboard', 'reviewer'];
 
         if (!in_array($request->getRequestedPage(), $backendPagesToInsert)) {
             return;
         }
 
         $templateMgr = TemplateManager::getManager($request);
-        $dataStatementService = new DataStatementService();
-        $templateMgr->setConstants($dataStatementService->getConstantsForTemplates());
-        $templateMgr->setConstants(['dataStatementTypes' => $dataStatementService->getDataStatementTypes()]);
+        $templateMgr->setConstants((new DataStatementService())->getConstantsForTemplates());
     }
 
     public function addDataStatementResources(string $hookName, array $params): bool

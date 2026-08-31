@@ -78,9 +78,12 @@ What the plugin actually does, in workflow order:
    `dataStatementTypes` includes `DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED`, the assembled `Dataset` has at
    least one file, and it has a subject. A submission that "should have deposited but didn't" almost always
    failed one of these, not the API call.
-4. **Workflow "Research Data" tab**: view/edit dataset metadata, add and delete files, delete the dataset, or
-   associate the submission with a dataset that already exists in the repository.
-5. **Data availability statement tab**: a publication-level statement whose type is one of the
+4. **Workflow "Research data" panel**: a Publication menu item that lets you view/edit dataset metadata, add and
+   delete files, publish, disassociate or delete the dataset, or associate the submission with a dataset that
+   already exists in the repository — and, when nothing has been deposited yet, upload research data and
+   deposit it from the workflow.
+5. **Data availability statement panel**: a Publication menu item holding a publication-level statement whose
+   type is one of the
    `DataStatementService::DATA_STATEMENT_TYPE_*` constants (in manuscript / available in a repository /
    submitted to this Dataverse / available on demand / publicly unavailable), with URLs and reasons as needed.
 6. **Peer review**: editors pick which data files reviewers may see when sending to external review
@@ -128,8 +131,7 @@ there. Roughly one dispatcher per surface:
 | `DraftDatasetFilesDispatcher` | Wizard Files step — research data uploads before deposit |
 | `DatasetMetadataDispatcher` | Wizard dataset metadata fields |
 | `DataStatementDispatcher` | Data availability statement: publication schema, wizard, public page |
-| `DataStatementTabDispatcher` | Data statement tab in the workflow (inactive on 3.5) |
-| `DatasetTabDispatcher` | "Research Data" tab in the workflow (inactive on 3.5) |
+| `WorkflowDispatcher` | Loads the plugin's Vue bundle on the dashboard, where the workflow lives since 3.5 |
 | `DatasetReviewDispatcher` | Research data shown to reviewers in the review steps |
 | `DatasetInformationDispatcher` | Dataset citation on the public article/preprint page |
 | `CrossrefDispatcher` | Dataset relation injected into Crossref export XML (`CrossrefXmlEditor`) |
@@ -199,10 +201,16 @@ the application's normal API routing — `DataverseEventsDispatcher::setupDatave
 request, matches the path, and installs the plugin handler. The JS calls them with URLs produced by
 `DataverseDispatcher::getApiUrl()`.
 
-`draftDatasetFiles` is a `PKPBaseController` (`DraftDatasetFileController`) wrapped in the application's
-`APIHandler`, with roles declared in `getRouteGroupMiddleware()`. `datasets` and `dataverse` are still the
-pre-3.5 Slim-style `APIHandler` subclasses with an `$_endpoints` array; they only serve the workflow tabs and
-have to be ported the same way when those tabs are rebuilt.
+All three are `PKPBaseController`s wrapped in the application's `APIHandler`, with roles declared per route
+group. `draftDatasetFiles` (`DraftDatasetFileController`) serves the wizard's draft files; `datasets`
+(`DatasetController`) is the dataset resource — get, edit, deposit, associate/disassociate, publish, delete,
+plus files; `dataverse` (`DataverseController`) serves the two workflow panels their whole state in one
+request (`GET researchData`, `GET dataStatement`).
+
+Every route on the three controllers is scoped to a submission: they all require a `submissionId` query
+parameter and run `SubmissionAccessPolicy`, and the dataset routes additionally check that the study belongs to
+that submission. A `DataverseException` raised while assembling `researchData` is turned into an `error` string
+in an otherwise-200 response, which the panel renders as a notice with a retry button — it is never a fatal.
 
 ### Front end
 
@@ -214,8 +222,15 @@ form fields are registered under the name their PHP `Field` subclass declares in
 generated `public/build` and `registry/uiLocaleKeysBackend.json` (the latter feeds `UITranslator`, which is
 how locale keys used by `t()` reach the browser — `TemplateManager::setLocaleKeys()` is gone in 3.5).
 
-`js/DataverseWorkflowPage.js` is the last remaining legacy script; it belongs to the workflow tabs, which are
-still Vue 2 code and inactive on 3.5.
+The workflow panels are `DataverseResearchData.vue` and `DataverseDataStatement.vue`. They are hooked into the
+workflow through `resources/js/workflowMenu.js`, which uses `pkp.registry.storeExtend('workflow', ...)` to
+append two items to the `publication` menu (`getMenuItems`) and to render the matching component
+(`getPrimaryItems`). Both dashboards — editorial and author — go through the same code, so the panels appear on
+both. Dataset changes call `triggerDataChange()` (from `useDataChanged`) rather than reloading the page, so the
+rest of the workflow picks up the publication's new data availability statement.
+
+There is no per-item badge with the research data file count: the 3.5 side menu overwrites `badge` and
+computing the count would mean calling Dataverse before the menu is built.
 
 Smarty templates live in `templates/`, stylesheets in `styles/`, and the PHP-side form / list-panel
 definitions in `classes/components/` (`forms/`, `listPanel/`) — a UI change usually touches a component

@@ -27,8 +27,6 @@ class DatasetReviewGridColumn extends GridColumn
         if (!is_null($this->study)) {
             $datasetFile = $row->getData();
 
-            error_log(print_r($datasetFile, true));
-
             $context = $request->getContext();
             $downloadUrl = $request->getDispatcher()->url(
                 $request,
@@ -37,7 +35,11 @@ class DatasetReviewGridColumn extends GridColumn
                 'datasets/' . $this->study->getId() . '/file',
                 null,
                 null,
-                ['fileId' => $datasetFile->getId(), 'fileName' => $datasetFile->getFileName()]
+                [
+                    'submissionId' => $this->study->getSubmissionId(),
+                    'fileId' => $datasetFile->getId(),
+                    'fileName' => $datasetFile->getFileName(),
+                ]
             );
 
             $cellActions[] = new LinkAction(

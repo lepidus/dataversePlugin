@@ -24,12 +24,10 @@ class DatasetMetadataForm extends FormComponent
         $this->locales = $this->mapCurrentLocale();
 
         $dataverseMetadata = new DataverseMetadata();
-        $dataverseLicenses = [];
         $datasetMetadata = $this->getDatasetMetadata($dataset);
+        $dataverseLicenses = $dataverseMetadata->getDataverseLicenses();
 
         if ($page == 'submission') {
-            $dataverseLicenses = $dataverseMetadata->getDataverseLicenses();
-
             if (empty($datasetMetadata['license'])) {
                 $datasetMetadata['license'] = $dataverseMetadata->getDefaultLicense();
             }

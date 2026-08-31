@@ -178,11 +178,10 @@ class DatasetService extends DataverseService
         Repo::publication()->edit($publication, ['dataStatementTypes' => $dataStatementTypes]);
 
         $request = Application::get()->getRequest();
-        $router = $request->getRouter();
-        $handler = $router->getHandler();
-        $userRoles = (array) $handler->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES);
+        $user = $request->getUser();
+        $isManager = $user && $user->hasRole([Role::ROLE_ID_MANAGER], $submission->getData('contextId'));
 
-        if (in_array(Role::ROLE_ID_MANAGER, $userRoles) && $deleteMessage) {
+        if ($isManager && $deleteMessage) {
             $this->sendEmailToDatasetAuthor($request, $dataset, $submission, $deleteMessage);
         }
 

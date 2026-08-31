@@ -58,11 +58,10 @@ class DataversePlugin extends GenericPlugin implements HasTaskScheduler
     {
         $dispatcherClasses = [
             'DataStatementDispatcher',
-            'DataStatementTabDispatcher',
             'DraftDatasetFilesDispatcher',
             'DatasetMetadataDispatcher',
             'DatasetInformationDispatcher',
-            'DatasetTabDispatcher',
+            'WorkflowDispatcher',
             'DatasetReviewDispatcher',
             'DataverseEventsDispatcher',
             'CrossrefDispatcher'

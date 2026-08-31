@@ -5,7 +5,12 @@ import i18nExtractKeys from './i18nExtractKeys.vite.js';
 
 export default defineConfig({
     publicDir: false,
-    plugins: [i18nExtractKeys(), vue()],
+    plugins: [
+        i18nExtractKeys({
+            extraKeys: ['plugins.generic.dataverse.dataStatement.title'],
+        }),
+        vue(),
+    ],
     build: {
         target: 'es2016',
         lib: {

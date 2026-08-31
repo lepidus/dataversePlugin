@@ -9,8 +9,8 @@ use APP\decision\Decision;
 use PKP\decision\steps\Form;
 use PKP\components\forms\FormComponent;
 use Illuminate\Support\Facades\Event;
-use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
-use APP\plugins\generic\dataverse\api\v1\dataverse\DataverseHandler;
+use APP\plugins\generic\dataverse\api\v1\datasets\DatasetController;
+use APP\plugins\generic\dataverse\api\v1\dataverse\DataverseController;
 use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileController;
 use PKP\handler\APIHandler;
 use APP\plugins\generic\dataverse\classes\components\forms\SelectDataFilesForReviewForm;
@@ -378,26 +378,22 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return;
         }
 
-        if (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
-            $handler = new APIHandler(new DraftDatasetFileController());
+        $controllers = [
+            'api/v1/draftDatasetFiles' => DraftDatasetFileController::class,
+            'api/v1/datasets' => DatasetController::class,
+            'api/v1/dataverse' => DataverseController::class,
+        ];
+
+        foreach ($controllers as $path => $controllerClass) {
+            if (!str_contains($request->getRequestPath(), $path)) {
+                continue;
+            }
+
+            $handler = new APIHandler(new $controllerClass());
             $router->setHandler($handler);
             $handler->runRoutes();
             exit;
         }
-
-        if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
-            $handler = new DatasetHandler();
-        } elseif (str_contains($request->getRequestPath(), 'api/v1/dataverse')) {
-            $handler = new DataverseHandler();
-        }
-
-        if (!isset($handler)) {
-            return;
-        }
-
-        $router->setHandler($handler);
-        $handler->getApp()->run();
-        exit;
     }
 
     public function loadDraftDatasetFileSchema($hookname, $params): bool
