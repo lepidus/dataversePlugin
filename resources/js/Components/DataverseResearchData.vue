@@ -239,7 +239,7 @@ function openDisassociateDatasetDialog() {
 		message: t('plugins.generic.dataverse.researchData.disassociate.description'),
 		label: t('plugins.generic.dataverse.researchData.disassociate'),
 		isWarnable: true,
-		url: state.value.datasetUrl + '/disassociate',
+		url: state.value.disassociateUrl,
 		method: 'PUT',
 	});
 }
@@ -250,7 +250,7 @@ function openPublishDatasetDialog() {
 		message: state.value.publishConfirmMessage,
 		label: t('common.yes'),
 		isWarnable: false,
-		url: state.value.datasetUrl + '/publish',
+		url: state.value.publishUrl,
 		method: 'PUT',
 	});
 }

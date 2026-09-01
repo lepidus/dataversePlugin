@@ -166,6 +166,14 @@ class DataverseController extends PKPBaseController
             'datasets/' . $study->getId() . '/file',
             ['submissionId' => $submission->getId()]
         );
+        $publishUrl = $this->apiUrl(
+            'datasets/' . $study->getId() . '/publish',
+            ['submissionId' => $submission->getId()]
+        );
+        $disassociateUrl = $this->apiUrl(
+            'datasets/' . $study->getId() . '/disassociate',
+            ['submissionId' => $submission->getId()]
+        );
 
         return [
             'studyId' => $study->getId(),
@@ -175,6 +183,8 @@ class DataverseController extends PKPBaseController
             'datasetInReview' => $this->isDatasetInReview($dataverseClient, $dataset),
             'citation' => $this->getCitation($dataverseClient, $study, $datasetIsPublished),
             'datasetUrl' => $datasetUrl,
+            'publishUrl' => $publishUrl,
+            'disassociateUrl' => $disassociateUrl,
             'publishConfirmMessage' => __('plugins.generic.dataverse.modal.confirmDatasetPublish', [
                 'serverName' => $dataverseClient->getDataverseCollectionActions()->getRoot()->getName(),
                 'serverUrl' => $serverUrl,
