@@ -4,6 +4,7 @@ namespace APP\plugins\generic\dataverse\api\v1\datasets;
 
 use APP\core\Application;
 use APP\log\event\SubmissionEventLogEntry;
+use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
@@ -167,6 +168,11 @@ class DatasetController extends PKPBaseController
         $params = $illuminateRequest->input();
         $locale = Locale::getLocale();
 
+        $metadataErrors = $this->getMetadataErrors($params);
+        if (!empty($metadataErrors)) {
+            return response()->json($metadataErrors, Response::HTTP_BAD_REQUEST);
+        }
+
         (new DatasetService())->update([
             'persistentId' => $study->getPersistentId(),
             'title' => $params['datasetTitle'],
@@ -200,6 +206,11 @@ class DatasetController extends PKPBaseController
 
         $params = $illuminateRequest->input();
         $locale = Locale::getLocale();
+
+        $metadataErrors = $this->getMetadataErrors($params);
+        if (!empty($metadataErrors)) {
+            return response()->json($metadataErrors, Response::HTTP_BAD_REQUEST);
+        }
 
         $dataset = (new SubmissionDatasetFactory($submission))->getDataset();
         $dataset->setTitle($params['datasetTitle']);
@@ -453,6 +464,29 @@ class DatasetController extends PKPBaseController
         return response()->json(['inReview' => false], Response::HTTP_OK);
     }
 
+    private function getMetadataErrors(array $params): array
+    {
+        $locale = Locale::getLocale();
+        $errors = [];
+
+        foreach ((new DatasetMetadataForm('', 'POST', null, 'workflow'))->fields as $field) {
+            if (!$field->isRequired) {
+                continue;
+            }
+
+            $value = $params[$field->name] ?? null;
+            if ($field->isMultilingual) {
+                $value = $value[$locale] ?? null;
+            }
+
+            if (is_array($value) ? empty($value) : trim((string) $value) === '') {
+                $errors[$field->name] = [__('validator.required')];
+            }
+        }
+
+        return $errors;
+    }
+
     private function getSubmissionStudy(IlluminateRequest $illuminateRequest): ?DataverseStudy
     {
         $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
@@ -498,7 +532,7 @@ class DatasetController extends PKPBaseController
     {
         error_log($logPrefix . $e->getMessage());
 
-        return $this->error($e->getUserMessageKey(), [], $this->errorStatus($e));
+        return response()->json(['error' => $e->getUserMessage()], $this->errorStatus($e));
     }
 
     private function errorStatus(DataverseException $e): int

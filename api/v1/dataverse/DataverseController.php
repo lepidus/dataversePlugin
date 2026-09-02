@@ -87,7 +87,7 @@ class DataverseController extends PKPBaseController
                 : $this->getDatasetState($submission, $study, $configuration->getDataverseServerUrl());
         } catch (DataverseException $e) {
             error_log('Dataverse API error while loading research data: ' . $e->getMessage());
-            $state['error'] = __($e->getUserMessageKey());
+            $state['error'] = $e->getUserMessage();
         }
 
         return response()->json($state, Response::HTTP_OK);
