@@ -42,7 +42,7 @@ class DataverseReportForm extends Form
         ]);
     }
 
-    public function validateReportData()
+    public function validate($callHooks = true)
     {
         $selectedFilter = $this->getData('selectFilterTypeDate');
         $startDate = $endDate = '';
@@ -61,7 +61,7 @@ class DataverseReportForm extends Form
             return false;
         }
 
-        return true;
+        return parent::validate($callHooks);
     }
 
     public function display($request = null, $template = null, $args = null)

@@ -38,7 +38,7 @@ class DataverseReportPlugin extends ReportPlugin
         $form->initData();
         if ($request->isPost($request)) {
             $form->readInputData();
-            if ($form->validateReportData()) {
+            if ($form->validate()) {
                 $form->generateReport();
             }
         } else {
