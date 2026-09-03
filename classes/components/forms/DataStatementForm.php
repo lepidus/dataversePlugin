@@ -26,7 +26,6 @@ class DataStatementForm extends FormComponent
 
         $dataStatementOptions = $this->getDataStatementOptions($page);
 
-        $this->dataversePluginApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'dataverse');
         $vocabApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'vocabs');
 
         $this->addField(new FieldDataStatementTypes('dataStatementTypes', [
@@ -66,20 +65,6 @@ class DataStatementForm extends FormComponent
                 'value' => $this->hasDataset($publication),
             ]));
         }
-    }
-
-    public function getConfig()
-    {
-        $config = parent::getConfig();
-
-        $config = array_merge(
-            $config,
-            [
-                'dataversePluginApiUrl' => $this->dataversePluginApiUrl
-            ]
-        );
-
-        return $config;
     }
 
     private function getFormLocales($context): array

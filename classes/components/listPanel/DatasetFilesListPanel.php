@@ -10,7 +10,6 @@ class DatasetFilesListPanel extends ListPanel
 {
     public $addFileLabel = '';
     public $additionalInstructions = '';
-    public $dataversePluginApiUrl = '';
     public $fileListUrl = '';
     public $fileActionUrl = '';
     public $isLoading = false;
@@ -28,7 +27,6 @@ class DatasetFilesListPanel extends ListPanel
             [
                 'addFileLabel' => $this->addFileLabel,
                 'additionalInstructions' => $this->additionalInstructions,
-                'dataversePluginApiUrl' => $this->dataversePluginApiUrl,
                 'fileListUrl' => $this->fileListUrl,
                 'fileActionUrl' => $this->fileActionUrl,
                 'addFileModalTitle' => $this->addFileModalTitle,

@@ -201,6 +201,17 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $this->assertEmpty($this->packager->getDatasetMetadata());
     }
 
+    public function testNativeApiPackagerIgnoresEmptyMetadata(): void
+    {
+        $dataset = new Dataset();
+        $dataset->setKeywords([]);
+
+        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $this->packager->loadPackageData();
+
+        $this->assertEmpty($this->packager->getDatasetMetadata());
+    }
+
     public function testNativeApiPackagerCreatesDatasetJson(): void
     {
         $dataset = new Dataset();

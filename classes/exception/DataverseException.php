@@ -9,17 +9,16 @@ class DataverseException extends Exception
 {
     public const AUTH_ERROR_STATUS_CODE = 401;
     private const UNAVAILABLE_STATUS_CODE = 503;
+    private const API_ERROR_STATUS_CODES = [400, 403, 404, 409, 422];
     private const AUTHENTICATION_ERROR_MESSAGE = 'plugins.generic.dataverse.error.exception.invalidToken';
     private const SERVICE_UNAVAILABLE_MESSAGE = 'plugins.generic.dataverse.error.exception.unavailable';
+
+    private bool $hasApiMessage = false;
 
     public static function fromTransferException(TransferException $exception): self
     {
         if (!method_exists($exception, 'hasResponse') || !$exception->hasResponse()) {
-            return new self(
-                __(self::SERVICE_UNAVAILABLE_MESSAGE),
-                self::UNAVAILABLE_STATUS_CODE,
-                $exception
-            );
+            return self::serviceUnavailable($exception);
         }
 
         $response = $exception->getResponse();
@@ -34,9 +33,19 @@ class DataverseException extends Exception
             );
         }
 
-        if (!is_null($message) && in_array($statusCode, [400, 404, 409, 422], true)) {
-            return new self($message, $statusCode, $exception);
+        if (!is_null($message) && in_array($statusCode, self::API_ERROR_STATUS_CODES, true)) {
+            $apiError = new self($message, $statusCode, $exception);
+            $apiError->hasApiMessage = true;
+
+            return $apiError;
         }
+
+        return self::serviceUnavailable($exception);
+    }
+
+    private static function serviceUnavailable(TransferException $exception): self
+    {
+        error_log('Dataverse service unavailable: ' . $exception->getMessage());
 
         return new self(
             __(self::SERVICE_UNAVAILABLE_MESSAGE),
@@ -50,6 +59,13 @@ class DataverseException extends Exception
         return $this->getCode() === self::AUTH_ERROR_STATUS_CODE
             ? 'plugins.generic.dataverse.error.invalidToken'
             : 'plugins.generic.dataverse.error.unavailable';
+    }
+
+    public function getUserMessage(): string
+    {
+        return $this->hasApiMessage
+            ? $this->getMessage()
+            : __($this->getUserMessageKey());
     }
 
     private static function getJsonErrorMessage($response): ?string

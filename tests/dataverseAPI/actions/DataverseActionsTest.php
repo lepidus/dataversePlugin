@@ -259,8 +259,31 @@ class DataverseActionsTest extends PKPTestCase
             $actions->nativeAPIRequest('GET', 'test');
             $this->fail('A DataverseException was expected');
         } catch (DataverseException $exception) {
-            $this->assertSame(503, $exception->getCode());
-            $this->assertSame('plugins.generic.dataverse.error.unavailable', $exception->getUserMessageKey());
+            $this->assertSame(403, $exception->getCode());
+            $this->assertSame('User is not permitted', $exception->getUserMessage());
+            $this->assertNotSame(__('plugins.generic.dataverse.error.exception.invalidToken'), $exception->getMessage());
+        }
+    }
+
+    public function testJsonValidationErrorKeepsMessageReportedByDataverse(): void
+    {
+        $mockHandler = new MockHandler([
+            new RequestException(
+                '403 Forbidden',
+                new Request('POST', 'test'),
+                new Response(403, ['Content-Type' => 'application/json'], '{"status":"ERROR","message":"Validation Failed: Subject is required."}')
+            )
+        ]);
+        $guzzleClient = new Client(['handler' => $mockHandler]);
+
+        $actions = new ConcreteDataverseActions($this->configuration, $guzzleClient);
+
+        try {
+            $actions->nativeAPIRequest('POST', 'test');
+            $this->fail('A DataverseException was expected');
+        } catch (DataverseException $exception) {
+            $this->assertSame(403, $exception->getCode());
+            $this->assertSame('Validation Failed: Subject is required.', $exception->getUserMessage());
         }
     }
 
@@ -282,6 +305,7 @@ class DataverseActionsTest extends PKPTestCase
         } catch (DataverseException $exception) {
             $this->assertSame(503, $exception->getCode());
             $this->assertSame(__('plugins.generic.dataverse.error.exception.unavailable'), $exception->getMessage());
+            $this->assertSame(__('plugins.generic.dataverse.error.unavailable'), $exception->getUserMessage());
         }
     }
 }

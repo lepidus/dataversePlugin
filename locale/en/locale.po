@@ -143,9 +143,6 @@ msgstr "It is mandatory to send a README file, in PDF, MD or TXT format, to acco
 msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
 msgstr "The research data cannot consist solely of the README file"
 
-msgid "plugins.generic.dataverse.error.getFailed"
-msgstr "Error getting research data to Dataverse: {$error}"
-
 msgid "plugins.generic.dataverse.error.exception.unavailable"
 msgstr "Dataverse service is temporarily unavailable"
 
@@ -309,6 +306,9 @@ msgstr "Delete and send email"
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publish research data"
 
+msgid "plugins.generic.dataverse.researchData.publishing"
+msgstr "Publishing research data. This may take a few moments..."
+
 msgid "plugins.generic.dataverse.researchData.label.draft"
 msgstr "Draft"
 
@@ -323,9 +323,6 @@ msgstr "Replication data for: "
 
 msgid "plugins.generic.dataverse.metadataForm.loadingDataset"
 msgstr "Loading research data information..."
-
-msgid "plugins.generic.dataverse.metadataForm.loadingDatasetCitation"
-msgstr "Loading citation..."
 
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Title"

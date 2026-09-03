@@ -46,7 +46,7 @@ class NativeAPIDatasetPackager
 
         foreach ($datasetData as $attr => $value) {
             $metadataField = $this->getMetadataField($attr);
-            if (empty($metadataField) || is_null($value)) {
+            if (empty($metadataField) || $value === null || $value === '' || $value === []) {
                 continue;
             }
             switch ($metadataField['typeClass']) {

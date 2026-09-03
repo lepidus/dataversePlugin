@@ -146,9 +146,6 @@ msgstr "É obrigatório o envio de um arquivo README, em formato PDF, MD ou TXT,
 msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
 msgstr "Os dados da pesquisa não podem ser constituídos apenas pelo arquivo README"
 
-msgid "plugins.generic.dataverse.error.getFailed"
-msgstr "Erro ao obter dados de pesquisa no Dataverse: {$error}"
-
 msgid "plugins.generic.dataverse.error.exception.unavailable"
 msgstr "O serviço Dataverse está temporariamente indisponível"
 
@@ -312,6 +309,9 @@ msgstr "Excluir e enviar e-mail"
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publicar dados de pesquisa"
 
+msgid "plugins.generic.dataverse.researchData.publishing"
+msgstr "Publicando os dados de pesquisa. Isso pode levar alguns instantes..."
+
 msgid "plugins.generic.dataverse.researchData.label.draft"
 msgstr "Esboço"
 
@@ -326,9 +326,6 @@ msgstr "Dados de replicação para: "
 
 msgid "plugins.generic.dataverse.metadataForm.loadingDataset"
 msgstr "Carregando informações dos dados de pesquisa..."
-
-msgid "plugins.generic.dataverse.metadataForm.loadingDatasetCitation"
-msgstr "Carregando citação..."
 
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Título"
