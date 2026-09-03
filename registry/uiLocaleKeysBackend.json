@@ -20,6 +20,7 @@
   "plugins.generic.dataverse.researchData.metadata",
   "plugins.generic.dataverse.researchData.noResearchData",
   "plugins.generic.dataverse.researchData.publish",
+  "plugins.generic.dataverse.researchData.publishing",
   "plugins.generic.dataverse.researchData.uploadDisabled",
   "plugins.generic.dataverse.researchData.uploadResearchData",
   "semicolon",

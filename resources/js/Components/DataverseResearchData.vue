@@ -1,8 +1,8 @@
 <template>
 	<div class="dataverseResearchData" data-cy="dataverse-research-data">
-		<div v-if="isLoading" class="dataverseResearchData__loading">
+		<div v-if="isBusy" class="dataverseResearchData__loading">
 			<Spinner />
-			{{ t('plugins.generic.dataverse.metadataForm.loadingDataset') }}
+			{{ busyMessage }}
 		</div>
 		<template v-else-if="state">
 			<div
@@ -125,6 +125,9 @@ const {useFetch} = pkp.modules.useFetch;
 const {useUrl} = pkp.modules.useUrl;
 const {useDataChanged} = pkp.modules.useDataChanged;
 
+const PUBLISH_REFRESH_DELAY = 2500;
+const PUBLISH_REFRESH_ATTEMPTS = 4;
+
 const props = defineProps({
 	submission: {type: Object, required: true},
 	publication: {type: Object, required: true},
@@ -148,8 +151,20 @@ const metadataForm = ref(null);
 const filesListPanel = ref(null);
 
 const actionUrl = ref('');
-const {fetch: sendPut} = useFetch(actionUrl, {method: 'PUT'});
+const {fetch: sendPut, isSuccess: putSucceeded} = useFetch(actionUrl, {
+	method: 'PUT',
+});
 const {fetch: sendDelete} = useFetch(actionUrl, {method: 'DELETE'});
+
+const isPublishing = ref(false);
+
+const isBusy = computed(() => isLoading.value || isPublishing.value);
+
+const busyMessage = computed(() =>
+	isPublishing.value
+		? t('plugins.generic.dataverse.researchData.publishing')
+		: t('plugins.generic.dataverse.metadataForm.loadingDataset'),
+);
 
 const canDeposit = computed(
 	() => props.canEdit && props.publication.status !== pkp.const.STATUS_PUBLISHED,
@@ -227,7 +242,6 @@ function openDeleteDatasetModal() {
 		title: t('plugins.generic.dataverse.researchData.delete'),
 		message: t('plugins.generic.dataverse.modal.confirmDatasetDelete'),
 		label: t('plugins.generic.dataverse.researchData.delete'),
-		isWarnable: true,
 		url: state.value.datasetUrl,
 		method: 'DELETE',
 	});
@@ -238,31 +252,67 @@ function openDisassociateDatasetDialog() {
 		title: t('plugins.generic.dataverse.researchData.disassociate'),
 		message: t('plugins.generic.dataverse.researchData.disassociate.description'),
 		label: t('plugins.generic.dataverse.researchData.disassociate'),
-		isWarnable: true,
 		url: state.value.disassociateUrl,
 		method: 'PUT',
 	});
 }
 
 function openPublishDatasetDialog() {
-	confirmDatasetAction({
+	openDialog({
 		title: t('plugins.generic.dataverse.researchData.publish'),
 		message: state.value.publishConfirmMessage,
-		label: t('common.yes'),
-		isWarnable: false,
-		url: state.value.publishUrl,
-		method: 'PUT',
+		actions: [
+			{
+				label: t('common.yes'),
+				callback: async (close) => {
+					close();
+					await publishDataset(state.value.publishUrl);
+				},
+			},
+			{
+				label: t('common.cancel'),
+				callback: (close) => close(),
+			},
+		],
 	});
 }
 
-function confirmDatasetAction({title, message, label, isWarnable, url, method}) {
+async function publishDataset(url) {
+	isPublishing.value = true;
+
+	try {
+		actionUrl.value = url;
+		await sendPut();
+
+		if (!putSucceeded.value) {
+			return;
+		}
+
+		for (let attempt = 0; attempt < PUBLISH_REFRESH_ATTEMPTS; attempt++) {
+			await new Promise((resolve) =>
+				setTimeout(resolve, PUBLISH_REFRESH_DELAY),
+			);
+			await load();
+
+			if (state.value?.datasetIsPublished) {
+				break;
+			}
+		}
+	} finally {
+		isPublishing.value = false;
+	}
+
+	await triggerDataChange();
+}
+
+function confirmDatasetAction({title, message, label, url, method}) {
 	openDialog({
 		title,
 		message,
 		actions: [
 			{
 				label,
-				isWarnable,
+				isWarnable: true,
 				callback: async (close) => {
 					close();
 					actionUrl.value = url;
@@ -282,6 +332,18 @@ load();
 </script>
 
 <style lang="css">
+.dataverseResearchData > .pkpHeader {
+	padding-inline: 0;
+}
+
+.dataverseResearchData > .pkpHeader > .pkpHeader__title > h2 {
+	line-height: 2.25rem;
+}
+
+.dataverseResearchData > .pkpHeader > .pkpHeader__actions {
+	margin-top: 0;
+}
+
 .dataverseResearchData__loading {
 	display: flex;
 	align-items: center;

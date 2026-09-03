@@ -306,6 +306,9 @@ msgstr "Delete and send email"
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publish research data"
 
+msgid "plugins.generic.dataverse.researchData.publishing"
+msgstr "Publishing research data. This may take a few moments..."
+
 msgid "plugins.generic.dataverse.researchData.label.draft"
 msgstr "Draft"
 

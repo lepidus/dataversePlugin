@@ -309,6 +309,9 @@ msgstr "Excluir e enviar e-mail"
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publicar dados de pesquisa"
 
+msgid "plugins.generic.dataverse.researchData.publishing"
+msgstr "Publicando os dados de pesquisa. Isso pode levar alguns instantes..."
+
 msgid "plugins.generic.dataverse.researchData.label.draft"
 msgstr "Esboço"
 

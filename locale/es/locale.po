@@ -309,6 +309,9 @@ msgstr "Eliminar y enviar correo electrónico"
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publicar datos de investigación"
 
+msgid "plugins.generic.dataverse.researchData.publishing"
+msgstr "Publicando los datos de investigación. Esto puede tardar unos momentos..."
+
 msgid "plugins.generic.dataverse.researchData.label.draft"
 msgstr "Versión preliminar"
 
