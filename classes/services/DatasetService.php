@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use APP\notification\Notification;
 use APP\notification\NotificationManager;
 use APP\log\event\SubmissionEventLogEntry;
-use PKP\log\SubmissionEmailLogEntry;
+use PKP\log\SubmissionEmailLogEventType;
 use APP\plugins\generic\dataverse\classes\services\DataverseService;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
@@ -280,18 +280,24 @@ class DatasetService extends DataverseService
     ): void {
         $context = $request->getContext();
         $datasetContact = $dataset->getContact();
-        $emailTemplate = Repo::emailTemplate()->getByKey(
-            $context->getId(),
-            'DATASET_DELETE_NOTIFICATION'
-        );
 
         $email = new Mailable();
         $email->from($context->getData('contactEmail'), $context->getData('contactName'));
         $email->to([['name' => $datasetContact->getName(), 'email' => $datasetContact->getEmail()]]);
-        $email->subject($emailTemplate->getLocalizedData('subject'));
         $email->body($deleteMessage);
 
         try {
+            $emailTemplate = Repo::emailTemplate()->getByKey(
+                $context->getId(),
+                'DATASET_DELETE_NOTIFICATION'
+            );
+
+            if (is_null($emailTemplate)) {
+                throw new \Exception('Email template DATASET_DELETE_NOTIFICATION not found');
+            }
+
+            $email->subject($emailTemplate->getLocalizedData('subject'));
+
             Mail::send($email);
             $this->logEmail($request, $email, $submission);
         } catch (\Exception $e) {
@@ -304,12 +310,11 @@ class DatasetService extends DataverseService
         }
     }
 
-    private function logEmail($request, $email, $submission): void
+    private function logEmail(?Request $request, Mailable $email, Submission $submission): void
     {
-        $user = ($request) ? $request->getUser() : null;
-        $submissionEmailLogDao = DAORegistry::getDAO('SubmissionEmailLogDAO');
-        $submissionEmailLogDao->logMailable(
-            SubmissionEmailLogEntry::SUBMISSION_EMAIL_EDITOR_NOTIFY_AUTHOR,
+        $user = $request ? $request->getUser() : null;
+        Repo::emailLogEntry()->logMailable(
+            SubmissionEmailLogEventType::EDITOR_NOTIFY_AUTHOR,
             $email,
             $submission,
             $user
