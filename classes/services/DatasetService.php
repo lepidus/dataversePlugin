@@ -280,18 +280,24 @@ class DatasetService extends DataverseService
     ): void {
         $context = $request->getContext();
         $datasetContact = $dataset->getContact();
-        $emailTemplate = Repo::emailTemplate()->getByKey(
-            $context->getId(),
-            'DATASET_DELETE_NOTIFICATION'
-        );
 
         $email = new Mailable();
         $email->from($context->getData('contactEmail'), $context->getData('contactName'));
         $email->to([['name' => $datasetContact->getName(), 'email' => $datasetContact->getEmail()]]);
-        $email->subject($emailTemplate->getLocalizedData('subject'));
         $email->body($deleteMessage);
 
         try {
+            $emailTemplate = Repo::emailTemplate()->getByKey(
+                $context->getId(),
+                'DATASET_DELETE_NOTIFICATION'
+            );
+
+            if (is_null($emailTemplate)) {
+                throw new \Exception('Email template DATASET_DELETE_NOTIFICATION not found');
+            }
+
+            $email->subject($emailTemplate->getLocalizedData('subject'));
+
             Mail::send($email);
             $this->logEmail($request, $email, $submission);
         } catch (\Exception $e) {
