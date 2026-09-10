@@ -10,7 +10,7 @@ use PKP\db\DAORegistry;
 use PKP\security\Role;
 use PKP\mail\Mailable;
 use Illuminate\Support\Facades\Mail;
-use APP\notification\Notification;
+use PKP\notification\Notification;
 use APP\notification\NotificationManager;
 use APP\log\event\SubmissionEventLogEntry;
 use PKP\log\SubmissionEmailLogEventType;

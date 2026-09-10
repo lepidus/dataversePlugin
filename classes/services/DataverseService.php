@@ -7,7 +7,7 @@ use APP\core\Application;
 use APP\log\event\SubmissionEventLogEntry;
 use PKP\core\Core;
 use PKP\security\Validation;
-use APP\notification\Notification;
+use PKP\notification\Notification;
 use APP\notification\NotificationManager;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 
