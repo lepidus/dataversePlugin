@@ -56,7 +56,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
     public function testFilterSubmissionByContexts(): void
     {
         $submission = $this->createTestSubmission($this->context, [
-            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
+            'submissionProgress' => '',
         ]);
 
         $query = $this->getQueryBuilder()
@@ -69,14 +69,34 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         );
     }
 
+    public function testIncompleteSubmissionsAreNotRetrieved(): void
+    {
+        $completeSubmission = $this->createTestSubmission($this->context, [
+            'submissionProgress' => '',
+        ]);
+
+        $this->createTestSubmission($this->context, [
+            'submissionProgress' => 'details',
+        ]);
+
+        $query = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->getQuery();
+
+        $this->assertEquals(
+            [$completeSubmission->getId()],
+            $query->get()->pluck('submission_id')->all()
+        );
+    }
+
     public function testFilterSubmissionByDecisions(): void
     {
         $acceptedSubmission = $this->createTestSubmission($this->context, [
-            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
+            'submissionProgress' => '',
         ]);
 
         $declinedSubmission = $this->createTestSubmission($this->context, [
-            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
+            'submissionProgress' => '',
             'status' => Submission::STATUS_DECLINED
         ]);
 
@@ -119,11 +139,11 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
     public function testGetSubmissionsWithDataset(): void
     {
         $submission = $this->createTestSubmission($this->context, [
-            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
+            'submissionProgress' => '',
         ]);
 
         $datasetSubmission = $this->createTestSubmission($this->context, [
-            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
+            'submissionProgress' => '',
         ]);
 
         $study = Repo::dataverseStudy()->newDataObject();
@@ -150,7 +170,7 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
     public function testCountDatasetsWithDepositError(): void
     {
         $submission = $this->createTestSubmission($this->context, [
-            'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
+            'submissionProgress' => '',
         ]);
 
         $depositErrorEntry = Repo::eventLog()->newDataObject([
