@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use PKP\tests\DatabaseTestCase;
 use APP\core\Application;
 use PKP\core\Core;
@@ -53,6 +54,27 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
         return $submission;
     }
 
+    private function addPublicationVersion(Submission $submission): void
+    {
+        DB::table('publications')->insert([
+            'submission_id' => $submission->getId(),
+            'status' => Submission::STATUS_QUEUED,
+            'version' => 2,
+            'seq' => 0,
+        ]);
+    }
+
+    private function addDecision(Submission $submission, int $decision): void
+    {
+        $decision = Repo::decision()->newDataObject([
+            'decision' => $decision,
+            'submissionId' => $submission->getId(),
+            'dateDecided' => date(Core::getCurrentDate()),
+            'editorId' => 1,
+        ]);
+        Repo::decision()->dao->insert($decision);
+    }
+
     public function testFilterSubmissionByContexts(): void
     {
         $submission = $this->createTestSubmission($this->context, [
@@ -100,21 +122,8 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             'status' => Submission::STATUS_DECLINED
         ]);
 
-        $acceptDecision = Repo::decision()->newDataObject([
-            'decision' => Decision::ACCEPT,
-            'submissionId' => $acceptedSubmission->getId(),
-            'dateDecided' => date(Core::getCurrentDate()),
-            'editorId' => 1,
-        ]);
-        Repo::decision()->dao->insert($acceptDecision);
-
-        $declineDecision = Repo::decision()->newDataObject([
-            'decision' => Decision::DECLINE,
-            'submissionId' => $declinedSubmission->getId(),
-            'dateDecided' => date(Core::getCurrentDate()),
-            'editorId' => 1,
-        ]);
-        Repo::decision()->dao->insert($declineDecision);
+        $this->addDecision($acceptedSubmission, Decision::ACCEPT);
+        $this->addDecision($declinedSubmission, Decision::DECLINE);
 
         $query = $this->getQueryBuilder()
             ->filterByContexts($this->context->getId());
@@ -134,6 +143,39 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             $declinedSubmission->getId(),
             $declinedQuery->get()->first()->submission_id
         );
+    }
+
+    public function testVersionedSubmissionIsCountedOnce(): void
+    {
+        $submission = $this->createTestSubmission($this->context, [
+            'submissionProgress' => '',
+        ]);
+        $this->addPublicationVersion($submission);
+
+        $query = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->getQuery();
+
+        $this->assertEquals(1, $query->count());
+    }
+
+    public function testSubmissionWithRepeatedDecisionIsCountedOnce(): void
+    {
+        $submission = $this->createTestSubmission($this->context, [
+            'submissionProgress' => '',
+            'status' => Submission::STATUS_DECLINED
+        ]);
+
+        foreach ([Decision::INITIAL_DECLINE, Decision::DECLINE] as $decision) {
+            $this->addDecision($submission, $decision);
+        }
+
+        $query = $this->getQueryBuilder()
+            ->filterByContexts($this->context->getId())
+            ->filterByDecisions([Decision::DECLINE, Decision::INITIAL_DECLINE])
+            ->getQuery();
+
+        $this->assertEquals(1, $query->count());
     }
 
     public function testGetSubmissionsWithDataset(): void
