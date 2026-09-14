@@ -32,15 +32,12 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
             $response = $this->nativeAPIRequest('GET', $uri);
 
             $jsonContent = json_decode($response->getBody(), true);
-            $citation = $jsonContent['datasetVersion']['citation'];
-            $persistentUrl = $jsonContent['persistentUrl'];
-            $citation = str_replace(
-                $persistentUrl,
-                '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>',
-                $citation
+            $citation = $this->formatCitation(
+                $jsonContent['datasetVersion']['citation'],
+                $jsonContent['persistentUrl']
             );
 
-            return ['datasetIsPublished' => true, 'citation' => preg_replace('/,+.UNF[^]]+]/', '', $citation)];
+            return ['datasetIsPublished' => true, 'citation' => $citation];
         } else {
             return ['datasetIsPublished' => false, 'citation' => $this->getSWORDCitation($persistentId)];
         }
@@ -57,13 +54,20 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         $bibliographicCitation = $doc->getElementsByTagName('bibliographicCitation')->item(0)->nodeValue;
         $persistentUrl = $doc->getElementsByTagName('link')->item(4)->getAttribute('href');
 
-        $citation = str_replace(
-            $persistentUrl,
-            '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>',
-            $bibliographicCitation
-        );
+        return $this->formatCitation($bibliographicCitation, $persistentUrl);
+    }
 
-        return preg_replace('/,+.UNF[^]]+]/', '', $citation);
+    private function formatCitation(string $citation, string $persistentUrl): string
+    {
+        $citation = preg_replace('/,+.UNF[^]]+]/', '', $citation);
+        $escapedCitation = htmlspecialchars($citation, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $escapedPersistentUrl = htmlspecialchars($persistentUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+        return str_replace(
+            $escapedPersistentUrl,
+            '<a href="' . $escapedPersistentUrl . '">' . $escapedPersistentUrl . '</a>',
+            $escapedCitation
+        );
     }
 
     public function getDatasetLocks(int $datasetId): array

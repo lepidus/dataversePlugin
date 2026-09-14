@@ -34,7 +34,7 @@ class DatasetHandler extends APIHandler
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
                     'handler' => array($this, 'downloadDatasetFile'),
-                    'roles' => $roles
+                    'roles' => [...$roles, ROLE_ID_REVIEWER]
                 ),
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/citation',
@@ -111,7 +111,7 @@ class DatasetHandler extends APIHandler
         return parent::authorize($request, $args, $roleAssignments);
     }
 
-    private function userHasManagerRole(): bool
+    private function userHasRoles(array $roles): bool
     {
         $request = Application::get()->getRequest();
         $user = $request->getUser();
@@ -122,7 +122,17 @@ class DatasetHandler extends APIHandler
         }
 
         $roleDao = DAORegistry::getDAO('RoleDAO');
-        return (bool) $roleDao->userHasRole($context->getId(), $user->getId(), self::MANAGER_ROLES);
+        return (bool) $roleDao->userHasRole($context->getId(), $user->getId(), $roles);
+    }
+
+    private function userHasManagerRole(): bool
+    {
+        return $this->userHasRoles(self::MANAGER_ROLES);
+    }
+
+    private function userHasReviewerRole(): bool
+    {
+        return $this->userHasRoles([ROLE_ID_REVIEWER]);
     }
 
     private function userIsAssignedToSubmission(int $submissionId): bool
@@ -491,11 +501,38 @@ class DatasetHandler extends APIHandler
     {
         $queryParams = $slimRequest->getQueryParams();
         $fileId = (int) $queryParams['fileId'];
-        $filename = $queryParams['filename'];
+        $dataverseStudyDAO = DAORegistry::getDAO('DataverseStudyDAO');
+        $study = $dataverseStudyDAO->getStudy((int) $args['studyId']);
 
-        $dataverseClient = new DataverseClient();
-        $dataverseClient->getDatasetFileActions()->download($fileId, $filename);
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
 
-        return $response->withStatus(200);
+        $submissionId = $study->getSubmissionId();
+        if (!$this->userHasManagerRole()
+            && !$this->userHasReviewerRole()
+            && !$this->userIsAssignedToSubmission($submissionId)
+        ) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
+        }
+
+        $filesActions = (new DataverseClient())->getDatasetFileActions();
+        try {
+            $datasetFiles = $filesActions->getByDatasetId($study->getPersistentId());
+        } catch (DataverseException $e) {
+            error_log('Error getting dataset files: ' . $e->getMessage());
+            return $response
+                ->withStatus($e->getCode())
+                ->withJsonError($e->getUserMessageKey());
+        }
+
+        foreach ($datasetFiles as $datasetFile) {
+            if ($datasetFile->getId() == $fileId) {
+                $filesActions->download($fileId, $datasetFile->getFileName());
+                return $response->withStatus(200);
+            }
+        }
+
+        return $response->withStatus(403)->withJsonError('api.403.unauthorized');
     }
 }
