@@ -9,8 +9,6 @@ use APP\submission\Submission;
 
 class DataverseReportQueryBuilder
 {
-    public const SUBMISSION_PROGRESS_COMPLETE = 0;
-
     protected $contextIds = [];
     protected $decisions = [];
 
@@ -35,8 +33,11 @@ class DataverseReportQueryBuilder
         }
 
         if (!empty($this->decisions)) {
-            $query->leftJoin('edit_decisions as ed', 's.submission_id', '=', 'ed.submission_id')
-                ->whereIn('ed.decision', $this->decisions);
+            $query->whereIn('s.submission_id', function ($subQuery) {
+                $subQuery->select('ed.submission_id')
+                    ->from('edit_decisions as ed')
+                    ->whereIn('ed.decision', $this->decisions);
+            });
 
             $declineDecisions = [Decision::DECLINE, Decision::INITIAL_DECLINE];
             if (count(array_intersect($declineDecisions, $this->decisions))) {
@@ -46,9 +47,7 @@ class DataverseReportQueryBuilder
             }
         }
 
-        $query->leftJoin('publications as pi', 'pi.submission_id', '=', 's.submission_id');
-
-        $query->where('s.submission_progress', '=', self::SUBMISSION_PROGRESS_COMPLETE);
+        $query->where('s.submission_progress', '');
 
         return $query;
     }
