@@ -28,8 +28,11 @@ class DatasetReviewDispatcher extends DataverseDispatcher
             'reviewerreviewstep3form::display' => '/<div[^>]+class="section[^>]+>/'
         ];
 
+        $dataStatementService = new DataStatementService();
+
         $templateMgr->assign([
-            'allDataStatementTypes' => $this->getDataStatementTypes(),
+            'allDataStatementTypes' => $this->getDataStatementTypes($dataStatementService),
+            'dataStatementConsts' => $dataStatementService->getConstantsForTemplates(),
             'publication' => $submission->getCurrentPublication(),
             'reviewStepPattern' => $mapStepPattern[$hookName]
         ]);
@@ -56,9 +59,8 @@ class DatasetReviewDispatcher extends DataverseDispatcher
         return $output;
     }
 
-    private function getDataStatementTypes(): array
+    private function getDataStatementTypes(DataStatementService $dataStatementService): array
     {
-        $dataStatementService = new DataStatementService();
         $allDataStatementTypes = $dataStatementService->getDataStatementTypes();
         $dataverseName = $dataStatementService->getDataverseName();
 

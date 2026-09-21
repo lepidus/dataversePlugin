@@ -4,7 +4,7 @@
             {foreach from=$publication->getData('dataStatementTypes') item=type}
                 <li>
                     <p>{$allDataStatementTypes[$type]}
-                        {if $type === $smarty.const.DATA_STATEMENT_TYPE_REPO_AVAILABLE}
+                        {if $type === $dataStatementConsts['DATA_STATEMENT_TYPE_REPO_AVAILABLE']}
                             <ul>
                                 {foreach from=$publication->getData('dataStatementUrls') item=url}
                                     <li>
@@ -12,7 +12,7 @@
                                     </li>
                                 {/foreach}
                             </ul>
-                        {else if $type === $smarty.const.DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE}
+                        {else if $type === $dataStatementConsts['DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE']}
                             <ul>
                                 <li>{$publication->getLocalizedData('dataStatementReason')|escape}</li>
                             </ul>
