@@ -8,6 +8,7 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetIdentifier;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetActionsInterface;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\dataverseAPI\packagers\NativeAPIDatasetPackager;
 use APP\plugins\generic\dataverse\classes\factories\JsonDatasetFactory;
 
@@ -21,7 +22,10 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         );
         $response = $this->nativeAPIRequest('GET', $uri);
 
-        $datasetFactory = new JsonDatasetFactory($response->getBody());
+        $datasetFactory = new JsonDatasetFactory(
+            $response->getBody(),
+            new DataverseClient($this->configuration, $this->contextId)
+        );
         return $datasetFactory->getDataset();
     }
 
