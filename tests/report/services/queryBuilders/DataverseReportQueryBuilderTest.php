@@ -60,7 +60,6 @@ class DataverseReportQueryBuilderTest extends DatabaseTestCase
             'submission_id' => $submission->getId(),
             'status' => Submission::STATUS_QUEUED,
             'version' => 2,
-            'seq' => 0,
         ]);
     }
 
