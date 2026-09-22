@@ -8,7 +8,7 @@ class DataverseResponse
     private $message;
     private $body;
 
-    public function __construct(int $statusCode, string $message, string $body = null)
+    public function __construct(int $statusCode, string $message, ?string $body = null)
     {
         $this->statusCode = $statusCode;
         $this->message = $message;
