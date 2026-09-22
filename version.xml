@@ -9,8 +9,8 @@
 <version>
 	<application>dataverse</application>
 	<type>plugins.generic</type>
-	<release>2.8.14.1</release>
-	<date>2026-09-14</date>
+	<release>2.8.15.0</release>
+	<date>2026-09-22</date>
 	<lazy-load>1</lazy-load>
 	<class>DataversePlugin</class>
 </version>

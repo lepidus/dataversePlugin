@@ -112,6 +112,11 @@ class NativeAPIDatasetPackager
                 'multiple' => true,
                 'typeClass' => 'compound'
             ],
+            'dateOfDeposit' => [
+                'typeName' => 'dateOfDeposit',
+                'multiple' => false,
+                'typeClass' => 'primitive'
+            ],
             'depositor' => [
                 'typeName' => 'depositor',
                 'multiple' => false,
