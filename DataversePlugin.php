@@ -45,14 +45,14 @@ class DataversePlugin extends GenericPlugin implements HasTaskScheduler
         $dataverseConfigurationDAO = new DataverseConfigurationDAO();
         DAORegistry::registerDAO('DataverseConfigurationDAO', $dataverseConfigurationDAO);
 
-        new CrossrefDispatcher($this);
-
         $context = Application::get()->getRequest()->getContext();
 
         if (!is_null($context) and $dataverseConfigurationDAO->hasConfiguration($context->getId())) {
             $this->loadDispatcherClasses();
             PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
         }
+
+        new CrossrefDispatcher($this);
 
         return $success;
     }

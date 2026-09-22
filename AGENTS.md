@@ -113,11 +113,13 @@ the remaining dispatchers and the report sub-plugin only after passing three gat
 Any of the three explains a "the plugin does nothing" report; check them before suspecting the hooks
 themselves. Gate 2 in particular means plugin code must not assume a context exists.
 
-`CrossrefDispatcher` sits **before** the gates on purpose: since 3.5 the Crossref deposit made from the DOIs
+`CrossrefDispatcher` sits **outside** the gates on purpose: since 3.5 the Crossref deposit made from the DOIs
 page is queued (`lib/pkp/jobs/doi/DepositSubmission`) and runs in the queue worker, where gate 2 would drop it
 and the dataset relation would never reach the deposited XML. It therefore resolves everything it needs — the
-context, the plugin's enabled state and the Dataverse configuration — from the DOIs found in the deposit XML
-instead of from the request, and is the one dispatcher that must keep working without a request context.
+context, the plugin's enabled state and the Dataverse configuration — from the `doi_data` DOIs of the deposit
+XML instead of from the request, and is the one dispatcher that must keep working without a request context.
+It is instantiated *after* the gated block, so a throw from its own `Hook::add()` calls cannot take the gated
+dispatchers and the report sub-plugin down with it.
 
 A fourth cause looks identical from the outside: `Hook::add()` throws for hooks listed in
 `Hook::addUnsupportedHooks()`, and `PluginRegistry::register()` swallows the exception. Registration then stops

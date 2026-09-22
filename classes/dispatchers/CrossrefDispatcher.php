@@ -48,9 +48,13 @@ class CrossrefDispatcher extends DataverseDispatcher
     {
         $dataverseDao = new DataverseDAO();
 
-        foreach ($depositXml->getElementsByTagName('doi') as $doiNode) {
-            $contextId = $dataverseDao->getContextIdByDoi($doiNode->nodeValue);
+        foreach ($depositXml->getElementsByTagName('doi_data') as $doiDataNode) {
+            $doiNode = $doiDataNode->getElementsByTagName('doi')->item(0);
+            if (is_null($doiNode)) {
+                continue;
+            }
 
+            $contextId = $dataverseDao->getContextIdByDoi($doiNode->nodeValue);
             if (!is_null($contextId)) {
                 return $contextId;
             }
