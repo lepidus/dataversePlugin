@@ -52,6 +52,12 @@
           <day>09</day>
           <year>2026</year>
         </publication_date>
+        <program xmlns="http://www.crossref.org/relations.xsd" name="relations">
+          <related_item>
+            <description>Dataset deposited in repository</description>
+            <inter_work_relation relationship-type="isSupplementedBy" identifier-type="uri">https://doi.org/10.1234/zenodo.98765</inter_work_relation>
+          </related_item>
+        </program>
         <doi_data>
           <doi>10.1234/PublicKnowledge.17</doi>
           <resource>http://localhost:8000/index.php/publicknowledge/article/view/17</resource>

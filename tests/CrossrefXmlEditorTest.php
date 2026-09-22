@@ -127,35 +127,33 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
 
     public function testAddsDatasetRelationToWorkNode(): void
     {
-        $worksXml = $this->openTestXml('work_node.xml');
         $doi = preg_replace('/^doi:/i', '', $this->persistentId);
 
-        $noPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(0);
-        $this->xmlEditor->addDatasetRelationToWorkNode($noPreviousRelWorkNode, $doi);
-
-        $withPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(1);
-        $this->xmlEditor->addDatasetRelationToWorkNode($withPreviousRelWorkNode, $doi);
-
-        $resultXml = $worksXml->saveXML();
-        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/work_node.xml');
-
-        $this->assertXmlStringEqualsXmlString($expectedXml, $resultXml);
+        $this->assertAddingOfRelationToWorkNodeMatchesExpected(
+            'preprint_deposit_versioned.xml',
+            'posted_content',
+            $doi,
+            false,
+            'preprint_deposit_versioned.xml'
+        );
     }
 
     public function testAddsExternalDatasetRelationToWorkNode(): void
     {
-        $worksXml = $this->openTestXml('work_node.xml');
-
-        $noPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(0);
-        $this->xmlEditor->addDatasetRelationToWorkNode($noPreviousRelWorkNode, $this->externalDatasetUrl, true);
-
-        $withPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(1);
-        $this->xmlEditor->addDatasetRelationToWorkNode($withPreviousRelWorkNode, $this->externalDatasetUrl, true);
-
-        $resultXml = $worksXml->saveXML();
-        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/work_node_external.xml');
-
-        $this->assertXmlStringEqualsXmlString($expectedXml, $resultXml);
+        $this->assertAddingOfRelationToWorkNodeMatchesExpected(
+            'article_deposit.xml',
+            'journal_article',
+            $this->externalDatasetUrl,
+            true,
+            'article_deposit_external.xml'
+        );
+        $this->assertAddingOfRelationToWorkNodeMatchesExpected(
+            'preprint_deposit_versioned.xml',
+            'posted_content',
+            $this->externalDatasetUrl,
+            true,
+            'preprint_deposit_versioned_external.xml'
+        );
     }
 
     public function testAddsDatasetRelationToDepositXml(): void
@@ -171,10 +169,26 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit.xml', 'preprint_deposit_external.xml');
     }
 
+    private function assertAddingOfRelationToWorkNodeMatchesExpected(
+        string $fixture,
+        string $workNodeName,
+        string $identifier,
+        bool $isExternalDataset,
+        string $expectedFixture
+    ): void {
+        $depositXml = $this->openTestXml($fixture);
+        $workNode = $depositXml->getElementsByTagName($workNodeName)->item(0);
+
+        $this->xmlEditor->addDatasetRelationToWorkNode($workNode, $identifier, $isExternalDataset);
+
+        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/' . $expectedFixture);
+
+        $this->assertXmlStringEqualsXmlString($expectedXml, $depositXml->saveXML());
+    }
+
     private function assertAddingOfRelationToXmlMatchesExpected(string $fixture, string $expectedFixture): void
     {
-        $depositXml = new DOMDocument();
-        $depositXml->load(__DIR__ . '/fixtures/crossref/' . $fixture);
+        $depositXml = $this->openTestXml($fixture);
 
         $result = $this->xmlEditor->addDatasetRelationToDepositXml($depositXml, $this->context->getId());
 
