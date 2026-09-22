@@ -21,7 +21,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         );
         $response = $this->nativeAPIRequest('GET', $uri);
 
-        $datasetFactory = new JsonDatasetFactory($response->getBody());
+        $datasetFactory = new JsonDatasetFactory($response->getBody(), $this->createDataverseClient());
         return $datasetFactory->getDataset();
     }
 
@@ -86,7 +86,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
 
     public function create(Dataset $dataset): DatasetIdentifier
     {
-        $packager = new NativeAPIDatasetPackager($dataset);
+        $packager = new NativeAPIDatasetPackager($dataset, $this->createDataverseClient());
         $packager->createDatasetPackage();
 
         $uri = $this->getCurrentDataverseURI() . '/datasets';
@@ -106,7 +106,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
 
     public function update(Dataset $dataset): void
     {
-        $packager = new NativeAPIDatasetPackager($dataset);
+        $packager = new NativeAPIDatasetPackager($dataset, $this->createDataverseClient());
         $packager->createDatasetPackage();
 
         $uri = $this->createNativeAPIURI(

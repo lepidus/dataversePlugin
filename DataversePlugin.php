@@ -27,6 +27,7 @@ use PKP\core\JSONMessage;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\migrations\DataverseMigration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
+use APP\plugins\generic\dataverse\classes\dispatchers\CrossrefDispatcher;
 use APP\plugins\generic\dataverse\classes\tasks\NotifyDataverseTokenExpiration;
 use APP\plugins\generic\dataverse\DataverseSettingsForm;
 use APP\plugins\generic\dataverse\report\DataverseReportPlugin;
@@ -51,6 +52,8 @@ class DataversePlugin extends GenericPlugin implements HasTaskScheduler
             PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
         }
 
+        new CrossrefDispatcher($this);
+
         return $success;
     }
 
@@ -63,8 +66,7 @@ class DataversePlugin extends GenericPlugin implements HasTaskScheduler
             'DatasetInformationDispatcher',
             'WorkflowDispatcher',
             'DatasetReviewDispatcher',
-            'DataverseEventsDispatcher',
-            'CrossrefDispatcher'
+            'DataverseEventsDispatcher'
         ];
 
         foreach ($dispatcherClasses as $dispatcherClass) {

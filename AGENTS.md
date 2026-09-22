@@ -103,8 +103,8 @@ What the plugin actually does, in workflow order:
 
 ### Registration is gated
 
-`DataversePlugin::register()` always registers `DataverseConfigurationDAO`, but wires the dispatchers and the
-report sub-plugin only after passing three gates, in order:
+`DataversePlugin::register()` always registers `DataverseConfigurationDAO` and `CrossrefDispatcher`, but wires
+the remaining dispatchers and the report sub-plugin only after passing three gates, in order:
 
 1. `Application::isUnderMaintenance()` — returns early, nothing else is registered;
 2. a non-null request context — site-level pages (admin area, site index) get no plugin behaviour;
@@ -113,11 +113,19 @@ report sub-plugin only after passing three gates, in order:
 Any of the three explains a "the plugin does nothing" report; check them before suspecting the hooks
 themselves. Gate 2 in particular means plugin code must not assume a context exists.
 
+`CrossrefDispatcher` sits **outside** the gates on purpose: since 3.5 the Crossref deposit made from the DOIs
+page is queued (`lib/pkp/jobs/doi/DepositSubmission`) and runs in the queue worker, where gate 2 would drop it
+and the dataset relation would never reach the deposited XML. It therefore resolves everything it needs — the
+context, the plugin's enabled state and the Dataverse configuration — from the `doi_data` DOIs of the deposit
+XML instead of from the request, and is the one dispatcher that must keep working without a request context.
+It is instantiated *after* the gated block, so a throw from its own `Hook::add()` calls cannot take the gated
+dispatchers and the report sub-plugin down with it.
+
 A fourth cause looks identical from the outside: `Hook::add()` throws for hooks listed in
 `Hook::addUnsupportedHooks()`, and `PluginRegistry::register()` swallows the exception. Registration then stops
 at whichever dispatcher raised it, so the dispatchers before it work and everything after it silently does not.
 Cross-check new hook names against `lib/pkp/classes/core/PKPApplication.php` and confirm through the web
-interface — a CLI run has no context, so gate 2 short-circuits before any hook is registered.
+interface — a CLI run has no context, so gate 2 short-circuits before the gated dispatchers are registered.
 
 ### Dispatchers are the hook layer
 
@@ -134,7 +142,7 @@ there. Roughly one dispatcher per surface:
 | `WorkflowDispatcher` | Loads the plugin's Vue bundle on the dashboard, where the workflow lives since 3.5 |
 | `DatasetReviewDispatcher` | Research data shown to reviewers in the review steps |
 | `DatasetInformationDispatcher` | Dataset citation on the public article/preprint page |
-| `CrossrefDispatcher` | Dataset relation injected into Crossref export XML (`CrossrefXmlEditor`) |
+| `CrossrefDispatcher` | Dataset relation injected into Crossref export XML (`CrossrefXmlEditor`); registered outside the context gate |
 | `DataverseEventsDispatcher` | Everything else: submission schema, API routing, decision steps, publish/delete deposit, component handlers, scheduled task |
 
 `DataverseDispatcher` also provides `getApiUrl()`, used to hand plugin API endpoints to the JS.
@@ -148,6 +156,16 @@ collection alias from `DataverseConfigurationDAO` for the current context, uses 
 client, and caches expensive lookups (required metadata, licenses, root collection name) through
 `CacheManager`. It builds both **Native API** (`/api/…`) and **SWORD v2**
 (`/dvn/api/data-deposit/v1.1/swordv2/…`) URIs.
+
+`new DataverseClient()` with no arguments is the request-scoped form and is what most callers use. Code that
+runs without a request context must instead pass an explicit `DataverseConfiguration`, and should pass the
+context id as well: it is what feeds the cache keys, so omitting it silently turns every cached lookup into a
+live API call. The client hands the configuration, the context id and the Guzzle client down to every action
+class it builds. Action classes that need a nested client of their own build it with
+`DataverseActions::createDataverseClient()`, never `new DataverseClient()` — `DatasetActions::get()` hands one
+to `JsonDatasetFactory` and `create()`/`update()` hand one to `NativeAPIDatasetPackager`, both of which read
+the collection's required metadata. Skipping that is what makes a missing configuration blow up several calls
+deep, and what lets a `MockHandler` in a test leak into a real HTTP request.
 
 Failures throw `DataverseException`. Callers are expected to catch it and degrade gracefully — an unreachable
 Dataverse should produce a notice or a disabled tab, never a fatal error. `packagers/NativeAPIDatasetPackager`
@@ -274,7 +292,7 @@ The API token is stored encrypted in the application database. `classes/DataEncr
 ## Tests
 
 `tests/` mirrors the source layout (`tests/factories/`, `tests/dataverseAPI/actions/`, `tests/dispatchers/`, …)
-and runs under the PKP PHPUnit harness. The action classes take `(?DataverseConfiguration, ?Client)` — in that
+and runs under the PKP PHPUnit harness. The action classes take `(?DataverseConfiguration, ?Client, ?int $contextId)` — in that
 order — precisely so tests can construct them without a request context: pass a hand-built
 `DataverseConfiguration` first, and where a test exercises HTTP, a Guzzle `Client` backed by a `MockHandler`
 second. Tests that only cover pure helpers pass a bare `Client` and never issue a request. Elsewhere

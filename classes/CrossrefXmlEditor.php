@@ -18,9 +18,9 @@ class CrossrefXmlEditor
 
     private DatasetActions $datasetActions;
 
-    public function __construct(?DatasetActions $actions = null)
+    public function __construct(DatasetActions $actions)
     {
-        $this->datasetActions = $actions ?? (new DatasetActions());
+        $this->datasetActions = $actions;
     }
 
     public function addDatasetRelationToDepositXml(DOMDocument $depositXml, int $contextId): DOMDocument

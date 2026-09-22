@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\Cache;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 abstract class DataverseActions
 {
     protected $contextId;
+    protected $configuration;
     protected $serverURL;
     protected $apiToken;
     protected $dataverseAlias;
@@ -21,10 +23,13 @@ abstract class DataverseActions
     protected const ONE_DAY_SECONDS = 24 * 60 * 60;
     public function __construct(
         ?DataverseConfiguration $configuration = null,
-        ?\GuzzleHttp\Client $client = null
+        ?\GuzzleHttp\Client $client = null,
+        ?int $contextId = null
     ) {
+        $this->contextId = $contextId;
+
         if (is_null($configuration)) {
-            $this->contextId = Application::get()->getRequest()->getContext()->getId();
+            $this->contextId ??= Application::get()->getRequest()->getContext()->getId();
             $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($this->contextId);
         }
 
@@ -32,10 +37,16 @@ abstract class DataverseActions
             $client = Application::get()->getHttpClient();
         }
 
+        $this->configuration = $configuration;
         $this->serverURL = $configuration->getDataverseServerUrl();
         $this->apiToken = $configuration->getAPIToken();
         $this->dataverseAlias = $configuration->getDataverseCollection();
         $this->client = $client;
+    }
+
+    protected function createDataverseClient(): DataverseClient
+    {
+        return new DataverseClient($this->configuration, $this->contextId, $this->client);
     }
 
     public static function getCacheKey(string $cacheId, int $contextId): string
