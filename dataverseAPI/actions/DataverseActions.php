@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 abstract class DataverseActions
 {
@@ -41,6 +42,11 @@ abstract class DataverseActions
         $this->apiToken = $configuration->getAPIToken();
         $this->dataverseAlias = $configuration->getDataverseCollection();
         $this->client = $client;
+    }
+
+    protected function createDataverseClient(): DataverseClient
+    {
+        return new DataverseClient($this->configuration, $this->contextId, $this->client);
     }
 
     public static function getCacheKey(string $cacheId, int $contextId): string

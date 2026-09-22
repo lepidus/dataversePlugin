@@ -158,9 +158,12 @@ client, and caches expensive lookups (required metadata, licenses, root collecti
 `new DataverseClient()` with no arguments is the request-scoped form and is what most callers use. Code that
 runs without a request context must instead pass an explicit `DataverseConfiguration`, and should pass the
 context id as well: it is what feeds the cache keys, so omitting it silently turns every cached lookup into a
-live API call. The client hands both down to the action classes it builds, and `DatasetActions::get()` hands
-them on again to `JsonDatasetFactory`, which needs its own client to read the collection's required metadata —
-that chain is why a missing configuration only blows up several calls deep.
+live API call. The client hands the configuration, the context id and the Guzzle client down to every action
+class it builds. Action classes that need a nested client of their own build it with
+`DataverseActions::createDataverseClient()`, never `new DataverseClient()` — `DatasetActions::get()` hands one
+to `JsonDatasetFactory` and `create()`/`update()` hand one to `NativeAPIDatasetPackager`, both of which read
+the collection's required metadata. Skipping that is what makes a missing configuration blow up several calls
+deep, and what lets a `MockHandler` in a test leak into a real HTTP request.
 
 Failures throw `DataverseException`. Callers are expected to catch it and degrade gracefully — an unreachable
 Dataverse should produce a notice or a disabled tab, never a fatal error. `packagers/NativeAPIDatasetPackager`
