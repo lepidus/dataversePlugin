@@ -3,14 +3,12 @@
 namespace APP\plugins\generic\dataverse\dataverseAPI\packagers;
 
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
-use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 
 class NativeAPIDatasetPackager
 {
     private $dataset;
     private $packageDirPath;
-    private $dataverseMetadata;
     private $datasetLicense;
     private $datasetMetadata = [];
     private $files = [];
@@ -18,7 +16,6 @@ class NativeAPIDatasetPackager
 
     public function __construct(Dataset $dataset, ?DataverseClient $dataverseClient = null)
     {
-        $this->dataverseMetadata = new DataverseMetadata();
         $this->dataverseClient = $dataverseClient;
         $this->packageDirPath = tempnam('/tmp', 'dataverse');
         unlink($this->packageDirPath);
