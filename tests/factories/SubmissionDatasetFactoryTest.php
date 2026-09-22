@@ -186,6 +186,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
             $submissionDoi,
             "https://doi.org/$submissionDoi"
         );
+        $currentDate = date('Y-m-d', time());
 
         $datasetFile = new DatasetFile();
         $datasetFile->setOriginalFileName($this->temporaryFile->getOriginalFileName());
@@ -202,6 +203,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $expectedDataset->setAuthors([$datasetAuthor]);
         $expectedDataset->setContact($datasetContact);
         $expectedDataset->setDepositor($datasetDepositor);
+        $expectedDataset->setDateOfDeposit($currentDate);
         $expectedDataset->setRelatedPublication($datasetRelatedPublication);
         $expectedDataset->setFiles([$datasetFile]);
 
