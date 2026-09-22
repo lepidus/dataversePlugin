@@ -206,7 +206,6 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset = new Dataset();
         $mockClient = $this->createMockDataverseClient();
         $this->packager = new NativeAPIDatasetPackager($dataset, $mockClient);
-        $this->packager->loadPackageData();
         $this->packager->createDatasetPackage();
 
         $this->assertFileExists($this->packager->getPackageDirPath() . '/dataset.json');
@@ -218,19 +217,23 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $dataset->setPersistentId('doi:10.5072/FK2/TEST');
         $dataset->setTitle('Test title');
         $dataset->setLicense($this->license);
+        $dataset->setDateOfDeposit('2026-09-22');
 
         $mockClient = $this->createMockDataverseClient();
         $this->packager = new NativeAPIDatasetPackager($dataset, $mockClient);
-        $this->packager->loadPackageData();
         $this->packager->createDatasetPackage();
 
-        $datasetJson = json_decode(file_get_contents($this->packager->getPackageDirPath() . '/dataset.json'), true);
+        $builtDatasetJson = json_decode(file_get_contents($this->packager->getPackageDirPath() . '/dataset.json'), true);
 
-        $licenseInJson = $datasetJson['license'];
+        $licenseInJson = $builtDatasetJson['license'];
         $this->assertEquals($this->license, $licenseInJson);
 
-        $titleInJson = $datasetJson['metadataBlocks']['citation']['fields'][0]['value'];
+        $metadataFields = $builtDatasetJson['metadataBlocks']['citation']['fields'];
+        $titleInJson = $metadataFields[0]['value'];
         $this->assertEquals($dataset->getTitle(), $titleInJson);
+
+        $dateOfDepositInJson = $metadataFields[1]['value'];
+        $this->assertEquals($dataset->getDateOfDeposit(), $dateOfDepositInJson);
     }
 
     private function createMockDataverseClientWithMetadata(array $requiredMetadata): DataverseClient
