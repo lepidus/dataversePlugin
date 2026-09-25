@@ -225,7 +225,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $publication->setData('locale', $this->locale);
         $publication->setData('title', 'The Rise of The Machine Empire');
         $publication->setData('abstract', 'An example abstract');
-        $publication->setData('keywords', ['Modern History'], $this->locale);
+        $publication->setData('keywords', [['name' => 'Modern History']], $this->locale);
         $doiObject = new Doi();
         $doiObject->setData('doi', '10.1234/LepidusPreprints.1245');
         $publication->setData('doiObject', $doiObject);
@@ -283,7 +283,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $datasetTitlePrefix = __('plugins.generic.dataverse.dataset.titlePrefix');
         $expectedDataset->setTitle($datasetTitlePrefix . $this->publication->getLocalizedTitle());
         $expectedDataset->setDescription($this->publication->getLocalizedData('abstract'));
-        $expectedDataset->setKeywords($this->publication->getLocalizedData('keywords'));
+        $expectedDataset->setKeywords(['Modern History']);
         $expectedDataset->setLanguage($this->submission->getData('datasetLanguage'));
         $expectedDataset->setSubject($this->submission->getData('datasetSubject'));
         $expectedDataset->setLicense($this->submission->getData('datasetLicense'));
