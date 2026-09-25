@@ -20,7 +20,7 @@ export const deleteDeposit = (submissionId) => runTestData('delete-dataset', Str
 
 export function dataverseCredentials() {
 	const credentials = {
-		url: process.env.DATAVERSE_URL,
+		url: process.env.DATAVERSE_URL?.replace(/\/+$/, ''),
 		apiToken: process.env.DATAVERSE_API_TOKEN,
 		termsOfUse: process.env.DATAVERSE_TERMS_OF_USE,
 	};

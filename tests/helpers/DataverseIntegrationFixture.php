@@ -35,14 +35,23 @@ trait DataverseIntegrationFixture
     protected DataversePlugin $plugin;
     private array $submissionIds = [];
     private array $temporaryFileIds = [];
+    private array $eventListenersBeforePlugin = [];
 
     protected function getMockedRegistryKeys(): array
     {
         return ['request', 'hooks', 'user'];
     }
 
+    private function pluginEvents(): array
+    {
+        return [SubmissionSubmitted::class, DecisionAdded::class];
+    }
+
     protected function setUpFixture(): void
     {
+        foreach ($this->pluginEvents() as $event) {
+            $this->eventListenersBeforePlugin[$event] = Event::getRawListeners()[$event] ?? [];
+        }
         $this->context = $this->createTestContext();
         $this->user = $this->createUser();
         $this->sectionId = $this->createSection();
@@ -51,8 +60,12 @@ trait DataverseIntegrationFixture
 
     protected function tearDownFixture(): void
     {
-        Event::forget(SubmissionSubmitted::class);
-        Event::forget(DecisionAdded::class);
+        foreach ($this->eventListenersBeforePlugin as $event => $listeners) {
+            Event::forget($event);
+            foreach ($listeners as $listener) {
+                Event::listen($event, $listener);
+            }
+        }
 
         $temporaryFileManager = new TemporaryFileManager();
         foreach ($this->temporaryFileIds as $temporaryFileId) {
@@ -69,6 +82,11 @@ trait DataverseIntegrationFixture
         DAORegistry::getDAO('PluginSettingsDAO')->deleteByContextId($this->context->getId());
         Repo::user()->delete($this->user);
         $this->deleteTestContext($this->context);
+    }
+
+    protected function createdSubmissionIds(): array
+    {
+        return $this->submissionIds;
     }
 
     protected function reloadSchemas(array $schemaNames = ['publication', 'submission', 'draftDatasetFile']): void
@@ -131,7 +149,7 @@ trait DataverseIntegrationFixture
     protected function dataverseCredentials(): array
     {
         $credentials = [
-            'dataverseUrl' => getenv('DATAVERSE_URL'),
+            'dataverseUrl' => preg_replace('/\/+$/', '', (string) getenv('DATAVERSE_URL')),
             'apiToken' => getenv('DATAVERSE_API_TOKEN'),
             'termsOfUse' => getenv('DATAVERSE_TERMS_OF_USE'),
         ];
@@ -148,18 +166,22 @@ trait DataverseIntegrationFixture
     {
         $credentials = $this->dataverseCredentials();
 
+        $_POST = [
+            'dataverseUrl' => $credentials['dataverseUrl'],
+            'apiToken' => $credentials['apiToken'],
+            'termsOfUse' => ['en' => $credentials['termsOfUse']],
+            'additionalInstructions' => ['en' => ''],
+            'datasetPublish' => DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_PUBLISHED,
+        ];
         $hooksBeforeSettingsRequest = Hook::getHooks();
         $this->mockRequest($this->context->getPath() . '/management/settings', $this->user->getId());
         $this->plugin->register('generic', 'plugins/generic/dataverse', $this->context->getId());
 
         $form = new DataverseSettingsForm($this->plugin, $this->context->getId());
-        $form->setData('dataverseUrl', $credentials['dataverseUrl']);
-        $form->setData('apiToken', $credentials['apiToken']);
-        $form->setData('termsOfUse', ['en' => $credentials['termsOfUse']]);
-        $form->setData('additionalInstructions', []);
-        $form->setData('datasetPublish', DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_PUBLISHED);
+        $form->readInputData();
         $form->execute();
 
+        $_POST = [];
         Registry::set('hooks', $hooksBeforeSettingsRequest);
     }
 

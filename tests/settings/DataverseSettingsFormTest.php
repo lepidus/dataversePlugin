@@ -16,7 +16,6 @@ class DataverseSettingsFormTest extends DatabaseTestCase
         parent::setUp();
         $this->setUpFixture();
         $this->registerPlugin('management/settings');
-        $_SERVER['REQUEST_METHOD'] = 'POST';
     }
 
     protected function tearDown(): void
@@ -29,6 +28,8 @@ class DataverseSettingsFormTest extends DatabaseTestCase
     private function submitForm(array $data): DataverseSettingsForm
     {
         $_POST = array_merge(['additionalInstructions' => ['en' => '']], $data);
+        $this->mockRequest($this->context->getPath() . '/management/settings', $this->user->getId());
+        $_SERVER['REQUEST_METHOD'] = 'POST';
         $form = new DataverseSettingsForm($this->plugin, $this->context->getId());
         $form->readInputData();
         $form->validate();

@@ -12,6 +12,9 @@ async function fetchCollectionName({url, apiToken}) {
 	const response = await fetch(`${origin}/api/dataverses/${alias}`, {
 		headers: {'X-Dataverse-key': apiToken},
 	});
+	if (!response.ok) {
+		throw new Error(`Dataverse collection "${alias}" could not be read: HTTP ${response.status}`);
+	}
 	const {data} = await response.json();
 	return data.name;
 }
@@ -29,8 +32,8 @@ async function saveLogin(browser, baseURL, username, storageState) {
 
 export default async function globalSetup(config) {
 	const credentials = dataverseCredentials();
-	configurePlugin();
 	process.env.DATAVERSE_COLLECTION_NAME = await fetchCollectionName(credentials);
+	configurePlugin();
 
 	const {baseURL} = config.projects[0].use;
 	const browser = await chromium.launch();

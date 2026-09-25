@@ -12,8 +12,6 @@ class DatasetDepositOnSubmissionTest extends DatabaseTestCase
 {
     use DataverseIntegrationFixture;
 
-    private ?string $depositedPersistentId = null;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -24,8 +22,11 @@ class DatasetDepositOnSubmissionTest extends DatabaseTestCase
 
     protected function tearDown(): void
     {
-        if ($this->depositedPersistentId) {
-            (new DataverseClient())->getDatasetActions()->delete($this->depositedPersistentId);
+        foreach ($this->createdSubmissionIds() as $submissionId) {
+            $study = DataverseRepo::dataverseStudy()->getBySubmissionId($submissionId);
+            if ($study) {
+                (new DataverseClient())->getDatasetActions()->delete($study->getPersistentId());
+            }
         }
         $this->tearDownFixture();
         parent::tearDown();
@@ -68,7 +69,6 @@ class DatasetDepositOnSubmissionTest extends DatabaseTestCase
 
         $study = DataverseRepo::dataverseStudy()->getBySubmissionId($submission->getId());
         $this->assertNotNull($study);
-        $this->depositedPersistentId = $study->getPersistentId();
 
         $depositedFiles = (new DataverseClient())->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
         $depositedFileNames = array_map(fn ($file) => $file->getFileName(), $depositedFiles);

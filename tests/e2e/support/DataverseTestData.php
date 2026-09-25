@@ -44,7 +44,7 @@ echo json_encode($output), "\n";
 function configure($context): array
 {
     $credentials = [
-        'dataverseUrl' => getenv('DATAVERSE_URL'),
+        'dataverseUrl' => preg_replace('/\/+$/', '', (string) getenv('DATAVERSE_URL')),
         'apiToken' => getenv('DATAVERSE_API_TOKEN'),
         'termsOfUse' => getenv('DATAVERSE_TERMS_OF_USE'),
     ];
