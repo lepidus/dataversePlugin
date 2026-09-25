@@ -3,3 +3,7 @@ node_modules/
 cypress/plugins/*
 cypress/screenshots/*
 cypress/videos/*
+tests/e2e/.auth/
+test-results/
+playwright-report/
+results/

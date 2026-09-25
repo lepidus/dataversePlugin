@@ -36,26 +36,32 @@ php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/php
 npm install
 npm run build
 
-# Cypress (headless / interactive)
-npx cypress run  --config specPattern=plugins/generic/dataverse/cypress/tests
-npx cypress open --config specPattern=plugins/generic/dataverse/cypress/tests
+# End-to-end tests (Playwright, run inside plugins/generic/dataverse)
+npx playwright install chromium
+npm run test:e2e
+APP_ROOT=/path/to/ops BASE_URL=http://localhost:8001 npm run test:e2e
 
-# One Cypress spec
-npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests/Test1_submissionWizard.cy.js
+# Remaining Cypress specs (workflow, review, public site, legacy, linking, custom metadata)
+npx cypress run  --config specPattern=plugins/generic/dataverse/cypress/tests
 ```
 
-Prerequisites for the E2E suite:
+Tests that reach Dataverse read `DATAVERSE_URL`, `DATAVERSE_API_TOKEN` and `DATAVERSE_TERMS_OF_USE` from the
+environment and hit a **real Dataverse instance** (e.g. `https://demo.dataverse.org/dataverse/<alias>`) — there is
+no mock or fixture server. Without them the PHPUnit tests that need Dataverse are skipped locally and **fail** when
+`CI` is set, and the Playwright suite refuses to start. In GitLab they are project CI variables, next to
+`API_KEY_SECRET`.
 
-- `cypress.env.json` at the application root. The keys the specs actually read are `dataverseUrl`,
-  `dataverseApiToken` and `dataverseTermsOfUse`, plus the host application's own `baseUrl` and
-  `contextTitles` (used to branch between OJS and OPS). The specs hit a **real Dataverse instance**
-  (e.g. `https://demo.dataverse.org/dataverse/<alias>`) — there is no mock or fixture server.
-- `dataverseCustomRequiredMetadataFieldsUrl` is optional but load-bearing: it must point at a collection whose
-  required metadata fields are customized. Without it `Test7_customRequiredMetadataFields` **silently
-  self-skips** (it logs a skip message and passes), so a green run does not mean that feature was covered.
-  `README.md` also lists `dataverseAdditionalInstructions`, but no spec reads it.
-- Specs are numbered and stateful: `Test0_pluginConfiguration` configures the plugin, later specs depend on it.
-- Application and OS locale must be `en` — assertions match English UI strings.
+The Playwright suite needs the application running with the reference dataset (`publicknowledge`, users `dbarnes`
+and `eostrom`), the `en` locale and the plugin tables created. It configures the plugin and creates one submission
+per scenario through `tests/e2e/support/DataverseTestData.php`, a CLI script run from the application root, so
+scenarios are independent and no database reset is needed between runs.
+
+The remaining Cypress specs still use `cypress.env.json` at the application root (`dataverseUrl`,
+`dataverseApiToken`, `dataverseTermsOfUse`, `baseUrl`, `contextTitles`), are numbered and stateful, and no longer
+have a CI job: they are being migrated to PHPUnit/Playwright one flow at a time. `Test0`/`Test1` (configuration and
+submission wizard) are already gone; the specs left behind depended on the state `Test0` created.
+`dataverseCustomRequiredMetadataFieldsUrl` is optional but load-bearing: without it
+`Test7_customRequiredMetadataFields` **silently self-skips**.
 
 `config.inc.php` must define `security.api_key_secret`; without it the settings form renders
 `emptySecretKey.tpl` and the plugin cannot be configured.
@@ -308,8 +314,24 @@ and OPS, so tests never name an application-specific class directly — resolve 
 `plugins/generic/dataverse` of the OPS installation (a symlink works) and `tools/upgrade.php upgrade` to have
 created the plugin tables there.
 
-`cypress/` holds the E2E suite plus plugin-specific commands in `cypress/support/commands.js`
-(`findSubmission`, `waitDatasetTabLoading`, `waitDataStatementTabLoading`, …) that wrap the PKP base commands.
+Scenarios that used to be acceptance tests are integration tests without doubles, and the rule is: prefer
+PHPUnit, and reach for Playwright only when the behaviour exists solely in the browser. `DataverseIntegrationFixture`
+(`tests/helpers/`) gives them a real context, section, user, submission, temporary and submission files, and
+registers the plugin exactly as a web request would (`mockRequest()` with the context path, then
+`DataversePlugin::register()`), so gates, schemas and hooks are the production ones. Validation is exercised through
+`Repo::submission()->validateSubmit()`, deposit through `Repo::submission()->submit()`, and configuration through
+`DataverseSettingsForm` fed by `$_POST` + `readInputData()`. Plugin hooks, the request and its user are restored
+between tests (`getMockedRegistryKeys()`), and the core publication/submission schemas are reloaded afterwards, so
+these tests do not leak plugin behaviour into the rest of the suite.
+
+`tests/e2e/` is the Playwright suite. Wizard steps are addressed by id (`details`, `files`, `contributors`,
+`editors`, `review`) because their labels differ between applications (OPS calls `editors` "For Readers"), and
+forward navigation goes through "Continue": step labels only open steps already visited. The wizard only refreshes
+its `submission` state after an autosave when `dateSubmitted` is set, so the review panels that read
+`submission.dataset*` show the new values only after a reload — the deposit scenario asserts them after one.
+
+`cypress/` holds the Cypress specs not migrated yet, plus plugin-specific commands in
+`cypress/support/commands.js` (`findSubmission`, `waitDatasetTabLoading`, `waitDataStatementTabLoading`, …).
 
 ## Release mechanics
 

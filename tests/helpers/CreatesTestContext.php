@@ -14,6 +14,7 @@ trait CreatesTestContext
         $context = $contextDAO->newDataObject();
         $context->setPath('dataverse-test-' . uniqid());
         $context->setPrimaryLocale('en');
+        $context->setData('supportedLocales', ['en']);
         $context->setData('supportedSubmissionLocales', ['en']);
         $context->setData('supportedDefaultSubmissionLocale', 'en');
         $context->setId($contextDAO->insertObject($context));
