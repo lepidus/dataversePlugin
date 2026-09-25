@@ -72,3 +72,9 @@ function update() {
 onMounted(update);
 watch([isDepositingResearchData, needsFormLocales], update);
 </script>
+
+<style lang="css">
+.panelSection[hidden] {
+	display: none !important;
+}
+</style>
