@@ -166,7 +166,6 @@ class DatasetController extends PKPBaseController
         }
 
         $params = $illuminateRequest->input();
-        $locale = Locale::getLocale();
 
         $metadataErrors = $this->getMetadataErrors($params);
         if (!empty($metadataErrors)) {
@@ -177,7 +176,7 @@ class DatasetController extends PKPBaseController
             'persistentId' => $study->getPersistentId(),
             'title' => $params['datasetTitle'],
             'description' => $params['datasetDescription'],
-            'keywords' => $params['datasetKeywords'][$locale],
+            'keywords' => $this->getKeywords($params),
             'language' => $params['datasetLanguage'],
             'subject' => $params['datasetSubject'],
             'license' => $params['datasetLicense'],
@@ -205,7 +204,6 @@ class DatasetController extends PKPBaseController
         }
 
         $params = $illuminateRequest->input();
-        $locale = Locale::getLocale();
 
         $metadataErrors = $this->getMetadataErrors($params);
         if (!empty($metadataErrors)) {
@@ -215,7 +213,7 @@ class DatasetController extends PKPBaseController
         $dataset = (new SubmissionDatasetFactory($submission))->getDataset();
         $dataset->setTitle($params['datasetTitle']);
         $dataset->setDescription($params['datasetDescription']);
-        $dataset->setKeywords((array) $params['datasetKeywords'][$locale]);
+        $dataset->setKeywords($this->getKeywords($params));
         $dataset->setLanguage($params['datasetLanguage']);
         $dataset->setSubject($params['datasetSubject']);
         $dataset->setLicense($params['datasetLicense']);
@@ -485,6 +483,13 @@ class DatasetController extends PKPBaseController
         }
 
         return $errors;
+    }
+
+    private function getKeywords(array $params): array
+    {
+        $keywords = (array) ($params['datasetKeywords'][Locale::getLocale()] ?? []);
+
+        return array_map(fn ($keyword) => is_array($keyword) ? $keyword['name'] : $keyword, $keywords);
     }
 
     private function getSubmissionStudy(IlluminateRequest $illuminateRequest): ?DataverseStudy
