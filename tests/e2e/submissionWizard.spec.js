@@ -1,6 +1,7 @@
 import {expect, test} from '@playwright/test';
 import {storageStates} from './support/globalSetup.js';
-import {createSubmission, dataverseCredentials, deleteDeposit} from './support/testData.js';
+import {addResearchDataFile} from './support/researchData.js';
+import {createSubmission, deleteDeposit, eventLog} from './support/testData.js';
 
 test.use({storageState: storageStates.author});
 
@@ -43,19 +44,6 @@ function dataStatementSection(page) {
 
 async function selectDataStatementType(page, type) {
 	await page.locator(`input[name="dataStatementTypes"][value="${type}"]`).check();
-}
-
-async function addResearchDataFile(page, name, mimeType, contents) {
-	const credentials = dataverseCredentials();
-	await page.locator('[data-cy="dataverse-add-file"]').click();
-	const form = page.locator('[data-cy="dataverse-add-file-form"]');
-	await expect(form.locator('legend', {hasText: 'Dataverse terms of use'})).toBeVisible();
-	await expect(form.getByRole('link', {name: 'Terms of Use'})).toHaveAttribute('href', credentials.termsOfUse);
-	await form.locator('input[type="file"]').setInputFiles({name, mimeType, buffer: Buffer.from(contents)});
-	await expect(form.getByText(name)).toBeVisible();
-	await form.locator('input[name="termsOfUse"]').check();
-	await form.getByRole('button', {name: 'Save'}).click();
-	await expect(page.locator('[data-cy="dataverse-file-name"]', {hasText: name})).toBeVisible();
 }
 
 test('data statement fields follow the selected statement types', async ({page}) => {
@@ -133,7 +121,7 @@ test('research data sections appear only when depositing in Dataverse', async ({
 });
 
 test('research data files are added and deleted in the upload step', async ({page}) => {
-	await openWizard(page, 'dataverse');
+	const submission = await openWizard(page, 'dataverse');
 	const review = page.locator('[data-cy="dataverse-review-research-data"]');
 
 	await openStep(page, 'files');
@@ -142,8 +130,7 @@ test('research data files are added and deleted in the upload step', async ({pag
 	await addResearchDataFile(page, 'Planilha_de_dados_ÇÕÔÁÀÃ.json', 'application/json', '{"measurements": [1, 2, 3]}');
 
 	await page.locator('.listPanel__item', {hasText: 'Data_detailing.pdf'}).locator('[data-cy="dataverse-delete-file"]').click();
-	const dialog = page.getByRole('dialog');
-	await expect(dialog).toContainText('Are you sure you want to permanently delete the research data file Data_detailing.pdf?');
+	const dialog = page.getByRole('dialog').filter({hasText: 'Are you sure you want to permanently delete the research data file Data_detailing.pdf?'});
 	await dialog.getByRole('button', {name: 'Delete File'}).click();
 	await expect(page.locator('[data-cy="dataverse-file-name"]', {hasText: 'Data_detailing.pdf'})).toHaveCount(0);
 
@@ -151,6 +138,11 @@ test('research data files are added and deleted in the upload step', async ({pag
 	await expect(review.getByRole('link', {name: 'Planilha_de_dados_ÇÕÔÁÀÃ.json'})).toBeVisible();
 	await expect(review.getByRole('link', {name: 'Data_detailing.pdf'})).toHaveCount(0);
 	await expect(review).toContainText('It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files');
+	expect(eventLog(submission.id)).toEqual(expect.arrayContaining([
+		{message: 'File "Data_detailing.pdf" added as research data.', username: 'eostrom'},
+		{message: 'File "Planilha_de_dados_ÇÕÔÁÀÃ.json" added as research data.', username: 'eostrom'},
+		{message: 'File "Data_detailing.pdf" deleted from research data.', username: 'eostrom'},
+	]));
 });
 
 test.describe('submission deposit', () => {

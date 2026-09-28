@@ -7,7 +7,12 @@ use APP\facades\Repo;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\facades\Repo as DataverseRepo;
+use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
+use APP\plugins\generic\dataverse\classes\services\DatasetService;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\DataversePlugin;
 use APP\plugins\generic\dataverse\DataverseSettingsForm;
 use APP\submission\Submission;
@@ -35,6 +40,7 @@ trait DataverseIntegrationFixture
     protected DataversePlugin $plugin;
     private array $submissionIds = [];
     private array $temporaryFileIds = [];
+    private array $datasetPersistentIds = [];
     private array $eventListenersBeforePlugin = [];
 
     protected function getMockedRegistryKeys(): array
@@ -84,9 +90,79 @@ trait DataverseIntegrationFixture
         $this->deleteTestContext($this->context);
     }
 
-    protected function createdSubmissionIds(): array
+    protected function createSubmissionWithResearchData(
+        array $submissionData = ['datasetSubject' => 'Earth and Environmental Sciences'],
+        bool $withFiles = true
+    ): Submission {
+        $submission = $this->createSubmission(
+            [
+                'dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED],
+                'keywords' => ['en' => ['mass public transport', 'sustainable cities']],
+            ],
+            array_merge([
+                'datasetLanguage' => 'English',
+                'datasetLicense' => 'CC0 1.0',
+                'datasetRelationType' => 'IsSupplementedBy',
+            ], $submissionData)
+        );
+        $this->addAuthor($submission);
+
+        if ($withFiles) {
+            $this->addDraftDatasetFile($submission, 'LEIAME.pdf', 'application/pdf', '%PDF-1.4 readme');
+            $this->addDraftDatasetFile($submission, 'Planilha_de_dados.json', 'application/json', '{"values": [1, 2, 3]}');
+        }
+
+        return Repo::submission()->get($submission->getId());
+    }
+
+    protected function createDepositedSubmission(): Submission
     {
-        return $this->submissionIds;
+        $submission = $this->createSubmissionWithResearchData();
+        $dataset = (new SubmissionDatasetFactory($submission))->getDataset();
+
+        $depositInfo = (new DatasetService())->deposit($submission, $dataset);
+        $this->assertEquals('Success', $depositInfo['status'], __($depositInfo['message'] ?? '', $depositInfo['messageParams'] ?? []));
+
+        return Repo::submission()->get($submission->getId());
+    }
+
+    protected function assertEventLogged(Submission $submission, string $message): void
+    {
+        $loggedEvents = Repo::eventLog()->getCollector()
+            ->filterByAssoc(Application::ASSOC_TYPE_SUBMISSION, [$submission->getId()])
+            ->filterByUserIds([$this->user->getId()])
+            ->getMany()
+            ->map(fn ($eventLog) => $eventLog->getMessage())
+            ->values()
+            ->all();
+
+        $this->assertContains($message, $loggedEvents);
+    }
+
+    protected function trackDataset(string $persistentId): void
+    {
+        $this->datasetPersistentIds[] = $persistentId;
+    }
+
+    protected function deleteDatasetsFromDataverse(): void
+    {
+        foreach ($this->submissionIds as $submissionId) {
+            $study = DataverseRepo::dataverseStudy()->getBySubmissionId($submissionId);
+            if ($study) {
+                $this->trackDataset($study->getPersistentId());
+            }
+        }
+
+        $datasetActions = (new DataverseClient())->getDatasetActions();
+        foreach (array_unique($this->datasetPersistentIds) as $persistentId) {
+            try {
+                $datasetActions->delete($persistentId);
+            } catch (DataverseException $e) {
+                if ($e->getCode() !== 404) {
+                    throw $e;
+                }
+            }
+        }
     }
 
     protected function reloadSchemas(array $schemaNames = ['publication', 'submission', 'draftDatasetFile']): void

@@ -22,38 +22,10 @@ class DatasetDepositOnSubmissionTest extends DatabaseTestCase
 
     protected function tearDown(): void
     {
-        foreach ($this->createdSubmissionIds() as $submissionId) {
-            $study = DataverseRepo::dataverseStudy()->getBySubmissionId($submissionId);
-            if ($study) {
-                (new DataverseClient())->getDatasetActions()->delete($study->getPersistentId());
-            }
-        }
+        $this->deleteDatasetsFromDataverse();
         $this->tearDownFixture();
         parent::tearDown();
         $this->restoreCoreSchemas();
-    }
-
-    private function createSubmissionWithResearchData(array $submissionData, bool $withFiles = true): Submission
-    {
-        $submission = $this->createSubmission(
-            [
-                'dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED],
-                'keywords' => ['en' => ['mass public transport', 'sustainable cities']],
-            ],
-            array_merge([
-                'datasetLanguage' => 'English',
-                'datasetLicense' => 'CC0 1.0',
-                'datasetRelationType' => 'IsSupplementedBy',
-            ], $submissionData)
-        );
-        $this->addAuthor($submission);
-
-        if ($withFiles) {
-            $this->addDraftDatasetFile($submission, 'LEIAME.pdf', 'application/pdf', '%PDF-1.4 readme');
-            $this->addDraftDatasetFile($submission, 'Planilha_de_dados.json', 'application/json', '{"values": [1, 2, 3]}');
-        }
-
-        return Repo::submission()->get($submission->getId());
     }
 
     private function submit(Submission $submission): void
@@ -63,7 +35,7 @@ class DatasetDepositOnSubmissionTest extends DatabaseTestCase
 
     public function testSubmittingDepositsResearchDataInDataverse(): void
     {
-        $submission = $this->createSubmissionWithResearchData(['datasetSubject' => 'Earth and Environmental Sciences']);
+        $submission = $this->createSubmissionWithResearchData();
 
         $this->submit($submission);
 
@@ -88,7 +60,7 @@ class DatasetDepositOnSubmissionTest extends DatabaseTestCase
 
     public function testSubmissionWithoutResearchDataFilesIsNotDeposited(): void
     {
-        $submission = $this->createSubmissionWithResearchData(['datasetSubject' => 'Earth and Environmental Sciences'], false);
+        $submission = $this->createSubmissionWithResearchData(withFiles: false);
 
         $this->submit($submission);
 

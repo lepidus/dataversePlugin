@@ -15,8 +15,11 @@ function runTestData(...args) {
 }
 
 export const configurePlugin = () => runTestData('configure');
-export const createSubmission = (scenario = 'details') => runTestData('create-submission', scenario);
+export const createSubmission = (scenario = 'details', options = {}) =>
+	runTestData('create-submission', scenario, JSON.stringify(options));
 export const deleteDeposit = (submissionId) => runTestData('delete-dataset', String(submissionId));
+export const eventLog = (submissionId) => runTestData('event-log', String(submissionId));
+export const deleteDataset = (persistentId) => runTestData('delete-dataset-by-persistent-id', persistentId);
 
 export function dataverseCredentials() {
 	const credentials = {
