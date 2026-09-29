@@ -1,6 +1,7 @@
 <?php
 
 import('lib.pkp.classes.file.TemporaryFileManager');
+import('plugins.generic.dataverse.classes.ResearchDataFileValidator');
 
 class DraftDatasetFilesValidator
 {
@@ -30,7 +31,6 @@ class DraftDatasetFilesValidator
 
     public function datasetHasReadmeFile(array $datasetFiles): bool
     {
-        $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
         $temporaryFileManager = new TemporaryFileManager();
 
         foreach ($datasetFiles as $file) {
@@ -40,7 +40,6 @@ class DraftDatasetFilesValidator
             );
 
             if (is_null($tempFile)) {
-                $draftDatasetFileDAO->deleteById($file->getId());
                 continue;
             }
 
@@ -50,6 +49,9 @@ class DraftDatasetFilesValidator
             if (
                 $this->filenameHasReadmeKeyword($fileName)
                 && ($fileType == 'application/pdf' || $fileType == 'text/plain')
+                && is_file($tempFile->getFilePath())
+                && is_readable($tempFile->getFilePath())
+                && filesize($tempFile->getFilePath()) > 0
             ) {
                 return true;
             }
@@ -60,8 +62,19 @@ class DraftDatasetFilesValidator
 
     public function datasetHasNonReadmeFile(array $datasetFiles): bool
     {
+        $temporaryFileManager = new TemporaryFileManager();
+        $validator = new ResearchDataFileValidator();
+
         foreach ($datasetFiles as $file) {
-            if (!$this->filenameHasReadmeKeyword(strtolower($file->getFileName()))) {
+            $tempFile = $temporaryFileManager->getFile(
+                $file->getData('fileId'),
+                $file->getData('userId')
+            );
+
+            if (
+                $tempFile !== null
+                && $validator->containsResearchData($tempFile->getFilePath(), $file->getFileName())
+            ) {
                 return true;
             }
         }
