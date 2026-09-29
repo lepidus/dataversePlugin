@@ -290,11 +290,13 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('CC BY 4.0');
         cy.contains('Is Supplemented By')
 
+        cy.intercept('POST', /submissions\/\d+\/submit/).as('submissionCompleted');
         cy.contains('button', 'Submit').click();
         cy.get('.modal__panel:visible').within(() => {
             cy.contains('button', 'Submit').click();
         });
-        cy.wait(7000);
-        cy.contains('h1', 'Submission complete');
+        cy.wait('@submissionCompleted', {responseTimeout: 240000})
+            .its('response.statusCode').should('eq', 200);
+        cy.contains('h1', 'Submission complete', {timeout: 10000});
     });
 });
