@@ -42,6 +42,21 @@ class DataverseException extends Exception
         );
     }
 
+    public function getFailureCategory(): string
+    {
+        $previous = $this->getPrevious();
+        if ($previous instanceof TransferException) {
+            $context = method_exists($previous, 'getHandlerContext') ? $previous->getHandlerContext() : [];
+            if (($context['errno'] ?? null) === 28) {
+                return 'timeout';
+            }
+            if (!method_exists($previous, 'hasResponse') || !$previous->hasResponse()) {
+                return 'connection';
+            }
+        }
+        return $this->getCode() === self::AUTH_ERROR_STATUS_CODE ? 'authentication' : 'http';
+    }
+
     public function getUserMessageKey(): string
     {
         return $this->getCode() === self::AUTH_ERROR_STATUS_CODE

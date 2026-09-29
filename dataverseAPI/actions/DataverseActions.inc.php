@@ -63,12 +63,20 @@ abstract class DataverseActions
     public function nativeAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
     {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
-        $options += ['connect_timeout' => 5, 'timeout' => 15];
+        $operation = $this->getRequestOperation($method, $uri);
+        $options += ['connect_timeout' => 5, 'timeout' => $this->getRequestTimeout($operation)];
 
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
-            throw DataverseException::fromTransferException($e);
+            $exception = DataverseException::fromTransferException($e);
+            error_log(json_encode([
+                'component' => 'dataverse',
+                'operation' => $operation,
+                'category' => $exception->getFailureCategory(),
+                'status' => $exception->getCode(),
+            ]));
+            throw $exception;
         }
 
         return new DataverseResponse(
@@ -81,12 +89,20 @@ abstract class DataverseActions
     public function swordAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
     {
         $options['auth'] = [$this->apiToken, ''];
-        $options += ['connect_timeout' => 5, 'timeout' => 15];
+        $operation = $this->getRequestOperation($method, $uri);
+        $options += ['connect_timeout' => 5, 'timeout' => $this->getRequestTimeout($operation)];
 
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
-            throw DataverseException::fromTransferException($e);
+            $exception = DataverseException::fromTransferException($e);
+            error_log(json_encode([
+                'component' => 'dataverse',
+                'operation' => $operation,
+                'category' => $exception->getFailureCategory(),
+                'status' => $exception->getCode(),
+            ]));
+            throw $exception;
         }
 
         return new DataverseResponse(
@@ -94,6 +110,29 @@ abstract class DataverseActions
             $response->getReasonPhrase(),
             $response->getBody()
         );
+    }
+
+    private function getRequestOperation(string $method, string $uri): string
+    {
+        $path = (string) parse_url($uri, PHP_URL_PATH);
+        if ($method === 'POST' && substr($path, -4) === '/add') {
+            return 'upload';
+        }
+        if ($method === 'POST' && substr($path, -9) === '/datasets') {
+            return 'create';
+        }
+        return $method === 'GET' ? 'read' : 'write';
+    }
+
+    private function getRequestTimeout(string $operation): int
+    {
+        $defaults = ['read' => 15, 'create' => 30, 'upload' => 60, 'write' => 30];
+        $configured = Config::getVar('dataverse', $operation . '_timeout');
+        $timeout = filter_var($configured, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 300]]);
+        if ($timeout !== false) {
+            return $timeout;
+        }
+        return $defaults[$operation];
     }
 
     public function cacheDismiss()
