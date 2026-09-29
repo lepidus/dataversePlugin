@@ -4,7 +4,8 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class DepositRepository
 {
-    private array $revisions = [];
+    /** @var array<int, int> */
+    private $revisions = [];
 
     public function reserve(int $submissionId, array $manifest): array
     {

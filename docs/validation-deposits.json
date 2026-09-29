@@ -3,6 +3,7 @@
   "application": "ojs",
   "target": "stable-3_3_0",
   "php": [
+    "7.3",
     "7.4",
     "8.2"
   ],

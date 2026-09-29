@@ -3,7 +3,8 @@
 /** Persist intent before each remote mutation. An unconfirmed mutation is never repeated. */
 class DepositWorkflow
 {
-    private DepositRepository $repository;
+    /** @var DepositRepository */
+    private $repository;
 
     public function __construct(DepositRepository $repository)
     {

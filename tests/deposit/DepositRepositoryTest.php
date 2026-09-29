@@ -10,8 +10,11 @@ import('plugins.generic.dataverse.DataversePlugin');
 
 class DepositRepositoryTest extends DatabaseTestCase
 {
-    private int $submissionId;
-    private int $publicationId;
+    /** @var int */
+    private $submissionId;
+
+    /** @var int */
+    private $publicationId;
 
     protected function getMockedRegistryKeys(): array
     {
@@ -92,8 +95,10 @@ class DepositRepositoryTest extends DatabaseTestCase
         $first->reserve($this->submissionId, []);
         $stale->reserve($this->submissionId, []);
         $first->transition($this->submissionId, 'reserved', 'ready');
-        $first->complete($this->submissionId, fn () => null);
-        $first->retire($this->submissionId, fn () => null);
+        $first->complete($this->submissionId, function () {
+        });
+        $first->retire($this->submissionId, function () {
+        });
         $next = $first->reserve($this->submissionId, [['sourceId' => 9]]);
         $this->assertSame('reserved', $next['state']);
         $this->assertGreaterThan(0, $next['revision']);
@@ -106,8 +111,10 @@ class DepositRepositoryTest extends DatabaseTestCase
         $repository = new DepositRepository();
         $repository->reserve($this->submissionId, []);
         $repository->transition($this->submissionId, 'reserved', 'ready');
-        $repository->complete($this->submissionId, fn () => null);
-        $repository->retire($this->submissionId, fn () => null);
+        $repository->complete($this->submissionId, function () {
+        });
+        $repository->retire($this->submissionId, function () {
+        });
         Capsule::table('dataverse_studies')->insert([
             'submission_id' => $this->submissionId,
             'edit_uri' => '', 'edit_media_uri' => '', 'statement_uri' => '', 'persistent_uri' => '',
@@ -123,7 +130,9 @@ class DepositRepositoryTest extends DatabaseTestCase
         $repository->reserve($this->submissionId, []);
         $repository->transition($this->submissionId, 'reserved', 'creating');
         $this->expectException(RuntimeException::class);
-        $repository->retire($this->submissionId, fn () => $this->fail('Removed uncertain association'));
+        $repository->retire($this->submissionId, function () {
+            $this->fail('Removed uncertain association');
+        });
     }
 
     public function testLocalFinalizationRollsBackToReady(): void

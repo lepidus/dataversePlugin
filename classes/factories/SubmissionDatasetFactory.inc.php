@@ -11,7 +11,8 @@ import('plugins.generic.dataverse.classes.exception.MissingDepositFileException'
 class SubmissionDatasetFactory extends DatasetFactory
 {
     private $submission;
-    private bool $includeFiles;
+    /** @var bool */
+    private $includeFiles;
 
     public function __construct(Submission $submission, bool $includeFiles = true)
     {
