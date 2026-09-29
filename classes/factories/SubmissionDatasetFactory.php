@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\dataverse\classes\factories;
 
 use APP\submission\Submission;
+use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
 use APP\author\Author;
 use APP\core\Application;
 use PKP\file\TemporaryFile;
@@ -22,12 +23,14 @@ use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 class SubmissionDatasetFactory extends DatasetFactory
 {
     private $submission;
+    private bool $includeFiles;
     private $draftDatasetFileRepo;
     private $dataverseClient;
 
-    public function __construct(Submission $submission)
+    public function __construct(Submission $submission, bool $includeFiles = true)
     {
         $this->submission = $submission;
+        $this->includeFiles = $includeFiles;
         $this->draftDatasetFileRepo = Repo::draftDatasetFile();
     }
 
@@ -59,7 +62,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['depositor'] = $this->getDatasetDepositor();
         $props['dateOfDeposit'] = date('Y-m-d', time());
         $props['relatedPublication'] = $this->getDatasetRelatedPublication($publication);
-        $props['files'] = $this->getDatasetFiles();
+        $props['files'] = $this->includeFiles ? $this->getDatasetFiles() : [];
 
         $this->sanitizeAdditionalProps($props);
 
@@ -162,7 +165,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         }
 
         $temporaryFiles = array_map(
-            function (DraftDatasetFile $draftDatasetFile) use ($draftDatasetFileRepo) {
+            function (DraftDatasetFile $draftDatasetFile) {
                 $temporaryFileManager = new TemporaryFileManager();
                 $file = $temporaryFileManager->getFile(
                     $draftDatasetFile->getData('fileId'),
@@ -171,14 +174,10 @@ class SubmissionDatasetFactory extends DatasetFactory
                 if (!is_null($file)) {
                     return $file;
                 }
-                $draftDatasetFileRepo->delete($draftDatasetFile);
+                throw new MissingDepositFileException(__('plugins.generic.dataverse.error.sourceFileMissing'));
             },
             $draftDatasetFiles
         );
-
-        if (empty(array_filter($temporaryFiles))) {
-            return [];
-        }
 
         $datasetFiles = array_map(
             function (TemporaryFile $temporaryFile) {

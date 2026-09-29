@@ -597,3 +597,6 @@ msgstr "A petición"
 
 msgid "plugins.generic.dataverse.report.headers.statement.publiclyUnavailable"
 msgstr "Indisponibles públicamente"
+
+msgid "plugins.generic.dataverse.error.sourceFileMissing"
+msgstr "Un archivo seleccionado para el depósito ya no está disponible. Vuelva a cargar el archivo ausente antes de depositar los datos de investigación."
