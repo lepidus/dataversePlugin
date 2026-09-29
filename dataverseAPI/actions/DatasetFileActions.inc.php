@@ -4,6 +4,7 @@ use GuzzleHttp\Psr7\Utils;
 
 import('plugins.generic.dataverse.dataverseAPI.actions.interfaces.DatasetFileActionsInterface');
 import('plugins.generic.dataverse.dataverseAPI.actions.DataverseActions');
+import('plugins.generic.dataverse.classes.exception.DataverseException');
 
 class DatasetFileActions extends DataverseActions implements DatasetFileActionsInterface
 {
@@ -35,7 +36,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         }, $jsonContent['data']);
     }
 
-    public function add(string $persistentId, string $filename, string $filePath): void
+    public function add(string $persistentId, string $filename, string $filePath): array
     {
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId', 'add'],
@@ -55,7 +56,26 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             ],
         ];
 
-        $this->nativeAPIRequest('POST', $uri, $options);
+        $response = $this->nativeAPIRequest('POST', $uri, $options);
+        $content = json_decode((string) $response->getBody(), true);
+        $files = $content['data']['files'] ?? [];
+        if (!is_array($files) || !$files) {
+            throw new DataverseException(__('plugins.generic.dataverse.error.depositPending'));
+        }
+        return array_map(function ($file): array {
+            if (!is_array($file)) {
+                throw new DataverseException(__('plugins.generic.dataverse.error.depositPending'));
+            }
+            $dataFile = $file['dataFile'] ?? [];
+            if (!is_array($dataFile) || !isset($dataFile['id']) || !is_int($dataFile['id']) || $dataFile['id'] < 1) {
+                throw new DataverseException(__('plugins.generic.dataverse.error.depositPending'));
+            }
+            return [
+                'id' => $dataFile['id'],
+                'checksum' => $dataFile['checksum'] ?? null,
+                'size' => $dataFile['filesize'] ?? null,
+            ];
+        }, $files);
     }
 
     public function delete(int $datasetFileId): void

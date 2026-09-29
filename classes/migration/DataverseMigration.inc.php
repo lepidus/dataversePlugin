@@ -5,10 +5,13 @@ use Illuminate\Database\Schema\Builder;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
+import('plugins.generic.dataverse.classes.migration.DepositMigration');
+
 class DataverseMigration extends Migration
 {
     public function up(): void
     {
+        (new DepositMigration())->up();
         if (!Capsule::schema()->hasTable('dataverse_studies')) {
             Capsule::schema()->create('dataverse_studies', function (Blueprint $table) {
                 $table->bigInteger('study_id')->autoIncrement();
