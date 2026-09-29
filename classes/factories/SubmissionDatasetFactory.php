@@ -182,6 +182,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $datasetFiles = array_map(
             function (TemporaryFile $temporaryFile) {
                 $datasetFile = new DatasetFile();
+                $datasetFile->setId($temporaryFile->getId());
                 $datasetFile->setOriginalFileName($temporaryFile->getOriginalFileName());
                 $datasetFile->setPath($temporaryFile->getFilePath());
                 return $datasetFile;

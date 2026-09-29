@@ -281,6 +281,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $currentDate = date('Y-m-d', time());
 
         $datasetFile = new DatasetFile();
+        $datasetFile->setId($this->temporaryFile->getId());
         $datasetFile->setOriginalFileName($this->temporaryFile->getOriginalFileName());
         $datasetFile->setPath($this->temporaryFile->getFilePath());
 
