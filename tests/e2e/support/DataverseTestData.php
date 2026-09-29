@@ -243,7 +243,7 @@ function eventLog(int $submissionId): array
         ->getMany()
         ->map(fn ($eventLog) => [
             'message' => $eventLog->getMessage(),
-            'username' => Repo::user()->get($eventLog->getUserId(), true)?->getUsername(),
+            'username' => $eventLog->getUserId() ? Repo::user()->get($eventLog->getUserId(), true)?->getUsername() : null,
         ])
         ->values()
         ->all();

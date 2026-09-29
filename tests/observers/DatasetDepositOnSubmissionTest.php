@@ -22,10 +22,13 @@ class DatasetDepositOnSubmissionTest extends DatabaseTestCase
 
     protected function tearDown(): void
     {
-        $this->deleteDatasetsFromDataverse();
-        $this->tearDownFixture();
-        parent::tearDown();
-        $this->restoreCoreSchemas();
+        try {
+            $this->deleteDatasetsFromDataverse();
+        } finally {
+            $this->tearDownFixture();
+            parent::tearDown();
+            $this->restoreCoreSchemas();
+        }
     }
 
     private function submit(Submission $submission): void

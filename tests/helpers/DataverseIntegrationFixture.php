@@ -153,6 +153,10 @@ trait DataverseIntegrationFixture
             }
         }
 
+        if (empty($this->datasetPersistentIds)) {
+            return;
+        }
+
         $datasetActions = (new DataverseClient())->getDatasetActions();
         foreach (array_unique($this->datasetPersistentIds) as $persistentId) {
             try {
