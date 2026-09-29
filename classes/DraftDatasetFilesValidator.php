@@ -61,6 +61,17 @@ class DraftDatasetFilesValidator
         return false;
     }
 
+    public function datasetHasNonReadmeFile(array $draftDatasetFiles): bool
+    {
+        foreach ($draftDatasetFiles as $file) {
+            if (!$this->filenameHasReadmeKeyword(strtolower($file->getFileName()))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function filenameHasReadmeKeyword(string $fileName): bool
     {
         $readmeKeywords = ['readme', 'leiame', 'leia-me', 'leame'];

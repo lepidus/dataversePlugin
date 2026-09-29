@@ -326,7 +326,7 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.readmeFile.required');
         }
 
-        if (count($draftDatasetFiles) == 1) {
+        if (!$datasetFilesValidator->datasetHasNonReadmeFile($draftDatasetFiles)) {
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.notSolelyReadmeFile');
         }
 
