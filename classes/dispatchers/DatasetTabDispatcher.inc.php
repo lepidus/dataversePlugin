@@ -105,7 +105,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $associateFormAction = $this->getApiUrl('datasets/associate', ['submissionId' => $submission->getId()]);
 
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
-        $factory = new SubmissionDatasetFactory($submission);
+        $factory = new SubmissionDatasetFactory($submission, false);
         $dataset = $factory->getDataset();
 
         $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);

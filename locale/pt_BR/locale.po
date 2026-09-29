@@ -577,3 +577,5 @@ msgstr "Sob demanda"
 msgid "plugins.generic.dataverse.report.headers.statement.publiclyUnavailable"
 msgstr "Indisponíveis publicamente"
 
+msgid "plugins.generic.dataverse.error.sourceFileMissing"
+msgstr "Um arquivo selecionado para o depósito não está mais disponível. Reenvie o arquivo ausente antes de depositar os dados de pesquisa."

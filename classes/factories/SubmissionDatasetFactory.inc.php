@@ -6,14 +6,17 @@ import('plugins.generic.dataverse.classes.entities.DatasetAuthor');
 import('plugins.generic.dataverse.classes.entities.DatasetContact');
 import('plugins.generic.dataverse.classes.entities.DatasetFile');
 import('plugins.generic.dataverse.classes.entities.DatasetRelatedPublication');
+import('plugins.generic.dataverse.classes.exception.MissingDepositFileException');
 
 class SubmissionDatasetFactory extends DatasetFactory
 {
     private $submission;
+    private bool $includeFiles;
 
-    public function __construct(Submission $submission)
+    public function __construct(Submission $submission, bool $includeFiles = true)
     {
         $this->submission = $submission;
+        $this->includeFiles = $includeFiles;
     }
 
     protected function sanitizeProps(): array
@@ -34,7 +37,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['depositor'] = $this->getDatasetDepositor();
         $props['dateOfDeposit'] = date('Y-m-d', time());
         $props['relatedPublication'] = $this->getDatasetRelatedPublication($publication);
-        $props['files'] = $this->getDatasetFiles();
+        $props['files'] = $this->includeFiles ? $this->getDatasetFiles() : [];
 
         return $props;
     }
@@ -126,22 +129,18 @@ class SubmissionDatasetFactory extends DatasetFactory
             return [];
         }
 
-        $temporaryFiles = array_map(function (DraftDatasetFile $draftDatasetFile) use ($draftDatasetFileDAO) {
+        $temporaryFiles = array_map(function (DraftDatasetFile $draftDatasetFile) {
             import('lib.pkp.classes.file.TemporaryFileManager');
             $temporaryFileManager = new TemporaryFileManager();
             $file = $temporaryFileManager->getFile(
                 $draftDatasetFile->getData('fileId'),
                 $draftDatasetFile->getData('userId')
             );
-            if (!is_null($file)) {
-                return $file;
+            if (is_null($file)) {
+                throw new MissingDepositFileException(__('plugins.generic.dataverse.error.sourceFileMissing'));
             }
-            $draftDatasetFileDAO->deleteById($draftDatasetFile->getId());
+            return $file;
         }, $draftDatasetFiles);
-
-        if (empty(array_filter($temporaryFiles))) {
-            return [];
-        }
 
         $datasetFiles = array_map(function (TemporaryFile $temporaryFile) {
             $datasetFile = new DatasetFile();
