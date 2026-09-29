@@ -141,7 +141,7 @@ msgid "plugins.generic.dataverse.error.readmeFile.required"
 msgstr "It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files"
 
 msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
-msgstr "The research data cannot consist solely of README files"
+msgstr "The research data must contain at least one readable, non-empty file besides README files, either directly or inside a ZIP archive."
 
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Error getting research data to Dataverse: {$error}"
