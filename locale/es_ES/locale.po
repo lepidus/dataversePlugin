@@ -133,7 +133,7 @@ msgid "plugins.generic.dataverse.error.readmeFileRequired"
 msgstr "Es obligatorio enviar un archivo README, en formato PDF o TXT, que acompañe a los archivos de datos de la investigación"
 
 msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
-msgstr "Los datos de investigación no pueden consistir únicamente en el archivo README"
+msgstr "Los datos de investigación no pueden consistir únicamente en archivos README"
 
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro al obtener datos de investigación en Dataverse: {$error}"
