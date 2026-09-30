@@ -29,11 +29,17 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
     private string $persistentId = 'doi:10.5072/FK2/ABCDEF';
     private string $externalDatasetUrl = 'https://doi.org/10.1234/zenodo.98765';
 
+    protected function getMockedRegistryKeys(): array
+    {
+        return ['hooks'];
+    }
+
     public function setUp(): void
     {
         parent::setUp();
         $plugin = new DataversePlugin();
         $dispatcher = new DataStatementDispatcher($plugin);
+        app()->get('schema')->get('publication', true);
 
         $this->context = $this->createTestContext();
         $this->createTestSubmission();
@@ -53,6 +59,7 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         }
 
         $this->deleteTestContext($this->context);
+        app()->get('schema')->get('publication', true);
     }
 
     private function createTestSubmission()

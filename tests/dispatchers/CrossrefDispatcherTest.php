@@ -28,6 +28,11 @@ class CrossrefDispatcherTest extends DatabaseTestCase
     private string $doi = '10.1234/PublicKnowledge.17';
     private string $persistentId = 'doi:10.5072/FK2/ABCDEF';
 
+    protected function getMockedRegistryKeys(): array
+    {
+        return ['hooks'];
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

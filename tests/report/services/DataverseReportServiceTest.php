@@ -21,11 +21,17 @@ class DataverseReportServiceTest extends DatabaseTestCase
 
     private $context;
 
+    protected function getMockedRegistryKeys(): array
+    {
+        return ['hooks'];
+    }
+
     public function setUp(): void
     {
         parent::setUp();
         $plugin = new DataversePlugin();
         $dispatcher = new DataStatementDispatcher($plugin);
+        app()->get('schema')->get('publication', true);
         $this->context = $this->createTestContext();
     }
 
@@ -33,6 +39,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
     {
         parent::tearDown();
         $this->deleteTestContext($this->context);
+        app()->get('schema')->get('publication', true);
     }
 
     private function createTestSubmission($context, $data): Submission

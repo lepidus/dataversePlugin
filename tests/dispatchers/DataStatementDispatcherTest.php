@@ -16,11 +16,17 @@ class DataStatementDispatcherTest extends DatabaseTestCase
     private $context;
     private $submissionId;
 
+    protected function getMockedRegistryKeys(): array
+    {
+        return ['hooks'];
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
         $plugin = new DataversePlugin();
         $dispatcher = new DataStatementDispatcher($plugin);
+        app()->get('schema')->get('publication', true);
         $this->context = $this->createTestContext();
     }
 
@@ -30,6 +36,7 @@ class DataStatementDispatcherTest extends DatabaseTestCase
         $submission = Repo::submission()->get($this->submissionId);
         Repo::submission()->delete($submission);
         $this->deleteTestContext($this->context);
+        app()->get('schema')->get('publication', true);
     }
 
     private function createTestPublication(array $data): int
