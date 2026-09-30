@@ -1,7 +1,14 @@
 import {expect, test} from '@playwright/test';
 import {storageStates} from './support/globalSetup.js';
 import {addResearchDataFile} from './support/researchData.js';
-import {createSubmission, deleteDeposit, eventLog} from './support/testData.js';
+import {
+	REQUIRED_METADATA_LABELS,
+	configureCollectionWithRequiredMetadata,
+	configurePlugin,
+	createSubmission,
+	deleteDeposit,
+	eventLog,
+} from './support/testData.js';
 
 test.use({storageState: storageStates.author});
 
@@ -188,5 +195,44 @@ test.describe('submission deposit', () => {
 		await page.getByRole('dialog').getByRole('button', {name: 'Submit'}).click();
 		await expect(page.getByRole('heading', {name: 'Submission complete'})).toBeVisible({timeout: 60000});
 		expect(deleteDeposit(submission.id).deleted).toBe(true);
+	});
+});
+
+test.describe('with a collection that requires additional metadata', () => {
+	test.beforeAll(() => configureCollectionWithRequiredMetadata());
+	test.afterAll(() => configurePlugin());
+
+	test('the collection required metadata is filled in and validated in the review', async ({page}) => {
+		await openWizard(page, 'ready-to-submit');
+		const review = page.locator('[data-cy="dataverse-review-dataset-metadata"]');
+		const reviewItem = (field) => review.locator('.submissionWizard__reviewPanel__item', {
+			has: page.getByRole('heading', {name: REQUIRED_METADATA_LABELS[field], exact: true}),
+		});
+		const field = (name) => page.locator(`#datasetMetadata-${name}-control`);
+
+		await openStep(page, 'editors');
+		for (const label of Object.values(REQUIRED_METADATA_LABELS)) {
+			await expect(page.locator('.pkpFormFieldLabel', {hasText: label})).toBeVisible();
+		}
+
+		await openReview(page);
+		for (const name of Object.keys(REQUIRED_METADATA_LABELS)) {
+			await expect(reviewItem(name)).toContainText('This field is required.');
+		}
+
+		await openStep(page, 'editors');
+		await field('datasetAlternativeURL').fill('invalid-url');
+		await field('datasetDsDescriptionDate').fill('june 32, 2023');
+		await openReview(page);
+		await expect(reviewItem('datasetAlternativeURL')).toContainText('This is not a valid URL.');
+		await expect(reviewItem('datasetDsDescriptionDate')).toContainText('This is not a valid date.');
+
+		await openStep(page, 'editors');
+		await field('datasetAlternativeURL').fill('https://example.com');
+		await field('datasetDsDescriptionDate').fill('2023-06-01');
+		await field('datasetPSRI1').selectOption('Yes');
+		await field('datasetPSRI2').selectOption('No');
+		await openReview(page);
+		await expect(review).not.toContainText(/This field is required\.|This is not a valid/);
 	});
 });

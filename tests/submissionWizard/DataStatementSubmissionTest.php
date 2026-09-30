@@ -94,6 +94,21 @@ class DataStatementSubmissionTest extends DatabaseTestCase
         $this->assertArrayNotHasKey('dataStatementReason', $errors);
     }
 
+    public function testSubmissionStartedWithoutDataStatementIsSubmittedOnceItIsInformed(): void
+    {
+        $submission = $this->createSubmission();
+        $this->assertArrayHasKey('dataStatement', Repo::submission()->validateSubmit($submission, $this->context));
+
+        Repo::publication()->edit($submission->getCurrentPublication(), [
+            'dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT],
+        ]);
+        $submission = Repo::submission()->get($submission->getId());
+        $this->assertArrayNotHasKey('dataStatement', Repo::submission()->validateSubmit($submission, $this->context));
+
+        Repo::submission()->submit($submission, $this->context);
+        $this->assertNotNull(Repo::submission()->get($submission->getId())->getData('dateSubmitted'));
+    }
+
     public function testDeselectedStatementTypesDiscardTheirDetails(): void
     {
         $submission = $this->createSubmission([

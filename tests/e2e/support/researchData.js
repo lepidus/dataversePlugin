@@ -16,3 +16,15 @@ export async function addResearchDataFile(page, name, mimeType, contents) {
 	await expect(form).toBeHidden();
 	await expect(page.locator('[data-cy="dataverse-file-name"]', {hasText: name})).toBeVisible();
 }
+
+export async function openPanel(page, submission, panelName) {
+	await page.goto(`index.php/publicknowledge/dashboard/${page.dashboard}?workflowSubmissionId=${submission.id}`);
+	await page.getByRole('link', {name: panelName, exact: true}).click();
+}
+
+export async function openResearchData(page, submission) {
+	await openPanel(page, submission, 'Research data');
+	const panel = page.locator('.dataverseResearchData');
+	await expect(panel.locator('[data-cy="dataverse-citation"], .dataverseResearchData__empty')).toBeVisible({timeout: 30000});
+	return panel;
+}

@@ -39,8 +39,10 @@ $context = Application::getContextDAO()->getByPath(CONTEXT_PATH);
 $command = $argv[1] ?? '';
 
 $output = match ($command) {
-    'configure' => configure($context),
+    'configure' => configure($context, json_decode($argv[2] ?? '{}', true)),
     'create-submission' => createSubmission($context, $argv[2] ?? 'details', json_decode($argv[3] ?? '{}', true)),
+    'assign-reviewer' => assignReviewer((int) ($argv[2] ?? 0), $argv[3] ?? ''),
+    'dataset-metadata' => datasetMetadata((int) ($argv[2] ?? 0)),
     'delete-dataset' => deleteDataset((int) ($argv[2] ?? 0)),
     'event-log' => eventLog((int) ($argv[2] ?? 0)),
     'delete-dataset-by-persistent-id' => deleteDatasetByPersistentId($argv[2] ?? ''),
@@ -49,10 +51,10 @@ $output = match ($command) {
 
 echo json_encode($output), "\n";
 
-function configure($context): array
+function configure($context, array $options): array
 {
     $credentials = [
-        'dataverseUrl' => preg_replace('/\/+$/', '', (string) getenv('DATAVERSE_URL')),
+        'dataverseUrl' => preg_replace('/\/+$/', '', (string) ($options['dataverseUrl'] ?? getenv('DATAVERSE_URL'))),
         'apiToken' => getenv('DATAVERSE_API_TOKEN'),
         'termsOfUse' => getenv('DATAVERSE_TERMS_OF_USE'),
     ];
@@ -68,7 +70,7 @@ function configure($context): array
         'apiToken' => (new DataEncryption())->encryptString($credentials['apiToken']),
         'termsOfUse' => ['en' => $credentials['termsOfUse']],
         'additionalInstructions' => [],
-        'datasetPublish' => DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_PUBLISHED,
+        'datasetPublish' => $options['datasetPublish'] ?? DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_PUBLISHED,
     ]);
     (new DataverseConfigurationDAO())->insert($context->getId(), $configuration);
 
@@ -76,7 +78,7 @@ function configure($context): array
         Cache::forget(DataverseCollectionActions::getCacheKey($cacheId, $context->getId()));
     }
 
-    return ['configured' => true];
+    return ['configured' => true, 'application' => Application::get()->getName()];
 }
 
 function createSubmission($context, string $scenario, array $options): array
@@ -145,6 +147,10 @@ function createSubmission($context, string $scenario, array $options): array
         deposit(Repo::submission()->get($submissionId), $author);
     }
 
+    if (($options['stage'] ?? null) === 'review') {
+        DAORegistry::getDAO('ReviewRoundDAO')->build($submissionId, WORKFLOW_STAGE_ID_EXTERNAL_REVIEW, 1);
+    }
+
     return [
         'id' => $submissionId,
         'title' => $title,
@@ -154,12 +160,15 @@ function createSubmission($context, string $scenario, array $options): array
 
 function submittedData(?string $stage): array
 {
-    $isProduction = $stage === 'production' || Application::get()->getName() !== 'ojs2';
+    $stageIds = ['production' => WORKFLOW_STAGE_ID_PRODUCTION, 'review' => WORKFLOW_STAGE_ID_EXTERNAL_REVIEW];
+    $stageId = Application::get()->getName() === 'ojs2'
+        ? ($stageIds[$stage] ?? WORKFLOW_STAGE_ID_SUBMISSION)
+        : WORKFLOW_STAGE_ID_PRODUCTION;
 
     return [
         'submissionProgress' => '',
         'dateSubmitted' => Core::getCurrentDate(),
-        'stageId' => $isProduction ? WORKFLOW_STAGE_ID_PRODUCTION : WORKFLOW_STAGE_ID_SUBMISSION,
+        'stageId' => $stageId,
     ];
 }
 
@@ -234,6 +243,34 @@ function addDraftDatasetFile($submission, int $userId, string $fileName, string 
         'fileName' => $fileName,
     ]);
     Repo::draftDatasetFile()->add($draftDatasetFile);
+}
+
+function assignReviewer(int $submissionId, string $username): array
+{
+    $reviewRound = DAORegistry::getDAO('ReviewRoundDAO')->getLastReviewRoundBySubmissionId($submissionId);
+    $reviewer = Repo::user()->getByUsername($username, true);
+
+    $reviewAssignmentId = Repo::reviewAssignment()->add(Repo::reviewAssignment()->newDataObject([
+        'submissionId' => $submissionId,
+        'reviewerId' => $reviewer->getId(),
+        'reviewRoundId' => $reviewRound->getId(),
+        'stageId' => $reviewRound->getStageId(),
+        'round' => $reviewRound->getRound(),
+        'dateAssigned' => Core::getCurrentDate(),
+        'dateNotified' => Core::getCurrentDate(),
+        'dateResponseDue' => date('Y-m-d H:i:s', strtotime('+1 week')),
+        'dateDue' => date('Y-m-d H:i:s', strtotime('+2 weeks')),
+    ]));
+
+    return ['reviewAssignmentId' => $reviewAssignmentId];
+}
+
+function datasetMetadata(int $submissionId): array
+{
+    $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
+    $dataset = (new DataverseClient())->getDatasetActions()->get($study->getPersistentId());
+
+    return array_filter($dataset->getAllData(), fn ($value) => is_scalar($value));
 }
 
 function eventLog(int $submissionId): array

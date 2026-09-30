@@ -1,5 +1,6 @@
 variables:
     PLUGIN_NAME: 'dataverse'
+    DATAVERSE_CUSTOM_REQUIRED_METADATA_URL: 'https://demo.dataverse.org/dataverse/customRequiredMetadataFields'
 
 include:
   - project: 'documentacao-e-tarefas/modelosparaintegracaocontinua'

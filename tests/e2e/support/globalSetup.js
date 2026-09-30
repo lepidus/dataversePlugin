@@ -19,13 +19,17 @@ async function fetchCollectionName({url, apiToken}) {
 	return data.name;
 }
 
-async function saveLogin(browser, baseURL, username, storageState) {
-	const page = await browser.newPage({baseURL});
+export async function logIn(page, username) {
 	await page.goto('index.php/publicknowledge/en/login');
 	await page.locator('input#username').fill(username);
 	await page.locator('input#password').fill(username + username);
 	await page.locator('form#login button').click();
 	await page.waitForURL(/dashboard|submissions/);
+}
+
+async function saveLogin(browser, baseURL, username, storageState) {
+	const page = await browser.newPage({baseURL});
+	await logIn(page, username);
 	await page.context().storageState({path: storageState});
 	await page.close();
 }
@@ -33,7 +37,7 @@ async function saveLogin(browser, baseURL, username, storageState) {
 export default async function globalSetup(config) {
 	const credentials = dataverseCredentials();
 	process.env.DATAVERSE_COLLECTION_NAME = await fetchCollectionName(credentials);
-	configurePlugin();
+	process.env.PKP_APPLICATION = configurePlugin().application;
 
 	const {baseURL} = config.projects[0].use;
 	const browser = await chromium.launch();

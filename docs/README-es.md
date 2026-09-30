@@ -80,9 +80,10 @@ Las pruebas que se comunican con Dataverse usan una colección Dataverse real. E
 export DATAVERSE_URL="https://demo.dataverse.org/dataverse/myDataverseAlias"
 export DATAVERSE_API_TOKEN="abcd-abcd-abcd-abcd-abcdefghijkl"
 export DATAVERSE_TERMS_OF_USE="https://dataverse.org/best-practices/harvard-dataverse-general-terms-use"
+export DATAVERSE_CUSTOM_REQUIRED_METADATA_URL="https://demo.dataverse.org/dataverse/customRequiredMetadataFields"
 ```
 
-Sin ellas, esas pruebas se omiten localmente y fallan en la CI.
+`DATAVERSE_CUSTOM_REQUIRED_METADATA_URL` apunta a una colección, en el mismo servidor y accesible con el mismo token, cuyos bloques de metadatos exigen `alternativeURL`, `dsDescriptionDate`, `PSRI1` y `PSRI2`; la usan los escenarios de metadatos exigidos por la colección. Sin estas variables, las pruebas PHPUnit que las necesitan se omiten localmente y fallan en la CI, y la suite de Playwright no se inicia.
 
 ### Pruebas unitarias y de integración (PHPUnit)
 
@@ -91,13 +92,13 @@ Ejecuta desde la raíz del directorio de tu aplicación PKP:
 php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml plugins/generic/dataverse/tests
 ```
 
-Los escenarios de configuración, de envío y del flujo de trabajo se ejecutan contra la base de datos de la aplicación, archivos reales y la colección Dataverse anterior, sin mocks.
+Los escenarios de configuración, de envío, del flujo de trabajo y de la página pública, incluidos los metadatos exigidos por una colección, se ejecutan contra la base de datos de la aplicación, archivos reales y la colección Dataverse anterior, sin mocks.
 
 ### Pruebas de extremo a extremo (Playwright)
 
-Aquí solo se prueba el comportamiento que existe únicamente en el navegador: la validación del formulario de configuración hecha en el navegador, los campos y secciones condicionales del asistente de envío, el modal de carga de datos de investigación, el paso de revisión y los paneles Datos de investigación y Declaración de datos del flujo de trabajo. El escenario de publicación publica un dataset en la colección de prueba en cada ejecución, y Dataverse no permite que un token de API común elimine un dataset publicado, así que usa una colección destinada a pruebas.
+Aquí solo se prueba el comportamiento que existe únicamente en el navegador: la validación del formulario de configuración hecha en el navegador, los campos y secciones condicionales del asistente de envío, el modal de carga de datos de investigación, el paso de revisión, los paneles Datos de investigación y Declaración de datos del flujo de trabajo, los pasos de las decisiones editoriales, los datos de investigación mostrados a los evaluadores y la página pública. Los escenarios de publicación y de aceptación publican un dataset en la colección de prueba en cada ejecución, y Dataverse no permite que un token de API común elimine un dataset publicado, así que usa una colección destinada a pruebas.
 
-La aplicación debe estar en ejecución con el conjunto de datos de prueba de referencia (contexto `publicknowledge`, usuarios `dbarnes` y `eostrom`) y el idioma `en`. En el directorio del plugin:
+La aplicación debe estar en ejecución con el conjunto de datos de prueba de referencia (contexto `publicknowledge`, usuarios `dbarnes`, `eostrom` y, en OJS, `jjanssen`) y el idioma `en`. En el directorio del plugin:
 ```
 npm install
 npx playwright install chromium
@@ -105,15 +106,6 @@ npm run test:e2e
 ```
 
 `BASE_URL` apunta a la aplicación (por defecto `http://localhost:8000`) y `APP_ROOT` a su directorio raíz (por defecto: tres niveles por encima del plugin). Para ejecutarlas en OPS, define ambas, por ejemplo `APP_ROOT=/ruta/a/ops BASE_URL=http://localhost:8001 npm run test:e2e`.
-
-### Pruebas de Cypress
-
-Los escenarios de evaluación, sitio público, envíos heredados y metadatos obligatorios personalizados siguen siendo pruebas de Cypress. Crea un archivo `cypress.env.json` en la raíz del directorio de tu aplicación PKP con `baseUrl`, `dataverseUrl`, `dataverseApiToken` y `dataverseTermsOfUse` y ejecuta:
-```
-npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
-```
-
-El idioma de tu sistema operativo y de la aplicación PKP debe ser `en` para que las pruebas pasen.
 
 ## Créditos
 

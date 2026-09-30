@@ -235,19 +235,33 @@ trait DataverseIntegrationFixture
         ];
 
         if (in_array(false, $credentials, true) || in_array('', $credentials, true)) {
-            $message = 'Requires a real Dataverse: set DATAVERSE_URL, DATAVERSE_API_TOKEN and DATAVERSE_TERMS_OF_USE';
-            getenv('CI') ? $this->fail($message) : $this->markTestSkipped($message);
+            $this->requireEnvironment('Requires a real Dataverse: set DATAVERSE_URL, DATAVERSE_API_TOKEN and DATAVERSE_TERMS_OF_USE');
         }
 
         return $credentials;
     }
 
-    protected function configureWithRealDataverse(): void
+    protected function collectionWithRequiredMetadataUrl(): string
+    {
+        $url = (string) getenv('DATAVERSE_CUSTOM_REQUIRED_METADATA_URL');
+        if ($url === '') {
+            $this->requireEnvironment('Requires a Dataverse collection with custom required metadata: set DATAVERSE_CUSTOM_REQUIRED_METADATA_URL');
+        }
+
+        return preg_replace('/\/+$/', '', $url);
+    }
+
+    private function requireEnvironment(string $message): void
+    {
+        getenv('CI') ? $this->fail($message) : $this->markTestSkipped($message);
+    }
+
+    protected function configureWithRealDataverse(?string $dataverseUrl = null): void
     {
         $credentials = $this->dataverseCredentials();
 
         $_POST = [
-            'dataverseUrl' => $credentials['dataverseUrl'],
+            'dataverseUrl' => $dataverseUrl ?? $credentials['dataverseUrl'],
             'apiToken' => $credentials['apiToken'],
             'termsOfUse' => ['en' => $credentials['termsOfUse']],
             'additionalInstructions' => ['en' => ''],
