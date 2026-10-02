@@ -41,36 +41,43 @@ class CrossrefXmlEditor
                 continue;
             }
 
-            $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
-            if (!$study) {
-                continue;
-            }
-
-            try {
-                $dataset = $this->datasetActions->get($study->getPersistentId());
-            } catch (DataverseException $e) {
-                $error = $e->getMessage();
-                error_log('Dataverse API error on Crossref export: ' . $error);
-
-                continue;
-            }
-
-            if ($dataset->isPublished()) {
-                $doi = preg_replace('/^doi:/i', '', $study->getPersistentId());
-                $this->addDatasetRelationToWorkNode($submissionNode, $doi);
-            }
-
-            $dataStatementTypes = $dataverseDao->getSubmissionStatementTypes($submissionId);
-            if (in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)) {
-                $externalDatasets = $dataverseDao->getSubmissionExternalDatasets($submissionId);
-
-                foreach ($externalDatasets as $externalDatasetUrl) {
-                    $this->addDatasetRelationToWorkNode($submissionNode, $externalDatasetUrl, true);
-                }
-            }
+            $this->addDataverseDatasetRelation($submissionNode, $submissionId);
+            $this->addExternalDatasetRelations($submissionNode, $submissionId, $dataverseDao);
         }
 
         return $depositXml;
+    }
+
+    private function addDataverseDatasetRelation(DOMElement $submissionNode, int $submissionId): void
+    {
+        $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
+        if (!$study) {
+            return;
+        }
+
+        try {
+            $dataset = $this->datasetActions->get($study->getPersistentId());
+        } catch (DataverseException $e) {
+            error_log('Dataverse API error on Crossref export: ' . $e->getMessage());
+            return;
+        }
+
+        if ($dataset->isPublished()) {
+            $doi = preg_replace('/^doi:/i', '', $study->getPersistentId());
+            $this->addDatasetRelationToWorkNode($submissionNode, $doi);
+        }
+    }
+
+    private function addExternalDatasetRelations(DOMElement $submissionNode, int $submissionId, DataverseDAO $dataverseDao): void
+    {
+        $dataStatementTypes = $dataverseDao->getSubmissionStatementTypes($submissionId);
+        if (!in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)) {
+            return;
+        }
+
+        foreach ($dataverseDao->getSubmissionExternalDatasets($submissionId) as $externalDatasetUrl) {
+            $this->addDatasetRelationToWorkNode($submissionNode, $externalDatasetUrl, true);
+        }
     }
 
     public function addDatasetRelationToWorkNode(DOMElement $workNode, string $identifier, bool $isExternalDataset = false): DOMElement
