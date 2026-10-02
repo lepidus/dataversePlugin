@@ -11,6 +11,7 @@ use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
 use APP\plugins\generic\dataverse\DataversePlugin;
 
@@ -167,6 +168,24 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $this->addExternalDatasetsToPublication();
 
         $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit.xml', 'preprint_deposit_external.xml');
+    }
+
+    public function testAddsExternalDatasetRelationWithoutDatasetInDataverse(): void
+    {
+        $this->addExternalDatasetsToPublication();
+        Repo::dataverseStudy()->delete($this->study);
+
+        $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit.xml', 'preprint_deposit_external_only.xml');
+    }
+
+    public function testAddsExternalDatasetRelationWhenDataverseIsUnavailable(): void
+    {
+        $this->addExternalDatasetsToPublication();
+        $mockDatasetActions = $this->createMock(DatasetActions::class);
+        $mockDatasetActions->method('get')->willThrowException(new DataverseException('Service unavailable', 503));
+        $this->xmlEditor = new CrossrefXmlEditor($mockDatasetActions);
+
+        $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit.xml', 'preprint_deposit_external_only.xml');
     }
 
     private function assertAddingOfRelationToWorkNodeMatchesExpected(
