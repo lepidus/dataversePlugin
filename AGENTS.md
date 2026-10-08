@@ -41,7 +41,7 @@ npx playwright install chromium
 npm run test:e2e
 APP_ROOT=/path/to/ops BASE_URL=http://localhost:8001 npm run test:e2e
 
-# Remaining Cypress specs (workflow, review, public site, legacy, linking, custom metadata)
+# Remaining Cypress specs (review, public site, legacy, custom metadata)
 npx cypress run  --config specPattern=plugins/generic/dataverse/cypress/tests
 ```
 
@@ -59,7 +59,8 @@ scenarios are independent and no database reset is needed between runs.
 The remaining Cypress specs still use `cypress.env.json` at the application root (`dataverseUrl`,
 `dataverseApiToken`, `dataverseTermsOfUse`, `baseUrl`, `contextTitles`), are numbered and stateful, and no longer
 have a CI job: they are being migrated to PHPUnit/Playwright one flow at a time. `Test0`/`Test1` (configuration and
-submission wizard) are already gone; the specs left behind depended on the state `Test0` created.
+submission wizard) and `Test2`/`Test6` (workflow panels and dataset linking) are already gone; the specs left behind
+depended on the state those created.
 `dataverseCustomRequiredMetadataFieldsUrl` is optional but load-bearing: without it
 `Test7_customRequiredMetadataFields` **silently self-skips**.
 
@@ -319,8 +320,10 @@ PHPUnit, and reach for Playwright only when the behaviour exists solely in the b
 (`tests/helpers/`) gives them a real context, section, user, submission, temporary and submission files, and
 registers the plugin exactly as a web request would (`mockRequest()` with the context path, then
 `DataversePlugin::register()`), so gates, schemas and hooks are the production ones. Validation is exercised through
-`Repo::submission()->validateSubmit()`, deposit through `Repo::submission()->submit()`, and configuration through
-`DataverseSettingsForm` fed by `$_POST` + `readInputData()`. Plugin hooks, the request and its user are restored
+`Repo::submission()->validateSubmit()`, deposit through `Repo::submission()->submit()`, configuration through
+`DataverseSettingsForm` fed by `$_POST` + `readInputData()`, and the workflow operations (update, delete, associate,
+files) through `DatasetService`/`DatasetFileService` on a dataset the fixture deposits (`createDepositedSubmission()`)
+and deletes again in `tearDown` (`deleteDatasetsFromDataverse()`). Plugin hooks, the request and its user are restored
 between tests (`getMockedRegistryKeys()`), and the core publication/submission schemas are reloaded afterwards, so
 these tests do not leak plugin behaviour into the rest of the suite.
 
@@ -329,6 +332,14 @@ these tests do not leak plugin behaviour into the rest of the suite.
 forward navigation goes through "Continue": step labels only open steps already visited. The wizard only refreshes
 its `submission` state after an autosave when `dateSubmitted` is set, so the review panels that read
 `submission.dataset*` show the new values only after a reload — the deposit scenario asserts them after one.
+
+`workflow.spec.js` covers the two workflow panels. `DataverseTestData.php create-submission deposited` deposits the
+dataset from the CLI (optionally in production, with `authorCanEdit: false` or a preset data statement), so each
+scenario starts with its own dataset and the spec deletes it afterwards. The controller-only paths (deposit and
+publish from the panel, the README check, the keyword payload of `FieldControlledVocab`) are covered there. The
+publishing scenario **publishes a dataset for real** on every run: Dataverse only lets a superuser destroy a published
+dataset, so each run leaves one published dataset per application in the test collection — a cost accepted to keep
+that flow tested.
 
 `cypress/` holds the Cypress specs not migrated yet, plus plugin-specific commands in
 `cypress/support/commands.js` (`findSubmission`, `waitDatasetTabLoading`, `waitDataStatementTabLoading`, …).

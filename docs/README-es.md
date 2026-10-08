@@ -91,11 +91,11 @@ Ejecuta desde la raíz del directorio de tu aplicación PKP:
 php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml plugins/generic/dataverse/tests
 ```
 
-Los escenarios de configuración y del flujo de envío se ejecutan contra la base de datos de la aplicación, archivos reales y la colección Dataverse anterior, sin mocks.
+Los escenarios de configuración, de envío y del flujo de trabajo se ejecutan contra la base de datos de la aplicación, archivos reales y la colección Dataverse anterior, sin mocks.
 
 ### Pruebas de extremo a extremo (Playwright)
 
-Aquí solo se prueba el comportamiento que existe únicamente en el navegador: la validación del formulario de configuración hecha en el navegador, los campos y secciones condicionales del asistente de envío, el modal de carga de datos de investigación y el paso de revisión.
+Aquí solo se prueba el comportamiento que existe únicamente en el navegador: la validación del formulario de configuración hecha en el navegador, los campos y secciones condicionales del asistente de envío, el modal de carga de datos de investigación, el paso de revisión y los paneles Datos de investigación y Declaración de datos del flujo de trabajo. El escenario de publicación publica un dataset en la colección de prueba en cada ejecución, y Dataverse no permite que un token de API común elimine un dataset publicado, así que usa una colección destinada a pruebas.
 
 La aplicación debe estar en ejecución con el conjunto de datos de prueba de referencia (contexto `publicknowledge`, usuarios `dbarnes` y `eostrom`) y el idioma `en`. En el directorio del plugin:
 ```
@@ -108,7 +108,7 @@ npm run test:e2e
 
 ### Pruebas de Cypress
 
-Los escenarios de flujo editorial, evaluación, sitio público, envíos heredados, vinculación de datasets y metadatos obligatorios personalizados siguen siendo pruebas de Cypress. Crea un archivo `cypress.env.json` en la raíz del directorio de tu aplicación PKP con `baseUrl`, `dataverseUrl`, `dataverseApiToken` y `dataverseTermsOfUse` y ejecuta:
+Los escenarios de evaluación, sitio público, envíos heredados y metadatos obligatorios personalizados siguen siendo pruebas de Cypress. Crea un archivo `cypress.env.json` en la raíz del directorio de tu aplicación PKP con `baseUrl`, `dataverseUrl`, `dataverseApiToken` y `dataverseTermsOfUse` y ejecuta:
 ```
 npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
 ```

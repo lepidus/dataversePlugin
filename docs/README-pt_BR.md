@@ -94,11 +94,11 @@ Execute na raíz do diretório da sua aplicação PKP:
 php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml plugins/generic/dataverse/tests
 ```
 
-Os cenários de configuração e do fluxo de submissão rodam contra o banco de dados da aplicação, arquivos reais e a coleção Dataverse acima, sem mocks.
+Os cenários de configuração, de submissão e do fluxo de trabalho rodam contra o banco de dados da aplicação, arquivos reais e a coleção Dataverse acima, sem mocks.
 
 ### Testes de Ponta a Ponta (Playwright)
 
-Aqui é testado apenas o comportamento que só existe no navegador: a validação do formulário de configuração feita no navegador, os campos e seções condicionais do assistente de submissão, o modal de envio de dados de pesquisa e a etapa de revisão.
+Aqui é testado apenas o comportamento que só existe no navegador: a validação do formulário de configuração feita no navegador, os campos e seções condicionais do assistente de submissão, o modal de envio de dados de pesquisa, a etapa de revisão e os painéis Dados de pesquisa e Declaração de dados do fluxo de trabalho. O cenário de publicação publica um dataset na coleção de teste a cada execução, e o Dataverse não permite que um token de API comum apague um dataset publicado, então use uma coleção destinada a testes.
 
 A aplicação precisa estar em execução com o conjunto de dados de teste de referência (contexto `publicknowledge`, usuários `dbarnes` e `eostrom`) e o idioma `en`. No diretório do plugin:
 ```
@@ -111,7 +111,7 @@ npm run test:e2e
 
 ### Testes Cypress
 
-Os cenários de fluxo editorial, avaliação, site público, submissões legadas, vinculação de datasets e metadados obrigatórios personalizados ainda são testes Cypress. Crie um arquivo `cypress.env.json` na raíz do diretório da sua aplicação PKP com `baseUrl`, `dataverseUrl`, `dataverseApiToken` e `dataverseTermsOfUse` e execute:
+Os cenários de avaliação, site público, submissões legadas e metadados obrigatórios personalizados ainda são testes Cypress. Crie um arquivo `cypress.env.json` na raíz do diretório da sua aplicação PKP com `baseUrl`, `dataverseUrl`, `dataverseApiToken` e `dataverseTermsOfUse` e execute:
 ```
 npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
 ```

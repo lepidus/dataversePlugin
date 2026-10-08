@@ -4,14 +4,19 @@ use APP\core\Application;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
 use APP\plugins\generic\dataverse\classes\DataEncryption;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
+use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use Illuminate\Support\Facades\Cache;
 use PKP\cliTool\CommandLineTool;
 use PKP\core\Core;
+use PKP\core\Registry;
 use PKP\db\DAORegistry;
+use PKP\facades\Locale;
 use PKP\file\TemporaryFileManager;
 use PKP\security\Role;
 use PKP\submissionFile\SubmissionFile;
@@ -28,14 +33,17 @@ $_SERVER['PATH_INFO'] = CONTEXT_PATH . '/submission';
 define('INDEX_FILE_LOCATION', getcwd() . '/index.php');
 require './lib/pkp/classes/cliTool/CommandLineTool.php';
 new CommandLineTool();
+Locale::setLocale('en');
 
 $context = Application::getContextDAO()->getByPath(CONTEXT_PATH);
 $command = $argv[1] ?? '';
 
 $output = match ($command) {
     'configure' => configure($context),
-    'create-submission' => createSubmission($context, $argv[2] ?? 'details'),
+    'create-submission' => createSubmission($context, $argv[2] ?? 'details', json_decode($argv[3] ?? '{}', true)),
     'delete-dataset' => deleteDataset((int) ($argv[2] ?? 0)),
+    'event-log' => eventLog((int) ($argv[2] ?? 0)),
+    'delete-dataset-by-persistent-id' => deleteDatasetByPersistentId($argv[2] ?? ''),
     default => throw new InvalidArgumentException("Unknown command: {$command}"),
 };
 
@@ -71,7 +79,7 @@ function configure($context): array
     return ['configured' => true];
 }
 
-function createSubmission($context, string $scenario): array
+function createSubmission($context, string $scenario, array $options): array
 {
     $author = Repo::user()->getByUsername(AUTHOR_USERNAME, true);
     $authorGroup = UserGroup::withContextIds([$context->getId()])
@@ -80,15 +88,17 @@ function createSubmission($context, string $scenario): array
         ->first(fn (UserGroup $group) => $group->nameLocaleKey === 'default.groups.name.author');
     $section = Repo::section()->getCollector()->filterByContextIds([$context->getId()])->getMany()->first();
 
-    $isReadyToSubmit = $scenario === 'ready-to-submit';
-    $isDepositingInDataverse = $isReadyToSubmit || $scenario === 'dataverse';
+    $isSubmitted = in_array($scenario, ['submitted', 'deposited']);
+    $isDeposited = $scenario === 'deposited';
+    $hasDraftDatasetFiles = $isDeposited || $scenario === 'ready-to-submit';
+    $isDepositingInDataverse = $hasDraftDatasetFiles || $scenario === 'dataverse';
     $title = 'Sustainable Cities: Co-benefits of mass public transportation in climate change mitigation ' . uniqid();
 
-    $submission = Repo::submission()->newDataObject([
+    $submission = Repo::submission()->newDataObject(array_merge([
         'contextId' => $context->getId(),
         'locale' => 'en',
         'submissionProgress' => 'details',
-    ]);
+    ], $isSubmitted ? submittedData($options['stage'] ?? null) : []));
     $publication = Repo::publication()->newDataObject([
         'locale' => 'en',
         'sectionId' => $section->getId(),
@@ -108,22 +118,79 @@ function createSubmission($context, string $scenario): array
         'country' => $author->getCountry(),
         'includeInBrowse' => true,
     ]));
-    Repo::publication()->edit($submission->getCurrentPublication(), ['primaryContactId' => $authorId]);
-    Repo::stageAssignment()->build($submissionId, $authorGroup->id, $author->getId(), null, true);
+    Repo::publication()->edit($submission->getCurrentPublication(), array_merge(
+        ['primaryContactId' => $authorId],
+        ($options['stage'] ?? null) === 'production' ? issueData($context) : [],
+        $options['dataStatement'] ?? []
+    ));
+    Repo::stageAssignment()->build($submissionId, $authorGroup->id, $author->getId(), null, $options['authorCanEdit'] ?? true);
 
     if ($isDepositingInDataverse) {
-        Repo::publication()->edit(Repo::publication()->get($submission->getData('currentPublicationId')), [
-            'dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED],
+        $publication = Repo::publication()->get($submission->getData('currentPublicationId'));
+        Repo::publication()->edit($publication, [
+            'dataStatementTypes' => array_values(array_unique(array_merge(
+                $publication->getData('dataStatementTypes') ?? [],
+                [DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED]
+            ))),
         ]);
     }
 
-    if ($isReadyToSubmit) {
+    if ($hasDraftDatasetFiles) {
         addGalley($context, $submission, $author->getId());
         addDraftDatasetFile($submission, $author->getId(), 'LEIAME.pdf', 'application/pdf', '%PDF-1.4 readme of the research data');
-        addDraftDatasetFile($submission, $author->getId(), 'Planilha_de_dados.json', 'application/json', '{"measurements": [1, 2, 3]}');
+        addDraftDatasetFile($submission, $author->getId(), 'Planilha_de_dados_ÇÕÔÁÀÃ.json', 'application/json', '{"measurements": [1, 2, 3]}');
     }
 
-    return ['id' => $submissionId, 'title' => $title];
+    if ($isDeposited) {
+        deposit(Repo::submission()->get($submissionId), $author);
+    }
+
+    return [
+        'id' => $submissionId,
+        'title' => $title,
+        'persistentId' => Repo::dataverseStudy()->getBySubmissionId($submissionId)?->getPersistentId(),
+    ];
+}
+
+function submittedData(?string $stage): array
+{
+    $isProduction = $stage === 'production' || Application::get()->getName() !== 'ojs2';
+
+    return [
+        'submissionProgress' => '',
+        'dateSubmitted' => Core::getCurrentDate(),
+        'stageId' => $isProduction ? WORKFLOW_STAGE_ID_PRODUCTION : WORKFLOW_STAGE_ID_SUBMISSION,
+    ];
+}
+
+function issueData($context): array
+{
+    if (Application::get()->getName() !== 'ojs2') {
+        return [];
+    }
+
+    $issue = Repo::issue()->getCollector()
+        ->filterByContextIds([$context->getId()])
+        ->filterByPublished(true)
+        ->getMany()
+        ->first();
+
+    return ['issueId' => $issue->getId()];
+}
+
+function deposit($submission, $author): void
+{
+    Registry::set('user', $author);
+    $submission->setData('datasetLanguage', 'French');
+    $submission->setData('datasetSubject', 'Earth and Environmental Sciences');
+    $submission->setData('datasetLicense', 'CC BY 4.0');
+    $submission->setData('datasetRelationType', 'IsSupplementedBy');
+
+    $dataset = (new SubmissionDatasetFactory($submission))->getDataset();
+    $depositInfo = (new DatasetService())->deposit($submission, $dataset);
+    if ($depositInfo['status'] !== 'Success') {
+        throw new RuntimeException(__($depositInfo['message'], $depositInfo['messageParams']));
+    }
 }
 
 function addGalley($context, $submission, int $userId): void
@@ -169,6 +236,19 @@ function addDraftDatasetFile($submission, int $userId, string $fileName, string 
     Repo::draftDatasetFile()->add($draftDatasetFile);
 }
 
+function eventLog(int $submissionId): array
+{
+    return Repo::eventLog()->getCollector()
+        ->filterByAssoc(Application::ASSOC_TYPE_SUBMISSION, [$submissionId])
+        ->getMany()
+        ->map(fn ($eventLog) => [
+            'message' => $eventLog->getMessage(),
+            'username' => $eventLog->getUserId() ? Repo::user()->get($eventLog->getUserId(), true)?->getUsername() : null,
+        ])
+        ->values()
+        ->all();
+}
+
 function deleteDataset(int $submissionId): array
 {
     $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
@@ -176,7 +256,16 @@ function deleteDataset(int $submissionId): array
         return ['deleted' => false];
     }
 
-    (new DataverseClient())->getDatasetActions()->delete($study->getPersistentId());
+    return deleteDatasetByPersistentId($study->getPersistentId());
+}
 
-    return ['deleted' => true, 'persistentId' => $study->getPersistentId()];
+function deleteDatasetByPersistentId(string $persistentId): array
+{
+    try {
+        (new DataverseClient())->getDatasetActions()->delete($persistentId);
+    } catch (DataverseException $e) {
+        return ['deleted' => false, 'persistentId' => $persistentId, 'error' => $e->getMessage()];
+    }
+
+    return ['deleted' => true, 'persistentId' => $persistentId];
 }

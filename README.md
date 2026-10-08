@@ -92,11 +92,11 @@ Run from the root of the PKP Application directory:
 php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml plugins/generic/dataverse/tests
 ```
 
-The configuration and submission flow scenarios run against the application database, real files and the Dataverse collection above, without mocks.
+The configuration, submission and workflow scenarios run against the application database, real files and the Dataverse collection above, without mocks.
 
 ### End-to-end Tests (Playwright)
 
-Only behaviour that exists solely in the browser is tested here: client-side validation of the settings form, the conditional fields and sections of the submission wizard, the research data upload modal and the review step.
+Only behaviour that exists solely in the browser is tested here: client-side validation of the settings form, the conditional fields and sections of the submission wizard, the research data upload modal, the review step, and the Research data and Data statement panels of the workflow. The publishing scenario publishes a dataset in the test collection on every run, and Dataverse does not let a regular API token delete a published dataset, so use a collection meant for testing.
 
 The application must be running with the reference test dataset (context `publicknowledge`, users `dbarnes` and `eostrom`) and the `en` locale. Inside the plugin directory:
 ```
@@ -109,7 +109,7 @@ npm run test:e2e
 
 ### Cypress Tests
 
-The workflow, review, public site, legacy submission, dataset linking and custom metadata scenarios are still Cypress specs. Create a `cypress.env.json` file in the root of the PKP Application directory with `baseUrl`, `dataverseUrl`, `dataverseApiToken` and `dataverseTermsOfUse`, then run:
+The review, public site, legacy submission and custom metadata scenarios are still Cypress specs. Create a `cypress.env.json` file in the root of the PKP Application directory with `baseUrl`, `dataverseUrl`, `dataverseApiToken` and `dataverseTermsOfUse`, then run:
 ```
 npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
 ```
