@@ -37,9 +37,15 @@ class DepositRepository
 
     public function transition(int $submissionId, string $from, string $to, array $values = []): void
     {
-        $affected = DB::table('dataverse_deposits')->where('submission_id', $submissionId)
-            ->where('state', $from)->where('revision', $this->revisions[$submissionId])
-            ->update(array_merge($values, ['state' => $to, 'revision' => $this->revisions[$submissionId] + 1]));
+        $affected = DB::table('dataverse_deposits')
+            ->where('submission_id', $submissionId)
+            ->where('revision', $this->revisions[$submissionId])
+            ->where('state', $from)
+            ->update([
+                ...$values,
+                'state' => $to,
+                'revision' => $this->revisions[$submissionId] + 1
+            ]);
         if ($affected !== 1) {
             throw new RuntimeException('Another request owns this deposit or its result needs reconciliation.');
         }
@@ -69,10 +75,12 @@ class DepositRepository
             }
             $removeAssociation();
             if ($operation) {
-                DB::table('dataverse_deposits')->where('submission_id', $submissionId)->update([
-                    'state' => 'retired',
-                    'revision' => (int) $operation->revision + 1,
-                ]);
+                DB::table('dataverse_deposits')
+                    ->where('submission_id', $submissionId)
+                    ->update([
+                        'state' => 'retired',
+                        'revision' => (int) $operation->revision + 1,
+                    ]);
             }
         });
     }
