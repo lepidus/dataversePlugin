@@ -24,6 +24,5 @@
   "plugins.generic.dataverse.researchData.uploadDisabled",
   "plugins.generic.dataverse.researchData.uploadResearchData",
   "semicolon",
-  "submission.publication",
   "validator.active_url"
 ]

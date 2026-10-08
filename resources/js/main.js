@@ -1,3 +1,4 @@
+import '../css/workflow.css';
 import DatasetFilesListPanel from './Components/DatasetFilesListPanel.vue';
 import DataverseDataStatement from './Components/DataverseDataStatement.vue';
 import DataverseResearchData from './Components/DataverseResearchData.vue';

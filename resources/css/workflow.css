@@ -1,0 +1,10 @@
+.dataverse-workflow-menu > div > a::before,
+.dataverse-workflow-menu > div > div > a::before {
+  content: "";
+  display: inline-block;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background-color: currentColor;
+  mask: url("../images/Dataverse_brand_icon.svg") center / contain no-repeat;
+}

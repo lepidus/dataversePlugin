@@ -17,34 +17,26 @@ export default function registerWorkflowMenu() {
 		const {useLocalize} = pkp.modules.useLocalize;
 		const {t} = useLocalize();
 
-		workflowStore.extender.extendFn('getMenuItems', (menuItems) =>
-			menuItems.map((menuItem) => {
-				if (menuItem.key !== 'publication' || !menuItem.items) {
-					return menuItem;
-				}
-
-				return {
-					...menuItem,
-					items: [
-						...menuItem.items,
-						...MENU_ITEMS.map(({name, labelKey}) => ({
-							key: `publication_${name}`,
-							label: t(labelKey),
-							state: {
-								primaryMenuItem: 'publication',
-								secondaryMenuItem: name,
-								title: `${t('semicolon', {
-									label: t('submission.publication'),
-								})} ${t(labelKey)}`,
-							},
-						})),
-					],
-				};
-			}),
-		);
+		workflowStore.extender.extendFn('getMenuItems', (menuItems) => [
+			...menuItems,
+			{
+				key: 'dataverse',
+				label: 'Dataverse',
+				class: 'dataverse-workflow-menu',
+				items: MENU_ITEMS.map(({name, labelKey}) => ({
+					key: `dataverse_${name}`,
+					label: t(labelKey),
+					state: {
+						primaryMenuItem: 'dataverse',
+						secondaryMenuItem: name,
+						title: `${t('semicolon', {label: 'Dataverse'})} ${t(labelKey)}`,
+					},
+				})),
+			},
+		]);
 
 		workflowStore.extender.extendFn('getPrimaryItems', (primaryItems, args) => {
-			if (args?.selectedMenuState?.primaryMenuItem !== 'publication') {
+			if (args?.selectedMenuState?.primaryMenuItem !== 'dataverse') {
 				return primaryItems;
 			}
 
@@ -68,6 +60,14 @@ export default function registerWorkflowMenu() {
 					},
 				},
 			];
+		});
+
+		// The workflow page sets its default expanded groups during setup.
+		pkp.modules.vue.nextTick(() => {
+			workflowStore.setExpandedKeys([
+				...Object.keys(workflowStore.sideMenuProps.expandedKeys),
+				'dataverse',
+			]);
 		});
 	});
 }
