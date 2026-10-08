@@ -144,7 +144,7 @@ msgid "plugins.generic.dataverse.error.readmeFile.required"
 msgstr "É obrigatório o envio de um arquivo README, em formato PDF, MD ou TXT, que acompanhe os arquivos de dados de pesquisa"
 
 msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
-msgstr "Os dados da pesquisa não podem ser constituídos apenas por arquivos README"
+msgstr "Os dados de pesquisa devem conter ao menos um arquivo legível e não vazio além dos arquivos README, enviado diretamente ou dentro de um arquivo ZIP."
 
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro ao obter dados de pesquisa no Dataverse: {$error}"
