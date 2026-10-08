@@ -16,6 +16,7 @@ export default function registerWorkflowMenu() {
 		const workflowStore = piniaContext.store;
 		const {useLocalize} = pkp.modules.useLocalize;
 		const {t} = useLocalize();
+		const datasetState = pkp.modules.vue.shallowRef(null);
 
 		workflowStore.extender.extendFn('getMenuItems', (menuItems) => [
 			...menuItems,
@@ -57,9 +58,28 @@ export default function registerWorkflowMenu() {
 						publication: args.selectedPublication,
 						canEdit: args.permissions.canEditPublication,
 						canPublish: args.permissions.canPublish,
+						...(menuItem.name === 'dataverseResearchData' && {
+							onDatasetStateChange: (state) => {
+								datasetState.value = {submissionId: args.submission.id, state};
+							},
+						}),
 					},
 				},
 			];
+		});
+
+		workflowStore.extender.extendFn('getPrimaryControlsLeft', (controls, args) => {
+			const state = datasetState.value?.state;
+			if (
+				args?.selectedMenuState?.primaryMenuItem !== 'dataverse' ||
+				args.selectedMenuState.secondaryMenuItem !== 'dataverseResearchData' ||
+				datasetState.value?.submissionId !== args.submission?.id ||
+				!state?.hasDataset || state.error
+			) {
+				return controls;
+			}
+
+			return [...controls, {component: 'DataverseDatasetHeader', props: {state}}];
 		});
 
 		// The workflow page sets its default expanded groups during setup.

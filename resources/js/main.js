@@ -1,5 +1,6 @@
 import '../css/workflow.css';
 import DatasetFilesListPanel from './Components/DatasetFilesListPanel.vue';
+import DataverseDatasetHeader from './Components/DataverseDatasetHeader.vue';
 import DataverseDataStatement from './Components/DataverseDataStatement.vue';
 import DataverseResearchData from './Components/DataverseResearchData.vue';
 import DataverseWizardSection from './Components/DataverseWizardSection.vue';
@@ -11,6 +12,7 @@ import registerWorkflowMenu from './workflowMenu';
 pkp.registry.registerComponent('DataverseWizardSection', DataverseWizardSection);
 pkp.registry.registerComponent('DatasetFilesListPanel', DatasetFilesListPanel);
 pkp.registry.registerComponent('DataverseResearchData', DataverseResearchData);
+pkp.registry.registerComponent('DataverseDatasetHeader', DataverseDatasetHeader);
 pkp.registry.registerComponent('DataverseDataStatement', DataverseDataStatement);
 
 pkp.registry.registerComponent('field-data-statement-types', FieldDataStatementTypes);

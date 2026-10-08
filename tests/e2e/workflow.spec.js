@@ -118,8 +118,11 @@ test.describe('as the author', () => {
 
 		await expect(panel.locator('[data-cy="dataverse-disassociate-dataset"]')).toHaveCount(0);
 		await expect(panel.locator('[data-cy="dataverse-publish-dataset"]')).toHaveCount(0);
-		await expect(panel.getByText('Draft', {exact: true})).toBeVisible();
-		await expect(panel.getByText('Unpublished', {exact: true})).toBeVisible();
+		await expect(page.locator('[data-cy="dataverse-dataset-header"]').getByText('Draft', {exact: true})).toBeVisible();
+		await expect(page.locator('[data-cy="workflow-controls-left"] [data-cy="dataverse-citation"]')).toBeVisible();
+		await expect(panel.locator('[data-cy="dataverse-citation"]')).toHaveCount(0);
+
+		await expect(page.locator('[data-cy="dataverse-dataset-header"]').getByText('Unpublished', {exact: true})).toBeVisible();
 		await expect(title).toHaveValue('Replication data for: ' + submission.title);
 		await expect(description).toContainText('Mass public transportation can be used as a way to reduce greenhouse gases emissions.');
 		await expect(form.getByRole('button', {name: 'Remove mass public transport'})).toBeVisible();
@@ -192,7 +195,7 @@ test.describe('as the author', () => {
 
 		await addResearchDataFile(page, 'README.pdf', 'application/pdf', '%PDF-1.4 readme of the research data');
 		await depositForm.getByRole('button', {name: 'Save'}).click();
-		await expect(panel.locator('[data-cy="dataverse-citation"]')).toContainText('Replication data for: ' + submission.title, {timeout: 60000});
+		await expect(page.locator('[data-cy="dataverse-dataset-header"] [data-cy="dataverse-citation"]')).toContainText('Replication data for: ' + submission.title, {timeout: 60000});
 	});
 
 	test('research data cannot be changed without permission to edit the publication', async ({page}) => {
@@ -264,7 +267,7 @@ test.describe('as the editor', () => {
 
 		await persistentId.fill(submission.persistentId);
 		await form.getByRole('button', {name: 'Associate'}).click();
-		await expect(panel.locator('[data-cy="dataverse-citation"]').getByRole('link', {name: persistentUri})).toBeVisible({timeout: 30000});
+		await expect(page.locator('[data-cy="dataverse-dataset-header"] [data-cy="dataverse-citation"]').getByRole('link', {name: persistentUri})).toBeVisible({timeout: 30000});
 		await expect(panel.locator('[data-cy="dataverse-disassociate-dataset"]')).toBeVisible();
 	});
 
@@ -296,18 +299,18 @@ test.describe('as the editor', () => {
 
 		const panel = await test.step('the dataset stays unpublished until the editor publishes it', async () => {
 			const panel = await openResearchData(page, submission);
-			await expect(panel.getByText('Draft', {exact: true})).toBeVisible();
+			await expect(page.locator('[data-cy="dataverse-dataset-header"]').getByText('Draft', {exact: true})).toBeVisible();
 
 			await panel.locator('[data-cy="dataverse-publish-dataset"]').click();
 			await confirmDialog(page, 'Do you really want to publish the research data related to this submission? This action cannot be undone.', 'Yes');
-			await expect(panel.locator('[data-cy="dataverse-citation"]')).toContainText(/, V1$/, {timeout: 60000});
+			await expect(page.locator('[data-cy="dataverse-dataset-header"] [data-cy="dataverse-citation"]')).toContainText(/, V1$/, {timeout: 60000});
 			return panel;
 		});
 
 		await test.step('a published dataset can no longer be changed', async () => {
 			await expect(panel.locator('[data-cy="dataverse-publish-dataset"]')).toHaveCount(0);
-			await expect(panel.getByText('Draft', {exact: true})).toHaveCount(0);
-			await expect(panel.getByText('Unpublished', {exact: true})).toHaveCount(0);
+			await expect(page.locator('[data-cy="dataverse-dataset-header"]').getByText('Draft', {exact: true})).toHaveCount(0);
+			await expect(page.locator('[data-cy="dataverse-dataset-header"]').getByText('Unpublished', {exact: true})).toHaveCount(0);
 			await expect(panel.locator('[data-cy="dataverse-delete-dataset"]')).toBeDisabled();
 			await expect(panel.locator('[data-cy="dataverse-metadata-form"]').getByRole('button', {name: 'Save'})).toBeDisabled();
 			await panel.getByRole('tab', {name: 'Files'}).click();
@@ -342,7 +345,7 @@ test.describe('as the editor', () => {
 			await expect(page.getByRole('button', {name: /^(Unpublish|Unpost)$/})).toBeVisible();
 
 			const panel = await openResearchData(page, submission);
-			await expect(panel.locator('[data-cy="dataverse-citation"]')).toContainText(/, V1$/);
+			await expect(page.locator('[data-cy="dataverse-dataset-header"] [data-cy="dataverse-citation"]')).toContainText(/, V1$/);
 		});
 	});
 });
@@ -380,7 +383,7 @@ test.describe('with a collection that requires additional metadata', () => {
 		await field('datasetPSRI1').selectOption('Yes');
 		await field('datasetPSRI2').selectOption('No');
 		await depositForm.getByRole('button', {name: 'Save'}).click();
-		await expect(panel.locator('[data-cy="dataverse-citation"]')).toContainText('Replication data for: ' + submission.title, {timeout: 60000});
+		await expect(page.locator('[data-cy="dataverse-dataset-header"] [data-cy="dataverse-citation"]')).toContainText('Replication data for: ' + submission.title, {timeout: 60000});
 		expect(datasetMetadata(submission.id)).toMatchObject({
 			alternativeURL: 'https://example.com',
 			dsDescriptionDate: '2023-06-01',

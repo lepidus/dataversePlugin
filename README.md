@@ -64,6 +64,8 @@ A "Research Data" deposit dialog is shown in the "Files" step of the Submission 
 
 Authors, moderators, editors or managers can also edit the dataset, before publication, on the "Research data" item added to the Dataverse section of the submission's workflow menu. A "Data statement" item is added right next to it, so the data availability statement can be reviewed and changed during the editorial workflow.
 
+The dataset citation and its status indicators appear in the Research data header, using the same status style as Publication.
+
 In OJS, reviewers can have access to research data files during the review process. Reviewers access to these files can be restricted on Workflow Settings, so they can only see research data when they agree to review the submission.
 
 ## Development Instructions:

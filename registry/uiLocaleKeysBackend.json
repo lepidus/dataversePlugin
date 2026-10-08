@@ -2,6 +2,7 @@
   "common.cancel",
   "common.delete",
   "common.loading",
+  "common.status",
   "common.yes",
   "plugins.generic.dataverse.dataStatement.title",
   "plugins.generic.dataverse.error.retry",

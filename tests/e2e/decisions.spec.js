@@ -92,8 +92,8 @@ test('accepting the submission publishes its research data when the editor choos
 
 		await expect(async () => {
 			const panel = await openResearchData(page, submission);
-			await expect(panel.locator('[data-cy="dataverse-citation"]')).toContainText(/, V1$/);
-			await expect(panel.getByText('Draft', {exact: true})).toHaveCount(0, {timeout: 1000});
+			await expect(page.locator('[data-cy="dataverse-dataset-header"] [data-cy="dataverse-citation"]')).toContainText(/, V1$/);
+			await expect(page.locator('[data-cy="dataverse-dataset-header"]').getByText('Draft', {exact: true})).toHaveCount(0, {timeout: 1000});
 		}).toPass({timeout: 90000});
 	} finally {
 		configurePlugin();

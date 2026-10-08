@@ -11,7 +11,7 @@ function getExtensions(storeOverrides = {}) {
 			setExpandedKeys: () => {},
 			...storeOverrides,
 		}})},
-		modules: {vue: {nextTick: (callback) => queueMicrotask(callback)}, useLocalize: {useLocalize: () => ({t: (key, params) => key === 'semicolon' ? `${params.label}:` : key})}},
+		modules: {vue: {shallowRef: (value) => ({value}), nextTick: (callback) => queueMicrotask(callback)}, useLocalize: {useLocalize: () => ({t: (key, params) => key === 'semicolon' ? `${params.label}:` : key})}},
 	};
 	registerWorkflowMenu();
 	return extensions;
@@ -66,4 +66,31 @@ test('Dataverse starts expanded after the workflow page initializes its groups',
 	sideMenuProps.expandedKeys = {workflow: true, publication: true};
 	await Promise.resolve();
 	assert.deepEqual(expandedKeys, ['workflow', 'publication', 'dataverse']);
+});
+
+
+test('dataset citation is rendered in the workflow header only for its research data panel', () => {
+	const {getPrimaryItems, getPrimaryControlsLeft} = getExtensions();
+	const args = {
+		selectedMenuState: {primaryMenuItem: 'dataverse', secondaryMenuItem: 'dataverseResearchData'},
+		submission: {id: 1}, selectedPublication: {id: 2},
+		permissions: {canEditPublication: true, canPublish: false},
+	};
+	assert.equal(typeof getPrimaryControlsLeft, 'function');
+	assert.deepEqual(getPrimaryControlsLeft([], args), []);
+	const panel = getPrimaryItems([], args)[0];
+	const state = {hasDataset: true, citation: 'Dataset citation', datasetIsPublished: false};
+	panel.props.onDatasetStateChange(state);
+	const header = getPrimaryControlsLeft([], args);
+	assert.equal(header.length, 1);
+	assert.equal(header[0].component, 'DataverseDatasetHeader');
+	assert.equal(header[0].props.state, state);
+	assert.deepEqual(getPrimaryControlsLeft([], {...args, submission: {id: 3}}), []);
+	assert.deepEqual(getPrimaryControlsLeft([], {...args,
+		selectedMenuState: {primaryMenuItem: 'dataverse', secondaryMenuItem: 'dataverseDataStatement'},
+	}), []);
+	for (const unavailable of [null, {hasDataset: false}, {hasDataset: true, error: 'Unavailable'}]) {
+		panel.props.onDatasetStateChange(unavailable);
+		assert.deepEqual(getPrimaryControlsLeft([], args), []);
+	}
 });

@@ -44,24 +44,6 @@
 						</PkpButton>
 					</template>
 				</PkpHeader>
-				<div class="dataverseResearchData__labels">
-					<template v-if="!state.datasetIsPublished">
-						<PkpBadge color-variant="primary-bg">
-							{{ t('plugins.generic.dataverse.researchData.label.draft') }}
-						</PkpBadge>
-						<PkpBadge color-variant="attention-bg">
-							{{ t('plugins.generic.dataverse.researchData.label.unpublished') }}
-						</PkpBadge>
-					</template>
-					<PkpBadge v-if="state.datasetInReview" color-variant="success-bg">
-						{{ t('plugins.generic.dataverse.researchData.label.inReview') }}
-					</PkpBadge>
-				</div>
-				<p
-					v-strip-unsafe-html="state.citation"
-					class="dataverseResearchData__citation"
-					data-cy="dataverse-citation"
-				/>
 				<PkpTabs
 					:label="t('plugins.generic.dataverse.researchData')"
 					:is-side-tabs="true"
@@ -113,7 +95,7 @@
 </template>
 
 <script setup>
-import {computed, ref, watch} from 'vue';
+import {computed, onUnmounted, ref, watch} from 'vue';
 import DatasetFilesListPanel from './DatasetFilesListPanel.vue';
 import DatasetDepositModal from './DatasetDepositModal.vue';
 import DatasetAssociateModal from './DatasetAssociateModal.vue';
@@ -133,6 +115,7 @@ const props = defineProps({
 	publication: {type: Object, required: true},
 	canEdit: {type: Boolean, default: false},
 	canPublish: {type: Boolean, default: false},
+	onDatasetStateChange: {type: Function, default: () => {}},
 });
 
 const {t} = useLocalize();
@@ -165,6 +148,12 @@ const busyMessage = computed(() =>
 		? t('plugins.generic.dataverse.researchData.publishing')
 		: t('plugins.generic.dataverse.metadataForm.loadingDataset'),
 );
+
+watch([state, isBusy], ([newState, busy]) => {
+	props.onDatasetStateChange(busy ? null : newState);
+}, {immediate: true});
+
+onUnmounted(() => props.onDatasetStateChange(null));
 
 const canDeposit = computed(
 	() => props.canEdit && props.publication.status !== pkp.const.STATUS_PUBLISHED,
@@ -353,16 +342,6 @@ load();
 .dataverseResearchData__unavailable > button,
 .dataverseResearchData__empty > * + * {
 	margin-top: 1rem;
-}
-
-.dataverseResearchData__labels {
-	display: flex;
-	gap: 0.25rem;
-	margin: 0.5rem 0;
-}
-
-.dataverseResearchData__citation {
-	margin-bottom: 1rem;
 }
 
 .dataverseResearchData__instructions {
