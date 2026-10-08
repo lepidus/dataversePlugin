@@ -160,9 +160,6 @@ msgstr "Error depositing research data to Dataverse: {$error}<br>"
 msgid "plugins.generic.dataverse.error.depositPending"
 msgstr "The deposit has not been confirmed. Contact the journal to check the existing deposit before trying again."
 
-msgid "plugins.generic.dataverse.error.depositPending.author"
-msgstr "The deposit has not been confirmed. Contact the journal to check the existing deposit before trying again."
-
 msgid "plugins.generic.dataverse.error.sourceFileMissing"
 msgstr "A selected deposit file is no longer available. Replace the missing file before depositing the research data."
 
