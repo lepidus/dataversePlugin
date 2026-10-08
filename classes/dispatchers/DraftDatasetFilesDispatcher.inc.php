@@ -127,7 +127,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             $form->addErrorField('dataverseStep2ValidationError');
         }
 
-        if (count($draftDatasetFiles) == 1) {
+        if (!$validator->datasetHasNonReadmeFile($draftDatasetFiles)) {
             $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.error.notSolelyReadmeFile"));
             $form->addErrorField('dataverseStep2ValidationError');
         }

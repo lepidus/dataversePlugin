@@ -90,6 +90,60 @@ class DataverseActionsTest extends PKPTestCase
         );
     }
 
+    public function testTimeoutsDependOnOperationAndPreserveExplicitOverride(): void
+    {
+        $observed = [];
+        $client = new Client(['handler' => function ($request, $options) use (&$observed) {
+            $observed[] = [$options['connect_timeout'], $options['timeout']];
+            return new \GuzzleHttp\Promise\FulfilledPromise(new Response(200, [], '{}'));
+        }]);
+        $actions = $this->getMockBuilder(DataverseActions::class)
+            ->setConstructorArgs([$this->configuration, $client])
+            ->getMockForAbstractClass();
+        $actions->nativeAPIRequest('GET', 'https://example.com/api/datasets/1');
+        $actions->nativeAPIRequest('POST', 'https://example.com/api/dataverses/test/datasets');
+        $actions->nativeAPIRequest('POST', 'https://example.com/api/datasets/:persistentId/add?persistentId=doi:10.1/X');
+        $actions->nativeAPIRequest('DELETE', 'https://example.com/api/datasets/1');
+        $actions->nativeAPIRequest('POST', 'https://example.com/api/datasets/1/add', ['timeout' => 42]);
+        $this->assertSame([[5, 15], [5, 30], [5, 60], [5, 30], [5, 42]], $observed);
+    }
+
+    public function testConfiguredTimeoutRejectsInvalidBudgets(): void
+    {
+        $config = & Config::getData();
+        $original = $config['dataverse'] ?? null;
+        $observed = [];
+        try {
+            $client = new Client(['handler' => function ($request, $options) use (&$observed) {
+                $observed[] = $options['timeout'];
+                return new \GuzzleHttp\Promise\FulfilledPromise(new Response(200, [], '{}'));
+            }]);
+            $actions = $this->getMockBuilder(DataverseActions::class)
+                ->setConstructorArgs([$this->configuration, $client])
+                ->getMockForAbstractClass();
+            foreach (['0', '301', '1.5', 'invalid', '90'] as $budget) {
+                $config['dataverse']['upload_timeout'] = $budget;
+                $actions->nativeAPIRequest('POST', 'https://example.com/api/datasets/1/add');
+            }
+            $this->assertSame([60, 60, 60, 60, 90], $observed);
+        } finally {
+            if ($original === null) {
+                unset($config['dataverse']);
+            } else {
+                $config['dataverse'] = $original;
+            }
+        }
+    }
+
+    public function testTimeoutCategoryPreservesCauseWithoutExposingRequestSecrets(): void
+    {
+        $cause = new ConnectException('sensitive transport detail', new Request('POST', 'https://example.com'), null, ['errno' => 28]);
+        $exception = DataverseException::fromTransferException($cause);
+        $this->assertSame('timeout', $exception->getFailureCategory());
+        $this->assertSame($cause, $exception->getPrevious());
+        $this->assertStringNotContainsString('sensitive', $exception->getMessage());
+    }
+
     public function testSuccessfulNativeAPIRequest(): void
     {
         $mockHandler = new MockHandler([

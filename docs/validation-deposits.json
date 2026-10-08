@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "application": "ojs",
+  "target": "stable-3_3_0",
+  "php": [
+    "7.3",
+    "7.4",
+    "8.2"
+  ],
+  "checks": {
+    "syntax": "required",
+    "style": "required",
+    "unit": "required",
+    "database_mysql": "required",
+    "database_postgresql": "required",
+    "locale": "required",
+    "independent_review": "required",
+    "http_smoke": "optional",
+    "pipeline": "required"
+  }
+}

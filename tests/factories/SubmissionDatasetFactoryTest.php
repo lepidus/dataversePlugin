@@ -189,6 +189,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $currentDate = date('Y-m-d', time());
 
         $datasetFile = new DatasetFile();
+        $datasetFile->setId($this->temporaryFile->getId());
         $datasetFile->setOriginalFileName($this->temporaryFile->getOriginalFileName());
         $datasetFile->setPath($this->temporaryFile->getFilePath());
 
@@ -208,5 +209,45 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $expectedDataset->setFiles([$datasetFile]);
 
         $this->assertEquals($expectedDataset, $dataset);
+    }
+
+    public function testMissingTemporaryFileDoesNotProducePartialDeposit(): void
+    {
+        $readme = new DraftDatasetFile();
+        $readme->setData('fileId', 1);
+        $readme->setData('userId', $this->user->getId());
+        $data = new DraftDatasetFile();
+        $data->setData('fileId', 2);
+        $data->setData('userId', $this->user->getId());
+        $draftDAO = $this->getMockBuilder(DraftDatasetFileDAO::class)
+            ->setMethods(['getBySubmissionId', 'deleteById'])
+            ->getMock();
+        $draftDAO->method('getBySubmissionId')->willReturn([$readme, $data]);
+        $draftDAO->expects($this->never())->method('deleteById');
+        DAORegistry::registerDAO('DraftDatasetFileDAO', $draftDAO);
+
+        $temporaryFileDAO = $this->getMockBuilder(TemporaryFileDAO::class)
+            ->setMethods(['getTemporaryFile'])
+            ->getMock();
+        $temporaryFileDAO->method('getTemporaryFile')->willReturnCallback(function ($fileId) {
+            return $fileId === 1 ? $this->temporaryFile : null;
+        });
+        DAORegistry::registerDAO('TemporaryFileDAO', $temporaryFileDAO);
+
+        $this->expectException(MissingDepositFileException::class);
+        (new SubmissionDatasetFactory($this->submission))->getDataset();
+    }
+
+    public function testMetadataPreviewDoesNotLoadTemporaryFiles(): void
+    {
+        $temporaryFileDAO = $this->getMockBuilder(TemporaryFileDAO::class)
+            ->setMethods(['getTemporaryFile'])
+            ->getMock();
+        $temporaryFileDAO->expects($this->never())->method('getTemporaryFile');
+        DAORegistry::registerDAO('TemporaryFileDAO', $temporaryFileDAO);
+
+        $dataset = (new SubmissionDatasetFactory($this->submission, false))->getDataset();
+
+        $this->assertSame([], $dataset->getFiles());
     }
 }

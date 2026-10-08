@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.exception.DataverseException');
+import('plugins.generic.dataverse.classes.exception.MissingDepositFileException');
 
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.services.DatasetService');
@@ -68,7 +69,13 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $datasetFactory = new SubmissionDatasetFactory($submission);
-        $dataset = $datasetFactory->getDataset();
+        try {
+            $dataset = $datasetFactory->getDataset();
+        } catch (MissingDepositFileException $e) {
+            $stepForm->addError('depositError', __('plugins.generic.dataverse.error.sourceFileMissing'));
+            $stepForm->addErrorField('depositError');
+            return false;
+        }
 
         if (empty($dataset->getFiles())) {
             $stepForm->addError('researchDataRequired', __('plugins.generic.dataverse.error.researchDataRequired'));
@@ -435,7 +442,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         }
 
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
-        $datasetFactory = new SubmissionDatasetFactory($submission);
+        $datasetFactory = new SubmissionDatasetFactory($submission, false);
         $relatedPublication = $datasetFactory->getDatasetRelatedPublication($publication);
         $actualRelationType = $dataset->getRelatedPublication()->getRelationType();
         $relatedPublication->setData('RelationType', $actualRelationType);

@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.dataverse.classes.exception.DataverseException');
+import('plugins.generic.dataverse.classes.exception.MissingDepositFileException');
 
 import('lib.pkp.classes.handler.APIHandler');
 import('lib.pkp.classes.log.SubmissionLog');
@@ -320,7 +321,7 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.readmeFileRequired');
         }
 
-        if (count($draftDatasetFiles) == 1) {
+        if (!$datasetFilesValidator->datasetHasNonReadmeFile($draftDatasetFiles)) {
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.notSolelyReadmeFile');
         }
 
@@ -328,7 +329,14 @@ class DatasetHandler extends APIHandler
 
         import('plugins.generic.dataverse.classes.factories.SubmissionDatasetFactory');
         $datasetFactory = new SubmissionDatasetFactory($submission);
-        $dataset = $datasetFactory->getDataset();
+        try {
+            $dataset = $datasetFactory->getDataset();
+        } catch (MissingDepositFileException $e) {
+            return $response->withStatus(409)->withJsonError('plugins.generic.dataverse.error.sourceFileMissing');
+        }
+        if (empty($dataset->getFiles())) {
+            return $response->withStatus(409)->withJsonError('plugins.generic.dataverse.error.sourceFileMissing');
+        }
         $dataset->setTitle($requestParams['datasetTitle']);
         $dataset->setDescription($requestParams['datasetDescription']);
         $dataset->setKeywords((array) $requestParams['datasetKeywords']);

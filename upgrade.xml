@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE install SYSTEM "../../../lib/pkp/dtd/install.dtd">
 
-<install version="2.8.15.0">
+<install version="2.8.16.0">
     <migration
         class="plugins.generic.dataverse.classes.migration.APITokenEncryptionMigration"
+    />
+    <migration
+        class="plugins.generic.dataverse.classes.migration.DepositMigration"
     />
 </install>

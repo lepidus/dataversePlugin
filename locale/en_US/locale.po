@@ -130,7 +130,7 @@ msgid "plugins.generic.dataverse.error.readmeFileRequired"
 msgstr "It is mandatory to send a README file, in PDF or TXT format, to accompany the research data files"
 
 msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
-msgstr "The research data cannot consist solely of the README file"
+msgstr "The research data cannot consist solely of README files"
 
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Error getting research data to Dataverse: {$error}"
@@ -156,6 +156,12 @@ msgstr "Error depositing research data to Dataverse: {$error}"
 msgid "plugins.generic.dataverse.error.datasetDeposit.author"
 msgstr "Error depositing research data to Dataverse: {$error}<br>"
 "Please choose another data statement option or try again later."
+
+msgid "plugins.generic.dataverse.error.depositPending"
+msgstr "The deposit has not been confirmed. Contact the journal to check the existing deposit before trying again."
+
+msgid "plugins.generic.dataverse.error.sourceFileMissing"
+msgstr "A selected deposit file is no longer available. Replace the missing file before depositing the research data."
 
 msgid "plugins.generic.dataverse.error.datasetFileDeposit"
 msgstr "Error depositing the data file \"{$fileName}\" to Dataverse: {$error}"
