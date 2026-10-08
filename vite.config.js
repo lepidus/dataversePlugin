@@ -7,7 +7,10 @@ export default defineConfig({
     publicDir: false,
     plugins: [
         i18nExtractKeys({
-            extraKeys: ['plugins.generic.dataverse.dataStatement.title'],
+            extraKeys: [
+                'plugins.generic.dataverse.researchData',
+                'plugins.generic.dataverse.dataStatement.title',
+            ],
         }),
         vue(),
     ],

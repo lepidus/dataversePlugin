@@ -112,6 +112,12 @@ test.describe('as the author', () => {
 		const submission = createDepositedSubmission();
 		let panel = await openResearchData(page, submission);
 		const form = panel.locator('[data-cy="dataverse-metadata-form"]');
+		await expect(form).toBeVisible();
+		await expect(panel.getByRole('tab')).toHaveCount(0);
+		await expect(panel.locator('.datasetFilesListPanel')).toBeVisible();
+		const formBounds = await form.boundingBox();
+		const filesBounds = await panel.locator('.datasetFilesListPanel').boundingBox();
+		expect(filesBounds.y + filesBounds.height).toBeLessThanOrEqual(formBounds.y);
 		const title = form.locator('input[name="datasetTitle"]');
 		const description = form.frameLocator('iframe').locator('body');
 		const keywords = form.getByRole('combobox', {name: 'Keyword'});
@@ -158,7 +164,6 @@ test.describe('as the author', () => {
 		const panel = await openResearchData(page, submission);
 		const fileNames = panel.locator('[data-cy="dataverse-file-name"]');
 
-		await panel.getByRole('tab', {name: 'Files'}).click();
 		await expect(fileNames.filter({hasText: 'Planilha_de_dados_ÇÕÔÁÀÃ.json'})).toBeVisible();
 		await expect(fileNames.filter({hasText: 'LEIAME.pdf'})).toBeVisible();
 
@@ -205,7 +210,6 @@ test.describe('as the author', () => {
 		await expect(panel.locator('[data-cy="dataverse-additional-instructions"]')).toContainText('1. Submit under "Research Data" any files that have been collected');
 		await expect(panel.locator('[data-cy="dataverse-delete-dataset"]')).toBeDisabled();
 		await expect(panel.locator('[data-cy="dataverse-metadata-form"]').getByRole('button', {name: 'Save'})).toBeDisabled();
-		await panel.getByRole('tab', {name: 'Files'}).click();
 		await expect(panel.locator('[data-cy="dataverse-add-file"]')).toBeDisabled();
 		const deleteFileButtons = panel.locator('[data-cy="dataverse-delete-file"]');
 		await expect(deleteFileButtons).toHaveCount(2);
@@ -313,7 +317,6 @@ test.describe('as the editor', () => {
 			await expect(page.locator('[data-cy="dataverse-dataset-header"]').getByText('Unpublished', {exact: true})).toHaveCount(0);
 			await expect(panel.locator('[data-cy="dataverse-delete-dataset"]')).toBeDisabled();
 			await expect(panel.locator('[data-cy="dataverse-metadata-form"]').getByRole('button', {name: 'Save'})).toBeDisabled();
-			await panel.getByRole('tab', {name: 'Files'}).click();
 			await expect(panel.locator('[data-cy="dataverse-add-file"]')).toBeDisabled();
 		});
 

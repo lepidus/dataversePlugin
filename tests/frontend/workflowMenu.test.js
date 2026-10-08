@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
 import registerWorkflowMenu from '../../resources/js/workflowMenu.js';
 
 function getExtensions(storeOverrides = {}) {
@@ -92,5 +93,17 @@ test('dataset citation is rendered in the workflow header only for its research 
 	for (const unavailable of [null, {hasDataset: false}, {hasDataset: true, error: 'Unavailable'}]) {
 		panel.props.onDatasetStateChange(unavailable);
 		assert.deepEqual(getPrimaryControlsLeft([], args), []);
+	}
+});
+
+
+test('workflow menu labels are included in the generated browser translation registry', () => {
+	const registeredKeys = JSON.parse(readFileSync(
+		new URL('../../registry/uiLocaleKeysBackend.json', import.meta.url), 'utf8',
+	));
+	const {getMenuItems} = getExtensions();
+	const group = getMenuItems([]).find(({key}) => key === 'dataverse');
+	for (const item of group.items) {
+		assert.ok(registeredKeys.includes(item.label), `Missing browser translation: ${item.label}`);
 	}
 });

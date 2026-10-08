@@ -64,7 +64,7 @@ Se añade una sección llamada "Datos de investigación" al paso "Archivos" dura
 
 Los autores, moderadores, editores o gerentes también pueden editar el conjunto de datos antes de su publicación, en el ítem "Datos de investigación" añadido a la sección Dataverse del menú del flujo de trabajo del envío. Junto a él se añade un ítem "Declaración de datos", para que la declaración de disponibilidad de datos pueda ser consultada y modificada durante el flujo de trabajo editorial.
 
-La cita del conjunto de datos y sus indicadores de estado aparecen en el encabezado de Datos de investigación, con el mismo estilo de estado usado en Publicación.
+La cita del conjunto de datos y sus indicadores de estado aparecen en el encabezado de Datos de investigación, con el mismo estilo de estado usado en Publicación. Los archivos se muestran encima del formulario de metadatos, sin pestañas.
 
 En OJS, los evaluadores pueden recibir acceso a los archivos de datos de investigación durante el proceso de evaluación. El acceso de los evaluadores a estos archivos puede ser restringido en la Configuración del Flujo de Trabajo, para que solo visualicen los archivos cuando acepten evaluar la presentación.
 

@@ -17,7 +17,6 @@
 			</div>
 			<template v-else-if="state.hasDataset">
 				<PkpHeader>
-					<h2>{{ t('plugins.generic.dataverse.researchData') }}</h2>
 					<template #actions>
 						<PkpButton
 							:is-warnable="true"
@@ -44,31 +43,22 @@
 						</PkpButton>
 					</template>
 				</PkpHeader>
-				<PkpTabs
-					:label="t('plugins.generic.dataverse.researchData')"
-					:is-side-tabs="true"
-				>
-					<PkpTab
-						id="datasetMetadata"
-						:label="t('plugins.generic.dataverse.researchData.metadata')"
-					>
+				<div class="flex flex-col gap-y-5">
+					<div class="p-3">
+						<DatasetFilesListPanel
+							v-bind="filesListPanel"
+							@set="setFilesListPanel"
+						/>
+					</div>
+					<div class="-m-5">
 						<PkpForm
 							v-bind="metadataForm"
 							data-cy="dataverse-metadata-form"
 							@set="setMetadataForm"
 							@success="triggerDataChange"
 						/>
-					</PkpTab>
-					<PkpTab
-						id="datasetFiles"
-						:label="t('plugins.generic.dataverse.researchData.files')"
-					>
-						<DatasetFilesListPanel
-							v-bind="filesListPanel"
-							@set="setFilesListPanel"
-						/>
-					</PkpTab>
-				</PkpTabs>
+					</div>
+				</div>
 			</template>
 			<div v-else class="dataverseResearchData__empty">
 				<p>{{ t('plugins.generic.dataverse.researchData.noResearchData') }}</p>
