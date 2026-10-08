@@ -40,29 +40,20 @@ npm run build
 npx playwright install chromium
 npm run test:e2e
 APP_ROOT=/path/to/ops BASE_URL=http://localhost:8001 npm run test:e2e
-
-# Remaining Cypress specs (review, public site, legacy, custom metadata)
-npx cypress run  --config specPattern=plugins/generic/dataverse/cypress/tests
 ```
 
 Tests that reach Dataverse read `DATAVERSE_URL`, `DATAVERSE_API_TOKEN` and `DATAVERSE_TERMS_OF_USE` from the
 environment and hit a **real Dataverse instance** (e.g. `https://demo.dataverse.org/dataverse/<alias>`) — there is
 no mock or fixture server. Without them the PHPUnit tests that need Dataverse are skipped locally and **fail** when
 `CI` is set, and the Playwright suite refuses to start. In GitLab they are project CI variables, next to
-`API_KEY_SECRET`.
+`API_KEY_SECRET`. `DATAVERSE_CUSTOM_REQUIRED_METADATA_URL` follows the same rules: it points to a collection on the
+same server whose metadata blocks make `alternativeURL`, `dsDescriptionDate`, `PSRI1` and `PSRI2` required
+(`customRequiredMetadataFields` on demo.dataverse.org), and it is not a secret, so `.gitlab-ci.yml` sets it.
 
-The Playwright suite needs the application running with the reference dataset (`publicknowledge`, users `dbarnes`
-and `eostrom`), the `en` locale and the plugin tables created. It configures the plugin and creates one submission
-per scenario through `tests/e2e/support/DataverseTestData.php`, a CLI script run from the application root, so
-scenarios are independent and no database reset is needed between runs.
-
-The remaining Cypress specs still use `cypress.env.json` at the application root (`dataverseUrl`,
-`dataverseApiToken`, `dataverseTermsOfUse`, `baseUrl`, `contextTitles`), are numbered and stateful, and no longer
-have a CI job: they are being migrated to PHPUnit/Playwright one flow at a time. `Test0`/`Test1` (configuration and
-submission wizard) and `Test2`/`Test6` (workflow panels and dataset linking) are already gone; the specs left behind
-depended on the state those created.
-`dataverseCustomRequiredMetadataFieldsUrl` is optional but load-bearing: without it
-`Test7_customRequiredMetadataFields` **silently self-skips**.
+The Playwright suite needs the application running with the reference dataset (`publicknowledge`, users `dbarnes`,
+`eostrom` and, in OJS, the reviewer `jjanssen`), the `en` locale and the plugin tables created. It configures the
+plugin and creates one submission per scenario through `tests/e2e/support/DataverseTestData.php`, a CLI script run
+from the application root, so scenarios are independent and no database reset is needed between runs.
 
 `config.inc.php` must define `security.api_key_secret`; without it the settings form renders
 `emptySecretKey.tpl` and the plugin cannot be configured.
@@ -339,10 +330,20 @@ scenario starts with its own dataset and the spec deletes it afterwards. The con
 publish from the panel, the README check, the keyword payload of `FieldControlledVocab`) are covered there. The
 publishing scenario **publishes a dataset for real** on every run: Dataverse only lets a superuser destroy a published
 dataset, so each run leaves one published dataset per application in the test collection — a cost accepted to keep
-that flow tested.
+that flow tested. The same scenario opens the public article/preprint page afterwards, so the dataset citation is
+checked there without publishing another dataset.
 
-`cypress/` holds the Cypress specs not migrated yet, plus plugin-specific commands in
-`cypress/support/commands.js` (`findSubmission`, `waitDatasetTabLoading`, `waitDataStatementTabLoading`, …).
+`decisions.spec.js` covers the steps the plugin adds to editorial decisions, because the values a step sends with the
+decision only exist in the browser: selecting the data files for reviewers (and what the reviewer then sees, with
+the reviewer assigned through `DataverseTestData.php assign-reviewer`), deleting the dataset on decline, and
+publishing it on acceptance. The acceptance scenario, OJS only, is the second one that **publishes a dataset for
+real**. Scenarios that need another plugin configuration (publishing on acceptance, a collection with extra required
+metadata) call `configurePlugin()` with options and restore the default configuration when they finish.
+
+The metadata a collection requires beyond the plugin's own fields come from Dataverse at runtime, so their tests
+point the plugin at `DATAVERSE_CUSTOM_REQUIRED_METADATA_URL`: `CollectionRequiredMetadataSubmissionTest` covers the
+form fields, the validation by type and the wizard deposit, and Playwright covers the review step and the deposit
+from the workflow panel, where `DatasetController` maps the request fields to the dataset.
 
 ## Release mechanics
 
@@ -353,8 +354,8 @@ Pushing a `v*` tag triggers `.github/workflows/generate-package.yml`, which **fa
   `[[ $release != $tag* ]]`). Tag `v3.4.5` passes for release `3.4.5.2`; tag `v3.4.5.2.1` fails;
 - `version/date` equals the day the workflow runs.
 
-Update `version.xml` (release **and** date) in the commit you tag. The generated tarball excludes `tests/`
-and `cypress/`. GitLab CI pulls shared job templates from Lepidus' `modelosparaintegracaocontinua` project.
+Update `version.xml` (release **and** date) in the commit you tag. The generated tarball excludes `tests/`.
+GitLab CI pulls shared job templates from Lepidus' `modelosparaintegracaocontinua` project.
 
 ## Conventions
 

@@ -22,11 +22,17 @@ class DataverseStudyRepositoryTest extends DatabaseTestCase
     private $persistentUri;
     private $persistentId;
 
+    protected function getMockedRegistryKeys(): array
+    {
+        return ['hooks'];
+    }
+
     public function setUp(): void
     {
         parent::setUp();
         $plugin = new DataversePlugin();
         $dispatcher = new DataStatementDispatcher($plugin);
+        app()->get('schema')->get('publication', true);
 
         $this->context = $this->createTestContext();
         $this->submissionId = $this->createSubmission();
@@ -45,6 +51,7 @@ class DataverseStudyRepositoryTest extends DatabaseTestCase
         $submission = Repo::submission()->get($this->submissionId);
         Repo::submission()->delete($submission);
         $this->deleteTestContext($this->context);
+        app()->get('schema')->get('publication', true);
     }
 
     protected function getAffectedTables(): array

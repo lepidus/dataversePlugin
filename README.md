@@ -81,9 +81,10 @@ Tests that talk to Dataverse use a real Dataverse collection. Export its credent
 export DATAVERSE_URL="https://demo.dataverse.org/dataverse/myDataverseAlias"
 export DATAVERSE_API_TOKEN="abcd-abcd-abcd-abcd-abcdefghijkl"
 export DATAVERSE_TERMS_OF_USE="https://dataverse.org/best-practices/harvard-dataverse-general-terms-use"
+export DATAVERSE_CUSTOM_REQUIRED_METADATA_URL="https://demo.dataverse.org/dataverse/customRequiredMetadataFields"
 ```
 
-Without them, those tests are skipped locally and fail in CI.
+`DATAVERSE_CUSTOM_REQUIRED_METADATA_URL` points to a collection, on the same server and reachable with the same token, whose metadata blocks require `alternativeURL`, `dsDescriptionDate`, `PSRI1` and `PSRI2`; it is used by the scenarios about metadata required by the collection. Without these variables, the PHPUnit tests that need them are skipped locally and fail in CI, and the Playwright suite does not start.
 
 ### Unit and Integration Tests (PHPUnit)
 
@@ -92,13 +93,13 @@ Run from the root of the PKP Application directory:
 php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml plugins/generic/dataverse/tests
 ```
 
-The configuration, submission and workflow scenarios run against the application database, real files and the Dataverse collection above, without mocks.
+The configuration, submission, workflow and public page scenarios, including the metadata required by a collection, run against the application database, real files and the Dataverse collection above, without mocks.
 
 ### End-to-end Tests (Playwright)
 
-Only behaviour that exists solely in the browser is tested here: client-side validation of the settings form, the conditional fields and sections of the submission wizard, the research data upload modal, the review step, and the Research data and Data statement panels of the workflow. The publishing scenario publishes a dataset in the test collection on every run, and Dataverse does not let a regular API token delete a published dataset, so use a collection meant for testing.
+Only behaviour that exists solely in the browser is tested here: client-side validation of the settings form, the conditional fields and sections of the submission wizard, the research data upload modal, the review step, the Research data and Data statement panels of the workflow, the editorial decision steps, the research data shown to reviewers and the public page. The publishing and the acceptance scenarios publish a dataset in the test collection on every run, and Dataverse does not let a regular API token delete a published dataset, so use a collection meant for testing.
 
-The application must be running with the reference test dataset (context `publicknowledge`, users `dbarnes` and `eostrom`) and the `en` locale. Inside the plugin directory:
+The application must be running with the reference test dataset (context `publicknowledge`, users `dbarnes`, `eostrom` and, in OJS, `jjanssen`) and the `en` locale. Inside the plugin directory:
 ```
 npm install
 npx playwright install chromium
@@ -106,15 +107,6 @@ npm run test:e2e
 ```
 
 `BASE_URL` points to the application (default `http://localhost:8000`) and `APP_ROOT` to its root directory (default: three levels above the plugin). To run against OPS, set both, for example `APP_ROOT=/path/to/ops BASE_URL=http://localhost:8001 npm run test:e2e`.
-
-### Cypress Tests
-
-The review, public site, legacy submission and custom metadata scenarios are still Cypress specs. Create a `cypress.env.json` file in the root of the PKP Application directory with `baseUrl`, `dataverseUrl`, `dataverseApiToken` and `dataverseTermsOfUse`, then run:
-```
-npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
-```
-
-The locale of your operating system and PKP Application must be `en` for the tests to pass.
 
 ## Credits
 This plugin was sponsored by the Scientific Electronic Library Online (SciELO) and developed by Lepidus Tecnologia.

@@ -83,9 +83,10 @@ Os testes que se comunicam com o Dataverse usam uma coleção Dataverse real. Ex
 export DATAVERSE_URL="https://demo.dataverse.org/dataverse/myDataverseAlias"
 export DATAVERSE_API_TOKEN="abcd-abcd-abcd-abcd-abcdefghijkl"
 export DATAVERSE_TERMS_OF_USE="https://dataverse.org/best-practices/harvard-dataverse-general-terms-use"
+export DATAVERSE_CUSTOM_REQUIRED_METADATA_URL="https://demo.dataverse.org/dataverse/customRequiredMetadataFields"
 ```
 
-Sem elas, esses testes são ignorados localmente e falham na CI.
+`DATAVERSE_CUSTOM_REQUIRED_METADATA_URL` aponta para uma coleção, no mesmo servidor e acessível com o mesmo token, cujos blocos de metadados exigem `alternativeURL`, `dsDescriptionDate`, `PSRI1` e `PSRI2`; ela é usada pelos cenários de metadados exigidos pela coleção. Sem essas variáveis, os testes PHPUnit que precisam delas são ignorados localmente e falham na CI, e a suíte Playwright não inicia.
 
 ### Testes de Unidade e de Integração (PHPUnit)
 
@@ -94,13 +95,13 @@ Execute na raíz do diretório da sua aplicação PKP:
 php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml plugins/generic/dataverse/tests
 ```
 
-Os cenários de configuração, de submissão e do fluxo de trabalho rodam contra o banco de dados da aplicação, arquivos reais e a coleção Dataverse acima, sem mocks.
+Os cenários de configuração, de submissão, do fluxo de trabalho e da página pública, incluindo os metadados exigidos por uma coleção, rodam contra o banco de dados da aplicação, arquivos reais e a coleção Dataverse acima, sem mocks.
 
 ### Testes de Ponta a Ponta (Playwright)
 
-Aqui é testado apenas o comportamento que só existe no navegador: a validação do formulário de configuração feita no navegador, os campos e seções condicionais do assistente de submissão, o modal de envio de dados de pesquisa, a etapa de revisão e os painéis Dados de pesquisa e Declaração de dados do fluxo de trabalho. O cenário de publicação publica um dataset na coleção de teste a cada execução, e o Dataverse não permite que um token de API comum apague um dataset publicado, então use uma coleção destinada a testes.
+Aqui é testado apenas o comportamento que só existe no navegador: a validação do formulário de configuração feita no navegador, os campos e seções condicionais do assistente de submissão, o modal de envio de dados de pesquisa, a etapa de revisão, os painéis Dados de pesquisa e Declaração de dados do fluxo de trabalho, as etapas das decisões editoriais, os dados de pesquisa exibidos aos avaliadores e a página pública. Os cenários de publicação e de aceite publicam um dataset na coleção de teste a cada execução, e o Dataverse não permite que um token de API comum apague um dataset publicado, então use uma coleção destinada a testes.
 
-A aplicação precisa estar em execução com o conjunto de dados de teste de referência (contexto `publicknowledge`, usuários `dbarnes` e `eostrom`) e o idioma `en`. No diretório do plugin:
+A aplicação precisa estar em execução com o conjunto de dados de teste de referência (contexto `publicknowledge`, usuários `dbarnes`, `eostrom` e, no OJS, `jjanssen`) e o idioma `en`. No diretório do plugin:
 ```
 npm install
 npx playwright install chromium
@@ -108,15 +109,6 @@ npm run test:e2e
 ```
 
 `BASE_URL` aponta para a aplicação (padrão `http://localhost:8000`) e `APP_ROOT` para o diretório raíz dela (padrão: três níveis acima do plugin). Para rodar no OPS, defina as duas, por exemplo `APP_ROOT=/caminho/para/ops BASE_URL=http://localhost:8001 npm run test:e2e`.
-
-### Testes Cypress
-
-Os cenários de avaliação, site público, submissões legadas e metadados obrigatórios personalizados ainda são testes Cypress. Crie um arquivo `cypress.env.json` na raíz do diretório da sua aplicação PKP com `baseUrl`, `dataverseUrl`, `dataverseApiToken` e `dataverseTermsOfUse` e execute:
-```
-npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
-```
-
-O idioma do seu sistema operacional e da aplicação PKP deve ser `en` para que os testes passem.
 
 ## Créditos
 

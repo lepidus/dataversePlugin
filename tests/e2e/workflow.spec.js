@@ -1,7 +1,15 @@
 import {expect, test} from '@playwright/test';
 import {storageStates} from './support/globalSetup.js';
-import {addResearchDataFile} from './support/researchData.js';
-import {createSubmission, deleteDataset, deleteDeposit} from './support/testData.js';
+import {addResearchDataFile, openPanel, openResearchData} from './support/researchData.js';
+import {
+	REQUIRED_METADATA_LABELS,
+	configureCollectionWithRequiredMetadata,
+	configurePlugin,
+	createSubmission,
+	datasetMetadata,
+	deleteDataset,
+	deleteDeposit,
+} from './support/testData.js';
 
 const REPOSITORY_URL = 'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM';
 const DASHBOARDS = {author: 'mySubmissions', manager: 'editorial'};
@@ -25,18 +33,6 @@ test.afterEach(() => {
 		}
 	}
 });
-
-async function openPanel(page, submission, panelName) {
-	await page.goto(`index.php/publicknowledge/dashboard/${page.dashboard}?workflowSubmissionId=${submission.id}`);
-	await page.getByRole('link', {name: panelName, exact: true}).click();
-}
-
-async function openResearchData(page, submission) {
-	await openPanel(page, submission, 'Research data');
-	const panel = page.locator('.dataverseResearchData');
-	await expect(panel.locator('[data-cy="dataverse-citation"], .dataverseResearchData__empty')).toBeVisible({timeout: 30000});
-	return panel;
-}
 
 async function openDataStatement(page, submission) {
 	await openPanel(page, submission, 'Data statement');
@@ -274,7 +270,14 @@ test.describe('as the editor', () => {
 
 	test('dataset is published from the panel after the submission, and only once', async ({page}) => {
 		test.setTimeout(180000);
-		const submission = createDepositedSubmission({stage: 'production'});
+		const submission = createDepositedSubmission({
+			stage: 'production',
+			dataStatement: {
+				dataStatementTypes: [2, 5],
+				dataStatementUrls: [REPOSITORY_URL],
+				dataStatementReason: {en: 'Has sensitive data'},
+			},
+		});
 		const persistentUri = submission.persistentId.replace('doi:', 'https://doi.org/');
 
 		await test.step('publishing the submission asks whether to publish the research data', async () => {
@@ -311,6 +314,24 @@ test.describe('as the editor', () => {
 			await expect(panel.locator('[data-cy="dataverse-add-file"]')).toBeDisabled();
 		});
 
+		await test.step('the public page shows the data statement and the dataset citation', async () => {
+			const publicPage = process.env.PKP_APPLICATION === 'ojs2' ? 'article' : 'preprint';
+			await page.goto(`index.php/publicknowledge/${publicPage}/view/${submission.id}`);
+
+			const dataStatement = page.locator('.dataStatement');
+			await expect(dataStatement.getByRole('heading', {name: 'Data statement'})).toBeVisible();
+			await expect(dataStatement).toContainText('The research data is available in one or more data repository(ies)');
+			await expect(dataStatement.getByRole('link', {name: REPOSITORY_URL})).toBeVisible();
+			await expect(dataStatement).toContainText('The research data cannot be made publicly available');
+			await expect(dataStatement).toContainText('Has sensitive data');
+
+			const citation = page.locator('.data_citation');
+			await expect(citation.getByRole('heading', {name: 'Research data'})).toBeVisible();
+			await expect(citation).toContainText(`"Replication data for: ${submission.title}"`);
+			await expect(citation.getByRole('link', {name: persistentUri})).toBeVisible();
+			await expect(citation).toContainText(', V1');
+		});
+
 		await test.step('publishing a new version does not ask about the research data again', async () => {
 			await openPanel(page, submission, 'Title & Abstract');
 			await page.getByRole('button', {name: 'Create New Version'}).click();
@@ -322,6 +343,49 @@ test.describe('as the editor', () => {
 
 			const panel = await openResearchData(page, submission);
 			await expect(panel.locator('[data-cy="dataverse-citation"]')).toContainText(/, V1$/);
+		});
+	});
+});
+
+test.describe('with a collection that requires additional metadata', () => {
+	test.use({storageState: storageStates.author});
+	test.beforeAll(() => configureCollectionWithRequiredMetadata());
+	test.afterAll(() => configurePlugin());
+	test.beforeEach(({page}) => {
+		page.dashboard = DASHBOARDS.author;
+	});
+
+	test('research data is deposited from the panel with the collection required metadata', async ({page}) => {
+		const submission = createWorkflowSubmission('submitted');
+		const panel = await openResearchData(page, submission);
+		await panel.locator('[data-cy="dataverse-upload-research-data"]').click();
+		const depositForm = page.locator('[data-cy="dataverse-deposit-form"]');
+		const field = (name) => depositForm.locator(`[name="${name}"]`);
+		const fieldErrors = (label) => depositForm
+			.locator('.pkpFormField', {has: page.locator('.pkpFormFieldLabel', {hasText: label})})
+			.getByText('This field is required.');
+		await addResearchDataFile(page, 'README.pdf', 'application/pdf', '%PDF-1.4 readme of the research data');
+		await addResearchDataFile(page, 'example.json', 'application/json', '{"example": true}');
+		await field('datasetLanguage').selectOption('English');
+		await field('datasetSubject').selectOption('Earth and Environmental Sciences');
+		await field('datasetLicense').selectOption('CC BY 4.0');
+		await field('datasetRelationType').selectOption({label: 'Is Supplemented By'});
+		await depositForm.getByRole('button', {name: 'Save'}).click();
+		for (const label of Object.values(REQUIRED_METADATA_LABELS)) {
+			await expect(fieldErrors(label)).toBeVisible();
+		}
+
+		await field('datasetAlternativeURL').fill('https://example.com');
+		await field('datasetDsDescriptionDate').fill('2023-06-01');
+		await field('datasetPSRI1').selectOption('Yes');
+		await field('datasetPSRI2').selectOption('No');
+		await depositForm.getByRole('button', {name: 'Save'}).click();
+		await expect(panel.locator('[data-cy="dataverse-citation"]')).toContainText('Replication data for: ' + submission.title, {timeout: 60000});
+		expect(datasetMetadata(submission.id)).toMatchObject({
+			alternativeURL: 'https://example.com',
+			dsDescriptionDate: '2023-06-01',
+			PSRI1: 'Yes',
+			PSRI2: 'No',
 		});
 	});
 });
