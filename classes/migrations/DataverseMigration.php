@@ -10,6 +10,7 @@ class DataverseMigration extends Migration
 {
     public function up(): void
     {
+        (new DepositMigration())->up();
         if (!Schema::hasTable('dataverse_studies')) {
             Schema::create('dataverse_studies', function (Blueprint $table) {
                 $table->bigInteger('study_id')->autoIncrement();

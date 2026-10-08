@@ -119,7 +119,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
         $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles');
 
-        $factory = new SubmissionDatasetFactory($submission);
+        $factory = new SubmissionDatasetFactory($submission, false);
         $dataset = $factory->getDataset();
         $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
 

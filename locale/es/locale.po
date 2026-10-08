@@ -144,7 +144,7 @@ msgid "plugins.generic.dataverse.error.readmeFile.required"
 msgstr "Es obligatorio enviar un archivo README, en formato PDF, MD o TXT, que acompañe a los archivos de datos de la investigación"
 
 msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
-msgstr "Los datos de investigación no pueden consistir únicamente en el archivo README"
+msgstr "Los datos de investigación no pueden consistir únicamente en archivos README"
 
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro al obtener datos de investigación en Dataverse: {$error}"
@@ -340,7 +340,7 @@ msgid "plugins.generic.dataverse.metadataForm.keyword"
 msgstr "Palabras clave"
 
 msgid "plugins.generic.dataverse.metadataForm.language.label"
-msgstr "Idioma de datos de investigación""
+msgstr "Idioma de datos de investigación"
 
 msgid "plugins.generic.dataverse.metadataForm.language.description"
 msgstr "Seleccione lo idioma de los datos de investigación que se depositarán en el Dataverse"
@@ -597,3 +597,9 @@ msgstr "A petición"
 
 msgid "plugins.generic.dataverse.report.headers.statement.publiclyUnavailable"
 msgstr "Indisponibles públicamente"
+
+msgid "plugins.generic.dataverse.error.depositPending"
+msgstr "El depósito no se ha confirmado. Contacte con la revista para verificar el depósito existente antes de volver a intentarlo."
+
+msgid "plugins.generic.dataverse.error.sourceFileMissing"
+msgstr "Un archivo seleccionado para el depósito ya no está disponible. Vuelva a cargar el archivo ausente antes de depositar los datos de investigación."

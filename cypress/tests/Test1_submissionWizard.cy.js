@@ -232,7 +232,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 
         advanceNSteps(3);
         cy.get('div:contains("It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files")').should('not.exist');
-        cy.contains('The research data cannot consist solely of the README file');
+        cy.contains('The research data cannot consist solely of README files');
 
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
         cy.contains('button', 'Add research data').click();
@@ -250,7 +250,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
         advanceNSteps(3);
-        cy.get('div:contains("The research data cannot consist solely of the README file")').should('not.exist');
+        cy.get('div:contains("The research data cannot consist solely of README files")').should('not.exist');
         cy.contains('a', 'LEIAME.pdf');
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
     });
@@ -290,11 +290,13 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('CC BY 4.0');
         cy.contains('Is Supplemented By')
 
+        cy.intercept('POST', /submissions\/\d+\/submit/).as('submissionCompleted');
         cy.contains('button', 'Submit').click();
         cy.get('.modal__panel:visible').within(() => {
             cy.contains('button', 'Submit').click();
         });
-        cy.wait(7000);
-        cy.contains('h1', 'Submission complete');
+        cy.wait('@submissionCompleted', {responseTimeout: 240000})
+            .its('response.statusCode').should('eq', 200);
+        cy.contains('h1', 'Submission complete', {timeout: 10000});
     });
 });

@@ -2,6 +2,7 @@
 
 namespace APP\plugins\generic\dataverse\api\v1\datasets;
 
+use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
 use PKP\handler\APIHandler;
 use PKP\security\Role;
 use PKP\security\Validation;
@@ -326,14 +327,18 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.readmeFile.required');
         }
 
-        if (count($draftDatasetFiles) == 1) {
+        if (!$datasetFilesValidator->datasetHasNonReadmeFile($draftDatasetFiles)) {
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.notSolelyReadmeFile');
         }
 
         $submission = Repo::submission()->get($submissionId);
 
         $datasetFactory = new SubmissionDatasetFactory($submission);
-        $dataset = $datasetFactory->getDataset();
+        try {
+            $dataset = $datasetFactory->getDataset();
+        } catch (MissingDepositFileException $e) {
+            return $response->withStatus(409)->withJsonError('plugins.generic.dataverse.error.sourceFileMissing');
+        }
         $dataset->setTitle($requestParams['datasetTitle']);
         $dataset->setDescription($requestParams['datasetDescription']);
         $dataset->setKeywords((array) $requestParams['datasetKeywords'][$locale]);

@@ -209,6 +209,44 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         return $submission;
     }
 
+    public function testMissingResearchFileDoesNotCreateReadmeOnlyDatasetOrDeleteDraft(): void
+    {
+        $readme = clone $this->draftDatasetFile;
+        $readme->setId(10);
+        $readme->setData('fileId', 10);
+        $readme->setData('fileName', 'README.txt');
+        $data = clone $this->draftDatasetFile;
+        $data->setId(11);
+        $data->setData('fileId', 11);
+        $data->setData('fileName', 'data.csv');
+        $repository = $this->createMock(DraftDatasetFileRepo::class);
+        $repository->method('getBySubmissionId')->willReturn(new LazyCollection([$readme, $data]));
+        $repository->expects($this->never())->method('delete');
+        $temporaryFileDAO = $this->createMock(TemporaryFileDAO::class);
+        $temporaryFileDAO->method('getTemporaryFile')->willReturnCallback(function ($id) {
+            return $id === 10 ? $this->temporaryFile : null;
+        });
+        DAORegistry::registerDAO('TemporaryFileDAO', $temporaryFileDAO);
+        $factory = new SubmissionDatasetFactory($this->submission);
+        $factory->setDraftDatasetFileRepo($repository);
+        $factory->setDataverseClient($this->mockDataverseClient);
+        $this->expectException(\APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException::class);
+        $factory->getDataset();
+    }
+
+    public function testMetadataPreviewDoesNotReadOrDeleteMissingSourceFiles(): void
+    {
+        $repository = $this->createMock(DraftDatasetFileRepo::class);
+        $repository->expects($this->never())->method('getBySubmissionId');
+        $repository->expects($this->never())->method('delete');
+        $factory = new SubmissionDatasetFactory($this->submission, false);
+        $factory->setDraftDatasetFileRepo($repository);
+        $factory->setDataverseClient($this->mockDataverseClient);
+        $dataset = $factory->getDataset();
+        $this->assertSame([], $dataset->getFiles());
+        $this->assertNotEmpty($dataset->getTitle());
+    }
+
     public function testFactoryCreateDatasetFromSubmission(): void
     {
         $factory = new SubmissionDatasetFactory($this->submission);
@@ -243,6 +281,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $currentDate = date('Y-m-d', time());
 
         $datasetFile = new DatasetFile();
+        $datasetFile->setId($this->temporaryFile->getId());
         $datasetFile->setOriginalFileName($this->temporaryFile->getOriginalFileName());
         $datasetFile->setPath($this->temporaryFile->getFilePath());
 

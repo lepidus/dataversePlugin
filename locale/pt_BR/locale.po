@@ -144,7 +144,7 @@ msgid "plugins.generic.dataverse.error.readmeFile.required"
 msgstr "É obrigatório o envio de um arquivo README, em formato PDF, MD ou TXT, que acompanhe os arquivos de dados de pesquisa"
 
 msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
-msgstr "Os dados da pesquisa não podem ser constituídos apenas pelo arquivo README"
+msgstr "Os dados da pesquisa não podem ser constituídos apenas por arquivos README"
 
 msgid "plugins.generic.dataverse.error.getFailed"
 msgstr "Erro ao obter dados de pesquisa no Dataverse: {$error}"
@@ -593,3 +593,9 @@ msgstr "Sob demanda"
 
 msgid "plugins.generic.dataverse.report.headers.statement.publiclyUnavailable"
 msgstr "Indisponíveis publicamente"
+
+msgid "plugins.generic.dataverse.error.depositPending"
+msgstr "O depósito não foi confirmado. Entre em contato com a revista para verificar o depósito existente antes de tentar novamente."
+
+msgid "plugins.generic.dataverse.error.sourceFileMissing"
+msgstr "Um arquivo selecionado para o depósito não está mais disponível. Reenvie o arquivo ausente antes de depositar os dados de pesquisa."
