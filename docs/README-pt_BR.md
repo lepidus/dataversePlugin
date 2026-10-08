@@ -77,45 +77,46 @@ No OJS, avaliadores podem receber acesso aos arquivos de dados de pesquisa duran
 
 ## Executando testes
 
-### Testes de Unidade
-
-Para executar os testes de unidade, execute o seguinte comando na raíz do diretório de sua aplicação PKP:
+Os testes que se comunicam com o Dataverse usam uma coleção Dataverse real. Exporte as credenciais dela antes de executá-los:
 
 ```
-find plugins/generic/dataverse -name tests -type d -exec php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit-env2.xml -v "{}" ";"
+export DATAVERSE_URL="https://demo.dataverse.org/dataverse/myDataverseAlias"
+export DATAVERSE_API_TOKEN="abcd-abcd-abcd-abcd-abcdefghijkl"
+export DATAVERSE_TERMS_OF_USE="https://dataverse.org/best-practices/harvard-dataverse-general-terms-use"
 ```
 
-### Testes de Aceitação
+Sem elas, esses testes são ignorados localmente e falham na CI.
 
-Crie um arquivo `cypress.env.json` na raíz do diretório da sua aplicação PKP, com as seguintes variáveis:
-- `baseUrl`
-- `dataverseUrl`
-- `dataverseApiToken`
-- `dataverseTermsOfUse`
+### Testes de Unidade e de Integração (PHPUnit)
 
-**Exemplo**:
-
-```json
-{
-    "baseUrl": "http://localhost:8000",
-    "dataverseUrl": "https://demo.dataverse.org/dataverse/myDataverseAlias",
-    "dataverseApiToken": "abcd-abcd-abcd-abcd-abcdefghijkl",
-    "dataverseTermsOfUse": "https://dataverse.org/best-practices/harvard-dataverse-general-terms-use",
-    "dataverseAdditionalInstructions": "Instruções adicionar sobre submissão de dados de pesquisa:"
-}
+Execute na raíz do diretório da sua aplicação PKP:
+```
+php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml plugins/generic/dataverse/tests
 ```
 
-Em seguida, para executar o testes Cypress, execute o seguinte comando da raíz da aplicação:
+Os cenários de configuração e do fluxo de submissão rodam contra o banco de dados da aplicação, arquivos reais e a coleção Dataverse acima, sem mocks.
+
+### Testes de Ponta a Ponta (Playwright)
+
+Aqui é testado apenas o comportamento que só existe no navegador: a validação do formulário de configuração feita no navegador, os campos e seções condicionais do assistente de submissão, o modal de envio de dados de pesquisa e a etapa de revisão.
+
+A aplicação precisa estar em execução com o conjunto de dados de teste de referência (contexto `publicknowledge`, usuários `dbarnes` e `eostrom`) e o idioma `en`. No diretório do plugin:
+```
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
+
+`BASE_URL` aponta para a aplicação (padrão `http://localhost:8000`) e `APP_ROOT` para o diretório raíz dela (padrão: três níveis acima do plugin). Para rodar no OPS, defina as duas, por exemplo `APP_ROOT=/caminho/para/ops BASE_URL=http://localhost:8001 npm run test:e2e`.
+
+### Testes Cypress
+
+Os cenários de fluxo editorial, avaliação, site público, submissões legadas, vinculação de datasets e metadados obrigatórios personalizados ainda são testes Cypress. Crie um arquivo `cypress.env.json` na raíz do diretório da sua aplicação PKP com `baseUrl`, `dataverseUrl`, `dataverseApiToken` e `dataverseTermsOfUse` e execute:
 ```
 npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
 ```
 
-Para executar os testes com interface de usuário Cypress, execute:
-```
-npx cypress open --config specPattern=plugins/generic/dataverse/cypress/tests
-```
-
-Importante: Cypress busca por elementos utilizando strings exatas. O idioma da sua aplicação PKP deve estar em inglês para passar nos testes.
+O idioma do seu sistema operacional e da aplicação PKP deve ser `en` para que os testes passem.
 
 ## Créditos
 

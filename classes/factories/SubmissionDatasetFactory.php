@@ -50,7 +50,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $datasetTitlePrefix = __('plugins.generic.dataverse.dataset.titlePrefix');
         $props['title'] = $datasetTitlePrefix . $publication->getLocalizedData('title');
         $props['description'] = $publication->getLocalizedData('abstract');
-        $props['keywords'] = $publication->getLocalizedData('keywords');
+        $props['keywords'] = array_column($publication->getLocalizedData('keywords') ?? [], 'name');
         $props['language'] = $this->submission->getData('datasetLanguage');
         $props['subject'] = $this->submission->getData('datasetSubject');
         $props['license'] = $this->submission->getData('datasetLicense');
@@ -94,7 +94,7 @@ class SubmissionDatasetFactory extends DatasetFactory
 
     private function getAuthorOrcidNumber(?string $orcid): ?string
     {
-        return preg_match("~\d{4}-\d{4}-\d{4}-\d{3}(\d|X|x)~", $orcid, $matches) ? $matches[0] : null;
+        return preg_match("~\d{4}-\d{4}-\d{4}-\d{3}(\d|X|x)~", $orcid ?? '', $matches) ? $matches[0] : null;
     }
 
     private function createDatasetContact(): DatasetContact

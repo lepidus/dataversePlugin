@@ -75,43 +75,46 @@ In OJS, reviewers can have access to research data files during the review proce
 
 ## Running Tests
 
-### Unit Tests
+Tests that talk to Dataverse use a real Dataverse collection. Export its credentials before running them:
 
-To execute the unit tests, run the following command from root of the PKP Appplication directory:
 ```
-find plugins/generic/dataverse -name tests -type d -exec php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit-env2.xml -v "{}" ";"
-```
-
-### Integration Tests
-
-Creates a `cypress.env.json` file in root of the PKP Application directory, with the following environment variables:
-- `baseUrl`
-- `dataverseUrl`
-- `dataverseApiToken`
-- `dataverseTermsOfUse`
-
-**Example**:
-
-```json
-{
-    "baseUrl": "http://localhost:8000",
-    "dataverseUrl": "https://demo.dataverse.org/dataverse/myDataverseAlias",
-    "dataverseApiToken": "abcd-abcd-abcd-abcd-abcdefghijkl",
-    "dataverseTermsOfUse": "https://dataverse.org/best-practices/harvard-dataverse-general-terms-use",
-    "dataverseAdditionalInstructions": "Additional instructions about research data submission:"
-}
+export DATAVERSE_URL="https://demo.dataverse.org/dataverse/myDataverseAlias"
+export DATAVERSE_API_TOKEN="abcd-abcd-abcd-abcd-abcdefghijkl"
+export DATAVERSE_TERMS_OF_USE="https://dataverse.org/best-practices/harvard-dataverse-general-terms-use"
 ```
 
-Next, to execute the Cypress tests run the following command from root of the PKP Appplication directory:
+Without them, those tests are skipped locally and fail in CI.
+
+### Unit and Integration Tests (PHPUnit)
+
+Run from the root of the PKP Application directory:
+```
+php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml plugins/generic/dataverse/tests
+```
+
+The configuration and submission flow scenarios run against the application database, real files and the Dataverse collection above, without mocks.
+
+### End-to-end Tests (Playwright)
+
+Only behaviour that exists solely in the browser is tested here: client-side validation of the settings form, the conditional fields and sections of the submission wizard, the research data upload modal and the review step.
+
+The application must be running with the reference test dataset (context `publicknowledge`, users `dbarnes` and `eostrom`) and the `en` locale. Inside the plugin directory:
+```
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
+
+`BASE_URL` points to the application (default `http://localhost:8000`) and `APP_ROOT` to its root directory (default: three levels above the plugin). To run against OPS, set both, for example `APP_ROOT=/path/to/ops BASE_URL=http://localhost:8001 npm run test:e2e`.
+
+### Cypress Tests
+
+The workflow, review, public site, legacy submission, dataset linking and custom metadata scenarios are still Cypress specs. Create a `cypress.env.json` file in the root of the PKP Application directory with `baseUrl`, `dataverseUrl`, `dataverseApiToken` and `dataverseTermsOfUse`, then run:
 ```
 npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
 ```
 
-For execute the tests with the Cypress UI, run:
-```
-npx cypress open --config specPattern=plugins/generic/dataverse/cypress/tests
-```
-Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en` for passing into the tests.
+The locale of your operating system and PKP Application must be `en` for the tests to pass.
 
 ## Credits
 This plugin was sponsored by the Scientific Electronic Library Online (SciELO) and developed by Lepidus Tecnologia.

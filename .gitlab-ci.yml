@@ -8,13 +8,69 @@ include:
       - 'templates/groups/pkp_plugin.yml'
       - 'templates/groups/ojs/unit_tests.yml'
       - 'templates/groups/ops/unit_tests.yml'
-      - 'templates/groups/ojs/cypress_tests.yml'
 
-.integration_tests_template:
+.set_api_key_secret: &set_api_key_secret
+  - sed -i "s/api_key_secret = \"\"/api_key_secret = \"$API_KEY_SECRET\"/" /var/www/$APPLICATION/config.inc.php
+
+.unit_test_template:
   before_script:
-    - sed -i "s/api_key_secret = \"\"/api_key_secret = \"$API_KEY_SECRET\"/" /var/www/$APPLICATION/config.inc.php
+    - *set_api_key_secret
 
-#Desabilita os jobs de testes de aceitação da aplicação, por enquanto
-ojs_integration_tests:
+.e2e_tests_template:
+  stage: plugin
+  needs: []
   rules:
-    - when: never
+    - if: $CI_COMMIT_TAG
+      when: never
+    - when: on_success
+  services:
+    - name: $CI_SERVICE_MARIADB
+  variables:
+    MARIADB_HOST: 'mariadb'
+    PHP_VERSION: '8.4'
+    BASE_URL: 'http://localhost'
+    PLAYWRIGHT_BROWSERS_PATH: $CI_PROJECT_DIR/.cache/ms-playwright
+  cache:
+    key: playwright-$CI_COMMIT_REF_SLUG
+    paths:
+      - .cache/ms-playwright
+  script:
+    - !reference [.create_plugin_symbolic_link_to_plugins_path]
+    - *set_api_key_secret
+    - sed -i 's|^base_url = .*|base_url = "http://localhost"|' /var/www/$APPLICATION/config.inc.php
+    - !reference [.prepare_pkp_application]
+    - update-alternatives --set php /usr/bin/php$PHP_VERSION
+    - php -S 127.0.0.1:80 -t . > $CI_PROJECT_DIR/e2e_php_server.log 2>&1 &
+    - cd /var/www/$APPLICATION/$plugin_dir/$PLUGIN_NAME
+    - npm ci
+    - npx playwright install --with-deps chromium
+    - npx playwright test --output=$CI_PROJECT_DIR/test-results
+  after_script:
+    - cp -r /var/www/$APPLICATION/plugins/generic/$PLUGIN_NAME/results $CI_PROJECT_DIR/ || true
+  artifacts:
+    when: always
+    paths:
+      - test-results/
+      - e2e_php_server.log
+    reports:
+      junit: results/e2e-junit.xml
+
+plugin_e2e_tests_ojs:
+  extends: .e2e_tests_template
+  image: $CI_IMAGE_OJS
+  variables:
+    APPLICATION: 'ojs'
+    MARIADB_USER: 'ojs'
+    MARIADB_DATABASE: 'ojs'
+    MARIADB_PASSWORD: 'ojs'
+    MARIADB_ROOT_PASSWORD: 'ojs'
+
+plugin_e2e_tests_ops:
+  extends: .e2e_tests_template
+  image: $CI_IMAGE_OPS
+  variables:
+    APPLICATION: 'ops'
+    MARIADB_USER: 'ops'
+    MARIADB_DATABASE: 'ops'
+    MARIADB_PASSWORD: 'ops'
+    MARIADB_ROOT_PASSWORD: 'ops'
