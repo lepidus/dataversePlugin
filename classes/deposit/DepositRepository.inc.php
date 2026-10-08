@@ -39,11 +39,10 @@ class DepositRepository
             ->where('submission_id', $submissionId)
             ->where('revision', $this->revisions[$submissionId])
             ->where('state', $from)
-            ->update([
-                ...$values,
-                'state' => $to,
-                'revision' => $this->revisions[$submissionId] + 1
-            ]);
+            ->update(array_merge(
+                $values,
+                ['state' => $to, 'revision' => $this->revisions[$submissionId] + 1]
+            ));
         if ($affected !== 1) {
             throw new RuntimeException('Another request owns this deposit or its result needs reconciliation.');
         }
