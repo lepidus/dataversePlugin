@@ -61,7 +61,7 @@
 				</div>
 			</template>
 			<div v-else class="dataverseResearchData__empty">
-				<p>{{ t('plugins.generic.dataverse.researchData.noResearchData') }}</p>
+				<p class="text-lg-normal">{{ t('plugins.generic.dataverse.researchData.noResearchData') }}</p>
 				<PkpButtonRow v-if="canDeposit">
 					<PkpButton data-cy="dataverse-upload-research-data" @click="openDepositModal">
 						{{ t('plugins.generic.dataverse.researchData.uploadResearchData') }}
@@ -70,7 +70,7 @@
 						{{ t('plugins.generic.dataverse.researchData.associate') }}
 					</PkpButton>
 				</PkpButtonRow>
-				<p v-else>
+				<p v-else class="text-lg-normal">
 					{{ t('plugins.generic.dataverse.researchData.uploadDisabled') }}
 				</p>
 			</div>
