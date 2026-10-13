@@ -3,7 +3,6 @@
 use APP\core\Application;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
-use APP\plugins\generic\dataverse\classes\DataEncryption;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
@@ -12,6 +11,7 @@ use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use PKP\cliTool\CommandLineTool;
 use PKP\core\Core;
 use PKP\core\Registry;
@@ -67,7 +67,7 @@ function configure($context, array $options): array
     $configuration = new DataverseConfiguration();
     $configuration->setAllData([
         'dataverseUrl' => $credentials['dataverseUrl'],
-        'apiToken' => (new DataEncryption())->encryptString($credentials['apiToken']),
+        'apiToken' => Crypt::encrypt($credentials['apiToken']),
         'termsOfUse' => ['en' => $credentials['termsOfUse']],
         'additionalInstructions' => [],
         'datasetPublish' => $options['datasetPublish'] ?? DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_PUBLISHED,

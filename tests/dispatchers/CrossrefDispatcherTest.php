@@ -1,10 +1,5 @@
 <?php
 
-use PKP\db\DAORegistry;
-use PKP\doi\Doi;
-use PKP\tests\DatabaseTestCase;
-use APP\publication\Publication;
-use APP\submission\Submission;
 use APP\plugins\generic\dataverse\classes\CrossrefXmlEditor;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
@@ -13,8 +8,13 @@ use APP\plugins\generic\dataverse\classes\dispatchers\CrossrefDispatcher;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
-use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
 use APP\plugins\generic\dataverse\DataversePlugin;
+use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
+use APP\publication\Publication;
+use APP\submission\Submission;
+use PKP\db\DAORegistry;
+use PKP\doi\Doi;
+use PKP\tests\DatabaseTestCase;
 
 class CrossrefDispatcherTest extends DatabaseTestCase
 {
@@ -128,7 +128,7 @@ class CrossrefDispatcherTest extends DatabaseTestCase
     {
         $configuration = new DataverseConfiguration();
         $configuration->setDataverseUrl('https://demo.dataverse.org/dataverse/test');
-        $configuration->setAPIToken('some-api-token');
+        $configuration->setAPIToken(\Illuminate\Support\Facades\Crypt::encrypt('some-api-token'));
         $configuration->setTermsOfUse(['en' => 'Terms of use']);
 
         DAORegistry::getDAO('DataverseConfigurationDAO')->insert($this->context->getId(), $configuration);

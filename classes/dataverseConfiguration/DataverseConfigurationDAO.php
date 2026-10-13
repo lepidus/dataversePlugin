@@ -2,10 +2,9 @@
 
 namespace APP\plugins\generic\dataverse\classes\dataverseConfiguration;
 
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use PKP\db\DAORegistry;
-use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
-use APP\plugins\generic\dataverse\classes\DataEncryption;
 
 class DataverseConfigurationDAO
 {
@@ -58,11 +57,8 @@ class DataverseConfigurationDAO
 
     private function decryptApiToken(array $settings): array
     {
-        if (isset($settings['apiToken'])) {
-            $encryption = new DataEncryption();
-            if ($encryption->textIsEncrypted($settings['apiToken'])) {
-                $settings['apiToken'] = $encryption->decryptString($settings['apiToken']);
-            }
+        if (!empty($settings['apiToken'])) {
+            $settings['apiToken'] = Crypt::decrypt($settings['apiToken']);
         }
         return $settings;
     }

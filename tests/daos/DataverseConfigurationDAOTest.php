@@ -1,9 +1,11 @@
 <?php
 
-use PKP\tests\DatabaseTestCase;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
 use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
+use PKP\tests\DatabaseTestCase;
 
 class DataverseConfigurationDAOTest extends DatabaseTestCase
 {
@@ -78,7 +80,7 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
                 $this->context->getId(),
                 $this->pluginName,
                 $name,
-                $value,
+                $name === 'apiToken' ? Crypt::encrypt($value) : $value,
             );
         }
 
@@ -90,9 +92,11 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
 
     public function testDataverseConfigurationWasInsertedInDatabase(): void
     {
+        $storedConfiguration = clone $this->dataverseConfiguration;
+        $storedConfiguration->setApiToken(Crypt::encrypt($storedConfiguration->getApiToken()));
         $this->dataverseConfigurationDAO->insert(
             $this->context->getId(),
-            $this->dataverseConfiguration
+            $storedConfiguration
         );
 
         $this->assertEquals(
@@ -100,4 +104,19 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
             $this->dataverseConfigurationDAO->get($this->context->getId())
         );
     }
+    public function testReadsTokenEncryptedWithApplicationKey(): void
+    {
+        $this->dataverseConfiguration->setApiToken(Crypt::encrypt('test-api-token'));
+        $this->dataverseConfigurationDAO->insert($this->context->getId(), $this->dataverseConfiguration);
+        $this->assertSame('test-api-token', $this->dataverseConfigurationDAO->get($this->context->getId())->getApiToken());
+    }
+
+    public function testRejectsInvalidEncryptedToken(): void
+    {
+        $this->dataverseConfiguration->setApiToken('invalid-encrypted-token');
+        $this->dataverseConfigurationDAO->insert($this->context->getId(), $this->dataverseConfiguration);
+        $this->expectException(DecryptException::class);
+        $this->dataverseConfigurationDAO->get($this->context->getId());
+    }
+
 }

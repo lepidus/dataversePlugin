@@ -45,8 +45,8 @@ APP_ROOT=/path/to/ops BASE_URL=http://localhost:8001 npm run test:e2e
 Tests that reach Dataverse read `DATAVERSE_URL`, `DATAVERSE_API_TOKEN` and `DATAVERSE_TERMS_OF_USE` from the
 environment and hit a **real Dataverse instance** (e.g. `https://demo.dataverse.org/dataverse/<alias>`) — there is
 no mock or fixture server. Without them the PHPUnit tests that need Dataverse are skipped locally and **fail** when
-`CI` is set, and the Playwright suite refuses to start. In GitLab they are project CI variables, next to
-`API_KEY_SECRET`. `DATAVERSE_CUSTOM_REQUIRED_METADATA_URL` follows the same rules: it points to a collection on the
+`CI` is set, and the Playwright suite refuses to start. In GitLab they are project CI variables.
+`DATAVERSE_CUSTOM_REQUIRED_METADATA_URL` follows the same rules: it points to a collection on the
 same server whose metadata blocks make `alternativeURL`, `dsDescriptionDate`, `PSRI1` and `PSRI2` required
 (`customRequiredMetadataFields` on demo.dataverse.org), and it is not a secret, so `.gitlab-ci.yml` sets it.
 
@@ -54,9 +54,6 @@ The Playwright suite needs the application running with the reference dataset (`
 `eostrom` and, in OJS, the reviewer `jjanssen`), the `en` locale and the plugin tables created. It configures the
 plugin and creates one submission per scenario through `tests/e2e/support/DataverseTestData.php`, a CLI script run
 from the application root, so scenarios are independent and no database reset is needed between runs.
-
-`config.inc.php` must define `security.api_key_secret`; without it the settings form renders
-`emptySecretKey.tpl` and the plugin cannot be configured.
 
 ## Feature Surface
 
@@ -283,9 +280,8 @@ only takes the **subject** from that template — the body is rendered directly 
 
 ### Secrets
 
-The API token is stored encrypted in the application database. `classes/DataEncryption` derives an
-`aes-256-cbc` key by SHA-256'ing `security.api_key_secret` from `config.inc.php` and uses Laravel's
-`Encrypter`. Never log, echo, or write a decrypted token to a template.
+The API token is stored encrypted in the application database using the application encryption service.
+Never log, echo, or write a decrypted token to a template.
 
 ## Tests
 
