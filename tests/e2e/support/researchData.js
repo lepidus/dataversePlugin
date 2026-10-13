@@ -25,6 +25,6 @@ export async function openPanel(page, submission, panelName) {
 export async function openResearchData(page, submission) {
 	await openPanel(page, submission, 'Research data');
 	const panel = page.locator('.dataverseResearchData');
-	await expect(panel.locator('[data-cy="dataverse-citation"], .dataverseResearchData__empty')).toBeVisible({timeout: 30000});
+	await expect(page.locator('[data-cy="dataverse-dataset-header"] [data-cy="dataverse-citation"], .dataverseResearchData__empty')).toBeVisible({timeout: 30000});
 	return panel;
 }

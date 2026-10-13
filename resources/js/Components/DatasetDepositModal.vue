@@ -4,16 +4,20 @@
 			{{ title }}
 		</template>
 		<PkpSideModalLayoutBasic>
-			<DatasetFilesListPanel
-				v-bind="listPanel"
-				@set="setListPanel"
-			/>
-			<PkpForm
-				v-bind="metadataForm"
-				data-cy="dataverse-deposit-form"
-				@set="setForm"
-				@success="emit('close')"
-			/>
+			<div class="p-3">
+				<DatasetFilesListPanel
+					v-bind="listPanel"
+					@set="setListPanel"
+				/>
+			</div>
+			<div class="-m-5">
+				<PkpForm
+					v-bind="metadataForm"
+					data-cy="dataverse-deposit-form"
+					@set="setForm"
+					@success="emit('close')"
+				/>
+			</div>
 		</PkpSideModalLayoutBasic>
 	</PkpSideModalBody>
 </template>
