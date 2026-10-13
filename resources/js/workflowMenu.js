@@ -50,7 +50,7 @@ export default function registerWorkflowMenu() {
 			}
 
 			return [
-				...primaryItems,
+				...(primaryItems ?? []),
 				{
 					component: menuItem.component,
 					props: {
@@ -79,7 +79,7 @@ export default function registerWorkflowMenu() {
 				return controls;
 			}
 
-			return [...controls, {component: 'DataverseDatasetHeader', props: {state}}];
+			return [...(controls ?? []), {component: 'DataverseDatasetHeader', props: {state}}];
 		});
 
 		// The workflow page sets its default expanded groups during setup.
