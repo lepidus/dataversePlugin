@@ -16,33 +16,31 @@
 				</PkpButton>
 			</div>
 			<template v-else-if="state.hasDataset">
-				<PkpHeader>
-					<template #actions>
-						<PkpButton
-							:is-warnable="true"
-							:is-disabled="!canEdit || state.datasetIsPublished"
-							data-cy="dataverse-delete-dataset"
-							@click="openDeleteDatasetModal"
-						>
-							{{ t('plugins.generic.dataverse.researchData.delete') }}
-						</PkpButton>
-						<PkpButton
-							v-if="canPublish"
-							:is-warnable="true"
-							data-cy="dataverse-disassociate-dataset"
-							@click="openDisassociateDatasetDialog"
-						>
-							{{ t('plugins.generic.dataverse.researchData.disassociate') }}
-						</PkpButton>
-						<PkpButton
-							v-if="canPublish && !state.datasetIsPublished"
-							data-cy="dataverse-publish-dataset"
-							@click="openPublishDatasetDialog"
-						>
-							{{ t('plugins.generic.dataverse.researchData.publish') }}
-						</PkpButton>
-					</template>
-				</PkpHeader>
+				<PkpButtonRow class="p-3">
+					<PkpButton
+						:is-warnable="true"
+						:is-disabled="!canEdit || state.datasetIsPublished"
+						data-cy="dataverse-delete-dataset"
+						@click="openDeleteDatasetModal"
+					>
+						{{ t('plugins.generic.dataverse.researchData.delete') }}
+					</PkpButton>
+					<PkpButton
+						v-if="canPublish"
+						:is-warnable="true"
+						data-cy="dataverse-disassociate-dataset"
+						@click="openDisassociateDatasetDialog"
+					>
+						{{ t('plugins.generic.dataverse.researchData.disassociate') }}
+					</PkpButton>
+					<PkpButton
+						v-if="canPublish && !state.datasetIsPublished"
+						data-cy="dataverse-publish-dataset"
+						@click="openPublishDatasetDialog"
+					>
+						{{ t('plugins.generic.dataverse.researchData.publish') }}
+					</PkpButton>
+				</PkpButtonRow>
 				<div class="flex flex-col gap-y-5">
 					<div class="p-3">
 						<DatasetFilesListPanel
