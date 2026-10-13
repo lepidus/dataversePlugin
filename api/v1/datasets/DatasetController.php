@@ -167,12 +167,13 @@ class DatasetController extends PKPBaseController
 
         $params = $illuminateRequest->input();
 
-        $metadataErrors = $this->getMetadataErrors($params);
+        $metadataForm = new DatasetMetadataForm('', 'POST', null, 'workflow');
+        $metadataErrors = $this->getMetadataErrors($params, $metadataForm);
         if (!empty($metadataErrors)) {
             return response()->json($metadataErrors, Response::HTTP_BAD_REQUEST);
         }
 
-        (new DatasetService())->update([
+        $data = [
             'persistentId' => $study->getPersistentId(),
             'title' => $params['datasetTitle'],
             'description' => $params['datasetDescription'],
@@ -181,7 +182,21 @@ class DatasetController extends PKPBaseController
             'subject' => $params['datasetSubject'],
             'license' => $params['datasetLicense'],
             'relationType' => $params['datasetRelationType'],
-        ]);
+        ];
+
+        foreach ($metadataForm->fields as $field) {
+            if (!array_key_exists($field->name, $params)) {
+                continue;
+            }
+
+            $metadataName = substr($field->name, strlen('dataset'));
+            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
+            if (!array_key_exists($metadataName, $data)) {
+                $data[$metadataName] = $params[$field->name];
+            }
+        }
+
+        (new DatasetService())->update($data);
 
         return $this->get($illuminateRequest);
     }
@@ -462,12 +477,13 @@ class DatasetController extends PKPBaseController
         return response()->json(['inReview' => false], Response::HTTP_OK);
     }
 
-    private function getMetadataErrors(array $params): array
+    private function getMetadataErrors(array $params, ?DatasetMetadataForm $metadataForm = null): array
     {
         $locale = Locale::getLocale();
         $errors = [];
 
-        foreach ((new DatasetMetadataForm('', 'POST', null, 'workflow'))->fields as $field) {
+        $metadataForm ??= new DatasetMetadataForm('', 'POST', null, 'workflow');
+        foreach ($metadataForm->fields as $field) {
             if (!$field->isRequired) {
                 continue;
             }
