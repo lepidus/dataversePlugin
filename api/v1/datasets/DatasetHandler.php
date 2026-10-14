@@ -2,28 +2,29 @@
 
 namespace APP\plugins\generic\dataverse\api\v1\datasets;
 
-use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
-use PKP\handler\APIHandler;
-use PKP\security\Role;
-use PKP\security\Validation;
-use PKP\facades\Locale;
-use PKP\security\authorization\PolicySet;
-use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
-use PKP\db\DAORegistry;
 use APP\core\Application;
 use APP\log\event\SubmissionEventLogEntry;
-use PKP\core\Core;
-use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
+use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\services\{
-    DatasetService,
     DatasetFileService,
+    DatasetService,
     DataverseService
 };
-use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
-use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
-use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use PKP\core\Core;
+use PKP\db\DAORegistry;
+use PKP\facades\Locale;
+use PKP\handler\APIHandler;
+use PKP\security\authorization\PolicySet;
+use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
+use PKP\security\Role;
+use PKP\security\Validation;
 
 class DatasetHandler extends APIHandler
 {
@@ -228,6 +229,19 @@ class DatasetHandler extends APIHandler
         $data['subject'] = $requestParams['datasetSubject'];
         $data['license'] = $requestParams['datasetLicense'];
         $data['relationType'] = $requestParams['datasetRelationType'];
+
+        $metadataForm = new DatasetMetadataForm('', 'POST', null, 'workflow');
+        foreach ($metadataForm->fields as $field) {
+            if (!array_key_exists($field->name, $requestParams)) {
+                continue;
+            }
+
+            $metadataName = substr($field->name, strlen('dataset'));
+            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
+            if (!array_key_exists($metadataName, $data)) {
+                $data[$metadataName] = $requestParams[$field->name];
+            }
+        }
 
         $datasetService = new DatasetService();
         $datasetService->update($data);
