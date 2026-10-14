@@ -9,7 +9,6 @@ use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\submission\Submission;
-use PKP\core\APIResponse;
 use PKP\core\Dispatcher;
 use PKP\core\Registry;
 use PKP\db\DAORegistry;
@@ -17,8 +16,8 @@ use PKP\facades\Locale;
 use PKP\security\RoleDAO;
 use PKP\tests\PKPTestCase;
 use PKP\user\User;
-use Slim\Http\Environment;
-use Slim\Http\Request;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * @runTestsInSeparateProcesses
@@ -123,9 +122,10 @@ class DatasetHandlerTest extends PKPTestCase
             'relationType' => 'IsSupplementTo',
         ] + $additionalMetadata);
 
-        $request = Request::createFromEnvironment(Environment::mock(['REQUEST_METHOD' => 'PUT']))
-            ->withParsedBody($params);
-        $response = new APIResponse();
+        $request = $this->createMock(ServerRequestInterface::class);
+        $request->expects($this->once())->method('getParsedBody')->willReturn($params);
+        $response = $this->createMock(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(200);
         $args = ['studyId' => 7];
         $handler = $this->getMockBuilder(DatasetHandler::class)
             ->disableOriginalConstructor()->onlyMethods(['get'])->getMock();
