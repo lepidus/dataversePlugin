@@ -9,11 +9,16 @@ Cypress.Commands.add('findSubmission', function(tab, title) {
         });
 });
 
-Cypress.Commands.add('changeAuthorEditPermissionOnPublication', function(username, fullName, context, submissionTitle, option) {
+Cypress.Commands.add('changeAuthorEditPermissionOnPublication', function(username, fullName, context, submissionTitle, option, submissionId) {
 	var familyName = fullName.split(' ')[1];
     context = context || 'publicknowledge';
-	cy.loginDataverseUser(username, context);
-	cy.findSubmission('active', submissionTitle);
+    if (submissionId) {
+        cy.observeDataverseWorkflow();
+        cy.loginDataverseUser(username, context, {destination: `workflow/access/${submissionId}`});
+    } else {
+        cy.loginDataverseUser(username, context);
+        cy.findSubmission('active', submissionTitle);
+    }
 	cy.contains('span', fullName).parent().siblings('.show_extras').first().click();
 	cy.get('.pkp_linkaction_icon_edit_user:visible').click();
 	
@@ -206,7 +211,7 @@ Cypress.Commands.add('setDataversePluginEnabled', function (enabled) {
 	cy.get(checkbox).should(enabled ? 'be.checked' : 'not.be.checked');
 });
 
-Cypress.Commands.add('loginDataverseUser', function (username, context = 'publicknowledge') {
+Cypress.Commands.add('loginDataverseUser', function (username, context = 'publicknowledge', {destination = 'submissions'} = {}) {
 	cy.session(['dataverse', username, context], () => {
 		cy.login(username, null, context);
 		cy.get('.app__userNav').should('be.visible');
@@ -220,5 +225,5 @@ Cypress.Commands.add('loginDataverseUser', function (username, context = 'public
 			}).its('status').should('eq', 200);
 		},
 	});
-	cy.visit(`/index.php/${context}/submissions`);
+	cy.visit(`/index.php/${context}/${destination}`);
 });

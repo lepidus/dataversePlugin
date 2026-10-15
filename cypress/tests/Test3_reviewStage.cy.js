@@ -1,6 +1,7 @@
 import {
     useDataverseFixtures,
     uniqueSubmission,
+    loginToSubmissionFixture,
     createSubmissionFixture,
     trackWizardSubmission,
     depositDatasetFixture,
@@ -95,8 +96,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
     });
     it('Editor selects which data files will be available for reviewers', function () {
         prepareReview();
-        cy.loginDataverseUser('dbarnes');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture));
 
         cy.get('#workflow-button').click();
         cy.clickDecision('Send for Review');
@@ -152,8 +152,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
     });
     it('Deletes research data on submission declining', function () {
         prepareReview({reviewed: true});
-        cy.loginDataverseUser('dbarnes');
-        cy.findSubmission('active', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture));
 
         cy.clickDecision('Decline Submission');
         cy.contains('h1', 'Decline Submission');
@@ -179,8 +178,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
     });
     it('Reverts declining and adds research data again', function () {
         prepareReview({reviewed: true, declined: true});
-        cy.loginDataverseUser('dbarnes');
-        cy.findSubmission('archive', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture));
 
         cy.contains('button', 'Change decision').click();
 		cy.clickDecision('Revert Decline');
@@ -211,8 +209,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
     it('Research data is published on submission acceptance', function () {
         cy.configureDataverseForTests({publishOn: 1});
         prepareReview({reviewed: true});
-        cy.loginDataverseUser('dbarnes');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture));
 
         cy.waitDatasetTabLoading();
 

@@ -1,6 +1,8 @@
 import {
     useDataverseFixtures,
     uniqueSubmission,
+    loginToSubmissionFixture,
+    openDatasetFixture,
     createSubmissionFixture,
     depositDatasetFixture,
     publishSubmissionFixture,
@@ -47,14 +49,15 @@ describe('Dataverse Plugin - Workflow features', function () {
             }
         });
         if (permission) {
-            cy.changeAuthorEditPermissionOnPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionData.title, 'check');
+            cy.then(() => {
+                cy.changeAuthorEditPermissionOnPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionData.title, 'check', fixture.id);
+            });
         }
     }
 
     it('Data statement features are displayed in workflow tab', function () {
         prepareWorkflow();
-        cy.loginDataverseUser('eostrom');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'eostrom'));
         
         cy.waitDataStatementTabLoading();
 
@@ -91,8 +94,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Research data metadata editing in workflow', function () {
         prepareWorkflow();
-        cy.loginDataverseUser('eostrom');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'eostrom'));
         
         cy.waitDatasetTabLoading();
 
@@ -146,8 +148,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Research data files editing in workflow', function () {
         prepareWorkflow();
-        cy.loginDataverseUser('eostrom');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'eostrom'));
 
         cy.waitDatasetTabLoading();
 
@@ -172,8 +173,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Author can delete research data in workflow', function () {
         prepareWorkflow();
-        cy.loginDataverseUser('eostrom');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'eostrom'));
         
         cy.waitDatasetTabLoading();
 
@@ -191,8 +191,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Author can upload research data in workflow', function () {
         prepareWorkflow({dataset: false});
-        cy.loginDataverseUser('eostrom');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'eostrom'));
         
         cy.waitDataStatementTabLoading();
 
@@ -217,7 +216,10 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Check author actions were registered in activity log', function () {
         prepareWorkflow({dataset: false});
-        cy.then(() => { depositDatasetFixture(fixture, {author: 'eostrom'}); });
+        cy.then(() => {
+            depositDatasetFixture(fixture, {author: 'eostrom'});
+            openDatasetFixture(fixture, true);
+        });
         cy.get('#datasetMetadata-datasetTitle-control').clear().type(`Log update ${submissionData.title}`, {delay: 0});
         cy.then(() => { fixture.depositAttempted = true; fixture.datasetDeleted = false; });
         cy.saveDatasetMetadata();
@@ -229,8 +231,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#deleteDatasetButton').click();
         cy.confirmDatasetDeletion();
         cy.then(() => { fixture.datasetDeleted = true; });
-        cy.loginDataverseUser('dbarnes');
-        cy.findSubmission('active', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'dbarnes'));
 
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer').within(() => {
@@ -248,8 +249,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 			cy.changeAuthorEditPermissionOnPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionData.title,'uncheck');
 		}
         
-        cy.loginDataverseUser('eostrom');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'eostrom'));
 
         cy.waitDatasetTabLoading();
 
@@ -267,8 +267,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 	});
     it('Editor can delete research data in workflow', function () {
         prepareWorkflow({permission: false});
-        cy.loginDataverseUser('dbarnes');
-        cy.findSubmission('active', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'dbarnes'));
 
         cy.waitDatasetTabLoading();
 
@@ -294,8 +293,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Editor can upload research data in workflow', function () {
         prepareWorkflow({dataset: false, permission: false});
-        cy.loginDataverseUser('dbarnes');
-        cy.findSubmission('active', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'dbarnes'));
 
         cy.waitDataStatementTabLoading();
 
@@ -317,8 +315,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Editor can publish dataset on submission publishing', function () {
         prepareWorkflow({permission: false});
-        cy.loginDataverseUser('dbarnes');
-        cy.findSubmission('active', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'dbarnes'));
         
         cy.waitDatasetTabLoading();
 
@@ -369,8 +366,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Editor publishes dataset after submission publishing', function () {
         prepareWorkflow({published: true, permission: false});
-        cy.loginDataverseUser('dbarnes');
-        cy.findSubmission('archive', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'dbarnes'));
 
         cy.waitDatasetTabLoading();
 
@@ -397,8 +393,7 @@ describe('Dataverse Plugin - Workflow features', function () {
     });
     it('Publishing of submission new version do not publish dataset', function () {
         prepareWorkflow({published: true, released: true, permission: false});
-        cy.loginDataverseUser('dbarnes');
-        cy.findSubmission('archive', submissionData.title);
+        cy.then(() => loginToSubmissionFixture(fixture, 'dbarnes'));
 
         cy.waitDatasetTabLoading();
 

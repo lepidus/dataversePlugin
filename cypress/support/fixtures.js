@@ -34,7 +34,7 @@ export function useDataverseFixtures({configure = true, configuration = {}} = {}
         if (!fixtures.length) {
             return;
         }
-        cy.loginDataverseUser('dbarnes');
+        cy.loginDataverseUser('dbarnes', 'publicknowledge', {destination: 'user/profile'});
         fixtures.forEach((fixture) => {
             if (!fixture.submitted && fixture.depositAttempted) {
                 return;
@@ -144,7 +144,7 @@ function uploadDatasetFixtureFile(fixture, file, fileName, mimeType) {
 export function createSubmissionFixture(fixtures, data, {
     author = 'eostrom', submitted = true, manuscript = true, statementTypes = [2, 5],
 } = {}) {
-    cy.loginDataverseUser(author);
+    cy.loginDataverseUser(author, 'publicknowledge', {destination: 'user/profile'});
     return fixtureHeaders().then((headers) => {
         const section = Cypress.env('contextTitles').en === 'Public Knowledge Preprint Server' ? {} : {sectionId: 1};
         return requestFixture({method: 'POST', url: `${api}/submissions`, headers, body: {locale: 'en', ...section}})
@@ -184,6 +184,12 @@ export function createSubmissionFixture(fixtures, data, {
     });
 }
 
+export function loginToSubmissionFixture(fixture, username = 'dbarnes') {
+    const page = username === fixture.author ? 'authorDashboard/submission' : 'workflow/access';
+    cy.observeDataverseWorkflow();
+    return cy.loginDataverseUser(username, 'publicknowledge', {destination: `${page}/${fixture.id}`});
+}
+
 export function openDatasetFixture(fixture, author = false) {
     cy.observeDataverseWorkflow();
     const page = author ? 'authorDashboard/submission' : 'workflow/access';
@@ -195,7 +201,7 @@ export function openDatasetFixture(fixture, author = false) {
 }
 
 export function depositDatasetFixture(fixture, {reviewFiles = false, author = 'dbarnes'} = {}) {
-    cy.loginDataverseUser(author);
+    cy.loginDataverseUser(author, 'publicknowledge', {destination: 'user/profile'});
     uploadDatasetFixtureFile(fixture, 'example.json', reviewFiles ? 'example.json' : 'Planilha_de_dados_ÇÕÔÁÀÃ.json', 'application/json');
     if (reviewFiles) {
         uploadDatasetFixtureFile(fixture, 'example.json', 'Raw_data.json', 'application/json');
@@ -216,8 +222,13 @@ export function depositDatasetFixture(fixture, {reviewFiles = false, author = 'd
             },
         });
     });
-    openDatasetFixture(fixture, author !== 'dbarnes');
-    cy.get('#datasetData a[href*="doi.org/"]').should('be.visible');
+    cy.getDataverseStudyForTest(fixture.id).then((studyId) => {
+        expect(studyId, 'Deposited fixture study ID').to.be.a('number').and.be.greaterThan(0);
+        requestFixture({url: `${api}/datasets/${studyId}`}).then(({body}) => {
+            expect(body.versionState, 'Deposited fixture state').to.equal('DRAFT');
+            expect(body.persistentId, 'Deposited fixture DOI').to.match(/^doi:10\./);
+        });
+    });
     if (fixture.statementTypes.includes(3)) {
         fixtureHeaders().then((headers) => {
             requestFixture({
@@ -229,8 +240,7 @@ export function depositDatasetFixture(fixture, {reviewFiles = false, author = 'd
 }
 
 export function sendFixtureForReview(fixture, {assignReviewer = false} = {}) {
-    cy.loginDataverseUser('dbarnes');
-    openDatasetFixture(fixture);
+    loginToSubmissionFixture(fixture);
     cy.get('#workflow-button').click();
     cy.clickDecision('Send for Review');
     cy.contains('button', 'Skip this email').click();
@@ -245,8 +255,7 @@ export function sendFixtureForReview(fixture, {assignReviewer = false} = {}) {
 }
 
 export function prepareProductionFixture(fixture) {
-    cy.loginDataverseUser('dbarnes');
-    openDatasetFixture(fixture);
+    cy.loginDataverseUser('dbarnes', 'publicknowledge', {destination: 'user/profile'});
     if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
         // Editorial decisions are a precondition here; their UI is covered by workflow/review cases.
         fixtureHeaders().then((headers) => {
@@ -257,8 +266,8 @@ export function prepareProductionFixture(fixture) {
                 });
             });
         });
-        openDatasetFixture(fixture);
     }
+    openDatasetFixture(fixture);
     cy.get('#publication-button').click();
 }
 
@@ -283,14 +292,17 @@ export function publishSubmissionFixture(fixture, {publishDataset = false} = {})
 }
 
 export function publishDatasetFixture(fixture) {
-    cy.loginDataverseUser('dbarnes');
-    openDatasetFixture(fixture);
-    cy.get('#datasetMetadata-datasetTitle-control').closest('form').invoke('attr', 'action').then((action) => {
+    cy.loginDataverseUser('dbarnes', 'publicknowledge', {destination: 'user/profile'});
+    cy.getDataverseStudyForTest(fixture.id).then((studyId) => {
+        expect(studyId, 'Owned fixture study ID').to.be.a('number').and.be.greaterThan(0);
         fixtureHeaders().then((headers) => {
             requestFixture({
-                method: 'POST', url: action + '/publish',
+                method: 'POST', url: `${api}/datasets/${studyId}/publish`,
                 headers: {...headers, 'X-Http-Method-Override': 'PUT'},
-            }).then(() => { fixture.datasetReleased = true; });
+            }).then(({body}) => {
+                expect(body.versionState, 'Published fixture state').to.equal('RELEASED');
+                fixture.datasetReleased = true;
+            });
         });
     });
 }
