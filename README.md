@@ -104,20 +104,33 @@ Creates a `cypress.env.json` file in root of the PKP Application directory, with
 
 Next, to execute the Cypress tests run the following command from root of the PKP Appplication directory:
 ```
-npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
+npx cypress run --config 'specPattern=plugins/generic/dataverse/cypress/tests/Test*.cy.js'
 ```
 
 For execute the tests with the Cypress UI, run:
 ```
-npx cypress open --config specPattern=plugins/generic/dataverse/cypress/tests
+npx cypress open --config 'specPattern=plugins/generic/dataverse/cypress/tests/Test*.cy.js'
 ```
 Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en` for passing into the tests.
 
-Run the complete suite from a restored test dataset. The configuration, submission wizard,
-workflow, review and public-site specs still form an ordered scenario. The legacy-submission
-and dataset-linking specs prepare their own configuration and submissions, so they can also
-run separately. Dataset linking removes only the submissions and draft dataset created by its
-own case; if dataset cleanup fails, it preserves the local records for diagnosis.
+Start from a restored test dataset and apply the plugin migrations. Each test configures the
+plugin and creates the submission state it needs, with a unique title. Wizard, workflow,
+review, public-site, legacy and linking cases can run separately, in another order, and again
+without restoring between runs. Run specs sequentially against a single context: plugin
+configuration is shared by that context.
+
+The shared fixtures use the PKP API for submission metadata and editorial preconditions,
+and the normal upload interfaces for files. Assertions still exercise the interface under
+test. Cleanup removes only the case's own submissions and draft datasets. Published datasets
+cannot be removed through the plugin; their local submissions are retained for traceability.
+Failed cases, uncertain deposits and failed remote cleanup keep their local recovery records.
+Cleanup does not replace the original failure of a case with a second UI-hook error.
+
+Functional fixtures clear Dataverse caches for `publicknowledge` and the collection-validation cache; the configuration spec also
+resets its Dataverse settings through the same CLI-only fixture. It verifies the database name before changing settings. Set `dataverseTestDatabase` in
+the Cypress environment when the test database differs from `DBNAME` or the local default
+`ojs_stable_3_4_0`.
+The fixture uses the same PHP executable as the Cypress command's environment.
 
 The custom required metadata cases are reported as pending when
 `dataverseCustomRequiredMetadataFieldsUrl` is not configured. The workflow synchronization

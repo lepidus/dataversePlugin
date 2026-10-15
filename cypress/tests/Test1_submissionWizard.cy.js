@@ -1,4 +1,17 @@
-import '../support/commands.js';
+import {
+    useDataverseFixtures,
+    uniqueSubmission,
+    createSubmissionFixture,
+    trackWizardSubmission,
+} from '../support/fixtures.js';
+
+const dataFile = {
+    path: 'example.json', name: 'Planilha_de_dados_ÇÕÔÁÀÃ.json', mime: 'application/json', encoding: 'utf8',
+};
+const readmeFile = {
+    path: '../../plugins/generic/dataverse/cypress/fixtures/README.pdf',
+    name: 'LEIAME.pdf', mime: 'application/pdf', encoding: 'base64',
+};
 
 function advanceNSteps(n) {
         cy.advanceSubmissionSteps(n);
@@ -13,8 +26,10 @@ function assertAdditionalInstructionsDisplay() {
 
 describe('Dataverse Plugin - Submission wizard features', function () {
 	let submissionData;
+    let fixture;
+    const fixtures = useDataverseFixtures();
 
-	before(function () {
+	beforeEach(function () {
 		submissionData = {
 			title: 'Sustainable Cities: Co-benefits of mass public transportation in climate change mitigation',
 			abstract: 'Mass public transportation can be used as a way to reduce greenhouse gases emissions.',
@@ -22,8 +37,23 @@ describe('Dataverse Plugin - Submission wizard features', function () {
                 'mass public transport',
 				'sustainable cities',
 			]
-		}
+		};
+        submissionData = uniqueSubmission(submissionData);
 	});
+
+
+    function prepareDraft({manuscript = false, files = []} = {}) {
+        createSubmissionFixture(fixtures, submissionData, {
+            submitted: false, manuscript, statementTypes: files.length ? [3] : [2, 5],
+        }).then((created) => { fixture = created; });
+        if (files.length) {
+            cy.get('.pkpSteps__step__label').contains('Upload Files').click();
+            files.forEach((file) => {
+                cy.uploadResearchDataFile(file.path, file.name, file.mime, file.encoding);
+            });
+            cy.get('.pkpSteps__step__label').contains('Details').click();
+        }
+    }
 
     function beginSubmission(submissionData) {
         cy.get('input[name="locale"][value="en"]').click();
@@ -39,10 +69,11 @@ describe('Dataverse Plugin - Submission wizard features', function () {
     }
 
     it('Begins submission. Checks for data statement fields', function () {
-        cy.login('eostrom', null, 'publicknowledge');
+        cy.loginDataverseUser('eostrom');
 
         cy.get('div#myQueue a:contains("New Submission")').click();
         beginSubmission(submissionData);
+        trackWizardSubmission(fixtures, submissionData).then((created) => { fixture = created; });
 
         cy.intercept("POST", /submissions\/\d+\/submit/).as('submissionValidation');
 
@@ -101,8 +132,8 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         });
     });
     it('Shows dataset fields only when submission to Dataverse is chosen', function () {
-        cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.loginDataverseUser('eostrom');
+        prepareDraft();
 
         advanceNSteps(1);
         cy.contains('h2', 'Research data').should('not.be.visible');
@@ -127,8 +158,9 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('h3', 'Research data metadata');
     });
     it('Should add dataset files. Dataset file should not be the same as the galley file', function () {
-        cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.loginDataverseUser('eostrom');
+        prepareDraft();
+        cy.get('input[name="dataStatementTypes"][value=3]').check();
         advanceNSteps(1);
 
         cy.contains('h2', 'Research data');
@@ -187,8 +219,8 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('div:contains("Research data and galley have the same file")').should('not.exist');
     });
     it('Dataset should contain a README file and at least another file', function () {
-        cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.loginDataverseUser('eostrom');
+        prepareDraft({manuscript: true, files: [dataFile]});
         advanceNSteps(4);
 
         cy.contains('It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files');
@@ -216,8 +248,8 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
     });
     it('Adds dataset metadata', function () {
-        cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.loginDataverseUser('eostrom');
+        prepareDraft({manuscript: true, files: [dataFile, readmeFile]});
         
         advanceNSteps(3);
         cy.contains('h2', 'Research data metadata');
@@ -251,6 +283,8 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('CC BY 4.0');
         cy.contains('Is Supplemented By')
 
+        cy.then(() => { fixture.depositAttempted = true; });
         cy.submitResearchData();
+        cy.then(() => { fixture.submitted = true; });
     });
 });

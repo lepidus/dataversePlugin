@@ -1,4 +1,11 @@
-import '../support/commands.js';
+import {
+    useDataverseFixtures,
+    uniqueSubmission,
+    createSubmissionFixture,
+    depositDatasetFixture,
+    publishSubmissionFixture,
+    publishDatasetFixture,
+} from '../support/fixtures.js';
 
 function assertAdditionalInstructionsDisplay() {
 	cy.contains('1. Submit under "Research Data" any files that have been collected');
@@ -9,8 +16,10 @@ function assertAdditionalInstructionsDisplay() {
 
 describe('Dataverse Plugin - Workflow features', function () {
 	let submissionData;
+    let fixture;
+    const fixtures = useDataverseFixtures();
     
-    before(function () {
+    beforeEach(function () {
 		submissionData = {
 			title: 'Sustainable Cities: Co-benefits of mass public transportation in climate change mitigation',
 			abstract: 'Mass public transportation can be used as a way to reduce greenhouse gases emissions.',
@@ -19,15 +28,32 @@ describe('Dataverse Plugin - Workflow features', function () {
 				'sustainable cities',
                 'climate change'
 			]
-		}
+		};
+        submissionData = uniqueSubmission(submissionData);
 	});
 
+
+    function prepareWorkflow({dataset = true, permission = true, published = false, released = false} = {}) {
+        createSubmissionFixture(fixtures, submissionData).then((created) => {
+            fixture = created;
+            if (dataset) {
+                depositDatasetFixture(fixture);
+            }
+            if (released) {
+                publishDatasetFixture(fixture);
+            }
+            if (published) {
+                publishSubmissionFixture(fixture);
+            }
+        });
+        if (permission) {
+            cy.changeAuthorEditPermissionOnPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionData.title, 'check');
+        }
+    }
+
     it('Data statement features are displayed in workflow tab', function () {
-        if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-			cy.changeAuthorEditPermissionOnPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionData.title, 'check');
-		}
-        
-        cy.login('eostrom', null, 'publicknowledge');
+        prepareWorkflow();
+        cy.loginDataverseUser('eostrom');
         cy.findSubmission('myQueue', submissionData.title);
         
         cy.waitDataStatementTabLoading();
@@ -64,7 +90,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('.pkpFormPage__status:contains("Saved")');
     });
     it('Research data metadata editing in workflow', function () {
-        cy.login('eostrom', null, 'publicknowledge');
+        prepareWorkflow();
+        cy.loginDataverseUser('eostrom');
         cy.findSubmission('myQueue', submissionData.title);
         
         cy.waitDatasetTabLoading();
@@ -95,6 +122,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
         cy.get('#datasetMetadata-datasetRelationType-control').select('Is Cited By');
+        cy.then(() => { fixture.depositAttempted = true; fixture.datasetDeleted = false; });
         cy.saveDatasetMetadata();
         cy.get('.pkpFormPage__status:contains("Saved")');
 
@@ -112,11 +140,13 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.setTinyMceContent('datasetMetadata-datasetDescription-control', submissionData.abstract);
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
+        cy.then(() => { fixture.depositAttempted = true; fixture.datasetDeleted = false; });
         cy.saveDatasetMetadata();
         cy.get('.pkpFormPage__status:contains("Saved")');
     });
     it('Research data files editing in workflow', function () {
-        cy.login('eostrom', null, 'publicknowledge');
+        prepareWorkflow();
+        cy.loginDataverseUser('eostrom');
         cy.findSubmission('myQueue', submissionData.title);
 
         cy.waitDatasetTabLoading();
@@ -141,7 +171,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetTab-button .pkpBadge').contains('2');
     });
     it('Author can delete research data in workflow', function () {
-        cy.login('eostrom', null, 'publicknowledge');
+        prepareWorkflow();
+        cy.loginDataverseUser('eostrom');
         cy.findSubmission('myQueue', submissionData.title);
         
         cy.waitDatasetTabLoading();
@@ -152,13 +183,15 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#deleteDatasetButton').click();
         cy.contains('Are you sure you want to permanently delete the research data related to this submission?');
 		cy.confirmDatasetDeletion('Delete');
+        cy.then(() => { fixture.datasetDeleted = true; });
 
         cy.contains('No research data transferred.');
         cy.get('#dataStatement-button').click();
 		cy.get('input[name="researchDataSubmitted"]').should('not.be.checked');
     });
     it('Author can upload research data in workflow', function () {
-        cy.login('eostrom', null, 'publicknowledge');
+        prepareWorkflow({dataset: false});
+        cy.loginDataverseUser('eostrom');
         cy.findSubmission('myQueue', submissionData.title);
         
         cy.waitDataStatementTabLoading();
@@ -177,19 +210,31 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.contains('It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files');
         cy.uploadResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'README.pdf', 'application/pdf', 'base64');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
+        cy.then(() => { fixture.depositAttempted = true; fixture.datasetDeleted = false; });
         cy.saveDatasetMetadata();
 
         cy.contains('h1', 'Research data', {timeout:10000});
     });
     it('Check author actions were registered in activity log', function () {
-		cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        prepareWorkflow({dataset: false});
+        cy.then(() => { depositDatasetFixture(fixture, {author: 'eostrom'}); });
+        cy.get('#datasetMetadata-datasetTitle-control').clear().type(`Log update ${submissionData.title}`, {delay: 0});
+        cy.then(() => { fixture.depositAttempted = true; fixture.datasetDeleted = false; });
+        cy.saveDatasetMetadata();
+        cy.get('#dataset_files-button').click();
+        cy.uploadResearchDataFile('example.json', 'example.json', 'application/json', 'utf8');
+        cy.get('.listPanel__item:contains("example.json") button:contains("Delete")').click();
+        cy.get('.modal__panel--dialog button:contains("Delete File")').click();
+        cy.get('#datasetFiles').should('not.include.text', 'example.json');
+        cy.get('#deleteDatasetButton').click();
+        cy.confirmDatasetDeletion();
+        cy.then(() => { fixture.datasetDeleted = true; });
+        cy.loginDataverseUser('dbarnes');
+        cy.findSubmission('active', submissionData.title);
 
 		cy.contains('Activity Log').click();
 		cy.get('#submissionHistoryGridContainer').within(() => {
-			cy.get('tr:contains(File "Data_detailing.pdf" added as research data.) td').should('contain', 'Elinor Ostrom');
             cy.get('tr:contains(File "Planilha_de_dados_ÇÕÔÁÀÃ.json" added as research data.) td').should('contain', 'Elinor Ostrom');
-            cy.get('tr:contains(File "Data_detailing.pdf" deleted from research data.) td').should('contain', 'Elinor Ostrom');
 			cy.get('tr:contains(Research data deposited) td').should('contain', 'Elinor Ostrom');
 			cy.get('tr:contains(Research data metadata updated) td').should('contain', 'Elinor Ostrom');
             cy.get('tr:contains(File "example.json" added as research data.) td').should('contain', 'Elinor Ostrom');
@@ -198,11 +243,12 @@ describe('Dataverse Plugin - Workflow features', function () {
 		});
 	});
     it('Author can not perform actions without edit permission granted', function () {
+        prepareWorkflow();
 		if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
 			cy.changeAuthorEditPermissionOnPublication('dbarnes', 'Elinor Ostrom', 'publicknowledge', submissionData.title,'uncheck');
 		}
         
-        cy.login('eostrom', null, 'publicknowledge');
+        cy.loginDataverseUser('eostrom');
         cy.findSubmission('myQueue', submissionData.title);
 
         cy.waitDatasetTabLoading();
@@ -220,7 +266,8 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('#datasetFiles .listPanel__item button:contains(Delete)').should('be.disabled');
 	});
     it('Editor can delete research data in workflow', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
+        prepareWorkflow({permission: false});
+        cy.loginDataverseUser('dbarnes');
         cy.findSubmission('active', submissionData.title);
 
         cy.waitDatasetTabLoading();
@@ -237,6 +284,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.getTinyMceContent('deleteDataset-deleteMessage-control')
             .should('include', 'The research data from the manuscript submission "' + submissionData.title + '" has been removed');
 		cy.confirmDatasetDeletion('Delete and send email');
+        cy.then(() => { fixture.datasetDeleted = true; });
 
         cy.contains('No research data transferred.');
         assertAdditionalInstructionsDisplay();
@@ -245,7 +293,8 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('input[name="researchDataSubmitted"]').should('not.be.checked');
     });
     it('Editor can upload research data in workflow', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
+        prepareWorkflow({dataset: false, permission: false});
+        cy.loginDataverseUser('dbarnes');
         cy.findSubmission('active', submissionData.title);
 
         cy.waitDataStatementTabLoading();
@@ -261,12 +310,14 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
         cy.get('#datasetMetadata-datasetRelationType-control').select('Is Cited By');
+        cy.then(() => { fixture.depositAttempted = true; fixture.datasetDeleted = false; });
         cy.saveDatasetMetadata();
 
         cy.contains('h1', 'Research data', {timeout:10000});
     });
     it('Editor can publish dataset on submission publishing', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
+        prepareWorkflow({permission: false});
+        cy.loginDataverseUser('dbarnes');
         cy.findSubmission('active', submissionData.title);
         
         cy.waitDatasetTabLoading();
@@ -317,7 +368,8 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('.pkpPublication__statusPublished').should('have.text', 'Published');
     });
     it('Editor publishes dataset after submission publishing', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
+        prepareWorkflow({published: true, permission: false});
+        cy.loginDataverseUser('dbarnes');
         cy.findSubmission('archive', submissionData.title);
 
         cy.waitDatasetTabLoading();
@@ -344,7 +396,8 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.contains('.datasetLabel', 'Unpublished').should('not.exist');
     });
     it('Publishing of submission new version do not publish dataset', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
+        prepareWorkflow({published: true, released: true, permission: false});
+        cy.loginDataverseUser('dbarnes');
         cy.findSubmission('archive', submissionData.title);
 
         cy.waitDatasetTabLoading();

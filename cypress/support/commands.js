@@ -12,15 +12,15 @@ Cypress.Commands.add('findSubmission', function(tab, title) {
 Cypress.Commands.add('changeAuthorEditPermissionOnPublication', function(username, fullName, context, submissionTitle, option) {
 	var familyName = fullName.split(' ')[1];
     context = context || 'publicknowledge';
-	cy.login(username, null, context);
+	cy.loginDataverseUser(username, context);
 	cy.findSubmission('active', submissionTitle);
 	cy.contains('span', fullName).parent().siblings('.show_extras').first().click();
 	cy.get('.pkp_linkaction_icon_edit_user:visible').click();
 	
 	if (option == 'check') {
-		cy.get('input[name="canChangeMetadata"]').check();
+		cy.get('input[name="canChangeMetadata"]:visible').should('be.visible').check();
 	} else {
-		cy.get('input[name="canChangeMetadata"]').uncheck();
+		cy.get('input[name="canChangeMetadata"]:visible').should('be.visible').uncheck();
 	}
 	cy.get('[id^="submitFormButton"]').contains('OK').click();
 	cy.contains('The stage assignment has been changed.');
@@ -124,23 +124,35 @@ Cypress.Commands.add('confirmDatasetDeletion', function (label = 'Delete') {
 	cy.contains('No research data transferred.').should('be.visible');
 });
 
-Cypress.Commands.add('configureDataverseForTests', function () {
+Cypress.Commands.add('configureDataverseForTests', function (options = {}) {
 	const pluginRow = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
+    cy.resetDataverseTestConfiguration('cache');
 	cy.loginDataverseUser('dbarnes');
 	cy.contains('a', 'Website').click();
 	cy.get('#plugins-button').click();
 	cy.setDataversePluginEnabled(true);
 	cy.get(`#${pluginRow} a.show_extras`).click();
 	cy.get(`a[id^=${pluginRow}-settings-button]`).click();
-	cy.get('input[name="dataverseUrl"]').clear().type(Cypress.env('dataverseUrl'), {delay: 0});
+	cy.get('input[name="dataverseUrl"]').clear().type(options.url || Cypress.env('dataverseUrl'), {delay: 0});
 	cy.get('input[name="apiToken"]').clear().type(Cypress.env('dataverseApiToken'), {delay: 0, log: false});
 	cy.get('input[name="termsOfUse[en]"]').clear().type(Cypress.env('dataverseTermsOfUse'), {delay: 0});
 	if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-		cy.get('input[name="datasetPublish"][value=2]').check();
+		cy.get(`input[name="datasetPublish"][value=${options.publishOn || 2}]`).check();
 	}
+    cy.get('#dataverseConfigurationForm').invoke('attr', 'action').then((action) => {
+        cy.intercept('POST', action).as('configureDataverseForTests');
+    });
 	cy.contains('#dataverseConfigurationForm button', 'OK').click();
+    cy.wait('@configureDataverseForTests').its('response.statusCode').should('eq', 200);
 	cy.contains('Your changes have been saved.').should('be.visible');
 	cy.get('#dataverseConfigurationForm').should('not.exist');
+});
+
+Cypress.Commands.add('resetDataverseTestConfiguration', function (mode = 'configuration') {
+    const database = Cypress.env('dataverseTestDatabase') || Cypress.env('DBNAME') || 'ojs_stable_3_4_0';
+    expect(database, 'Confirmed fixture database').to.match(/^[a-zA-Z0-9_]+$/);
+    expect(mode).to.be.oneOf(['configuration', 'cache']);
+    cy.exec(`php plugins/generic/dataverse/cypress/support/resetConfiguration.php ${database} ${mode}`, {log: false});
 });
 
 Cypress.Commands.add('setDataversePluginEnabled', function (enabled) {
