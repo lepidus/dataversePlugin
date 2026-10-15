@@ -113,6 +113,16 @@ npx cypress open --config specPattern=plugins/generic/dataverse/cypress/tests
 ```
 Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en` for passing into the tests.
 
+Run the complete suite from a restored test dataset. The configuration, submission wizard,
+workflow, review and public-site specs still form an ordered scenario. The legacy-submission
+and dataset-linking specs prepare their own configuration and submissions, so they can also
+run separately. Dataset linking removes only the submissions and draft dataset created by its
+own case; if dataset cleanup fails, it preserves the local records for diagnosis.
+
+The custom required metadata cases are reported as pending when
+`dataverseCustomRequiredMetadataFieldsUrl` is not configured. The workflow synchronization
+spec uses controlled responses and does not require a Dataverse repository.
+
 ## Credits
 This plugin was sponsored by the Scientific Electronic Library Online (SciELO) and developed by Lepidus Tecnologia.
 

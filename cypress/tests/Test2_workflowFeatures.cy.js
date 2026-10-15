@@ -89,13 +89,13 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetTitle-control').clear().type('Test metadata editing', {delay: 0});
         cy.setTinyMceContent('datasetMetadata-datasetDescription-control', 'new description');
         cy.get('#datasetMetadata-datasetKeywords-control-en').type(submissionData.keywords[2], {delay: 0});
-        cy.wait(500);
-		cy.get('#datasetMetadata-datasetKeywords-control-en').type('{enter}', { delay: 0 });
+        cy.get('#datasetMetadata-datasetKeywords-control-en').closest('.pkpAutosuggest')
+            .contains('[role="option"]', new RegExp('^' + submissionData.keywords[2] + '$')).click();
         cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Computer and Information Science');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
         cy.get('#datasetMetadata-datasetRelationType-control').select('Is Cited By');
-        cy.get('button:visible:contains("Save")').click();
+        cy.saveDatasetMetadata();
         cy.get('.pkpFormPage__status:contains("Saved")');
 
         cy.get('#datasetMetadata-datasetTitle-control').should('have.value', 'Test metadata editing');
@@ -109,10 +109,10 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetMetadata-datasetRelationType-control').should('have.value', 'IsCitedBy');
 
         cy.get('#datasetMetadata-datasetTitle-control').clear().type('Replication data for: ' + submissionData.title, {delay: 0});
-        cy.getTinyMceContent('datasetMetadata-datasetDescription-control', submissionData.abstract);
+        cy.setTinyMceContent('datasetMetadata-datasetDescription-control', submissionData.abstract);
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
-        cy.get('button:visible:contains("Save")').click();
+        cy.saveDatasetMetadata();
         cy.get('.pkpFormPage__status:contains("Saved")');
     });
     it('Research data files editing in workflow', function () {
@@ -129,25 +129,13 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetFiles').contains('a', 'LEIAME.pdf');
         cy.get('#datasetTab-button .pkpBadge').contains('2');
 
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'example.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-        cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('example.json', 'example.json', 'application/json', 'utf8');
 
         cy.get('#datasetFiles').contains('example.json');
         cy.get('#datasetTab-button .pkpBadge').contains('3');
 
         cy.get('.listPanel__item:contains("example.json") button:contains("Delete")').click();
 		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
-        cy.waitJQuery();
 
         cy.get('#datasetFiles').should('not.include.text', 'example.json');
         cy.get('#datasetTab-button .pkpBadge').contains('2');
@@ -163,8 +151,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('#deleteDatasetButton').click();
         cy.contains('Are you sure you want to permanently delete the research data related to this submission?');
-		cy.get('.modal__panel button:contains("Delete")').click();
-        cy.wait(7000);
+		cy.confirmDatasetDeletion('Delete');
 
         cy.contains('No research data transferred.');
         cy.get('#dataStatement-button').click();
@@ -180,18 +167,7 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetTab-button').click();
 
         cy.contains('button', 'Upload research data').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'example.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-        cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('example.json', 'example.json', 'application/json', 'utf8');
         cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
@@ -199,21 +175,9 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('button:visible:contains("Save")').click();
 
 		cy.contains('It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files');
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'README.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64'
-			});
-		});
-        cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'README.pdf', 'application/pdf', 'base64');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
-        cy.get('button:visible:contains("Save")').click();
-        cy.wait(7000);
+        cy.saveDatasetMetadata();
 
         cy.contains('h1', 'Research data', {timeout:10000});
     });
@@ -272,8 +236,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.contains('Do not send an email notification');
         cy.getTinyMceContent('deleteDataset-deleteMessage-control')
             .should('include', 'The research data from the manuscript submission "' + submissionData.title + '" has been removed');
-		cy.get('.modal__panel button:contains("Delete and send email")').click();
-        cy.wait(5000);
+		cy.confirmDatasetDeletion('Delete and send email');
 
         cy.contains('No research data transferred.');
         assertAdditionalInstructionsDisplay();
@@ -291,37 +254,14 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#datasetTab-button').click();
 
         cy.contains('button', 'Upload research data').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'example.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-        cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'README.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64'
-			});
-		});
-        cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('example.json', 'example.json', 'application/json', 'utf8');
+        cy.uploadResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'README.pdf', 'application/pdf', 'base64');
 
         cy.get('#datasetMetadata-datasetLanguage-control').select('English');
         cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
         cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
         cy.get('#datasetMetadata-datasetRelationType-control').select('Is Cited By');
-        cy.get('button:visible:contains("Save")').click();
-        cy.wait(7000);
+        cy.saveDatasetMetadata();
 
         cy.contains('h1', 'Research data', {timeout:10000});
     });
@@ -350,10 +290,8 @@ describe('Dataverse Plugin - Workflow features', function () {
 			
             cy.get('#publication-button').click();
 			cy.get('div#publication button:contains("Schedule For Publication")').click();
-			cy.wait(1000);
 			cy.get('select[id="assignToIssue-issueId-control"]').select('1');
 			cy.get('div[id^="assign-"] button:contains("Save")').click();
-            cy.wait(1000);
             cy.get('div[id^="assign-"] [role="status"]').contains('Saved');
             cy.reload();
             cy.get('div#publication button:contains("Schedule For Publication")').click();
@@ -375,7 +313,6 @@ describe('Dataverse Plugin - Workflow features', function () {
 
         cy.get('input[name="shouldPublishResearchData"][value="0"]').click();
         cy.get('.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
-        cy.wait(1000);
 
         cy.get('.pkpPublication__statusPublished').should('have.text', 'Published');
     });
@@ -393,8 +330,9 @@ describe('Dataverse Plugin - Workflow features', function () {
         const publishMsg = 'Do you really want to publish the research data related to this submission? This action cannot be undone.'
 			+ 'Before proceeding, make sure they are suitable for publication in ';
 		cy.get('div[data-modal="publishDataset"]').contains(publishMsg);
-		cy.get('div[data-modal="publishDataset"] button:contains("Yes")').click();
-		cy.wait(5000);
+		cy.intercept('POST', /\/api\/v1\/datasets\/\d+\/publish(?:\?|$)/).as('publishResearchData');
+        cy.get('div[data-modal="publishDataset"] button:contains("Yes")').click();
+        cy.wait('@publishResearchData').its('response.statusCode').should('eq', 200);
         cy.reload();
 
 		cy.contains('Demo Dataverse, V1');
@@ -414,13 +352,11 @@ describe('Dataverse Plugin - Workflow features', function () {
         cy.get('#publication-button').click();
         cy.contains('button', 'Create New Version').click();
         cy.get('.modal__panel button:contains("Yes")').click();
-        cy.wait(1000);
 
         cy.get('.pkpPublication__version:contains("2")');
         cy.contains('button', 'Publish').click();
         cy.contains('Would you like to publish the research data?').should('not.exist');
         cy.get('.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
-        cy.wait(1000);
 
         cy.get('.pkpPublication__statusPublished').should('have.text', 'Published');
         cy.get('#datasetTab-button').click();

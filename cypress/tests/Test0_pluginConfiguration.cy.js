@@ -1,12 +1,13 @@
+import '../support/commands.js';
+
 describe('Plugin configuration', function () {
 	it('Check plugin does not break submission view before configuration', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
 		cy.contains('a', 'Website').click();
 
-		cy.waitJQuery();
 		cy.get('#plugins-button').click();
 
-		cy.get('input[id^=select-cell-dataverseplugin]').check();
+		cy.setDataversePluginEnabled(true);
 		cy.get('input[id^=select-cell-dataverseplugin]').should('be.checked');
 
 		cy.contains('a', 'Submissions').click();
@@ -20,9 +21,9 @@ describe('Plugin configuration', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
 		cy.contains('a', 'Website').click();
 
-		cy.waitJQuery();
 		cy.get('#plugins-button').click();
 
+		cy.setDataversePluginEnabled(true);
 		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
 		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
 
@@ -59,7 +60,7 @@ describe('Plugin configuration', function () {
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.contains("Unable to connect to Dataverse. Error returned: Dataverse API token is invalid or expired");
 
-		cy.get('input[name=apiToken]').focus().clear().type(Cypress.env('dataverseApiToken'));
+		cy.get('input[name=apiToken]').focus().clear().type(Cypress.env('dataverseApiToken'), {delay: 0, log: false});
 
 		if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
 			cy.contains("It is required to select the event to publish the research data.");

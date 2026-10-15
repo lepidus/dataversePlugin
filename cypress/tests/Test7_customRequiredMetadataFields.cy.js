@@ -2,16 +2,12 @@ import '../support/commands.js';
 
 describe('Dataverse Plugin - Custom required metadata fields', function () {
 
-    if (!Cypress.env('dataverseCustomRequiredMetadataFieldsUrl')) {
-        it('Skip tests for custom required metadata fields as dataverseCustomRequiredMetadataFieldsUrl environment variable is not set', function() {
-            cy.log('Skipping tests for custom required metadata fields as dataverseCustomRequiredMetadataFieldsUrl environment variable is not set');
-        });
-        return;
-    }
-
     let submission;
 
     before(function() {
+        if (!Cypress.env('dataverseCustomRequiredMetadataFieldsUrl')) {
+            this.skip();
+        }
 		submission = {
 			title: 'The Impact of Quantum Fluctuations on Urban Bee Populations: A Multidisciplinary Approach',
             abstract: 'This groundbreaking study explores the intersection of quantum physics and urban ecology to understand the effects of quantum fluctuations on bee populations in metropolitan areas.',
@@ -24,14 +20,13 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
 		cy.contains('a', 'Website').click();
 
-		cy.waitJQuery();
 		cy.get('#plugins-button').click();
 
 		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
 		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
 
 		cy.get('input[name=dataverseUrl]').focus().clear().type(Cypress.env('dataverseCustomRequiredMetadataFieldsUrl'), {delay: 0});
-        cy.get('input[name=apiToken]').focus().clear().type(Cypress.env('dataverseApiToken'), {delay: 0});
+        cy.get('input[name=apiToken]').focus().clear().type(Cypress.env('dataverseApiToken'), {delay: 0, log: false});
 		cy.get('input[name="termsOfUse[en]"]').focus().clear().type(Cypress.env('dataverseTermsOfUse'), {delay: 0});
 
 		if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
@@ -58,8 +53,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         // Step 1
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submission.abstract);
         cy.get('input[name="dataStatementTypes"][value=3]').click();
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps();
 
         // Step 2
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
@@ -69,36 +63,12 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
 			'mimeType': 'application/pdf',
 			'genre': 'Article Text'
 		}]);
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'dataset.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-		cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'README.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64',
-			});
-		});
-		cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.uploadResearchDataFile('example.json', 'dataset.json', 'application/json', 'utf8');
+        cy.uploadResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'README.pdf', 'application/pdf', 'base64');
+        cy.advanceSubmissionSteps();
 
         // Step 3
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps();
 
         // Step 4
         cy.contains('Alternative URL');
@@ -122,8 +92,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.login('eostrom', null, 'publicknowledge');
         cy.findSubmission('myQueue', submission.title);
 
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps();
 
         cy.get('button:contains("Submit")').should('be.disabled');
         cy.get('h3:contains("Research data metadata")')
@@ -152,8 +121,7 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.get('#datasetMetadata-datasetAlternativeURL-control').type('invalid-url', {delay: 0});
         cy.get('#datasetMetadata-datasetDsDescriptionDate-control').type('june 32, 2023', {delay: 0});
 
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps();
 
         cy.get('button:contains("Submit")').should('be.disabled');
         cy.get('h3:contains("Research data metadata")')
@@ -183,16 +151,9 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.get('select[name="datasetPSRI1"]').select('Yes');
         cy.get('select[name="datasetPSRI2"]').select('Yes');
         
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps();
 
-        cy.contains('button', 'Submit').click();
-        cy.get('.modal__panel:visible').within(() => {
-            cy.contains('button', 'Submit').click();
-        });
-
-        cy.wait(7000);
-        cy.contains('h1', 'Submission complete');
+        cy.submitResearchData();
     });
 
     it('Submit dataset with custom required metadata fields in workflow page', function () {
@@ -210,35 +171,12 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
 
         cy.get('#deleteDatasetButton').click();
         cy.contains('Are you sure you want to permanently delete the research data related to this submission?');
-		cy.get('.modal__panel button:contains("Delete")').click();
-        cy.wait(7000);
+		cy.confirmDatasetDeletion('Delete');
 
         cy.contains('button', 'Upload research data').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'example.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-        cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('example.json', 'example.json', 'application/json', 'utf8');
     
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'README.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64'
-			});
-		});
-        cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'README.pdf', 'application/pdf', 'base64');
 
         cy.get('select[name="datasetLanguage"]').select('English');
         cy.get('select[name="datasetSubject"]').select('Earth and Environmental Sciences');

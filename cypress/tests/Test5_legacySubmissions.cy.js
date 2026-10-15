@@ -5,52 +5,56 @@ describe('Dataverse Plugin - Legacy submissions', function () {
 
 	before(function () {
 		submissionData = {
-			title: 'The evolution of metro systems in Brazil',
+			title: `The evolution of metro systems in Brazil ${Date.now()}`,
 			abstract: 'An example abstract.',
 			keywords: ['Metro', 'Brazil'],
 		}
 	});
 
+    afterEach(function () {
+        // A failure while the plugin is disabled must not affect the next spec.
+        cy.loginDataverseUser('dbarnes');
+        cy.contains('a', 'Website').click();
+        cy.get('#plugins-button').click();
+        cy.setDataversePluginEnabled(true);
+    });
+
 	function beginSubmission(submissionData) {
         cy.get('input[name="locale"][value="en"]').click();
         cy.setTinyMceContent('startSubmission-title-control', submissionData.title);
-        
+
         if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
             cy.get('input[name="sectionId"][value="1"]').click();
         }
-        
+
         cy.get('input[name="submissionRequirements"]').check();
         cy.get('input[name="privacyConsent"]').check();
         cy.contains('button', 'Begin Submission').click();
     }
 
-    it('Disables plugin temporarily', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
+    it('requires a data statement when resuming a submission started before plugin activation', function () {
+        cy.configureDataverseForTests();
+
+        // Start a submission while the plugin is disabled.
+        cy.loginDataverseUser('dbarnes');
 		cy.contains('a', 'Website').click();
 
-		cy.waitJQuery();
 		cy.get('#plugins-button').click();
-		cy.get('input[id^=select-cell-dataverseplugin]').uncheck();
-        cy.get('.pkp_modal_panel:visible').within(() => {
-            cy.contains('Are you sure you want to disable this plugin?');
-            cy.contains('button', 'OK').click();
-        });
+		cy.setDataversePluginEnabled(false);
 
         cy.get('input[id^=select-cell-dataverseplugin]').should('not.be.checked');
-    });
-	it('Starts a new submission, without finishing it', function () {
-		cy.login('ccorino', null, 'publicknowledge');
+
+        // Save the legacy draft before enabling the plugin.
+		cy.loginDataverseUser('ccorino');
 
 		cy.get('div#myQueue a:contains("New Submission")').click();
 		beginSubmission(submissionData);
 
 		cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         submissionData.keywords.forEach(keyword => {
-            cy.get('#titleAbstract-keywords-control-en').type(keyword, {delay: 0});
-            cy.wait(500);
-            cy.get('#titleAbstract-keywords-control-en').type('{enter}', {delay: 0});
+            cy.addDataverseKeyword('#titleAbstract-keywords-control-en', keyword);
         });
-		cy.contains('button', 'Continue').click();
+		cy.advanceSubmissionSteps();
 
 		cy.uploadSubmissionFiles([{
 			'file': 'dummy.pdf',
@@ -58,43 +62,29 @@ describe('Dataverse Plugin - Legacy submissions', function () {
 			'mimeType': 'application/pdf',
 			'genre': 'Article Text'
 		}]);
-		cy.contains('button', 'Continue').click();
+		cy.advanceSubmissionSteps();
 		cy.logout();
-	});
-    it('Enables plugin back', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
+
+        // Resume the same draft after activation.
+        cy.loginDataverseUser('dbarnes');
 		cy.contains('a', 'Website').click();
 
-		cy.waitJQuery();
 		cy.get('#plugins-button').click();
-		cy.get('input[id^=select-cell-dataverseplugin]').check();
+		cy.setDataversePluginEnabled(true);
         cy.get('input[id^=select-cell-dataverseplugin]').should('be.checked');
-    });
-    it('Tries to finish submission', function () {
-		cy.login('ccorino', null, 'publicknowledge');
+
+        // Validate and complete the legacy submission.
+		cy.loginDataverseUser('ccorino');
         cy.findSubmission('myQueue', submissionData.title);
 
-		cy.contains('button', 'Continue').click();
-        cy.contains('button', 'Continue').click();
-		cy.contains('button', 'Continue').click();
-        cy.contains('button', 'Continue').click();
-		cy.wait(500);
+        cy.advanceSubmissionSteps(4);
 
 		cy.contains('It is required to inform the declaration of the data statement');
-		
+
 		cy.get('.pkpSteps__step__label:contains("Details")').click();
 		cy.get('input[name="dataStatementTypes"][value=1]').click();
-		cy.contains('button', 'Continue').click();
-        cy.contains('button', 'Continue').click();
-		cy.contains('button', 'Continue').click();
-        cy.contains('button', 'Continue').click();
-		cy.wait(500);
+        cy.advanceSubmissionSteps(4);
 
-		cy.contains('button', 'Submit').click();
-        cy.get('.modal__panel:visible').within(() => {
-            cy.contains('button', 'Submit').click();
-        });
-        cy.waitJQuery();
-        cy.contains('h1', 'Submission complete');
+        cy.submitResearchData();
     });
 });

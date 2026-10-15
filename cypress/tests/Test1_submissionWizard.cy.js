@@ -1,11 +1,8 @@
 import '../support/commands.js';
 
 function advanceNSteps(n) {
-    for (let stepsAdvanced = 0; stepsAdvanced < n; stepsAdvanced++) {
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps(n);
     }
-}
 
 function assertAdditionalInstructionsDisplay() {
 	cy.contains('1. Submit under "Research Data" any files that have been collected');
@@ -51,9 +48,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         submissionData.keywords.forEach(keyword => {
-            cy.get('#titleAbstract-keywords-control-en').type(keyword, {delay: 0});
-            cy.wait(500);
-            cy.get('#titleAbstract-keywords-control-en').type('{enter}', {delay: 0});
+            cy.addDataverseKeyword('#titleAbstract-keywords-control-en', keyword);
         });
 
         cy.contains('h2', 'Data statement');
@@ -151,6 +146,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		}]);
 
         cy.contains('button', 'Add research data').click();
+        cy.intercept('POST', '**/api/v1/temporaryFiles*').as('uploadResearchData');
         cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
@@ -159,29 +155,18 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'base64',
 			});
 		});
-        cy.wait(1000);
+        cy.wait('@uploadResearchData').its('response.statusCode').should('eq', 200);
+        cy.get('[data-modal="addDatasetFileModal"] .pkpFormField--upload__fileName').should('contain', 'Data_detailing.pdf');
         cy.contains('legend', 'Dataverse terms of use');
         cy.contains('Deposit research data in Dataverse').within(() => {
             cy.contains('a', 'Terms of Use').invoke('attr', 'href').then((termsOfUseUrl) => {
                 expect(termsOfUseUrl).to.equal(Cypress.env('dataverseTermsOfUse'));
             });
         });
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+		cy.saveResearchDataFile();
         cy.get('#datasetFiles').contains('Data_detailing.pdf');
         
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'Planilha_de_dados_ÇÕÔÁÀÃ.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-		cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('example.json', 'Planilha_de_dados_ÇÕÔÁÀÃ.json', 'application/json', 'utf8');
         cy.get('#datasetFiles').contains('a', 'Data_detailing.pdf');
 		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
@@ -195,7 +180,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('.listPanel__item:contains(Data_detailing.pdf) button:contains(Delete)').click();
         cy.contains('Are you sure you want to permanently delete the research data file Data_detailing.pdf?');
 		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
-        cy.waitJQuery();
         cy.get('#datasetFiles').should('not.include.text', 'Data_detailing.pdf');
         
         advanceNSteps(3);
@@ -211,23 +195,11 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'LEIAME.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64',
-			});
-		});
-		cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'LEIAME.pdf', 'application/pdf', 'base64');
         cy.get('#datasetFiles').contains('a', 'LEIAME.pdf');
 
         cy.get('.listPanel__item:contains(Planilha_de_dados_ÇÕÔÁÀÃ.json) button:contains(Delete)').click();
 		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
-        cy.waitJQuery();
         cy.get('#datasetFiles').should('not.include.text', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
         advanceNSteps(3);
@@ -235,18 +207,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('The research data must contain at least one readable, non-empty file besides README files, either directly or inside a ZIP archive.');
 
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'Planilha_de_dados_ÇÕÔÁÀÃ.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-		cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('example.json', 'Planilha_de_dados_ÇÕÔÁÀÃ.json', 'application/json', 'utf8');
         cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
         advanceNSteps(3);
@@ -290,13 +251,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('CC BY 4.0');
         cy.contains('Is Supplemented By')
 
-        cy.intercept('POST', /submissions\/\d+\/submit/).as('submissionCompleted');
-        cy.contains('button', 'Submit').click();
-        cy.get('.modal__panel:visible').within(() => {
-            cy.contains('button', 'Submit').click();
-        });
-        cy.wait('@submissionCompleted', {responseTimeout: 240000})
-            .its('response.statusCode').should('eq', 200);
-        cy.contains('h1', 'Submission complete', {timeout: 10000});
+        cy.submitResearchData();
     });
 });

@@ -35,15 +35,13 @@ describe('Dataverse Plugin - Information displayed in public site', function () 
 
         cy.get('#publication-button').click();
         cy.get('div#publication button:contains("Schedule For Publication")').click();
-        cy.wait(1000);
         cy.get('select[id="assignToIssue-issueId-control"]').select('1');
         cy.get('div[id^="assign-"] button:contains("Save")').click();
-        cy.wait(1000);
         cy.get('div[id^="assign-"] [role="status"]').contains('Saved');
         cy.reload();
         cy.get('div#publication button:contains("Schedule For Publication")').click();
         cy.get('.pkpWorkflow__publishModal button:contains("Publish")').click();
-        cy.wait(3000);
+        cy.get('.pkpPublication__statusPublished').should('have.text', 'Published');
 
         cy.get('.pkpHeader__actions a:contains("View")').click();
         
