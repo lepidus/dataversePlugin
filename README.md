@@ -104,14 +104,23 @@ Creates a `cypress.env.json` file in root of the PKP Application directory, with
 
 Next, to execute the Cypress tests run the following command from root of the PKP Appplication directory:
 ```
-npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
+npx cypress run --config 'specPattern=plugins/generic/dataverse/cypress/tests/Test*.cy.js'
 ```
 
 For execute the tests with the Cypress UI, run:
 ```
-npx cypress open --config specPattern=plugins/generic/dataverse/cypress/tests
+npx cypress open --config 'specPattern=plugins/generic/dataverse/cypress/tests/Test*.cy.js'
 ```
 Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en` for passing into the tests.
+
+Use a restored test dataset with the plugin migrations applied and the `publicknowledge` context.
+Each test prepares its own data. Run specs sequentially because plugin configuration is shared.
+
+Tests create real Dataverse datasets. Cleanup removes only their own submissions and draft datasets;
+published datasets and their local submissions are retained, as are records needed to recover failed cases.
+
+Set `dataverseCustomRequiredMetadataFieldsUrl` to a collection requiring Alternative URL,
+Description Date and PSRI to run the custom metadata cases; otherwise, those cases are pending.
 
 ## Credits
 This plugin was sponsored by the Scientific Electronic Library Online (SciELO) and developed by Lepidus Tecnologia.

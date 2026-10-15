@@ -1,11 +1,21 @@
-import '../support/commands.js';
+import {
+    useDataverseFixtures,
+    uniqueSubmission,
+    createSubmissionFixture,
+    trackWizardSubmission,
+} from '../support/fixtures.js';
+
+const dataFile = {
+    path: 'example.json', name: 'Planilha_de_dados_ÇÕÔÁÀÃ.json', mime: 'application/json', encoding: 'utf8',
+};
+const readmeFile = {
+    path: '../../plugins/generic/dataverse/cypress/fixtures/README.pdf',
+    name: 'LEIAME.pdf', mime: 'application/pdf', encoding: 'base64',
+};
 
 function advanceNSteps(n) {
-    for (let stepsAdvanced = 0; stepsAdvanced < n; stepsAdvanced++) {
-        cy.contains('button', 'Continue').click();
-        cy.wait(200);
+        cy.advanceSubmissionSteps(n);
     }
-}
 
 function assertAdditionalInstructionsDisplay() {
 	cy.contains('1. Submit under "Research Data" any files that have been collected');
@@ -16,8 +26,10 @@ function assertAdditionalInstructionsDisplay() {
 
 describe('Dataverse Plugin - Submission wizard features', function () {
 	let submissionData;
+    let fixture;
+    const fixtures = useDataverseFixtures();
 
-	before(function () {
+	beforeEach(function () {
 		submissionData = {
 			title: 'Sustainable Cities: Co-benefits of mass public transportation in climate change mitigation',
 			abstract: 'Mass public transportation can be used as a way to reduce greenhouse gases emissions.',
@@ -25,8 +37,23 @@ describe('Dataverse Plugin - Submission wizard features', function () {
                 'mass public transport',
 				'sustainable cities',
 			]
-		}
+		};
+        submissionData = uniqueSubmission(submissionData);
 	});
+
+
+    function prepareDraft({manuscript = false, files = []} = {}) {
+        createSubmissionFixture(fixtures, submissionData, {
+            submitted: false, manuscript, statementTypes: files.length ? [3] : [2, 5],
+        }).then((created) => { fixture = created; });
+        if (files.length) {
+            cy.get('.pkpSteps__step__label').contains('Upload Files').click();
+            files.forEach((file) => {
+                cy.uploadResearchDataFile(file.path, file.name, file.mime, file.encoding);
+            });
+            cy.get('.pkpSteps__step__label').contains('Details').click();
+        }
+    }
 
     function beginSubmission(submissionData) {
         cy.get('input[name="locale"][value="en"]').click();
@@ -42,18 +69,17 @@ describe('Dataverse Plugin - Submission wizard features', function () {
     }
 
     it('Begins submission. Checks for data statement fields', function () {
-        cy.login('eostrom', null, 'publicknowledge');
+        cy.loginDataverseUser('eostrom');
 
         cy.get('div#myQueue a:contains("New Submission")').click();
         beginSubmission(submissionData);
+        trackWizardSubmission(fixtures, submissionData).then((created) => { fixture = created; });
 
         cy.intercept("POST", /submissions\/\d+\/submit/).as('submissionValidation');
 
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         submissionData.keywords.forEach(keyword => {
-            cy.get('#titleAbstract-keywords-control-en').type(keyword, {delay: 0});
-            cy.wait(500);
-            cy.get('#titleAbstract-keywords-control-en').type('{enter}', {delay: 0});
+            cy.addDataverseKeyword('#titleAbstract-keywords-control-en', keyword);
         });
 
         cy.contains('h2', 'Data statement');
@@ -106,8 +132,8 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         });
     });
     it('Shows dataset fields only when submission to Dataverse is chosen', function () {
-        cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.loginDataverseUser('eostrom');
+        prepareDraft();
 
         advanceNSteps(1);
         cy.contains('h2', 'Research data').should('not.be.visible');
@@ -132,8 +158,9 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('h3', 'Research data metadata');
     });
     it('Should add dataset files. Dataset file should not be the same as the galley file', function () {
-        cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.loginDataverseUser('eostrom');
+        prepareDraft();
+        cy.get('input[name="dataStatementTypes"][value=3]').check();
         advanceNSteps(1);
 
         cy.contains('h2', 'Research data');
@@ -151,6 +178,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 		}]);
 
         cy.contains('button', 'Add research data').click();
+        cy.intercept('POST', '**/api/v1/temporaryFiles*').as('uploadResearchData');
         cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
 			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
 				fileContent,
@@ -159,29 +187,18 @@ describe('Dataverse Plugin - Submission wizard features', function () {
 				encoding: 'base64',
 			});
 		});
-        cy.wait(1000);
+        cy.wait('@uploadResearchData').its('response.statusCode').should('eq', 200);
+        cy.get('[data-modal="addDatasetFileModal"] .pkpFormField--upload__fileName').should('contain', 'Data_detailing.pdf');
         cy.contains('legend', 'Dataverse terms of use');
         cy.contains('Deposit research data in Dataverse').within(() => {
             cy.contains('a', 'Terms of Use').invoke('attr', 'href').then((termsOfUseUrl) => {
                 expect(termsOfUseUrl).to.equal(Cypress.env('dataverseTermsOfUse'));
             });
         });
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+		cy.saveResearchDataFile();
         cy.get('#datasetFiles').contains('Data_detailing.pdf');
         
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'Planilha_de_dados_ÇÕÔÁÀÃ.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-		cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('example.json', 'Planilha_de_dados_ÇÕÔÁÀÃ.json', 'application/json', 'utf8');
         cy.get('#datasetFiles').contains('a', 'Data_detailing.pdf');
 		cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
@@ -195,7 +212,6 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('.listPanel__item:contains(Data_detailing.pdf) button:contains(Delete)').click();
         cy.contains('Are you sure you want to permanently delete the research data file Data_detailing.pdf?');
 		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
-        cy.waitJQuery();
         cy.get('#datasetFiles').should('not.include.text', 'Data_detailing.pdf');
         
         advanceNSteps(3);
@@ -203,31 +219,19 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.get('div:contains("Research data and galley have the same file")').should('not.exist');
     });
     it('Dataset should contain a README file and at least another file', function () {
-        cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.loginDataverseUser('eostrom');
+        prepareDraft({manuscript: true, files: [dataFile]});
         advanceNSteps(4);
 
         cy.contains('It is mandatory to send a README file, in PDF, MD or TXT format, to accompany the research data files');
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'LEIAME.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64',
-			});
-		});
-		cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'LEIAME.pdf', 'application/pdf', 'base64');
         cy.get('#datasetFiles').contains('a', 'LEIAME.pdf');
 
         cy.get('.listPanel__item:contains(Planilha_de_dados_ÇÕÔÁÀÃ.json) button:contains(Delete)').click();
 		cy.get('.modal__panel--dialog button:contains("Delete File")').click();
-        cy.waitJQuery();
         cy.get('#datasetFiles').should('not.include.text', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
         advanceNSteps(3);
@@ -235,18 +239,7 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('The research data must contain at least one readable, non-empty file besides README files, either directly or inside a ZIP archive.');
 
         cy.get('.pkpSteps__step__label:contains("Upload Files")').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'Planilha_de_dados_ÇÕÔÁÀÃ.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-		cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('example.json', 'Planilha_de_dados_ÇÕÔÁÀÃ.json', 'application/json', 'utf8');
         cy.get('#datasetFiles').contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
 
         advanceNSteps(3);
@@ -255,8 +248,8 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('a', 'Planilha_de_dados_ÇÕÔÁÀÃ.json');
     });
     it('Adds dataset metadata', function () {
-        cy.login('eostrom', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.loginDataverseUser('eostrom');
+        prepareDraft({manuscript: true, files: [dataFile, readmeFile]});
         
         advanceNSteps(3);
         cy.contains('h2', 'Research data metadata');
@@ -290,13 +283,8 @@ describe('Dataverse Plugin - Submission wizard features', function () {
         cy.contains('CC BY 4.0');
         cy.contains('Is Supplemented By')
 
-        cy.intercept('POST', /submissions\/\d+\/submit/).as('submissionCompleted');
-        cy.contains('button', 'Submit').click();
-        cy.get('.modal__panel:visible').within(() => {
-            cy.contains('button', 'Submit').click();
-        });
-        cy.wait('@submissionCompleted', {responseTimeout: 240000})
-            .its('response.statusCode').should('eq', 200);
-        cy.contains('h1', 'Submission complete', {timeout: 10000});
+        cy.then(() => { fixture.depositAttempted = true; });
+        cy.submitResearchData();
+        cy.then(() => { fixture.submitted = true; });
     });
 });

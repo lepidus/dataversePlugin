@@ -1,9 +1,19 @@
-import '../support/commands.js';
+import {
+    useDataverseFixtures,
+    uniqueSubmission,
+    loginToSubmissionFixture,
+    createSubmissionFixture,
+    trackWizardSubmission,
+    depositDatasetFixture,
+    sendFixtureForReview,
+} from '../support/fixtures.js';
 
 describe('Dataverse Plugin - Features around review stage', function () {
 	let submissionData;
+    let fixture;
+    const fixtures = useDataverseFixtures();
     
-    before(function () {
+    beforeEach(function () {
 		submissionData = {
 			title: 'The importance of art for human well-being',
 			abstract: 'Recent evidence show that art can have a great impact in improving mental well-being.',
@@ -11,8 +21,29 @@ describe('Dataverse Plugin - Features around review stage', function () {
                 'art',
 				'well-being',
 			]
-		}
+		};
+        submissionData = uniqueSubmission(submissionData);
 	});
+
+
+    function prepareReview({reviewed = false, reviewer = false, declined = false} = {}) {
+        createSubmissionFixture(fixtures, submissionData, {author: 'ckwantes', statementTypes: [3]}).then((created) => {
+            fixture = created;
+            depositDatasetFixture(fixture, {reviewFiles: true});
+            if (reviewed) {
+                sendFixtureForReview(fixture, {assignReviewer: reviewer});
+            }
+            if (declined) {
+                cy.clickDecision('Decline Submission');
+                cy.contains('button', 'Skip this email').click();
+                cy.contains('label', 'Yes').find('input').check();
+                cy.contains('button', 'Record Decision').click();
+                cy.contains('has been declined and sent to the archives');
+                cy.then(() => { fixture.datasetDeleted = true; });
+                cy.get('a.pkpButton').contains('View All Submissions').click();
+            }
+        });
+    }
 
     function beginSubmission(submissionData) {
         cy.get('input[name="locale"][value="en"]').click();
@@ -28,16 +59,15 @@ describe('Dataverse Plugin - Features around review stage', function () {
     }
 
     it('Creates new submission with research data', function () {
-        cy.login('ckwantes', null, 'publicknowledge');
+        cy.loginDataverseUser('ckwantes');
         
         cy.get('#myQueue a:contains("New Submission")').click();
         beginSubmission(submissionData);
+        trackWizardSubmission(fixtures, submissionData).then((created) => { fixture = created; });
 
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         submissionData.keywords.forEach(keyword => {
-            cy.get('#titleAbstract-keywords-control-en').type(keyword, {delay: 0});
-            cy.wait(500);
-            cy.get('#titleAbstract-keywords-control-en').type('{enter}', {delay: 0});
+            cy.addDataverseKeyword('#titleAbstract-keywords-control-en', keyword);
         });
         cy.get('input[name="dataStatementTypes"][value=3]').click();
         cy.contains('button', 'Continue').click();
@@ -48,64 +78,25 @@ describe('Dataverse Plugin - Features around review stage', function () {
 			'mimeType': 'application/pdf',
 			'genre': 'Article Text'
 		}]);
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'example.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-        cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('example.json', 'example.json', 'application/json', 'utf8');
         
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('example.json', 'utf8').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'Raw_data.json',
-				mimeType: 'application/json',
-				encoding: 'utf8',
-			});
-		});
-		cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('example.json', 'Raw_data.json', 'application/json', 'utf8');
 
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'README.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64',
-			});
-		});
-		cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'README.pdf', 'application/pdf', 'base64');
         cy.contains('button', 'Continue').click();
         cy.contains('button', 'Continue').click();
 
         cy.get('select[name="datasetSubject"]').select('Arts and Humanities');
         cy.get('select[name="datasetLicense"]').select('CC BY 4.0');
         cy.contains('button', 'Continue').click();
-        cy.wait(500);
 
-        cy.intercept('POST', /submissions\/\d+\/submit/).as('submissionCompleted');
-        cy.contains('button', 'Submit').click();
-        cy.get('.modal__panel:visible').within(() => {
-            cy.contains('button', 'Submit').click();
-        });
-        cy.wait('@submissionCompleted', {responseTimeout: 240000})
-            .its('response.statusCode').should('eq', 200);
-        cy.contains('h1', 'Submission complete', {timeout: 10000});
+        cy.then(() => { fixture.depositAttempted = true; });
+        cy.submitResearchData();
+        cy.then(() => { fixture.submitted = true; });
     });
     it('Editor selects which data files will be available for reviewers', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        prepareReview();
+        cy.then(() => loginToSubmissionFixture(fixture));
 
         cy.get('#workflow-button').click();
         cy.clickDecision('Send for Review');
@@ -134,7 +125,8 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.assignReviewer('Julie Janssen');
     });
     it('Selected data files are displayed for reviewers', function () {
-        cy.login('jjanssen', null, 'publicknowledge');
+        prepareReview({reviewed: true, reviewer: true});
+        cy.loginDataverseUser('jjanssen');
         cy.findSubmission('myQueue', submissionData.title);
 
         cy.contains('h1', 'Review:');
@@ -147,10 +139,9 @@ describe('Dataverse Plugin - Features around review stage', function () {
     it('Configures plugin to publish research data in editor decision', function () {
         const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
 
-		cy.login('dbarnes', null, 'publicknowledge');
+		cy.loginDataverseUser('dbarnes');
 		cy.contains('a', 'Website').click();
 
-		cy.waitJQuery();
 		cy.get('#plugins-button').click();
 		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
 		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
@@ -160,8 +151,8 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		cy.contains('Your changes have been saved');
     });
     it('Deletes research data on submission declining', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('active', submissionData.title);
+        prepareReview({reviewed: true});
+        cy.then(() => loginToSubmissionFixture(fixture));
 
         cy.clickDecision('Decline Submission');
         cy.contains('h1', 'Decline Submission');
@@ -175,7 +166,6 @@ describe('Dataverse Plugin - Features around review stage', function () {
         });
 
         cy.contains('button', 'Record Decision').click();
-        cy.wait(1000);
         cy.contains('has been declined and sent to the archives');
         cy.get('a.pkpButton').contains('View All Submissions').click();
         
@@ -184,10 +174,11 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.get('#publication-button').click();
         cy.get('#datasetTab-button').click();
         cy.contains('No research data transferred');
+        cy.then(() => { fixture.datasetDeleted = true; });
     });
     it('Reverts declining and adds research data again', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('archive', submissionData.title);
+        prepareReview({reviewed: true, declined: true});
+        cy.then(() => loginToSubmissionFixture(fixture));
 
         cy.contains('button', 'Change decision').click();
 		cy.clickDecision('Revert Decline');
@@ -195,7 +186,6 @@ describe('Dataverse Plugin - Features around review stage', function () {
         cy.contains('h2', 'Notify Authors');
         cy.contains('button', 'Skip this email').click();
         cy.contains('button', 'Record Decision').click();
-        cy.wait(1000);
         
         cy.contains('is now an active submission in the review stage');
         cy.get('a.pkpButton').contains('View All Submissions').click();
@@ -205,40 +195,21 @@ describe('Dataverse Plugin - Features around review stage', function () {
 		cy.get('#datasetTab-button').click();
 
 		cy.contains('button', 'Upload research data').click();
-        cy.contains('button', 'Add research data').click();
-		cy.fixture('dummy.pdf', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'Data Table.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64',
-			});
-		});
-		cy.wait(1000);
-		cy.get('input[name="termsOfUse"').check();
-		cy.get('form:visible button:contains("Save")').click();
-        cy.contains('button', 'Add research data').click();
-        cy.fixture('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'base64').then((fileContent) => {
-			cy.get('#datasetFileForm-datasetFile-hiddenFileId').attachFile({
-				fileContent,
-				fileName: 'README.pdf',
-				mimeType: 'application/pdf',
-				encoding: 'base64'
-			});
-		});
-        cy.wait(1000);
-		cy.get('input[name="termsOfUse"]').check();
-		cy.get('form:visible button:contains("Save")').click();
+        cy.uploadResearchDataFile('dummy.pdf', 'Data Table.pdf', 'application/pdf', 'base64');
+        cy.uploadResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', 'README.pdf', 'application/pdf', 'base64');
+		cy.get('#datasetMetadata-datasetLanguage-control').select('English');
 		cy.get('#datasetMetadata-datasetSubject-control').select('Other');
 		cy.get('#datasetMetadata-datasetLicense-control').select('CC0 1.0');
-		cy.get('button:visible:contains("Save")').click();
-		cy.wait(7000);
+		cy.get('#datasetMetadata-datasetRelationType-control').select('Is Cited By');
+		cy.then(() => { fixture.depositAttempted = true; fixture.datasetDeleted = false; });
+		cy.saveDatasetMetadata();
 
         cy.contains('h1', 'Research data', {timeout:10000});
     });
     it('Research data is published on submission acceptance', function () {
-        cy.login('dbarnes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.configureDataverseForTests({publishOn: 1});
+        prepareReview({reviewed: true});
+        cy.then(() => loginToSubmissionFixture(fixture));
 
         cy.waitDatasetTabLoading();
 
@@ -260,7 +231,6 @@ describe('Dataverse Plugin - Features around review stage', function () {
         });
 
         cy.contains('button', 'Record Decision').click();
-        cy.wait(1000);
         cy.contains('has been accepted for publication and sent to the copyediting stage');
         cy.get('a.pkpButton').contains('View All Submissions').click();
         cy.findSubmission('myQueue', submissionData.title);

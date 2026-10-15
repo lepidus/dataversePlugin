@@ -1,28 +1,36 @@
+import {useDataverseFixtures, uniqueSubmission, createSubmissionFixture} from '../support/fixtures.js';
+
 describe('Plugin configuration', function () {
+    const fixtures = useDataverseFixtures({configure: false});
+    beforeEach(function () {
+        cy.resetDataverseTestConfiguration();
+    });
 	it('Check plugin does not break submission view before configuration', function () {
-		cy.login('dbarnes', null, 'publicknowledge');
+		cy.loginDataverseUser('dbarnes');
 		cy.contains('a', 'Website').click();
 
-		cy.waitJQuery();
 		cy.get('#plugins-button').click();
 
-		cy.get('input[id^=select-cell-dataverseplugin]').check();
+		cy.setDataversePluginEnabled(true);
 		cy.get('input[id^=select-cell-dataverseplugin]').should('be.checked');
 
-		cy.contains('a', 'Submissions').click();
-		cy.get('#active-button').click();
-		cy.get('.pkpButton:visible:contains("View")').first().click();
+        const data = uniqueSubmission({title: 'Submission without Dataverse configuration'});
+        createSubmissionFixture(fixtures, data, {statementTypes: [1]}).then((fixture) => {
+            cy.loginDataverseUser('dbarnes');
+            cy.visit(`/index.php/publicknowledge/workflow/access/${fixture.id}`);
+            fixture.withoutDataverseConfiguration = true;
+        });
 		cy.get('#publication-button').click();
 	});
 	it('Configures plugin', function() {
 		const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
 		
-		cy.login('dbarnes', null, 'publicknowledge');
+		cy.loginDataverseUser('dbarnes');
 		cy.contains('a', 'Website').click();
 
-		cy.waitJQuery();
 		cy.get('#plugins-button').click();
 
+		cy.setDataversePluginEnabled(true);
 		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
 		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
 
@@ -56,17 +64,46 @@ describe('Plugin configuration', function () {
 				.should('contain', '3. The files deposited in "Research Data" will form a dataset');
 		});
 
+        if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
+            cy.get('input[name="datasetPublish"][value=2]').check();
+        }
+		cy.get('#dataverseConfigurationForm').invoke('attr', 'action').then((action) => {
+            cy.intercept('POST', action).as('validateDataverseConfiguration');
+        });
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
+        cy.wait('@validateDataverseConfiguration', {responseTimeout: 30000})
+            .its('response.statusCode').should('eq', 200);
 		cy.contains("Unable to connect to Dataverse. Error returned: Dataverse API token is invalid or expired");
 
-		cy.get('input[name=apiToken]').focus().clear().type(Cypress.env('dataverseApiToken'));
+		cy.get('input[name=apiToken]').focus().clear().type(Cypress.env('dataverseApiToken'), {delay: 0, log: false});
 
 		if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-			cy.contains("It is required to select the event to publish the research data.");
 			cy.get('input[name="datasetPublish"][value=2]').check();
 		}
 
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('div:contains("Your changes have been saved.")');
 	});
+    if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
+        it('Requires an event before saving configuration', function () {
+            const pluginRow = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
+            cy.loginDataverseUser('dbarnes');
+            cy.contains('a', 'Website').click();
+            cy.get('#plugins-button').click();
+            cy.setDataversePluginEnabled(true);
+            cy.get(`#${pluginRow} a.show_extras`).click();
+            cy.get(`a[id^=${pluginRow}-settings-button]`).click();
+            cy.get('input[name="dataverseUrl"]').clear().type(Cypress.env('dataverseUrl'), {delay: 0});
+            cy.get('input[name="apiToken"]').clear().type(Cypress.env('dataverseApiToken'), {delay: 0, log: false});
+            cy.get('input[name="termsOfUse[en]"]').clear().type(Cypress.env('dataverseTermsOfUse'), {delay: 0});
+            cy.get('input[name="datasetPublish"]:checked').should('not.exist');
+            cy.get('#dataverseConfigurationForm').invoke('attr', 'action').then((action) => {
+                cy.intercept('POST', action).as('saveWithoutPublicationEvent');
+            });
+            cy.contains('#dataverseConfigurationForm button', 'OK').click();
+            cy.wait('@saveWithoutPublicationEvent').its('response.statusCode').should('eq', 200);
+            cy.contains('It is required to select the event to publish the research data.');
+        });
+    }
+
 });

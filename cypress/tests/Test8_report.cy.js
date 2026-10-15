@@ -1,13 +1,10 @@
-function getNowDateAndHour() {
-    let now = new Date().toISOString();
-    let nowFormatted = now.replace(/[-:T]/g, '');
-
-    return (nowFormatted.split('.')[0]);
-}
+import '../support/commands.js';
 
 describe("Dataverse plugin - Report generation", function() {
     it("Generates Dataverse report", function() {
-        cy.login('dbarnes', null, 'publicknowledge');
+        cy.configureDataverseForTests();
+        cy.loginDataverseUser('dbarnes');
+        // Open reports with the plugin configured independently of other specs.
 
         cy.contains('a.app__navItem', 'Reports').click();
         cy.contains('a', 'Dataverse Report').click();
