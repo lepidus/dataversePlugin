@@ -43,16 +43,15 @@ export function useDataverseFixtures({configure = true, configuration = {}} = {}
                 deleteSubmissionFixture(fixture);
                 return;
             }
-            openDatasetFixture(fixture);
-            cy.get('body').then(($body) => {
-                const action = $body.find('#datasetMetadata-datasetTitle-control').closest('form').attr('action');
-                if (!action || !/\/datasets\/\d+(?:\?|$)/.test(action)) {
+            cy.getDataverseStudyForTest(fixture.id).then((studyId) => {
+                if (!studyId) {
                     // A failed deposit must retain its local recovery record.
                     if (!fixture.depositAttempted || fixture.datasetDeleted) {
                         deleteSubmissionFixture(fixture);
                     }
                     return;
                 }
+                const action = `${api}/datasets/${studyId}`;
                 requestFixture({url: action}).then(({body}) => {
                     if (body.versionState !== 'DRAFT') {
                         return;
@@ -100,6 +99,48 @@ export function trackWizardSubmission(fixtures, data) {
     });
 }
 
+function uploadFixtureFile(url, file, fileName, mimeType, fields = {}) {
+    return cy.fixture(file, mimeType === 'application/json' ? 'utf8' : 'base64').then((content) => {
+        return cy.window({log: false}).then({timeout: Cypress.config('responseTimeout')}, (window) => {
+            const form = new window.FormData();
+            const blob = mimeType === 'application/json'
+                ? new window.Blob([typeof content === 'string' ? content : JSON.stringify(content)], {type: mimeType})
+                : Cypress.Blob.base64StringToBlob(content, mimeType);
+            form.append('file', blob, fileName);
+            Object.entries(fields).forEach(([key, value]) => form.append(key, String(value)));
+            return window.fetch(url, {
+                method: 'POST', credentials: 'same-origin', body: form,
+                headers: {'X-Csrf-Token': window.pkp.currentUser.csrfToken},
+            }).then((response) => {
+                expect(response.status, 'Fixture file upload HTTP status').to.equal(200);
+                return response.json();
+            });
+        });
+    });
+}
+
+function uploadManuscriptFixture(fixture) {
+    cy.getDataverseTestGenres().then((genres) => {
+        const genre = genres.find((item) => item.name === Cypress.env('defaultGenre'));
+        expect(Boolean(genre), 'Configured manuscript genre exists').to.equal(true);
+        uploadFixtureFile(`${api}/submissions/${fixture.id}/files`, 'dummy.pdf', 'dummy.pdf', 'application/pdf', {
+            fileStage: 2, genreId: genre.id,
+        });
+    });
+}
+
+function uploadDatasetFixtureFile(fixture, file, fileName, mimeType) {
+    uploadFixtureFile(`${api}/temporaryFiles`, file, fileName, mimeType).then((uploaded) => {
+        cy.window({log: false}).then((window) => {
+            requestFixture({
+                method: 'POST', url: `${api}/draftDatasetFiles?submissionId=${fixture.id}&userId=${window.pkp.currentUser.id}`,
+                headers: {'X-Csrf-Token': window.pkp.currentUser.csrfToken},
+                body: {datasetFile: {temporaryFileId: uploaded.id}, termsOfUse: true},
+            });
+        });
+    });
+}
+
 export function createSubmissionFixture(fixtures, data, {
     author = 'eostrom', submitted = true, manuscript = true, statementTypes = [2, 5],
 } = {}) {
@@ -120,8 +161,13 @@ export function createSubmissionFixture(fixtures, data, {
                         dataStatementReason: {en: 'Has sensitive data'},
                     },
                 });
-                cy.visit(`/index.php/publicknowledge/submission?id=${fixture.id}`);
-                if (manuscript) {
+                if (submitted && manuscript) {
+                    uploadManuscriptFixture(fixture);
+                }
+                if (!submitted) {
+                    cy.visit(`/index.php/publicknowledge/submission?id=${fixture.id}`);
+                }
+                if (!submitted && manuscript) {
                     cy.advanceSubmissionSteps();
                     cy.uploadSubmissionFiles([{
                         file: 'dummy.pdf', fileName: 'dummy.pdf', mimeType: 'application/pdf', genre: Cypress.env('defaultGenre'),
@@ -150,19 +196,27 @@ export function openDatasetFixture(fixture, author = false) {
 
 export function depositDatasetFixture(fixture, {reviewFiles = false, author = 'dbarnes'} = {}) {
     cy.loginDataverseUser(author);
-    openDatasetFixture(fixture, author !== 'dbarnes');
-    cy.contains('button', 'Upload research data').click();
-    cy.uploadResearchDataFile('example.json', reviewFiles ? 'example.json' : 'Planilha_de_dados_ÇÕÔÁÀÃ.json', 'application/json', 'utf8');
+    uploadDatasetFixtureFile(fixture, 'example.json', reviewFiles ? 'example.json' : 'Planilha_de_dados_ÇÕÔÁÀÃ.json', 'application/json');
     if (reviewFiles) {
-        cy.uploadResearchDataFile('example.json', 'Raw_data.json', 'application/json', 'utf8');
+        uploadDatasetFixtureFile(fixture, 'example.json', 'Raw_data.json', 'application/json');
     }
-    cy.uploadResearchDataFile('../../plugins/generic/dataverse/cypress/fixtures/README.pdf', reviewFiles ? 'README.pdf' : 'LEIAME.pdf', 'application/pdf', 'base64');
-    cy.get('#datasetMetadata-datasetLanguage-control').select('French');
-    cy.get('#datasetMetadata-datasetSubject-control').select('Earth and Environmental Sciences');
-    cy.get('#datasetMetadata-datasetLicense-control').select('CC BY 4.0');
-    cy.get('#datasetMetadata-datasetRelationType-control').select('Is Supplemented By');
-    cy.then(() => { fixture.depositAttempted = true; fixture.datasetDeleted = false; });
-    cy.saveDatasetMetadata();
+    uploadDatasetFixtureFile(fixture, '../../plugins/generic/dataverse/cypress/fixtures/README.pdf', reviewFiles ? 'README.pdf' : 'LEIAME.pdf', 'application/pdf');
+    fixtureHeaders().then((headers) => {
+        fixture.depositAttempted = true;
+        fixture.datasetDeleted = false;
+        requestFixture({
+            method: 'POST', url: `${api}/datasets?submissionId=${fixture.id}`, headers, timeout: 240000,
+            body: {
+                datasetTitle: `Replication data for: ${fixture.title}`,
+                datasetDescription: fixture.abstract || 'Research data fixture.',
+                // Empty controlled vocabularies are submitted as an empty string by the form.
+                datasetKeywords: {en: fixture.keywords?.length ? fixture.keywords.slice(0, 2) : ''},
+                datasetLanguage: 'French', datasetSubject: 'Earth and Environmental Sciences',
+                datasetLicense: 'CC BY 4.0', datasetRelationType: 'IsSupplementedBy',
+            },
+        });
+    });
+    openDatasetFixture(fixture, author !== 'dbarnes');
     cy.get('#datasetData a[href*="doi.org/"]').should('be.visible');
     if (fixture.statementTypes.includes(3)) {
         fixtureHeaders().then((headers) => {

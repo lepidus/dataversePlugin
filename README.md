@@ -119,8 +119,8 @@ review, public-site, legacy and linking cases can run separately, in another ord
 without restoring between runs. Run specs sequentially against a single context: plugin
 configuration is shared by that context.
 
-The shared fixtures use the PKP API for submission metadata and editorial preconditions,
-and the normal upload interfaces for files. Assertions still exercise the interface under
+The shared fixtures use authenticated PKP APIs for submission metadata, manuscript and dataset
+uploads, deposits and editorial preconditions. Cases that test upload behavior still use the interface. Assertions still exercise the interface under
 test. Cleanup removes only the case's own submissions and draft datasets. Published datasets
 cannot be removed through the plugin; their local submissions are retained for traceability.
 Failed cases, uncertain deposits and failed remote cleanup keep their local recovery records.
@@ -131,6 +131,10 @@ resets its Dataverse settings through the same CLI-only fixture. It verifies the
 the Cypress environment when the test database differs from `DBNAME` or the local default
 `ojs_stable_3_4_0`.
 The fixture uses the same PHP executable as the Cypress command's environment.
+Setup saves configuration through authenticated requests; configuration cases still exercise the
+settings interface. Cleanup resolves the study by its own submission ID through the guarded CLI,
+then uses the normal authenticated API. Cached sessions share authentication between specs,
+while each case still prepares its own configuration, permissions and submission data.
 
 The custom required metadata cases are reported as pending when
 `dataverseCustomRequiredMetadataFieldsUrl` is not configured. The workflow synchronization

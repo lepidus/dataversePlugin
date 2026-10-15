@@ -10,6 +10,7 @@ if (PHP_SAPI !== 'cli') {
 require dirname(__DIR__, 5) . '/tools/bootstrap.php';
 
 use APP\core\Application;
+use Illuminate\Support\Facades\DB;
 use PKP\cache\CacheManager;
 use PKP\cliTool\CommandLineTool;
 use PKP\config\Config;
@@ -28,8 +29,25 @@ class ResetDataverseTestConfiguration extends CommandLineTool
             throw new RuntimeException('The publicknowledge test context is missing.');
         }
         $mode = $this->argv[1] ?? 'configuration';
-        if (!in_array($mode, ['configuration', 'cache'], true)) {
+        if (!in_array($mode, ['configuration', 'cache', 'study', 'genres'], true)) {
             throw new RuntimeException('Unknown test reset mode.');
+        }
+        if ($mode === 'genres') {
+            $genres = DAORegistry::getDAO('GenreDAO')->getByContextId($context->getId())->toArray();
+            echo json_encode(array_values(array_map(static fn ($genre) => [
+                'id' => (int) $genre->getId(),
+                'name' => $genre->getName('en'),
+            ], $genres)));
+            return;
+        }
+        if ($mode === 'study') {
+            $submissionId = filter_var($this->argv[2] ?? '', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if (!$submissionId || !DB::table('submissions')->where('submission_id', $submissionId)->where('context_id', $context->getId())->exists()) {
+                throw new RuntimeException('The fixture submission does not belong to the test context.');
+            }
+            $studyId = DB::table('dataverse_studies')->where('submission_id', $submissionId)->value('study_id');
+            echo json_encode(['studyId' => $studyId ? (int) $studyId : null]);
+            return;
         }
         if ($mode === 'configuration') {
             $settingsDao = DAORegistry::getDAO('PluginSettingsDAO');

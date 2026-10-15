@@ -125,27 +125,35 @@ Cypress.Commands.add('confirmDatasetDeletion', function (label = 'Delete') {
 });
 
 Cypress.Commands.add('configureDataverseForTests', function (options = {}) {
-	const pluginRow = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-dataverseplugin';
     cy.resetDataverseTestConfiguration('cache');
-	cy.loginDataverseUser('dbarnes');
-	cy.contains('a', 'Website').click();
-	cy.get('#plugins-button').click();
-	cy.setDataversePluginEnabled(true);
-	cy.get(`#${pluginRow} a.show_extras`).click();
-	cy.get(`a[id^=${pluginRow}-settings-button]`).click();
-	cy.get('input[name="dataverseUrl"]').clear().type(options.url || Cypress.env('dataverseUrl'), {delay: 0});
-	cy.get('input[name="apiToken"]').clear().type(Cypress.env('dataverseApiToken'), {delay: 0, log: false});
-	cy.get('input[name="termsOfUse[en]"]').clear().type(Cypress.env('dataverseTermsOfUse'), {delay: 0});
-	if (Cypress.env('contextTitles').en !== 'Public Knowledge Preprint Server') {
-		cy.get(`input[name="datasetPublish"][value=${options.publishOn || 2}]`).check();
-	}
-    cy.get('#dataverseConfigurationForm').invoke('attr', 'action').then((action) => {
-        cy.intercept('POST', action).as('configureDataverseForTests');
+    cy.loginDataverseUser('dbarnes');
+    // Configuration is a precondition here; the configuration specs exercise its UI.
+    cy.window({log: false}).then((window) => {
+        const endpoint = '/index.php/publicknowledge/$$$call$$$/grid/settings/plugins/settings-plugin-grid/';
+        const settings = {
+            csrfToken: window.pkp.currentUser.csrfToken,
+            category: 'generic', plugin: 'dataverseplugin',
+        };
+        const post = (operation, body) => cy.request({
+            method: 'POST', url: endpoint + operation,
+            form: true, body, log: false, failOnStatusCode: false,
+        }).then((response) => {
+            expect(response.status, `Fixture configuration ${operation} HTTP status`).to.equal(200);
+            expect(response.body.status, `Fixture configuration ${operation} accepted`).to.equal(true);
+            const invalidForm = typeof response.body.content === 'string'
+                && response.body.content.includes('id="dataverseConfigurationForm"');
+            expect(invalidForm, 'Fixture configuration has no validation errors').to.equal(false);
+        });
+        post('enable', settings);
+        post('manage', {
+            ...settings, verb: 'settings', save: 1,
+            dataverseUrl: options.url || Cypress.env('dataverseUrl'),
+            apiToken: Cypress.env('dataverseApiToken'),
+            'termsOfUse[en]': Cypress.env('dataverseTermsOfUse'),
+            'additionalInstructions[en]': '',
+            datasetPublish: options.publishOn || 2,
+        });
     });
-	cy.contains('#dataverseConfigurationForm button', 'OK').click();
-    cy.wait('@configureDataverseForTests').its('response.statusCode').should('eq', 200);
-	cy.contains('Your changes have been saved.').should('be.visible');
-	cy.get('#dataverseConfigurationForm').should('not.exist');
 });
 
 Cypress.Commands.add('resetDataverseTestConfiguration', function (mode = 'configuration') {
@@ -153,6 +161,22 @@ Cypress.Commands.add('resetDataverseTestConfiguration', function (mode = 'config
     expect(database, 'Confirmed fixture database').to.match(/^[a-zA-Z0-9_]+$/);
     expect(mode).to.be.oneOf(['configuration', 'cache']);
     cy.exec(`php plugins/generic/dataverse/cypress/support/resetConfiguration.php ${database} ${mode}`, {log: false});
+});
+
+Cypress.Commands.add('getDataverseTestGenres', function () {
+    const database = Cypress.env('dataverseTestDatabase') || Cypress.env('DBNAME') || 'ojs_stable_3_4_0';
+    expect(database, 'Confirmed fixture database').to.match(/^[a-zA-Z0-9_]+$/);
+    return cy.exec(`php plugins/generic/dataverse/cypress/support/resetConfiguration.php ${database} genres`, {log: false})
+        .then(({stdout}) => JSON.parse(stdout));
+});
+
+Cypress.Commands.add('getDataverseStudyForTest', function (submissionId) {
+    const database = Cypress.env('dataverseTestDatabase') || Cypress.env('DBNAME') || 'ojs_stable_3_4_0';
+    expect(database, 'Confirmed fixture database').to.match(/^[a-zA-Z0-9_]+$/);
+    expect(submissionId, 'Owned fixture submission ID').to.be.a('number').and.be.greaterThan(0);
+    expect(Number.isInteger(submissionId)).to.equal(true);
+    return cy.exec(`php plugins/generic/dataverse/cypress/support/resetConfiguration.php ${database} study ${submissionId}`, {log: false})
+        .then(({stdout}) => JSON.parse(stdout).studyId);
 });
 
 Cypress.Commands.add('setDataversePluginEnabled', function (enabled) {
@@ -182,6 +206,7 @@ Cypress.Commands.add('loginDataverseUser', function (username, context = 'public
 		cy.login(username, null, context);
 		cy.get('.app__userNav').should('be.visible');
 	}, {
+        cacheAcrossSpecs: true,
 		validate() {
 			cy.request({
 				url: `/index.php/${context}/user/profile`,
