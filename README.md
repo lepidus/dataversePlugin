@@ -113,33 +113,14 @@ npx cypress open --config 'specPattern=plugins/generic/dataverse/cypress/tests/T
 ```
 Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en` for passing into the tests.
 
-Start from a restored test dataset and apply the plugin migrations. Each test configures the
-plugin and creates the submission state it needs, with a unique title. Wizard, workflow,
-review, public-site, legacy and linking cases can run separately, in another order, and again
-without restoring between runs. Run specs sequentially against a single context: plugin
-configuration is shared by that context.
+Use a restored test dataset with the plugin migrations applied and the `publicknowledge` context.
+Each test prepares its own data. Run specs sequentially because plugin configuration is shared.
 
-The shared fixtures use authenticated PKP APIs for submission metadata, manuscript and dataset
-uploads, deposits and editorial preconditions. Cases that test upload behavior still use the interface. Assertions still exercise the interface under
-test. Cleanup removes only the case's own submissions and draft datasets. Published datasets
-cannot be removed through the plugin; their local submissions are retained for traceability.
-Failed cases, uncertain deposits and failed remote cleanup keep their local recovery records.
-Cleanup does not replace the original failure of a case with a second UI-hook error.
+Tests create real Dataverse datasets. Cleanup removes only their own submissions and draft datasets;
+published datasets and their local submissions are retained, as are records needed to recover failed cases.
 
-Functional fixtures clear Dataverse caches for `publicknowledge` and the collection-validation cache; the configuration spec also
-resets its Dataverse settings through the same CLI-only fixture. The fixture reads the database name
-from the application's configuration, so local installations and CI do not need duplicate settings.
-Optionally set `dataverseTestDatabase` (or `DBNAME`) in the Cypress environment to require an exact
-match before the fixture runs.
-The fixture uses the same PHP executable as the Cypress command's environment.
-Setup saves configuration through authenticated requests; configuration cases still exercise the
-settings interface. Cleanup resolves the study by its own submission ID through the guarded CLI,
-then uses the normal authenticated API. Cached sessions share authentication between specs,
-while each case still prepares its own configuration, permissions and submission data.
-
-The custom required metadata cases are reported as pending when
-`dataverseCustomRequiredMetadataFieldsUrl` is not configured. The workflow synchronization
-spec uses controlled responses and does not require a Dataverse repository.
+Set `dataverseCustomRequiredMetadataFieldsUrl` to a collection requiring Alternative URL,
+Description Date and PSRI to run the custom metadata cases; otherwise, those cases are pending.
 
 ## Credits
 This plugin was sponsored by the Scientific Electronic Library Online (SciELO) and developed by Lepidus Tecnologia.
