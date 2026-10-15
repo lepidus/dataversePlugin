@@ -156,27 +156,32 @@ Cypress.Commands.add('configureDataverseForTests', function (options = {}) {
     });
 });
 
+function runDataverseTestFixture(mode, submissionId) {
+    const database = Cypress.env('dataverseTestDatabase') || Cypress.env('DBNAME');
+    const args = [mode];
+    if (submissionId !== undefined) {
+        expect(submissionId, 'Owned fixture submission ID').to.be.a('number').and.be.greaterThan(0);
+        expect(Number.isInteger(submissionId)).to.equal(true);
+        args.push(submissionId);
+    }
+    if (database) {
+        expect(database, 'Expected fixture database').to.match(/^[a-zA-Z0-9_]+$/);
+        args.push(`--database=${database}`);
+    }
+    return cy.exec(`php plugins/generic/dataverse/cypress/support/resetConfiguration.php ${args.join(' ')}`, {log: false});
+}
+
 Cypress.Commands.add('resetDataverseTestConfiguration', function (mode = 'configuration') {
-    const database = Cypress.env('dataverseTestDatabase') || Cypress.env('DBNAME') || 'ojs_stable_3_4_0';
-    expect(database, 'Confirmed fixture database').to.match(/^[a-zA-Z0-9_]+$/);
     expect(mode).to.be.oneOf(['configuration', 'cache']);
-    cy.exec(`php plugins/generic/dataverse/cypress/support/resetConfiguration.php ${database} ${mode}`, {log: false});
+    return runDataverseTestFixture(mode);
 });
 
 Cypress.Commands.add('getDataverseTestGenres', function () {
-    const database = Cypress.env('dataverseTestDatabase') || Cypress.env('DBNAME') || 'ojs_stable_3_4_0';
-    expect(database, 'Confirmed fixture database').to.match(/^[a-zA-Z0-9_]+$/);
-    return cy.exec(`php plugins/generic/dataverse/cypress/support/resetConfiguration.php ${database} genres`, {log: false})
-        .then(({stdout}) => JSON.parse(stdout));
+    return runDataverseTestFixture('genres').then(({stdout}) => JSON.parse(stdout));
 });
 
 Cypress.Commands.add('getDataverseStudyForTest', function (submissionId) {
-    const database = Cypress.env('dataverseTestDatabase') || Cypress.env('DBNAME') || 'ojs_stable_3_4_0';
-    expect(database, 'Confirmed fixture database').to.match(/^[a-zA-Z0-9_]+$/);
-    expect(submissionId, 'Owned fixture submission ID').to.be.a('number').and.be.greaterThan(0);
-    expect(Number.isInteger(submissionId)).to.equal(true);
-    return cy.exec(`php plugins/generic/dataverse/cypress/support/resetConfiguration.php ${database} study ${submissionId}`, {log: false})
-        .then(({stdout}) => JSON.parse(stdout).studyId);
+    return runDataverseTestFixture('study', submissionId).then(({stdout}) => JSON.parse(stdout).studyId);
 });
 
 Cypress.Commands.add('setDataversePluginEnabled', function (enabled) {

@@ -127,9 +127,10 @@ Failed cases, uncertain deposits and failed remote cleanup keep their local reco
 Cleanup does not replace the original failure of a case with a second UI-hook error.
 
 Functional fixtures clear Dataverse caches for `publicknowledge` and the collection-validation cache; the configuration spec also
-resets its Dataverse settings through the same CLI-only fixture. It verifies the database name before changing settings. Set `dataverseTestDatabase` in
-the Cypress environment when the test database differs from `DBNAME` or the local default
-`ojs_stable_3_4_0`.
+resets its Dataverse settings through the same CLI-only fixture. The fixture reads the database name
+from the application's configuration, so local installations and CI do not need duplicate settings.
+Optionally set `dataverseTestDatabase` (or `DBNAME`) in the Cypress environment to require an exact
+match before the fixture runs.
 The fixture uses the same PHP executable as the Cypress command's environment.
 Setup saves configuration through authenticated requests; configuration cases still exercise the
 settings interface. Cleanup resolves the study by its own submission ID through the guarded CLI,
