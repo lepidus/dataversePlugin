@@ -10,13 +10,6 @@ include:
       - 'templates/groups/ojs/unit_tests.yml'
       - 'templates/groups/ops/unit_tests.yml'
 
-.set_api_key_secret: &set_api_key_secret
-  - sed -i "s/api_key_secret = \"\"/api_key_secret = \"$API_KEY_SECRET\"/" /var/www/$APPLICATION/config.inc.php
-
-.unit_test_template:
-  before_script:
-    - *set_api_key_secret
-
 .e2e_tests_template:
   stage: plugin
   needs: []
@@ -37,7 +30,6 @@ include:
       - .cache/ms-playwright
   script:
     - !reference [.create_plugin_symbolic_link_to_plugins_path]
-    - *set_api_key_secret
     - sed -i 's|^base_url = .*|base_url = "http://localhost"|' /var/www/$APPLICATION/config.inc.php
     - !reference [.prepare_pkp_application]
     - update-alternatives --set php /usr/bin/php$PHP_VERSION

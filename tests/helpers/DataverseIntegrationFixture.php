@@ -16,19 +16,19 @@ use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\DataversePlugin;
 use APP\plugins\generic\dataverse\DataverseSettingsForm;
 use APP\submission\Submission;
+use Illuminate\Support\Facades\Event;
 use PKP\context\Context;
 use PKP\core\Core;
 use PKP\core\Registry;
-use PKP\plugins\Hook;
 use PKP\db\DAORegistry;
 use PKP\file\TemporaryFileManager;
 use PKP\observers\events\DecisionAdded;
 use PKP\observers\events\SubmissionSubmitted;
-use PKP\submissionFile\SubmissionFile;
+use PKP\plugins\Hook;
 use PKP\security\Role;
+use PKP\submissionFile\SubmissionFile;
 use PKP\user\User;
 use PKP\userGroup\UserGroup;
-use Illuminate\Support\Facades\Event;
 
 trait DataverseIntegrationFixture
 {

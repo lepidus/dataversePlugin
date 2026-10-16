@@ -43,5 +43,7 @@ class DataverseMigration extends Migration
                 $table->unique(['file_id'], 'temporary_files_id');
             });
         }
+
+        (new LaravelEncryptionMigration())->up();
     }
 }

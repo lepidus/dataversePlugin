@@ -2,22 +2,22 @@
 
 namespace APP\plugins\generic\dataverse;
 
-use PKP\form\Form;
-use PKP\plugins\Plugin;
 use APP\core\Application;
-use Illuminate\Support\Facades\Cache;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DefaultAdditionalInstructions;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\template\TemplateManager;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+use PKP\core\PKPAppKey;
 use PKP\db\DAORegistry;
-use PKP\form\validation\FormValidatorUrl;
+use PKP\form\Form;
 use PKP\form\validation\FormValidator;
 use PKP\form\validation\FormValidatorCustom;
 use PKP\form\validation\FormValidatorPost;
-use APP\plugins\generic\dataverse\classes\DataEncryption;
-use APP\plugins\generic\dataverse\classes\exception\DataverseException;
-use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
-use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
-use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DefaultAdditionalInstructions;
-use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
+use PKP\form\validation\FormValidatorUrl;
+use PKP\plugins\Plugin;
 
 class DataverseSettingsForm extends Form
 {
@@ -33,8 +33,7 @@ class DataverseSettingsForm extends Form
 
     public function __construct(Plugin $plugin, int $contextId)
     {
-        $encryption = new DataEncryption();
-        $template = $encryption->secretConfigExists() ? 'dataverseConfigurationForm.tpl' : 'emptySecretKey.tpl';
+        $template = PKPAppKey::hasKey() ? 'dataverseConfigurationForm.tpl' : 'missingAppKey.tpl';
         parent::__construct($plugin->getTemplateResource($template));
 
         $this->plugin = $plugin;
@@ -133,7 +132,7 @@ class DataverseSettingsForm extends Form
             $dataverseCollectionActions->get();
         } catch (DataverseException $e) {
             $message = __('plugins.generic.dataverse.settings.dataverseUrlNotValid', ['msg' => $e->getMessage()]);
-            error_log("Dataverse Error - $message");
+            error_log("Dataverse Error - {$message}");
             $this->addError('apiToken', $message);
 
             return false;
@@ -159,13 +158,7 @@ class DataverseSettingsForm extends Form
 
     private function encryptApiToken(): void
     {
-        $encryption = new DataEncryption();
-        $apiToken = $this->getData('apiToken');
-
-        if (!$encryption->textIsEncrypted($apiToken)) {
-            $encryptedToken = $encryption->encryptString($apiToken);
-            $this->setData('apiToken', $encryptedToken);
-        }
+        $this->setData('apiToken', Crypt::encryptString($this->getData('apiToken')));
     }
 
     private function flushCache(): void

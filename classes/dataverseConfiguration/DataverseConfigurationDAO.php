@@ -2,10 +2,11 @@
 
 namespace APP\plugins\generic\dataverse\classes\dataverseConfiguration;
 
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Encryption\MissingAppKeyException;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use PKP\db\DAORegistry;
-use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
-use APP\plugins\generic\dataverse\classes\DataEncryption;
 
 class DataverseConfigurationDAO
 {
@@ -45,7 +46,7 @@ class DataverseConfigurationDAO
 
     public function insert(int $contextId, DataverseConfiguration $configuration): void
     {
-        $settings = $configuration->getAllData();
+        $settings = $this->encryptApiToken($configuration->getAllData());
         foreach ($settings as $name => $value) {
             $this->dao->updateSetting(
                 $contextId,
@@ -56,13 +57,25 @@ class DataverseConfigurationDAO
         }
     }
 
+    private function encryptApiToken(array $settings): array
+    {
+        if (!empty($settings['apiToken'])) {
+            $settings['apiToken'] = Crypt::encryptString($settings['apiToken']);
+        }
+        return $settings;
+    }
+
     private function decryptApiToken(array $settings): array
     {
-        if (isset($settings['apiToken'])) {
-            $encryption = new DataEncryption();
-            if ($encryption->textIsEncrypted($settings['apiToken'])) {
-                $settings['apiToken'] = $encryption->decryptString($settings['apiToken']);
-            }
+        if (empty($settings['apiToken'])) {
+            return $settings;
+        }
+
+        try {
+            $settings['apiToken'] = Crypt::decryptString($settings['apiToken']);
+        } catch (DecryptException | MissingAppKeyException $exception) {
+            error_log('Dataverse: the stored API token could not be decrypted and must be entered again in the plugin settings.');
+            $settings['apiToken'] = '';
         }
         return $settings;
     }

@@ -1,9 +1,10 @@
 <?php
 
-use PKP\tests\DatabaseTestCase;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
 use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
+use Illuminate\Support\Facades\Crypt;
+use PKP\tests\DatabaseTestCase;
 
 class DataverseConfigurationDAOTest extends DatabaseTestCase
 {
@@ -78,7 +79,7 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
                 $this->context->getId(),
                 $this->pluginName,
                 $name,
-                $value,
+                $name === 'apiToken' ? Crypt::encryptString($value) : $value,
             );
         }
 
@@ -99,5 +100,31 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
             $this->dataverseConfiguration,
             $this->dataverseConfigurationDAO->get($this->context->getId())
         );
+    }
+
+    public function testStoresTokenEncryptedWithApplicationKey(): void
+    {
+        $this->dataverseConfigurationDAO->insert($this->context->getId(), $this->dataverseConfiguration);
+
+        $storedToken = $this->pluginSettingsDAO->getSetting($this->context->getId(), $this->pluginName, 'apiToken');
+
+        $this->assertNotSame('randomToken', $storedToken);
+        $this->assertSame('randomToken', Crypt::decryptString($storedToken));
+    }
+
+    public function testReturnsEmptyTokenWhenStoredTokenCannotBeDecrypted(): void
+    {
+        $this->dataverseConfigurationDAO->insert($this->context->getId(), $this->dataverseConfiguration);
+        $this->pluginSettingsDAO->updateSetting(
+            $this->context->getId(),
+            $this->pluginName,
+            'apiToken',
+            'invalid-encrypted-token'
+        );
+
+        $configuration = $this->dataverseConfigurationDAO->get($this->context->getId());
+
+        $this->assertSame('', $configuration->getAPIToken());
+        $this->assertSame('https://demo.dataverse.org/dataverse/example', $configuration->getDataverseUrl());
     }
 }

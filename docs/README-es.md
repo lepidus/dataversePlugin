@@ -18,11 +18,11 @@ Consulte la última versión compatible con su aplicación en la [Página de Ver
 
 ## Requisitos para uso
 
-1. **api_key_secret**
+1. **app_key**
 
-La instancia de OJS debe tener la configuración `api_key_secret` configurada, puedes contactar a tu administrador de sistema para hacerlo (ver [esta publicación](https://forum.pkp.sfu.ca/t/how-to-generate-a-api-key-secret-code-in-ojs-3/72008)).
+La instancia de OJS/OPS debe tener la clave de la aplicación (`app_key`, en la sección `[general]` de `config.inc.php`) configurada. La instalación y la actualización a la 3.5 la crean; si falta, su administrador del sistema puede generarla con `php lib/pkp/tools/appKey.php generate`.
 
-Esto es necesario para utilizar las credenciales de API proporcionadas, que se almacenan cifradas en la base de datos de OJS.
+Esto es necesario para utilizar las credenciales de API proporcionadas, que se almacenan cifradas en la base de datos. Cambiar la clave después hace ilegibles las credenciales almacenadas, que deben introducirse nuevamente en la configuración del plugin.
 
 ## Instalación
 

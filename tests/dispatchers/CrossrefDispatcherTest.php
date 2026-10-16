@@ -1,10 +1,5 @@
 <?php
 
-use PKP\db\DAORegistry;
-use PKP\doi\Doi;
-use PKP\tests\DatabaseTestCase;
-use APP\publication\Publication;
-use APP\submission\Submission;
 use APP\plugins\generic\dataverse\classes\CrossrefXmlEditor;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
@@ -13,8 +8,13 @@ use APP\plugins\generic\dataverse\classes\dispatchers\CrossrefDispatcher;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
-use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
 use APP\plugins\generic\dataverse\DataversePlugin;
+use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
+use APP\publication\Publication;
+use APP\submission\Submission;
+use PKP\db\DAORegistry;
+use PKP\doi\Doi;
+use PKP\tests\DatabaseTestCase;
 
 class CrossrefDispatcherTest extends DatabaseTestCase
 {
