@@ -212,9 +212,6 @@ trait DataverseIntegrationFixture
 
     protected function saveConfiguration(array $settings): void
     {
-        if (!empty($settings['apiToken'])) {
-            $settings['apiToken'] = \Illuminate\Support\Facades\Crypt::encrypt($settings['apiToken']);
-        }
         $configuration = new DataverseConfiguration();
         $configuration->setAllData($settings);
         (new DataverseConfigurationDAO())->insert($this->context->getId(), $configuration);

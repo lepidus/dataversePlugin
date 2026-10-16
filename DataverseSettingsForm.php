@@ -10,6 +10,7 @@ use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionAction
 use APP\template\TemplateManager;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use PKP\core\PKPAppKey;
 use PKP\db\DAORegistry;
 use PKP\form\Form;
 use PKP\form\validation\FormValidator;
@@ -32,7 +33,8 @@ class DataverseSettingsForm extends Form
 
     public function __construct(Plugin $plugin, int $contextId)
     {
-        parent::__construct($plugin->getTemplateResource('dataverseConfigurationForm.tpl'));
+        $template = PKPAppKey::hasKey() ? 'dataverseConfigurationForm.tpl' : 'missingAppKey.tpl';
+        parent::__construct($plugin->getTemplateResource($template));
 
         $this->plugin = $plugin;
         $this->contextId = $contextId;
@@ -156,7 +158,7 @@ class DataverseSettingsForm extends Form
 
     private function encryptApiToken(): void
     {
-        $this->setData('apiToken', Crypt::encrypt($this->getData('apiToken')));
+        $this->setData('apiToken', Crypt::encryptString($this->getData('apiToken')));
     }
 
     private function flushCache(): void

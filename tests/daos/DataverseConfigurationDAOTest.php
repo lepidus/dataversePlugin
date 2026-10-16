@@ -3,7 +3,6 @@
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
 use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use PKP\tests\DatabaseTestCase;
 
@@ -80,7 +79,7 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
                 $this->context->getId(),
                 $this->pluginName,
                 $name,
-                $name === 'apiToken' ? Crypt::encrypt($value) : $value,
+                $name === 'apiToken' ? Crypt::encryptString($value) : $value,
             );
         }
 
@@ -92,11 +91,9 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
 
     public function testDataverseConfigurationWasInsertedInDatabase(): void
     {
-        $storedConfiguration = clone $this->dataverseConfiguration;
-        $storedConfiguration->setApiToken(Crypt::encrypt($storedConfiguration->getApiToken()));
         $this->dataverseConfigurationDAO->insert(
             $this->context->getId(),
-            $storedConfiguration
+            $this->dataverseConfiguration
         );
 
         $this->assertEquals(
@@ -104,19 +101,30 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
             $this->dataverseConfigurationDAO->get($this->context->getId())
         );
     }
-    public function testReadsTokenEncryptedWithApplicationKey(): void
+
+    public function testStoresTokenEncryptedWithApplicationKey(): void
     {
-        $this->dataverseConfiguration->setApiToken(Crypt::encrypt('test-api-token'));
         $this->dataverseConfigurationDAO->insert($this->context->getId(), $this->dataverseConfiguration);
-        $this->assertSame('test-api-token', $this->dataverseConfigurationDAO->get($this->context->getId())->getApiToken());
+
+        $storedToken = $this->pluginSettingsDAO->getSetting($this->context->getId(), $this->pluginName, 'apiToken');
+
+        $this->assertNotSame('randomToken', $storedToken);
+        $this->assertSame('randomToken', Crypt::decryptString($storedToken));
     }
 
-    public function testRejectsInvalidEncryptedToken(): void
+    public function testReturnsEmptyTokenWhenStoredTokenCannotBeDecrypted(): void
     {
-        $this->dataverseConfiguration->setApiToken('invalid-encrypted-token');
         $this->dataverseConfigurationDAO->insert($this->context->getId(), $this->dataverseConfiguration);
-        $this->expectException(DecryptException::class);
-        $this->dataverseConfigurationDAO->get($this->context->getId());
-    }
+        $this->pluginSettingsDAO->updateSetting(
+            $this->context->getId(),
+            $this->pluginName,
+            'apiToken',
+            'invalid-encrypted-token'
+        );
 
+        $configuration = $this->dataverseConfigurationDAO->get($this->context->getId());
+
+        $this->assertSame('', $configuration->getAPIToken());
+        $this->assertSame('https://demo.dataverse.org/dataverse/example', $configuration->getDataverseUrl());
+    }
 }

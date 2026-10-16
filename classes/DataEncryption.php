@@ -11,16 +11,6 @@ class DataEncryption
     private const ENCRYPTION_CIPHER = 'aes-256-cbc';
     private const BASE64_PREFIX = 'base64:';
 
-    public function secretConfigExists(): bool
-    {
-        try {
-            $this->getSecretFromConfig();
-        } catch (Exception $e) {
-            return false;
-        }
-        return true;
-    }
-
     private function getSecretFromConfig(): string
     {
         $secret = Config::getVar('security', 'api_key_secret');
@@ -34,20 +24,6 @@ class DataEncryption
     private function normalizeSecret(string $secret): string
     {
         return hash('sha256', $secret, true);
-    }
-
-    public function textIsEncrypted(string $text): bool
-    {
-        if (!str_starts_with($text, self::BASE64_PREFIX)) {
-            return false;
-        }
-
-        try {
-            $this->decryptString($text);
-            return true;
-        } catch (Exception $e) {
-            return false;
-        }
     }
 
     public function encryptString(string $plainText): string

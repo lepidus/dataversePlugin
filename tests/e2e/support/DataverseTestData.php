@@ -11,7 +11,6 @@ use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Crypt;
 use PKP\cliTool\CommandLineTool;
 use PKP\core\Core;
 use PKP\core\Registry;
@@ -67,7 +66,7 @@ function configure($context, array $options): array
     $configuration = new DataverseConfiguration();
     $configuration->setAllData([
         'dataverseUrl' => $credentials['dataverseUrl'],
-        'apiToken' => Crypt::encrypt($credentials['apiToken']),
+        'apiToken' => $credentials['apiToken'],
         'termsOfUse' => ['en' => $credentials['termsOfUse']],
         'additionalInstructions' => [],
         'datasetPublish' => $options['datasetPublish'] ?? DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_PUBLISHED,

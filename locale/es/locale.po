@@ -72,6 +72,11 @@ msgstr "Se requiere la URL del Dataverse."
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
 msgstr "No se puede conectar a Dataverse. Error devuelto: {$msg}"
 
+msgid "plugins.generic.dataverse.settings.missingAppKey"
+msgstr ""
+"A su OJS/OPS le falta la clave de la aplicación ('app_key' en la sección [general] de config.inc.php). Puede ponerse en contacto con su administrador del sistema para generarla con el comando <code>php lib/pkp/tools/appKey.php generate</code>.<br><br>"
+"La clave de la aplicación se utiliza para almacenar de forma segura sus credenciales de Dataverse. Una vez configurada, vuelva aquí para introducir sus credenciales."
+
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Ingrese una clave API para Dataverse."
 

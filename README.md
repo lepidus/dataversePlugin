@@ -18,6 +18,14 @@ Check the latest compatible version for your application on the [Releases page](
 
 All versions are compatible with Dataverse 5.x and 6.x.
 
+## Requirements for usage
+
+1. **app_key**
+
+The OJS/OPS instance must have the application key (`app_key`, in the `[general]` section of `config.inc.php`) set up. The 3.5 installer and upgrade create it; if it is missing, your system administrator can generate it with `php lib/pkp/tools/appKey.php generate`.
+
+This is required to use the API credentials provided, that are stored encrypted in the database. Changing the key afterwards makes the stored credentials unreadable, and they must be entered again in the plugin settings.
+
 ## Installation
 
 This plugin is available for installation via the [PKP Plugin Gallery](https://docs.pkp.sfu.ca/plugin-inventory/en/). For installation, follow these steps:

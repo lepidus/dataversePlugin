@@ -280,8 +280,19 @@ only takes the **subject** from that template — the body is rendered directly 
 
 ### Secrets
 
-The API token is stored encrypted in the application database using the application encryption service.
-Never log, echo, or write a decrypted token to a template.
+The API token is stored encrypted in the application database with the application key (`general.app_key`),
+through `Crypt::encryptString()`. `DataverseConfigurationDAO` is the only place that encrypts (`insert()`) and
+decrypts (`get()`); a token it cannot decrypt — rotated `app_key`, restored database — comes back as an empty
+string, so the plugin degrades and the administrator can enter it again. The settings form writes through
+`Plugin::updateSetting()` and therefore encrypts the token itself. Without `app_key` the settings form renders
+`missingAppKey.tpl`. Never log, echo, or write a decrypted token to a template.
+
+Tokens from earlier versions (plaintext, or `base64:`-prefixed and encrypted with `security.api_key_secret` by
+`DataEncryption`) are converted by `LaravelEncryptionMigration`. It runs from `DataverseMigration` because
+`tools/upgrade.php` only runs a plugin's install migration — the plugin's `upgrade.xml` is executed solely when a new
+plugin version is uploaded through the plugin gallery — and it reads `app_key` straight from `config.inc.php`, since
+the 3.5 upgrade writes the key after the container has booted. Tokens it cannot convert are left untouched and
+logged instead of aborting the application upgrade.
 
 ## Tests
 

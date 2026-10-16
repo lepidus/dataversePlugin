@@ -128,7 +128,7 @@ class CrossrefDispatcherTest extends DatabaseTestCase
     {
         $configuration = new DataverseConfiguration();
         $configuration->setDataverseUrl('https://demo.dataverse.org/dataverse/test');
-        $configuration->setAPIToken(\Illuminate\Support\Facades\Crypt::encrypt('some-api-token'));
+        $configuration->setAPIToken('some-api-token');
         $configuration->setTermsOfUse(['en' => 'Terms of use']);
 
         DAORegistry::getDAO('DataverseConfigurationDAO')->insert($this->context->getId(), $configuration);

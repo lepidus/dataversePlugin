@@ -16,6 +16,14 @@ Este plugin es compatible con las siguientes aplicaciones PKP:
 
 Consulte la última versión compatible con su aplicación en la [Página de Versiones](https://github.com/lepidus/dataversePlugin/releases).
 
+## Requisitos para uso
+
+1. **app_key**
+
+La instancia de OJS/OPS debe tener la clave de la aplicación (`app_key`, en la sección `[general]` de `config.inc.php`) configurada. La instalación y la actualización a la 3.5 la crean; si falta, su administrador del sistema puede generarla con `php lib/pkp/tools/appKey.php generate`.
+
+Esto es necesario para utilizar las credenciales de API proporcionadas, que se almacenan cifradas en la base de datos. Cambiar la clave después hace ilegibles las credenciales almacenadas, que deben introducirse nuevamente en la configuración del plugin.
+
 ## Instalación
 
 ### Instrucciones
