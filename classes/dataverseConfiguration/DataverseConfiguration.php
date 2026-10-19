@@ -3,7 +3,6 @@
 namespace APP\plugins\generic\dataverse\classes\dataverseConfiguration;
 
 use PKP\core\DataObject;
-use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DefaultAdditionalInstructions;
 
 class DataverseConfiguration extends DataObject
 {
@@ -87,12 +86,20 @@ class DataverseConfiguration extends DataObject
 
     public function getDataverseServerUrl(): string
     {
-        preg_match(
-            '/https:\/\/(.)*?(?=\/)/',
-            $this->getDataverseUrl(),
-            $matches
-        );
-        return $matches[0];
+        $parts = parse_url($this->getDataverseUrl());
+        $scheme = strtolower($parts['scheme'] ?? '');
+        $host = strtolower($parts['host'] ?? '');
+        $isLocalHttp = $scheme === 'http' && in_array($host, ['localhost', '127.0.0.1'], true);
+        if (!$host || ($scheme !== 'https' && !$isLocalHttp)) {
+            throw new \InvalidArgumentException(
+                'Dataverse URL must use HTTPS, or HTTP with localhost or 127.0.0.1.'
+            );
+        }
+        $serverUrl = $parts['scheme'] . '://' . $parts['host'];
+        if (isset($parts['port'])) {
+            $serverUrl .= ':' . $parts['port'];
+        }
+        return $serverUrl;
     }
 
     public function getDataverseCollection(): string

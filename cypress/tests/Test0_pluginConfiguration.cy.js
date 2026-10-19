@@ -48,6 +48,24 @@ describe('Plugin configuration', function () {
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('label[for^=dataverseUrl].error').should('contain', 'Please enter a valid URL.');
 
+        [
+            'http://localhost:8080/dataverse/exampleRepository',
+            'http://127.0.0.1:8080/dataverse/exampleRepository',
+            'https://localhost:8443/dataverse/exampleRepository',
+        ].forEach((url) => {
+            cy.get('input[name=dataverseUrl]').clear().type(url).blur();
+            cy.get('label[for^=dataverseUrl].error').should('not.be.visible');
+        });
+
+        cy.get('input[name=dataverseUrl]').clear().type('http://localhost.invalid:8080/dataverse/exampleRepository').blur();
+        // A public hostname still uses the standard URL validation rule.
+        cy.get('label[for^=dataverseUrl].error').should('not.be.visible');
+
+        ['invalid', '99999'].forEach((port) => {
+            cy.get('input[name=dataverseUrl]').clear().type(`http://localhost:${port}/dataverse/exampleRepository`).blur();
+            cy.get('label[for^=dataverseUrl].error').should('be.visible');
+        });
+
 		cy.get('input[name="termsOfUse[en]"]').focus().clear().type('invalidTermsOfUse');
 		cy.get('form#dataverseConfigurationForm button:contains("OK")').click();
 		cy.get('label[for^=termsOfUse].error').should('contain', 'Please enter a valid URL.');

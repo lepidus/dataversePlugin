@@ -1,13 +1,12 @@
 <?php
 
-use PKP\tests\PKPTestCase;
 use APP\core\Application;
 use APP\core\PageRouter;
-use APP\core\Request;
-use PKP\core\Dispatcher;
-use PKP\core\Registry;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DefaultAdditionalInstructions;
+use PKP\core\Dispatcher;
+use PKP\core\Registry;
+use PKP\tests\PKPTestCase;
 
 class DataverseConfigurationTest extends PKPTestCase
 {
@@ -76,6 +75,52 @@ class DataverseConfigurationTest extends PKPTestCase
     {
         $expectedCollection = 'exampleRepository';
         $this->assertEquals($expectedCollection, $this->dataverseConfiguration->getDataverseCollection());
+    }
+
+    /**
+     * @dataProvider localDataverseUrls
+     */
+    public function testGetLocalDataverseServerUrl(string $url, string $expectedServerUrl): void
+    {
+        $this->dataverseConfiguration->setDataverseUrl($url);
+
+        $this->assertSame($expectedServerUrl, $this->dataverseConfiguration->getDataverseServerUrl());
+        $this->assertSame('exampleRepository', $this->dataverseConfiguration->getDataverseCollection());
+        $this->assertTrue((new \PKP\validation\ValidatorUrl())->isValid($url));
+    }
+
+    public function localDataverseUrls(): array
+    {
+        return [
+            ['http://localhost/dataverse/exampleRepository', 'http://localhost'],
+            ['http://localhost:8080/dataverse/exampleRepository', 'http://localhost:8080'],
+            ['http://127.0.0.1:8080/dataverse/exampleRepository', 'http://127.0.0.1:8080'],
+            ['https://localhost:8443/dataverse/exampleRepository', 'https://localhost:8443'],
+            ['https://127.0.0.1/dataverse/exampleRepository', 'https://127.0.0.1'],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidDataverseServerUrls
+     */
+    public function testRejectsInvalidDataverseServerUrl(string $url): void
+    {
+        $this->dataverseConfiguration->setDataverseUrl($url);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->dataverseConfiguration->getDataverseServerUrl();
+    }
+
+    public function invalidDataverseServerUrls(): array
+    {
+        return [
+            ['http://demo.dataverse.org/dataverse/exampleRepository'],
+            ['http://localhost.example.org/dataverse/exampleRepository'],
+            ['http://localhost:99999/dataverse/exampleRepository'],
+            ['ftp://localhost/dataverse/exampleRepository'],
+            ['invalid'],
+        ];
     }
 
     public function testGetDefaultAdditionalInstructions(): void

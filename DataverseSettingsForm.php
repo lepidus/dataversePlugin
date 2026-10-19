@@ -2,23 +2,22 @@
 
 namespace APP\plugins\generic\dataverse;
 
-use PKP\form\Form;
-use PKP\plugins\Plugin;
 use APP\core\Application;
+use APP\plugins\generic\dataverse\classes\DataEncryption;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DefaultAdditionalInstructions;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
+use APP\template\TemplateManager;
 use PKP\cache\CacheManager;
 use PKP\cache\FileCache;
-use APP\template\TemplateManager;
 use PKP\db\DAORegistry;
-use PKP\form\validation\FormValidatorUrl;
+use PKP\form\Form;
 use PKP\form\validation\FormValidator;
 use PKP\form\validation\FormValidatorCustom;
 use PKP\form\validation\FormValidatorPost;
-use APP\plugins\generic\dataverse\classes\DataEncryption;
-use APP\plugins\generic\dataverse\classes\exception\DataverseException;
-use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
-use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
-use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DefaultAdditionalInstructions;
-use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
+use PKP\form\validation\FormValidatorUrl;
+use PKP\plugins\Plugin;
 
 class DataverseSettingsForm extends Form
 {
@@ -128,13 +127,15 @@ class DataverseSettingsForm extends Form
         $configuration->setDataverseUrl($this->getData('dataverseUrl'));
         $configuration->setApiToken($this->getData('apiToken'));
 
-        $dataverseCollectionActions = new DataverseCollectionActions($configuration);
-
         try {
+            $dataverseCollectionActions = new DataverseCollectionActions($configuration);
             $dataverseCollectionActions->get();
+        } catch (\InvalidArgumentException $e) {
+            $this->addError('dataverseUrl', __('validator.url'));
+            return false;
         } catch (DataverseException $e) {
             $message = __('plugins.generic.dataverse.settings.dataverseUrlNotValid', ['msg' => $e->getMessage()]);
-            error_log("Dataverse Error - $message");
+            error_log("Dataverse Error - {$message}");
             $this->addError('apiToken', $message);
 
             return false;

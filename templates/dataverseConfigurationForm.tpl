@@ -11,6 +11,15 @@
 <script type="text/javascript">
 	$(function() {ldelim}
 		$('#dataverseConfigurationForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
+			$('#dataverseConfigurationForm [name="dataverseUrl"]').rules('add', {ldelim}
+				url: {ldelim}
+					depends: function(element) {ldelim}
+						// The standard URL rule rejects loopback addresses.
+						const localUrl = /^https?:\/\/(localhost|127\.0\.0\.1)(?::(\d{ldelim}1,5{rdelim}))?(\/\S*)?$/i.exec(element.value);
+						return !localUrl || (localUrl[2] !== undefined && Number(localUrl[2]) > 65535);
+					{rdelim}
+				{rdelim}
+			{rdelim});
 	{rdelim});
 </script>
 <form
