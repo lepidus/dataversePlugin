@@ -66,6 +66,28 @@ class DataStatementSubmissionTest extends DatabaseTestCase
         );
     }
 
+    public function testRepositoryUrlsMustBeUrlsWhenThePublicationIsEdited(): void
+    {
+        $submission = $this->createSubmission([
+            'dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE],
+            'dataStatementUrls' => [self::REPOSITORY_URL],
+        ]);
+        $this->context->setData('supportedSubmissionMetadataLocales', ['en']);
+
+        $errors = Repo::publication()->validate(
+            $submission->getCurrentPublication(),
+            ['dataStatementUrls' => [self::REPOSITORY_URL, 'javascript:alert(document.cookie)']],
+            $submission,
+            $this->context
+        );
+
+        $this->assertArrayHasKey('dataStatementUrls', $errors);
+        $this->assertEquals(
+            [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')],
+            $errors['dataStatementUrls']
+        );
+    }
+
     public function testReasonIsRequiredWhenDataIsPubliclyUnavailable(): void
     {
         $errors = $this->validateSubmission([
