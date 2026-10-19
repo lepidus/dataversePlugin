@@ -73,7 +73,7 @@ class DatasetService extends DataverseService
                     'plugins.generic.dataverse.error.datasetFileDeposit',
                     ['error' => $e->getMessage(), 'fileName' => $file->getOriginalFileName()]
                 );
-                $dataverseClient->getDatasetActions()->delete($datasetIdentifier->getPersistentId());
+                $this->deleteIncompleteDataset($dataverseClient, $datasetIdentifier->getPersistentId());
                 return [
                     'status' => 'Error',
                     'message' => 'plugins.generic.dataverse.error.datasetFileDeposit',
@@ -104,6 +104,15 @@ class DatasetService extends DataverseService
         Repo::draftDatasetFile()->deleteBySubmissionId($submission->getId());
 
         return ['status' => 'Success'];
+    }
+
+    private function deleteIncompleteDataset(DataverseClient $dataverseClient, string $persistentId): void
+    {
+        try {
+            $dataverseClient->getDatasetActions()->delete($persistentId);
+        } catch (DataverseException $e) {
+            error_log('Dataverse API error while deleting incomplete dataset ' . $persistentId . ': ' . $e->getMessage());
+        }
     }
 
     public function update(array $data): void
