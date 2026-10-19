@@ -435,6 +435,10 @@ class DatasetController extends PKPBaseController
 
         $fileId = (int) $illuminateRequest->query('fileId');
 
+        if (!$this->isFileAvailableToUser($fileId)) {
+            return $this->error('api.403.unauthorized', [], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $datasetFile = $this->getStudyDatasetFile($study, $fileId);
         } catch (DataverseException $e) {
@@ -538,6 +542,24 @@ class DatasetController extends PKPBaseController
         }
 
         return null;
+    }
+
+    private function isFileAvailableToUser(int $fileId): bool
+    {
+        $reviewAssignment = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_REVIEW_ASSIGNMENT);
+        $userRoles = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES) ?? [];
+
+        if (!$reviewAssignment || array_intersect([Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER], $userRoles)) {
+            return true;
+        }
+
+        if ($this->getRequest()->getContext()->getData('restrictReviewerFileAccess') && !$reviewAssignment->getDateConfirmed()) {
+            return false;
+        }
+
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+
+        return in_array($fileId, (array) $submission->getData('selectedDataFilesForReview'));
     }
 
     private function getKeywords(array $params): array
