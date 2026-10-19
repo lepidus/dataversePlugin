@@ -74,7 +74,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         unlink($datasetFileDir);
         mkdir($datasetFileDir);
 
-        $filePath = $datasetFileDir . DIRECTORY_SEPARATOR . $filename;
+        $filePath = $datasetFileDir . DIRECTORY_SEPARATOR . 'datasetFile';
         $uri = $this->createNativeAPIURI(['access', 'datafile', $datasetFileId]);
 
         $options = ['sink' => Utils::tryFopen($filePath, 'w')];
@@ -82,7 +82,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         $this->nativeAPIRequest('GET', $uri, $options, false);
 
         $fileManager = new FileManager();
-        $fileManager->downloadByPath($filePath);
+        $fileManager->downloadByPath($filePath, null, false, $filename);
 
         $fileManager->rmtree($datasetFileDir);
     }
