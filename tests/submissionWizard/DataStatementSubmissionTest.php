@@ -66,26 +66,52 @@ class DataStatementSubmissionTest extends DatabaseTestCase
         );
     }
 
-    public function testRepositoryUrlsMustBeUrlsWhenThePublicationIsEdited(): void
+    private function validatePublicationEdit(array $props, string $submissionProgress = ''): array
     {
         $submission = $this->createSubmission([
             'dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE],
             'dataStatementUrls' => [self::REPOSITORY_URL],
-        ]);
+        ], ['submissionProgress' => $submissionProgress]);
         $this->context->setData('supportedSubmissionMetadataLocales', ['en']);
 
-        $errors = Repo::publication()->validate(
-            $submission->getCurrentPublication(),
-            ['dataStatementUrls' => [self::REPOSITORY_URL, 'javascript:alert(document.cookie)']],
-            $submission,
-            $this->context
-        );
+        return Repo::publication()->validate($submission->getCurrentPublication(), $props, $submission, $this->context);
+    }
+
+    public function testRepositoryUrlsMustBeUrlsWhenThePublicationIsEdited(): void
+    {
+        $errors = $this->validatePublicationEdit([
+            'dataStatementUrls' => [self::REPOSITORY_URL, 'javascript:alert(document.cookie)'],
+        ]);
 
         $this->assertArrayHasKey('dataStatementUrls', $errors);
         $this->assertEquals(
             [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')],
             $errors['dataStatementUrls']
         );
+    }
+
+    public function testRepositoryUrlThatIsNotTextIsReportedAsInvalid(): void
+    {
+        $errors = $this->validatePublicationEdit(['dataStatementUrls' => [['javascript:alert(1)']]]);
+
+        $this->assertArrayHasKey('dataStatementUrls', $errors);
+    }
+
+    public function testStaleRepositoryUrlsDoNotBlockChangingTheStatementType(): void
+    {
+        $errors = $this->validatePublicationEdit([
+            'dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND],
+            'dataStatementUrls' => ['Example text'],
+        ]);
+
+        $this->assertArrayNotHasKey('dataStatementUrls', $errors);
+    }
+
+    public function testRepositoryUrlsBeingTypedInTheWizardAreOnlyValidatedOnSubmit(): void
+    {
+        $errors = $this->validatePublicationEdit(['dataStatementUrls' => ['https://demo']], 'details');
+
+        $this->assertArrayNotHasKey('dataStatementUrls', $errors);
     }
 
     public function testReasonIsRequiredWhenDataIsPubliclyUnavailable(): void

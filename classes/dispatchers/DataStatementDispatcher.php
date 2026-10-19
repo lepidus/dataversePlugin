@@ -9,6 +9,7 @@ use APP\pages\submission\SubmissionHandler;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\classes\components\forms\DataStatementForm;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DataStatementDispatcher extends DataverseDispatcher
 {
@@ -171,9 +172,24 @@ class DataStatementDispatcher extends DataverseDispatcher
     public function validateDataStatementUrls(string $hookName, array $params): bool
     {
         $errors = &$params[0];
+        $publication = $params[1];
         $props = $params[2];
 
-        if (!$this->allAreURLs((array) ($props['dataStatementUrls'] ?? []))) {
+        if (!$publication || !array_key_exists('dataStatementUrls', $props)) {
+            return false;
+        }
+
+        $submission = Repo::submission()->get($publication->getData('submissionId'));
+        if (!$submission || $submission->getData('submissionProgress')) {
+            return false;
+        }
+
+        $dataStatementTypes = $props['dataStatementTypes'] ?? $publication->getData('dataStatementTypes');
+        if (!in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, (array) $dataStatementTypes)) {
+            return false;
+        }
+
+        if (!$this->allAreURLs((array) $props['dataStatementUrls'])) {
             $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')];
         }
 
@@ -183,7 +199,7 @@ class DataStatementDispatcher extends DataverseDispatcher
     private function allAreURLs(array $inputs): bool
     {
         foreach ($inputs as $input) {
-            if (!$this->inputIsURL($input)) {
+            if (!is_string($input) || !$this->inputIsURL($input)) {
                 return false;
             }
         }
