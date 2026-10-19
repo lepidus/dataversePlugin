@@ -148,4 +148,14 @@ class DataverseReportServiceTest extends DatabaseTestCase
             'decisions' => [Decision::DECLINE],
         ]));
     }
+
+    public function testContextWithoutDatasetsHasNoFilesInDatasets(): void
+    {
+        $reportService = $this->getMockBuilder(DataverseReportService::class)
+            ->onlyMethods(['getDataverseSearchBuilder'])
+            ->getMock();
+        $reportService->expects($this->never())->method('getDataverseSearchBuilder');
+
+        $this->assertSame(0, $reportService->countDatasetFiles($this->context->getId()));
+    }
 }

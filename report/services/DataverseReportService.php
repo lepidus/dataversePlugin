@@ -107,6 +107,10 @@ class DataverseReportService
             'contextIds' => [$contextId]
         ])->getWithDataset()->get();
 
+        if ($submissionsWithDataset->isEmpty()) {
+            return 0;
+        }
+
         $searchBuilder = $this->getDataverseSearchBuilder($contextId)->addType('file');
 
         foreach ($submissionsWithDataset as $submission) {
