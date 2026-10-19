@@ -193,7 +193,12 @@ class DatasetController extends PKPBaseController
 
         $params = $illuminateRequest->input();
 
-        $metadataForm = new DatasetMetadataForm('', 'POST', null, 'workflow');
+        try {
+            $metadataForm = $this->createMetadataForm();
+        } catch (DataverseException $e) {
+            return $this->dataverseError($e);
+        }
+
         $metadataErrors = $this->getMetadataErrors($params, $metadataForm);
         if (!empty($metadataErrors)) {
             return response()->json($metadataErrors, Response::HTTP_BAD_REQUEST);
@@ -234,7 +239,12 @@ class DatasetController extends PKPBaseController
 
         $params = $illuminateRequest->input();
 
-        $metadataForm = new DatasetMetadataForm('', 'POST', null, 'workflow');
+        try {
+            $metadataForm = $this->createMetadataForm();
+        } catch (DataverseException $e) {
+            return $this->dataverseError($e);
+        }
+
         $metadataErrors = $this->getMetadataErrors($params, $metadataForm);
         if (!empty($metadataErrors)) {
             return response()->json($metadataErrors, Response::HTTP_BAD_REQUEST);
@@ -471,12 +481,18 @@ class DatasetController extends PKPBaseController
         return response()->json(['citation' => $citationData['citation']], Response::HTTP_OK);
     }
 
-    private function getMetadataErrors(array $params, ?DatasetMetadataForm $metadataForm = null): array
+    private function createMetadataForm(): DatasetMetadataForm
+    {
+        (new DataverseClient())->getDataverseCollectionActions()->getRequiredMetadata();
+
+        return new DatasetMetadataForm('', 'POST', null, 'workflow');
+    }
+
+    private function getMetadataErrors(array $params, DatasetMetadataForm $metadataForm): array
     {
         $locale = Locale::getLocale();
         $errors = [];
 
-        $metadataForm ??= new DatasetMetadataForm('', 'POST', null, 'workflow');
         foreach ($metadataForm->fields as $field) {
             if (!$field->isRequired) {
                 continue;

@@ -10,6 +10,7 @@ use APP\plugins\generic\dataverse\classes\draftDatasetFile\Repository as DraftDa
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
@@ -266,4 +267,44 @@ class DatasetControllerAccessTest extends PKPTestCase
         $this->assertSame(200, $this->createController()->add($request)->getStatusCode());
     }
 
+    public function testAddIsRefusedWhenTheCollectionRequiredMetadataCannotBeLoaded(): void
+    {
+        ini_set('error_log', '/dev/null');
+        $draftRepository = Mockery::mock(DraftDatasetFileRepository::class);
+        $draftRepository->shouldReceive('getBySubmissionId')->andReturn(LazyCollection::make(['README.txt', 'Data.csv']));
+        app()->instance(DraftDatasetFileRepository::class, $draftRepository);
+        Mockery::mock('overload:' . DraftDatasetFilesValidator::class)
+            ->shouldReceive('datasetHasReadmeFile')->andReturn(true);
+
+        $collectionActions = $this->getMockBuilder(DataverseCollectionActions::class)
+            ->disableOriginalConstructor()->onlyMethods(['getRequiredMetadata', 'getLicenses'])->getMock();
+
+        $dataset = new Dataset();
+        $dataset->setFiles([$this->createDatasetFile(1, 'README.txt'), $this->createDatasetFile(2, 'Data.csv')]);
+        $dataset->setRelatedPublication(new DatasetRelatedPublication(null, 'Citation', null, null, null));
+        Mockery::mock('overload:' . SubmissionDatasetFactory::class)
+            ->shouldReceive('getDataset')->andReturn($dataset);
+
+        $collectionActions->method('getRequiredMetadata')
+            ->willThrowException(new DataverseException('Service unavailable', 503));
+        $collectionActions->method('getLicenses')->willReturn([['name' => 'CC0 1.0']]);
+        $client = Mockery::mock('overload:' . DataverseClient::class);
+        $client->shouldReceive('getDataverseCollectionActions')->andReturn($collectionActions);
+
+        $service = Mockery::mock('overload:' . DatasetService::class);
+        $service->shouldNotReceive('deposit');
+
+        $request = Request::create('/datasets', 'POST', [
+            'datasetTitle' => 'Title',
+            'datasetDescription' => 'Description',
+            'datasetKeywords' => [Locale::getLocale() => ['Keyword']],
+            'datasetLanguage' => 'English',
+            'datasetSubject' => 'Other',
+            'datasetLicense' => 'CC0 1.0',
+            'datasetRelationType' => 'IsSupplementTo',
+            'datasetAlternativeURL' => 'https://example.org',
+        ]);
+
+        $this->assertSame(503, $this->createController()->add($request)->getStatusCode());
+    }
 }
