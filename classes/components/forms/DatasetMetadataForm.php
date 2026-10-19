@@ -149,7 +149,7 @@ class DatasetMetadataForm extends FormComponent
         $fieldTypes = [
             'TEXT' => FieldText::class,
             'EMAIL' => FieldText::class,
-            'DATE' => FieldText::class,
+            'DATE' => FieldDatepicker::class,
             'URL' => FieldText::class,
             'TEXTBOX' => FieldTextarea::class
         ];

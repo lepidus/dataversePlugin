@@ -1,0 +1,11 @@
+#ui-datepicker-div.dataverse-datepicker .ui-datepicker-title select {
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+}
+
+#ui-datepicker-div.dataverse-datepicker .ui-datepicker-month {
+    field-sizing: content;
+}
