@@ -35,6 +35,16 @@ class DatasetController extends PKPBaseController
 {
     private const PUBLICATION_WRITE_ACTIONS = ['add', 'associate', 'edit', 'addFile', 'deleteFile', 'delete'];
 
+    private const BASE_METADATA_FIELDS = [
+        'datasetTitle',
+        'datasetDescription',
+        'datasetKeywords',
+        'datasetLanguage',
+        'datasetSubject',
+        'datasetLicense',
+        'datasetRelationType',
+    ];
+
     public function getHandlerPath(): string
     {
         return 'datasets';
@@ -193,19 +203,7 @@ class DatasetController extends PKPBaseController
             'relationType' => $params['datasetRelationType'],
         ];
 
-        foreach ($metadataForm->fields as $field) {
-            if (!array_key_exists($field->name, $params)) {
-                continue;
-            }
-
-            $metadataName = substr($field->name, strlen('dataset'));
-            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
-            if (!array_key_exists($metadataName, $data)) {
-                $data[$metadataName] = $params[$field->name];
-            }
-        }
-
-        (new DatasetService())->update($data);
+        (new DatasetService())->update(array_merge($data, $this->getAdditionalMetadata($params, $metadataForm)));
 
         return $this->get($illuminateRequest);
     }
@@ -229,7 +227,8 @@ class DatasetController extends PKPBaseController
 
         $params = $illuminateRequest->input();
 
-        $metadataErrors = $this->getMetadataErrors($params);
+        $metadataForm = new DatasetMetadataForm('', 'POST', null, 'workflow');
+        $metadataErrors = $this->getMetadataErrors($params, $metadataForm);
         if (!empty($metadataErrors)) {
             return response()->json($metadataErrors, Response::HTTP_BAD_REQUEST);
         }
@@ -246,22 +245,7 @@ class DatasetController extends PKPBaseController
         $relatedPublication->setData('RelationType', $params['datasetRelationType']);
         $dataset->setRelatedPublication($relatedPublication);
 
-        $excludedKeys = [
-            'datasetTitle',
-            'datasetDescription',
-            'datasetKeywords',
-            'datasetLanguage',
-            'datasetSubject',
-            'datasetLicense',
-            'datasetRelationType',
-        ];
-
-        foreach ($params as $key => $value) {
-            if (in_array($key, $excludedKeys)) {
-                continue;
-            }
-            $metadataName = str_replace('dataset', '', $key);
-            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
+        foreach ($this->getAdditionalMetadata($params, $metadataForm) as $metadataName => $value) {
             $dataset->setData($metadataName, $value);
         }
 
@@ -527,6 +511,23 @@ class DatasetController extends PKPBaseController
         }
 
         return $errors;
+    }
+
+    private function getAdditionalMetadata(array $params, DatasetMetadataForm $metadataForm): array
+    {
+        $additionalMetadata = [];
+
+        foreach ($metadataForm->fields as $field) {
+            if (in_array($field->name, self::BASE_METADATA_FIELDS) || !array_key_exists($field->name, $params)) {
+                continue;
+            }
+
+            $metadataName = substr($field->name, strlen('dataset'));
+            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
+            $additionalMetadata[$metadataName] = $params[$field->name];
+        }
+
+        return $additionalMetadata;
     }
 
     private function getStudyDatasetFile(DataverseStudy $study, int $fileId): ?DatasetFile

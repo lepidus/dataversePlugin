@@ -3,17 +3,26 @@
 use APP\core\Application;
 use APP\core\Request as PKPRequest;
 use APP\plugins\generic\dataverse\api\v1\datasets\DatasetController;
+use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\Repository as DataverseStudyRepository;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\Repository as DraftDatasetFileRepository;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
+use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
+use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
+use APP\plugins\generic\dataverse\classes\services\DatasetService;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\submission\Submission;
 use Illuminate\Http\Request;
+use Illuminate\Support\LazyCollection;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PKP\core\Dispatcher;
 use PKP\core\Registry;
+use PKP\facades\Locale;
 use PKP\security\Role;
 use PKP\submission\reviewAssignment\ReviewAssignment;
 use PKP\tests\PKPTestCase;
@@ -36,7 +45,7 @@ class DatasetControllerAccessTest extends PKPTestCase
 
     protected function getMockedContainerKeys(): array
     {
-        return [DataverseStudyRepository::class];
+        return [DataverseStudyRepository::class, DraftDatasetFileRepository::class];
     }
 
     protected function setUp(): void
@@ -187,5 +196,51 @@ class DatasetControllerAccessTest extends PKPTestCase
         $controller = $this->createController($this->createReviewAssignment(false), [Role::ROLE_ID_REVIEWER]);
 
         $this->assertSame(403, $controller->downloadFile($request)->getStatusCode());
+    }
+
+    public function testAddIgnoresParamsThatAreNotMetadataFields(): void
+    {
+        $draftFiles = ['readme' => 'README.txt', 'data' => 'Data.csv'];
+        $draftRepository = Mockery::mock(DraftDatasetFileRepository::class);
+        $draftRepository->shouldReceive('getBySubmissionId')->andReturn(LazyCollection::make($draftFiles));
+        app()->instance(DraftDatasetFileRepository::class, $draftRepository);
+        Mockery::mock('overload:' . DraftDatasetFilesValidator::class)
+            ->shouldReceive('datasetHasReadmeFile')->andReturn(true);
+
+        $datasetFiles = [$this->createDatasetFile(1, 'README.txt'), $this->createDatasetFile(2, 'Data.csv')];
+        $dataset = new Dataset();
+        $dataset->setFiles($datasetFiles);
+        $dataset->setRelatedPublication(new DatasetRelatedPublication(null, 'Citation', null, null, null));
+        Mockery::mock('overload:' . SubmissionDatasetFactory::class)
+            ->shouldReceive('getDataset')->andReturn($dataset);
+
+        $collectionActions = $this->getMockBuilder(DataverseCollectionActions::class)
+            ->disableOriginalConstructor()->onlyMethods(['getRequiredMetadata', 'getLicenses'])->getMock();
+        $collectionActions->method('getRequiredMetadata')->willReturn(['citation' => ['fields' => []]]);
+        $collectionActions->method('getLicenses')->willReturn([['name' => 'CC0 1.0']]);
+        $client = Mockery::mock('overload:' . DataverseClient::class);
+        $client->shouldReceive('getDataverseCollectionActions')->andReturn($collectionActions);
+
+        $service = Mockery::mock('overload:' . DatasetService::class);
+        $service->shouldReceive('deposit')->once()
+            ->withArgs(fn ($submission, Dataset $deposited) => $deposited->getFiles() === $datasetFiles
+                && !$deposited->hasData('submissionId')
+                && !$deposited->hasData('persistentId'))
+            ->andReturn(['status' => 'Success']);
+
+        $request = Request::create('/datasets', 'POST', [
+            'datasetTitle' => 'Title',
+            'datasetDescription' => 'Description',
+            'datasetKeywords' => [Locale::getLocale() => ['Keyword']],
+            'datasetLanguage' => 'English',
+            'datasetSubject' => 'Other',
+            'datasetLicense' => 'CC0 1.0',
+            'datasetRelationType' => 'IsSupplementTo',
+            'datasetFiles' => [['path' => '/etc/passwd', 'originalFileName' => 'passwd']],
+            'submissionId' => $this->submission->getId(),
+            'datasetPersistentId' => 'doi:10.5072/FK2/UNTRUSTED',
+        ]);
+
+        $this->assertSame(200, $this->createController()->add($request)->getStatusCode());
     }
 }
