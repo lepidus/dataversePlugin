@@ -232,7 +232,8 @@ who can record the accept decision, which publishes the dataset too. That is bro
 which only shows those buttons to managers. A Dataverse file id received by a route is never trusted on its own: it
 must be one of the files of the study's dataset, and the name used for the download or the event log comes from
 Dataverse, not from the request. Reviewers only download the files selected for review, and only after accepting
-the review when the context restricts reviewer file access.
+the review when the context restricts reviewer file access; otherwise declined reviewers keep the access the review
+grid gives them, as in the core.
 
 ### Front end
 

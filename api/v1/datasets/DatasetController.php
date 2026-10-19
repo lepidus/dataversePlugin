@@ -144,7 +144,9 @@ class DatasetController extends PKPBaseController
         $this->addPolicy(new UserRolesRequiredPolicy($request), true);
         $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
         $actionName = static::getRouteActionName($args[0]);
-        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+        $permitDeclinedReviewer = $actionName === 'downloadFile'
+            && !$request->getContext()->getData('restrictReviewerFileAccess');
+        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments, 'submissionId', $permitDeclinedReviewer));
 
         if (in_array($actionName, self::PUBLICATION_WRITE_ACTIONS)) {
             $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
