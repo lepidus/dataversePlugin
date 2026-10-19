@@ -473,9 +473,9 @@ class DatasetController extends PKPBaseController
         }
 
         try {
-            $datasetLocks = (new DataverseClient())
-                ->getDatasetActions()
-                ->getDatasetLocks((int) $illuminateRequest->query('datasetId'));
+            $datasetActions = (new DataverseClient())->getDatasetActions();
+            $dataset = $datasetActions->get($study->getPersistentId());
+            $datasetLocks = $datasetActions->getDatasetLocks($dataset->getDatasetId());
         } catch (DataverseException $e) {
             return $this->dataverseError($e, 'Error getting dataset locks: ');
         }
