@@ -355,10 +355,12 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return false;
         }
 
-        $relationType = $dataset->getRelatedPublication()->getRelationType();
+        $relationType = $dataset->getRelatedPublication()?->getRelationType();
         $datasetFactory = new SubmissionDatasetFactory($submission);
         $relatedPublication = $datasetFactory->getDatasetRelatedPublication($publication);
-        $relatedPublication->setData('RelationType', $relationType);
+        if ($relationType) {
+            $relatedPublication->setData('RelationType', $relationType);
+        }
 
         $datasetService = new DatasetService();
         $datasetService->update([

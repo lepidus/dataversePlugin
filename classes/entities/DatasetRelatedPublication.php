@@ -15,7 +15,7 @@ class DatasetRelatedPublication extends DataObject
         $this->setData('URL', $url);
     }
 
-    public function getRelationType(): string
+    public function getRelationType(): ?string
     {
         return $this->getData('RelationType');
     }
