@@ -40,14 +40,10 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
             $response = $this->nativeAPIRequest('GET', $uri);
 
             $jsonContent = json_decode($response->getBody(), true);
-            $citation = $jsonContent['datasetVersion']['citation'];
-            $persistentUrl = $jsonContent['persistentUrl'];
-            $citation = str_replace(
-                $persistentUrl,
-                '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>',
-                $citation
+            $citation = $this->formatCitation(
+                $jsonContent['datasetVersion']['citation'],
+                $jsonContent['persistentUrl']
             );
-            $citation = preg_replace('/,+.UNF[^]]+]/', '', $citation);
         } else {
             $citation = $this->getSWORDCitation($persistentId);
         }
@@ -66,10 +62,16 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         $bibliographicCitation = $doc->getElementsByTagName('bibliographicCitation')->item(0)->nodeValue;
         $persistentUrl = $doc->getElementsByTagName('link')->item(4)->getAttribute('href');
 
+        return $this->formatCitation($bibliographicCitation, $persistentUrl);
+    }
+
+    private function formatCitation(string $citation, string $persistentUrl): string
+    {
+        $escapedUrl = htmlspecialchars($persistentUrl, ENT_QUOTES);
         $citation = str_replace(
-            $persistentUrl,
-            '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>',
-            $bibliographicCitation
+            $escapedUrl,
+            '<a href="' . $escapedUrl . '">' . $escapedUrl . '</a>',
+            htmlspecialchars($citation, ENT_QUOTES)
         );
 
         return preg_replace('/,+.UNF[^]]+]/', '', $citation);
