@@ -4,6 +4,7 @@ namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
 use GuzzleHttp\Psr7\Utils;
 use PKP\config\Config;
+use PKP\core\PKPString;
 use PKP\file\FileManager;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetFileActionsInterface;
@@ -81,8 +82,11 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
         $this->nativeAPIRequest('GET', $uri, $options, false);
 
+        $mediaType = PKPString::mime_content_type($filePath, pathinfo($filename, PATHINFO_EXTENSION));
+        $downloadName = preg_replace('/["\\\\[:cntrl:]]/', '', $filename);
+
         $fileManager = new FileManager();
-        $fileManager->downloadByPath($filePath, null, false, $filename);
+        $fileManager->downloadByPath($filePath, $mediaType, false, $downloadName);
 
         $fileManager->rmtree($datasetFileDir);
     }

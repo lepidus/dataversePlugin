@@ -7,6 +7,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use PKP\config\Config;
+use PKP\core\PKPString;
 use PKP\plugins\Hook;
 use PKP\tests\PKPTestCase;
 
@@ -14,6 +15,7 @@ class DatasetFileActionsTest extends PKPTestCase
 {
     private ?string $downloadedFilePath = null;
     private ?string $downloadedFileName = null;
+    private ?string $downloadedMediaType = null;
 
     protected function getMockedRegistryKeys(): array
     {
@@ -27,19 +29,20 @@ class DatasetFileActionsTest extends PKPTestCase
         Hook::add('FileManager::downloadFile', function ($hookName, $params) {
             $this->downloadedFilePath = realpath($params[0]);
             $this->downloadedFileName = $params[4];
+            $this->downloadedMediaType = $params[1] ?? PKPString::mime_content_type($params[0]);
             $this->assertFileExists($params[0]);
             $params[3] = true;
             return Hook::ABORT;
         });
     }
 
-    private function createActions(): DatasetFileActions
+    private function createActions(string $contents = 'research data contents'): DatasetFileActions
     {
         $configuration = new DataverseConfiguration();
         $configuration->setDataverseUrl('https://test.dataverse.org/dataverses/testDataverse');
         $configuration->setAPIToken('apiToken');
 
-        $handler = new MockHandler([new Response(200, [], 'research data contents')]);
+        $handler = new MockHandler([new Response(200, [], $contents)]);
         $client = new Client(['handler' => HandlerStack::create($handler)]);
 
         return new DatasetFileActions($configuration, $client);
@@ -56,5 +59,19 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->assertFileDoesNotExist($escapedPath);
         $this->assertStringStartsWith($filesDir . DIRECTORY_SEPARATOR, $this->downloadedFilePath);
         $this->assertSame('../../dataverseDownloadEscape.txt', $this->downloadedFileName);
+    }
+
+    public function testDownloadKeepsTheMediaTypeGivenByTheFileExtension(): void
+    {
+        $this->createActions("year,value\n2026,1\n")->download(2025434, 'Data.csv');
+
+        $this->assertSame('text/csv', $this->downloadedMediaType);
+    }
+
+    public function testDownloadNameCannotBreakTheContentDispositionHeader(): void
+    {
+        $this->createActions()->download(2025434, "Data \"final\".csv");
+
+        $this->assertSame('Data final.csv', $this->downloadedFileName);
     }
 }
