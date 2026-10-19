@@ -198,23 +198,6 @@ class DatasetControllerAccessTest extends PKPTestCase
         $this->assertSame(403, $controller->downloadFile($request)->getStatusCode());
     }
 
-    public function testInReviewChecksTheLocksOfTheStudyDataset(): void
-    {
-        $dataset = new Dataset();
-        $dataset->setDatasetId(77);
-        $datasetActions = Mockery::mock();
-        $datasetActions->shouldReceive('get')->with($this->study->getPersistentId())->andReturn($dataset);
-        $datasetActions->shouldReceive('getDatasetLocks')->once()->with(77)->andReturn([['lockType' => 'InReview']]);
-        $client = Mockery::mock('overload:' . DataverseClient::class);
-        $client->shouldReceive('getDatasetActions')->andReturn($datasetActions);
-
-        $request = $this->createRequest('GET', '/datasets/' . self::STUDY_ID . '/inReview', ['datasetId' => 12345]);
-
-        $response = $this->createController()->getInReview($request);
-
-        $this->assertSame(['inReview' => true], $response->getData(true));
-    }
-
     public function testAddIgnoresParamsThatAreNotMetadataFields(): void
     {
         $draftFiles = ['readme' => 'README.txt', 'data' => 'Data.csv'];

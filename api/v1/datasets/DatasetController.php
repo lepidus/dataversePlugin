@@ -81,10 +81,6 @@ class DatasetController extends PKPBaseController
                 ->name('dataset.getCitation')
                 ->whereNumber('studyId');
 
-            Route::get('{studyId}/inReview', $this->getInReview(...))
-                ->name('dataset.getInReview')
-                ->whereNumber('studyId');
-
             Route::post('', $this->add(...))
                 ->name('dataset.add');
 
@@ -462,31 +458,6 @@ class DatasetController extends PKPBaseController
         }
 
         return response()->json(['citation' => $citationData['citation']], Response::HTTP_OK);
-    }
-
-    public function getInReview(IlluminateRequest $illuminateRequest): JsonResponse
-    {
-        $study = $this->getSubmissionStudy($illuminateRequest);
-
-        if (!$study) {
-            return $this->notFound();
-        }
-
-        try {
-            $datasetActions = (new DataverseClient())->getDatasetActions();
-            $dataset = $datasetActions->get($study->getPersistentId());
-            $datasetLocks = $datasetActions->getDatasetLocks($dataset->getDatasetId());
-        } catch (DataverseException $e) {
-            return $this->dataverseError($e, 'Error getting dataset locks: ');
-        }
-
-        foreach ($datasetLocks as $lock) {
-            if ($lock['lockType'] == 'InReview') {
-                return response()->json(['inReview' => true], Response::HTTP_OK);
-            }
-        }
-
-        return response()->json(['inReview' => false], Response::HTTP_OK);
     }
 
     private function getMetadataErrors(array $params, ?DatasetMetadataForm $metadataForm = null): array
