@@ -31,6 +31,7 @@ use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\authorization\UserRolesRequiredPolicy;
 use PKP\security\Role;
 use PKP\security\Validation;
+use PKP\stageAssignment\StageAssignment;
 
 class DatasetController extends PKPBaseController
 {
@@ -531,7 +532,11 @@ class DatasetController extends PKPBaseController
         $reviewAssignment = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_REVIEW_ASSIGNMENT);
         $userRoles = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES) ?? [];
 
-        if (!$reviewAssignment || array_intersect([Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER], $userRoles)) {
+        if (
+            !$reviewAssignment
+            || array_intersect([Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER], $userRoles)
+            || $this->isAssignedToSubmission()
+        ) {
             return true;
         }
 
@@ -542,6 +547,15 @@ class DatasetController extends PKPBaseController
         $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
 
         return in_array($fileId, (array) $submission->getData('selectedDataFilesForReview'));
+    }
+
+    protected function isAssignedToSubmission(): bool
+    {
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+
+        return StageAssignment::withSubmissionIds([$submission->getId()])
+            ->withUserId($this->getRequest()->getUser()->getId())
+            ->exists();
     }
 
     private function getKeywords(array $params): array

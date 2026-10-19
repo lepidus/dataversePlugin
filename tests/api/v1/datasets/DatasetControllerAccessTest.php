@@ -115,18 +115,22 @@ class DatasetControllerAccessTest extends PKPTestCase
         return $request;
     }
 
-    private function createController(?ReviewAssignment $reviewAssignment = null, array $userRoles = [Role::ROLE_ID_MANAGER]): DatasetController
-    {
+    private function createController(
+        ?ReviewAssignment $reviewAssignment = null,
+        array $userRoles = [Role::ROLE_ID_MANAGER],
+        bool $isAssignedToSubmission = false
+    ): DatasetController {
         $authorizedObjects = [
             Application::ASSOC_TYPE_SUBMISSION => $this->submission,
             Application::ASSOC_TYPE_REVIEW_ASSIGNMENT => $reviewAssignment,
             Application::ASSOC_TYPE_USER_ROLES => $userRoles,
         ];
         $controller = $this->getMockBuilder(DatasetController::class)
-            ->onlyMethods(['getAuthorizedContextObject'])
+            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission'])
             ->getMock();
         $controller->method('getAuthorizedContextObject')
             ->willReturnCallback(fn (int $assocType) => $authorizedObjects[$assocType] ?? null);
+        $controller->method('isAssignedToSubmission')->willReturn($isAssignedToSubmission);
 
         return $controller;
     }
@@ -198,6 +202,24 @@ class DatasetControllerAccessTest extends PKPTestCase
         $this->assertSame(403, $controller->downloadFile($request)->getStatusCode());
     }
 
+    public function testEditorWhoIsAlsoReviewerDownloadsAnyFileOfTheDataset(): void
+    {
+        $this->submission->setData('selectedDataFilesForReview', []);
+        $fileActions = $this->mockDatasetFileActions();
+        $fileActions->shouldReceive('download')->once()->with(self::DATASET_FILE_ID, 'Data.csv')
+            ->andThrow(new RuntimeException('Downloaded'));
+
+        $request = $this->createRequest('GET', '/datasets/' . self::STUDY_ID . '/file', ['fileId' => self::DATASET_FILE_ID]);
+        $controller = $this->createController(
+            $this->createReviewAssignment(true),
+            [Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_REVIEWER],
+            true
+        );
+
+        $this->expectExceptionMessage('Downloaded');
+        $controller->downloadFile($request);
+    }
+
     public function testAddIgnoresParamsThatAreNotMetadataFields(): void
     {
         $draftFiles = ['readme' => 'README.txt', 'data' => 'Data.csv'];
@@ -243,4 +265,5 @@ class DatasetControllerAccessTest extends PKPTestCase
 
         $this->assertSame(200, $this->createController()->add($request)->getStatusCode());
     }
+
 }
