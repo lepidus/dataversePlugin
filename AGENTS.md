@@ -226,11 +226,13 @@ that submission. A `DataverseException` raised while assembling `researchData` i
 in an otherwise-200 response, which the panel renders as a notice with a retry button — it is never a fatal.
 
 Routes that change the dataset or the draft files also run the core `PublicationCanBeEditedPolicy`, so they follow
-the same rule as editing the publication (`canEditPublication` in the workflow), and publishing or disassociating a
-dataset is limited to editorial roles, matching the `canPublish` gate of the panel. A Dataverse file id received by
-a route is never trusted on its own: it must be one of the files of the study's dataset, and the name used for the
-download or the event log comes from Dataverse, not from the request. Reviewers only download the files selected
-for review, and only after accepting the review when the context restricts reviewer file access.
+the same rule as editing the publication (`canEditPublication` in the workflow). Publishing or disassociating a
+dataset runs the core `StageRolePolicy` for managers and section editors without recommend-only access: the users
+who can record the accept decision, which publishes the dataset too. That is broader than the panel's `canPublish`,
+which only shows those buttons to managers. A Dataverse file id received by a route is never trusted on its own: it
+must be one of the files of the study's dataset, and the name used for the download or the event log comes from
+Dataverse, not from the request. Reviewers only download the files selected for review, and only after accepting
+the review when the context restricts reviewer file access.
 
 ### Front end
 

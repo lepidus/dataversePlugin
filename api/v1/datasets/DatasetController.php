@@ -26,6 +26,7 @@ use PKP\core\PKPRequest;
 use PKP\facades\Locale;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\internal\PublicationCanBeEditedPolicy;
+use PKP\security\authorization\StageRolePolicy;
 use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\authorization\UserRolesRequiredPolicy;
 use PKP\security\Role;
@@ -34,6 +35,8 @@ use PKP\security\Validation;
 class DatasetController extends PKPBaseController
 {
     private const PUBLICATION_WRITE_ACTIONS = ['add', 'associate', 'edit', 'addFile', 'deleteFile', 'delete'];
+
+    private const EDITORIAL_DECISION_ACTIONS = ['publish', 'disassociate'];
 
     private const BASE_METADATA_FIELDS = [
         'datasetTitle',
@@ -140,10 +143,15 @@ class DatasetController extends PKPBaseController
     {
         $this->addPolicy(new UserRolesRequiredPolicy($request), true);
         $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
+        $actionName = static::getRouteActionName($args[0]);
         $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
 
-        if (in_array(static::getRouteActionName($args[0]), self::PUBLICATION_WRITE_ACTIONS)) {
+        if (in_array($actionName, self::PUBLICATION_WRITE_ACTIONS)) {
             $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
+        }
+
+        if (in_array($actionName, self::EDITORIAL_DECISION_ACTIONS)) {
+            $this->addPolicy(new StageRolePolicy([Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR], null, false));
         }
 
         return parent::authorize($request, $args, $roleAssignments);
