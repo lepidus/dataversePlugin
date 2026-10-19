@@ -38,7 +38,6 @@ class DatasetReviewGridColumn extends GridColumn
                 [
                     'submissionId' => $this->study->getSubmissionId(),
                     'fileId' => $datasetFile->getId(),
-                    'fileName' => $datasetFile->getFileName(),
                 ]
             );
 

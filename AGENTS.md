@@ -227,7 +227,9 @@ in an otherwise-200 response, which the panel renders as a notice with a retry b
 
 Routes that change the dataset or the draft files also run the core `PublicationCanBeEditedPolicy`, so they follow
 the same rule as editing the publication (`canEditPublication` in the workflow), and publishing or disassociating a
-dataset is limited to editorial roles, matching the `canPublish` gate of the panel.
+dataset is limited to editorial roles, matching the `canPublish` gate of the panel. A Dataverse file id received by
+a route is never trusted on its own: it must be one of the files of the study's dataset, and the name used for the
+download or the event log comes from Dataverse, not from the request.
 
 ### Front end
 

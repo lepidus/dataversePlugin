@@ -8,6 +8,7 @@ use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
@@ -373,10 +374,7 @@ class DatasetController extends PKPBaseController
 
         $items = array_map(function ($datasetFile) use ($study) {
             $fileVars = $datasetFile->getVars();
-            $fileVars['downloadUrl'] = $this->getFileActionUrl($study, [
-                'fileId' => $datasetFile->getId(),
-                'fileName' => $datasetFile->getFileName(),
-            ]);
+            $fileVars['downloadUrl'] = $this->getFileActionUrl($study, ['fileId' => $datasetFile->getId()]);
             return $fileVars;
         }, $datasetFiles);
 
@@ -412,11 +410,17 @@ class DatasetController extends PKPBaseController
             return $this->notFound();
         }
 
-        (new DatasetFileService())->delete(
-            $study,
-            $illuminateRequest->query('fileId'),
-            $illuminateRequest->query('fileName')
-        );
+        try {
+            $datasetFile = $this->getStudyDatasetFile($study, (int) $illuminateRequest->query('fileId'));
+        } catch (DataverseException $e) {
+            return $this->dataverseError($e);
+        }
+
+        if (!$datasetFile) {
+            return $this->notFound();
+        }
+
+        (new DatasetFileService())->delete($study, (string) $datasetFile->getId(), $datasetFile->getFileName());
 
         return response()->json(['message' => 'ok'], Response::HTTP_OK);
     }
@@ -429,9 +433,21 @@ class DatasetController extends PKPBaseController
             return $this->notFound();
         }
 
+        $fileId = (int) $illuminateRequest->query('fileId');
+
+        try {
+            $datasetFile = $this->getStudyDatasetFile($study, $fileId);
+        } catch (DataverseException $e) {
+            return $this->dataverseError($e);
+        }
+
+        if (!$datasetFile) {
+            return $this->notFound();
+        }
+
         (new DataverseClient())->getDatasetFileActions()->download(
-            (int) $illuminateRequest->query('fileId'),
-            $illuminateRequest->query('fileName')
+            $datasetFile->getId(),
+            $datasetFile->getFileName()
         );
 
         exit;
@@ -507,6 +523,21 @@ class DatasetController extends PKPBaseController
         }
 
         return $errors;
+    }
+
+    private function getStudyDatasetFile(DataverseStudy $study, int $fileId): ?DatasetFile
+    {
+        $datasetFiles = (new DataverseClient())
+            ->getDatasetFileActions()
+            ->getByDatasetId($study->getPersistentId());
+
+        foreach ($datasetFiles as $datasetFile) {
+            if ((int) $datasetFile->getId() === $fileId) {
+                return $datasetFile;
+            }
+        }
+
+        return null;
     }
 
     private function getKeywords(array $params): array

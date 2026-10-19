@@ -130,7 +130,7 @@ function openDeleteFileModal(item) {
 				isWarnable: true,
 				callback: async (close) => {
 					close();
-					deleteQuery.value = {fileId: item.id, fileName: item.fileName};
+					deleteQuery.value = {fileId: item.id};
 					await sendDelete();
 					await refreshItems();
 				},
