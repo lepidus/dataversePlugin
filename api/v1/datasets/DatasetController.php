@@ -24,6 +24,7 @@ use PKP\core\PKPBaseController;
 use PKP\core\PKPRequest;
 use PKP\facades\Locale;
 use PKP\security\authorization\ContextAccessPolicy;
+use PKP\security\authorization\internal\PublicationCanBeEditedPolicy;
 use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\authorization\UserRolesRequiredPolicy;
 use PKP\security\Role;
@@ -31,6 +32,8 @@ use PKP\security\Validation;
 
 class DatasetController extends PKPBaseController
 {
+    private const PUBLICATION_WRITE_ACTIONS = ['add', 'associate', 'edit', 'addFile', 'deleteFile', 'delete'];
+
     public function getHandlerPath(): string
     {
         return 'datasets';
@@ -85,10 +88,6 @@ class DatasetController extends PKPBaseController
                 ->name('dataset.edit')
                 ->whereNumber('studyId');
 
-            Route::put('{studyId}/publish', $this->publish(...))
-                ->name('dataset.publish')
-                ->whereNumber('studyId');
-
             Route::delete('{studyId}/file', $this->deleteFile(...))
                 ->name('dataset.deleteFile')
                 ->whereNumber('studyId');
@@ -100,10 +99,15 @@ class DatasetController extends PKPBaseController
 
         Route::middleware([
             self::roleAuthorizer([
+                Role::ROLE_ID_SITE_ADMIN,
                 Role::ROLE_ID_MANAGER,
                 Role::ROLE_ID_SUB_EDITOR,
             ]),
         ])->group(function () {
+            Route::put('{studyId}/publish', $this->publish(...))
+                ->name('dataset.publish')
+                ->whereNumber('studyId');
+
             Route::put('{studyId}/disassociate', $this->disassociate(...))
                 ->name('dataset.disassociate')
                 ->whereNumber('studyId');
@@ -130,6 +134,10 @@ class DatasetController extends PKPBaseController
         $this->addPolicy(new UserRolesRequiredPolicy($request), true);
         $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
         $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+
+        if (in_array(static::getRouteActionName($args[0]), self::PUBLICATION_WRITE_ACTIONS)) {
+            $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
+        }
 
         return parent::authorize($request, $args, $roleAssignments);
     }

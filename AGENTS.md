@@ -225,6 +225,10 @@ parameter and run `SubmissionAccessPolicy`, and the dataset routes additionally 
 that submission. A `DataverseException` raised while assembling `researchData` is turned into an `error` string
 in an otherwise-200 response, which the panel renders as a notice with a retry button — it is never a fatal.
 
+Routes that change the dataset or the draft files also run the core `PublicationCanBeEditedPolicy`, so they follow
+the same rule as editing the publication (`canEditPublication` in the workflow), and publishing or disassociating a
+dataset is limited to editorial roles, matching the `canPublish` gate of the panel.
+
 ### Front end
 
 Vue 3 single file components live in `resources/js/` and are bundled by Vite into

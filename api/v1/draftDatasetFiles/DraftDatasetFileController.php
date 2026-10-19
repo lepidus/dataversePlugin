@@ -14,6 +14,7 @@ use PKP\core\PKPRequest;
 use PKP\file\TemporaryFileManager;
 use PKP\log\event\SubmissionFileEventLogEntry;
 use PKP\security\authorization\ContextAccessPolicy;
+use PKP\security\authorization\internal\PublicationCanBeEditedPolicy;
 use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\authorization\UserRolesRequiredPolicy;
 use PKP\security\Role;
@@ -22,6 +23,8 @@ use PKP\security\Validation;
 class DraftDatasetFileController extends PKPBaseController
 {
     public const SCHEMA_NAME = 'draftDatasetFile';
+
+    private const PUBLICATION_WRITE_ACTIONS = ['add', 'delete'];
 
     public function getHandlerPath(): string
     {
@@ -68,6 +71,10 @@ class DraftDatasetFileController extends PKPBaseController
         $this->addPolicy(new UserRolesRequiredPolicy($request), true);
         $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
         $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+
+        if (in_array(static::getRouteActionName($args[0]), self::PUBLICATION_WRITE_ACTIONS)) {
+            $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
+        }
 
         return parent::authorize($request, $args, $roleAssignments);
     }
