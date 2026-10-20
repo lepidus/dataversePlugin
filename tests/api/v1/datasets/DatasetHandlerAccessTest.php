@@ -5,6 +5,9 @@ use APP\core\Request as PKPRequest;
 use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\Repository as DataverseStudyRepository;
+use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
+use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\submission\Submission;
 use PKP\core\APIResponse;
 use PKP\core\Dispatcher;
@@ -21,6 +24,8 @@ use Psr\Http\Message\ServerRequestInterface;
 class DatasetHandlerAccessTest extends PKPTestCase
 {
     private const STUDY_ID = 7;
+    private const DATASET_FILE_ID = 2025434;
+    private const OTHER_DATASET_FILE_ID = 9999999;
 
     private Submission $submission;
     private DataverseStudy $study;
@@ -72,6 +77,28 @@ class DatasetHandlerAccessTest extends PKPTestCase
         Registry::set('request', $pkpRequest);
     }
 
+    private function createDatasetFile(int $id, string $fileName): DatasetFile
+    {
+        $datasetFile = new DatasetFile();
+        $datasetFile->setId($id);
+        $datasetFile->setFileName($fileName);
+
+        return $datasetFile;
+    }
+
+    private function mockDatasetFileActions(): Mockery\MockInterface
+    {
+        $fileActions = Mockery::mock();
+        $fileActions->shouldReceive('getByDatasetId')
+            ->with($this->study->getPersistentId())
+            ->andReturn([$this->createDatasetFile(self::DATASET_FILE_ID, 'Data.csv')]);
+
+        $client = Mockery::mock('overload:' . DataverseClient::class);
+        $client->shouldReceive('getDatasetFileActions')->andReturn($fileActions);
+
+        return $fileActions;
+    }
+
     private function createRequest(array $queryParams = [], array $body = []): ServerRequestInterface
     {
         $request = $this->createMock(ServerRequestInterface::class);
@@ -100,6 +127,49 @@ class DatasetHandlerAccessTest extends PKPTestCase
         $response = $this->createHandler()->get($this->createRequest(), new APIResponse(), ['studyId' => self::STUDY_ID]);
 
         $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function testDownloadRejectsFilesOutsideTheStudyDataset(): void
+    {
+        $fileActions = $this->mockDatasetFileActions();
+        $fileActions->shouldNotReceive('download');
+
+        $response = $this->createHandler()->downloadDatasetFile(
+            $this->createRequest(['fileId' => self::OTHER_DATASET_FILE_ID]),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function testDeleteFileRejectsFilesOutsideTheStudyDataset(): void
+    {
+        $this->mockDatasetFileActions();
+        Mockery::mock('overload:' . DatasetFileService::class)->shouldNotReceive('delete');
+
+        $response = $this->createHandler()->deleteFile(
+            $this->createRequest(['fileId' => self::OTHER_DATASET_FILE_ID, 'fileName' => 'Other.csv']),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function testDeleteFileLogsTheNameKnownByDataverse(): void
+    {
+        $this->mockDatasetFileActions();
+        Mockery::mock('overload:' . DatasetFileService::class)
+            ->shouldReceive('delete')->once()->with($this->study, (string) self::DATASET_FILE_ID, 'Data.csv');
+
+        $response = $this->createHandler()->deleteFile(
+            $this->createRequest(['fileId' => self::DATASET_FILE_ID, 'fileName' => '<img src=x>']),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
     }
 
 }

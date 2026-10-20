@@ -8,6 +8,7 @@ use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
@@ -151,6 +152,30 @@ class DatasetHandler extends APIHandler
         }
 
         return $study;
+    }
+
+    private function getStudyDatasetFile(DataverseStudy $study, int $fileId): ?DatasetFile
+    {
+        $datasetFiles = (new DataverseClient())
+            ->getDatasetFileActions()
+            ->getByDatasetId($study->getPersistentId());
+
+        foreach ($datasetFiles as $datasetFile) {
+            if ((int) $datasetFile->getId() === $fileId) {
+                return $datasetFile;
+            }
+        }
+
+        return null;
+    }
+
+    private function dataverseError($response, DataverseException $e)
+    {
+        error_log('Dataverse API error: ' . $e->getMessage());
+
+        return $response
+            ->withStatus($e->getCode())
+            ->withJsonError($e->getUserMessageKey());
     }
 
     private function mapServiceStatusToHttpCode(string $status): ?int
@@ -422,11 +447,7 @@ class DatasetHandler extends APIHandler
                 'datasets/' . $study->getId() . '/file',
                 null,
                 null,
-                [
-                    'submissionId' => $study->getSubmissionId(),
-                    'fileId' => $datasetFile->getId(),
-                    'fileName' => $datasetFile->getFileName(),
-                ]
+                ['submissionId' => $study->getSubmissionId(), 'fileId' => $datasetFile->getId()]
             );
             return $fileVars;
         }, $datasetFiles);
@@ -496,8 +517,18 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
+        try {
+            $datasetFile = $this->getStudyDatasetFile($study, (int) ($queryParams['fileId'] ?? 0));
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
+        }
+
+        if (!$datasetFile) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
         $datasetFileService = new DatasetFileService();
-        $datasetFileService->delete($study, $queryParams['fileId'], $queryParams['fileName']);
+        $datasetFileService->delete($study, (string) $datasetFile->getId(), $datasetFile->getFileName());
 
         return $response->withJson(['message' => 'ok'], 200);
     }
@@ -535,24 +566,18 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $filesActions = (new DataverseClient())->getDatasetFileActions();
         try {
-            $datasetFiles = $filesActions->getByDatasetId($study->getPersistentId());
+            $datasetFile = $this->getStudyDatasetFile($study, $fileId);
         } catch (DataverseException $e) {
-            error_log('Error getting dataset files: ' . $e->getMessage());
-            return $response
-                ->withStatus($e->getCode())
-                ->withJsonError($e->getUserMessageKey());
+            return $this->dataverseError($response, $e);
         }
 
-        foreach ($datasetFiles as $datasetFile) {
-            if ($datasetFile->getId() == $fileId) {
-                $filesActions->download($fileId, $datasetFile->getFileName());
-                return $response->withStatus(200);
-            }
+        if (!$datasetFile) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        return $response->withStatus(403)->withJsonError('api.403.unauthorized');
+        (new DataverseClient())->getDatasetFileActions()->download($datasetFile->getId(), $datasetFile->getFileName());
+        return $response->withStatus(200);
     }
 
     private function createEventLog($study, $messageKey, $params)
