@@ -60,7 +60,7 @@ class DatasetReviewDispatcher extends DataverseDispatcher
     {
         $dataStatementService = new DataStatementService();
         $allDataStatementTypes = $dataStatementService->getDataStatementTypes();
-        $dataverseName = $dataStatementService->getDataverseName();
+        $dataverseName = htmlspecialchars($dataStatementService->getDataverseName() ?? '', ENT_QUOTES);
 
         $allDataStatementTypes[DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED] = __('plugins.generic.dataverse.dataStatement.researchDataSubmitted', ['dataverseName' => $dataverseName]);
 
