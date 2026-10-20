@@ -92,7 +92,7 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
             }
         }
 
-        $contactEmail = $context->getData('contactEmail');
+        $contactEmail = strtolower(trim((string) $context->getData('contactEmail')));
         if (!empty($contactEmail) && !isset($recipients[$contactEmail])) {
             $recipients[$contactEmail] = [
                 'name' => $context->getData('contactName'),
