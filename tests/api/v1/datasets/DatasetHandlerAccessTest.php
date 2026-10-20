@@ -10,6 +10,7 @@ use APP\plugins\generic\dataverse\classes\draftDatasetFile\Repository as DraftDa
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
@@ -324,4 +325,17 @@ class DatasetHandlerAccessTest extends PKPTestCase
         $this->assertSame(200, $response->getStatusCode());
     }
 
+    public function testAddIsRefusedWhenTheCollectionRequiredMetadataCannotBeLoaded(): void
+    {
+        $this->mockDeposit(new DataverseException('Service unavailable', 503));
+        Mockery::mock('overload:' . DatasetService::class)->shouldNotReceive('deposit');
+
+        $response = $this->createHandler()->addDataset(
+            $this->createRequest([], $this->depositParams(['datasetAlternativeURL' => 'https://example.org'])),
+            new APIResponse(),
+            []
+        );
+
+        $this->assertSame(503, $response->getStatusCode());
+    }
 }

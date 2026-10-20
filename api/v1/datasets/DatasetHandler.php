@@ -213,6 +213,13 @@ class DatasetHandler extends APIHandler
         return (bool) $stageAssignmentDao->getBySubmissionAndUserIdAndStageId($submission->getId(), $user->getId())->next();
     }
 
+    private function createMetadataForm(): DatasetMetadataForm
+    {
+        (new DataverseClient())->getDataverseCollectionActions()->getRequiredMetadata();
+
+        return new DatasetMetadataForm('', 'POST', null, 'workflow');
+    }
+
     private function getAdditionalMetadata(array $params, DatasetMetadataForm $metadataForm): array
     {
         $additionalMetadata = [];
@@ -288,6 +295,12 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
+        try {
+            $metadataForm = $this->createMetadataForm();
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
+        }
+
         $data = [];
         $data['persistentId'] = $study->getPersistentId();
         $data['title'] = $requestParams['datasetTitle'];
@@ -298,7 +311,6 @@ class DatasetHandler extends APIHandler
         $data['license'] = $requestParams['datasetLicense'];
         $data['relationType'] = $requestParams['datasetRelationType'];
 
-        $metadataForm = new DatasetMetadataForm('', 'POST', null, 'workflow');
         $datasetService = new DatasetService();
         $datasetService->update(array_merge($data, $this->getAdditionalMetadata($requestParams, $metadataForm)));
 
@@ -397,7 +409,11 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.notSolelyReadmeFile');
         }
 
-        $metadataForm = new DatasetMetadataForm('', 'POST', null, 'workflow');
+        try {
+            $metadataForm = $this->createMetadataForm();
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
+        }
 
         $datasetFactory = new SubmissionDatasetFactory($submission);
         try {
