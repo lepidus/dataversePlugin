@@ -27,8 +27,6 @@ class DatasetReviewGridColumn extends GridColumn
         if (!is_null($this->study)) {
             $datasetFile = $row->getData();
 
-            error_log(print_r($datasetFile, true));
-
             $context = $request->getContext();
             $downloadUrl = $request->getDispatcher()->url(
                 $request,
