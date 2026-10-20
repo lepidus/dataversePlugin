@@ -20,6 +20,7 @@ class DataStatementDispatcher extends DataverseDispatcher
         Hook::add('TemplateManager::display', [$this, 'addToDetailsStep']);
         Hook::add('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
         Hook::add('Publication::edit', [$this, 'dataStatementEditingCheck']);
+        Hook::add('Publication::validate', [$this, 'validateDataStatementUrls']);
         Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewStep']);
         Hook::add('Submission::validateSubmit', [$this, 'validateSubmissionFields']);
         Hook::add('Templates::Preprint::Details', [$this, 'viewDataStatement']);
@@ -182,6 +183,44 @@ class DataStatementDispatcher extends DataverseDispatcher
         return false;
     }
 
+    public function validateDataStatementUrls(string $hookName, array $params): bool
+    {
+        $errors = &$params[0];
+        $publication = $params[1];
+        $props = $params[2];
+
+        if (!$publication || !array_key_exists('dataStatementUrls', $props)) {
+            return false;
+        }
+
+        $submission = Repo::submission()->get($publication->getData('submissionId'));
+        if (!$submission || $submission->getData('submissionProgress')) {
+            return false;
+        }
+
+        $dataStatementTypes = $props['dataStatementTypes'] ?? $publication->getData('dataStatementTypes');
+        if (!in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, (array) $dataStatementTypes)) {
+            return false;
+        }
+
+        if (!$this->allAreURLs((array) $props['dataStatementUrls'])) {
+            $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')];
+        }
+
+        return false;
+    }
+
+    private function allAreURLs(array $inputs): bool
+    {
+        foreach ($inputs as $input) {
+            if (!is_string($input) || !$this->inputIsURL($input)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private function inputIsURL(string $input): bool
     {
         $urlPattern = '/^(https?:\/\/)?[a-z0-9\-]+(\.[a-z0-9\-]+)+([\/?#].*)?$/i';
@@ -206,13 +245,8 @@ class DataStatementDispatcher extends DataverseDispatcher
         if (in_array(DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)) {
             if (!$dataStatementUrls) {
                 $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')];
-            } else {
-                foreach ($dataStatementUrls as $url) {
-                    if (!$this->inputIsURL($url)) {
-                        $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')];
-                        break;
-                    }
-                }
+            } elseif (!$this->allAreURLs($dataStatementUrls)) {
+                $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')];
             }
         }
 
