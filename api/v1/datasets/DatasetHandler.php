@@ -126,10 +126,12 @@ class DatasetHandler extends APIHandler
     public function authorize($request, &$args, $roleAssignments)
     {
         $operation = $this->getSlimRequest()->getAttribute('route')->getName();
+        $permitDeclinedReviewer = $operation === 'downloadDatasetFile'
+            && !$request->getContext()->getData('restrictReviewerFileAccess');
 
         $this->addPolicy(new UserRolesRequiredPolicy($request), true);
         $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
-        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments, 'submissionId', $permitDeclinedReviewer));
 
         if (in_array($operation, self::PUBLICATION_WRITE_OPERATIONS)) {
             $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
@@ -167,6 +169,38 @@ class DatasetHandler extends APIHandler
         }
 
         return null;
+    }
+
+    private function isFileAvailableToUser(int $fileId): bool
+    {
+        $reviewAssignment = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_REVIEW_ASSIGNMENT);
+        $userRoles = (array) $this->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES);
+
+        if (
+            !$reviewAssignment
+            || array_intersect([Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER], $userRoles)
+            || $this->isAssignedToSubmission()
+        ) {
+            return true;
+        }
+
+        $context = Application::get()->getRequest()->getContext();
+        if ($context->getData('restrictReviewerFileAccess') && !$reviewAssignment->getDateConfirmed()) {
+            return false;
+        }
+
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+
+        return in_array($fileId, (array) $submission->getData('selectedDataFilesForReview'));
+    }
+
+    protected function isAssignedToSubmission(): bool
+    {
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+        $user = Application::get()->getRequest()->getUser();
+
+        $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
+        return (bool) $stageAssignmentDao->getBySubmissionAndUserIdAndStageId($submission->getId(), $user->getId())->next();
     }
 
     private function dataverseError($response, DataverseException $e)
@@ -564,6 +598,10 @@ class DatasetHandler extends APIHandler
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        if (!$this->isFileAvailableToUser($fileId)) {
+            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
         }
 
         try {
