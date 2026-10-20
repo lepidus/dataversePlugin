@@ -35,7 +35,11 @@ class DatasetReviewGridColumn extends GridColumn
                 'datasets/' . $this->study->getId() . '/file',
                 null,
                 null,
-                ['fileId' => $datasetFile->getId(), 'fileName' => $datasetFile->getFileName()]
+                [
+                    'submissionId' => $this->study->getSubmissionId(),
+                    'fileId' => $datasetFile->getId(),
+                    'fileName' => $datasetFile->getFileName(),
+                ]
             );
 
             $cellActions[] = new LinkAction(

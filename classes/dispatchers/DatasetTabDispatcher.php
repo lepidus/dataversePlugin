@@ -162,9 +162,10 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($context->getId());
 
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
-        $datasetApiUrl = $this->getApiUrl('datasets/' . $study->getId());
-        $fileListApiUrl = $this->getApiUrl('datasets/' . $study->getId() . '/files');
-        $fileActionApiUrl = $this->getApiUrl('datasets/' . $study->getId() . '/file');
+        $submissionParams = ['submissionId' => $submission->getId()];
+        $datasetApiUrl = $this->getApiUrl('datasets/' . $study->getId(), $submissionParams);
+        $fileListApiUrl = $this->getApiUrl('datasets/' . $study->getId() . '/files', $submissionParams);
+        $fileActionApiUrl = $this->getApiUrl('datasets/' . $study->getId() . '/file', $submissionParams);
         $datasetStatementUrl = $dispatcher->url(
             $request,
             Application::ROUTE_PAGE,
@@ -201,7 +202,11 @@ class DatasetTabDispatcher extends DataverseDispatcher
                 'serverUrl' => $configuration->getDataverseServerUrl(),
             ]),
             'loadingCitationMsg' => __('plugins.generic.dataverse.metadataForm.loadingDatasetCitation'),
-            'datasetPluginApiUrl' => $dispatcher->url($request, Application::ROUTE_API, $context->getPath(), 'datasets/' . $study->getId()),
+            'datasetPluginApiUrl' => $datasetApiUrl,
+            'datasetCitationUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/citation', $submissionParams),
+            'datasetInReviewUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/inReview', $submissionParams),
+            'publishDatasetUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/publish', $submissionParams),
+            'disassociateDatasetUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/disassociate', $submissionParams),
             'canSendEmail' => in_array(Role::ROLE_ID_MANAGER, $userRoles),
             'hasDepositedDataset' => true
         ]);

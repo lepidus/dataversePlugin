@@ -4,6 +4,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         return {
             dataversePluginApiUrl: null,
             datasetPluginApiUrl: null,
+            datasetCitationUrl: null,
+            datasetInReviewUrl: null,
+            publishDatasetUrl: null,
+            disassociateDatasetUrl: null,
             rootDataverseName: '',
             dataverseName: '',
             dataverseLicenses: [],
@@ -138,7 +142,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         callback: () => {
                             let self = this;
                             $.ajax({
-                                url: this.components.datasetMetadata.action + '/disassociate',
+                                url: this.disassociateDatasetUrl,
                                 type: 'POST',
                                 headers: {
                                     'X-Csrf-Token': pkp.currentUser.csrfToken,
@@ -168,7 +172,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         callback: () => {
                             let self = this;
                             $.ajax({
-                                url: this.components.datasetMetadata.action + '/publish',
+                                url: this.publishDatasetUrl,
                                 type: 'POST',
                                 headers: {
                                     'X-Csrf-Token': pkp.currentUser.csrfToken,
@@ -334,7 +338,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             var self = this;
             this.datasetCitation = this.loadingCitationMsg;
             $.ajax({
-                url: self.datasetPluginApiUrl+'/citation',
+                url: self.datasetCitationUrl,
                 data: {
                     datasetIsPublished: (self.datasetIsPublished ? 1 : 0)
                 },
@@ -354,7 +358,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }
             var self = this;
             $.ajax({
-                url: self.datasetPluginApiUrl+'/inReview?datasetId='+dataset.datasetId,
+                url: self.datasetInReviewUrl,
                 type: 'GET',
                 error: function (xhr) {
                     self.markDataverseUnavailable(xhr);
