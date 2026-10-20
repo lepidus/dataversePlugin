@@ -3,15 +3,24 @@
 use APP\core\Application;
 use APP\core\Request as PKPRequest;
 use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
+use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\Repository as DataverseStudyRepository;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\Repository as DraftDatasetFileRepository;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
+use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
+use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
+use APP\plugins\generic\dataverse\classes\services\DatasetService;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\submission\Submission;
+use Illuminate\Support\LazyCollection;
 use PKP\core\APIResponse;
 use PKP\core\Dispatcher;
 use PKP\core\Registry;
+use PKP\facades\Locale;
 use PKP\security\Role;
 use PKP\submission\reviewAssignment\ReviewAssignment;
 use PKP\tests\PKPTestCase;
@@ -39,7 +48,7 @@ class DatasetHandlerAccessTest extends PKPTestCase
 
     protected function getMockedContainerKeys(): array
     {
-        return [DataverseStudyRepository::class];
+        return [DataverseStudyRepository::class, DraftDatasetFileRepository::class];
     }
 
     protected function setUp(): void
@@ -241,6 +250,75 @@ class DatasetHandlerAccessTest extends PKPTestCase
             $this->createRequest(['fileId' => self::DATASET_FILE_ID]),
             new APIResponse(),
             ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    private function mockDeposit(?DataverseException $requiredMetadataError = null): array
+    {
+        Locale::registerPath(dirname(__DIR__, 4) . '/locale');
+        $draftRepository = Mockery::mock(DraftDatasetFileRepository::class);
+        $draftRepository->shouldReceive('getBySubmissionId')->andReturn(LazyCollection::make(['README.txt', 'Data.csv']));
+        app()->instance(DraftDatasetFileRepository::class, $draftRepository);
+        $validator = Mockery::mock('overload:' . DraftDatasetFilesValidator::class);
+        $validator->shouldReceive('datasetHasReadmeFile')->andReturn(true);
+        $validator->shouldReceive('datasetHasNonReadmeFile')->andReturn(true);
+
+        $datasetFiles = [$this->createDatasetFile(1, 'README.txt'), $this->createDatasetFile(2, 'Data.csv')];
+        $dataset = new Dataset();
+        $dataset->setFiles($datasetFiles);
+        $dataset->setRelatedPublication(new DatasetRelatedPublication(null, 'Citation', null, null, null));
+        Mockery::mock('overload:' . SubmissionDatasetFactory::class)
+            ->shouldReceive('getDataset')->andReturn($dataset);
+
+        $collectionActions = $this->getMockBuilder(DataverseCollectionActions::class)
+            ->disableOriginalConstructor()->onlyMethods(['getRequiredMetadata', 'getLicenses'])->getMock();
+        if ($requiredMetadataError) {
+            $collectionActions->method('getRequiredMetadata')->willThrowException($requiredMetadataError);
+        } else {
+            $collectionActions->method('getRequiredMetadata')->willReturn(['citation' => ['fields' => []]]);
+        }
+        $collectionActions->method('getLicenses')->willReturn([['name' => 'CC0 1.0']]);
+        Mockery::mock('overload:' . DataverseClient::class)
+            ->shouldReceive('getDataverseCollectionActions')->andReturn($collectionActions);
+
+        return $datasetFiles;
+    }
+
+    private function depositParams(array $extraParams = []): array
+    {
+        return array_merge([
+            'datasetTitle' => 'Title',
+            'datasetDescription' => 'Description',
+            'datasetKeywords' => [Locale::getLocale() => ['Keyword']],
+            'datasetLanguage' => 'English',
+            'datasetSubject' => 'Other',
+            'datasetLicense' => 'CC0 1.0',
+            'datasetRelationType' => 'IsSupplementTo',
+        ], $extraParams);
+    }
+
+    public function testAddIgnoresParamsThatAreNotMetadataFields(): void
+    {
+        $datasetFiles = $this->mockDeposit();
+        Mockery::mock('overload:' . DatasetService::class)
+            ->shouldReceive('deposit')->once()
+            ->withArgs(function ($submission, Dataset $deposited) use ($datasetFiles) {
+                return $deposited->getFiles() === $datasetFiles
+                    && !$deposited->hasData('submissionId')
+                    && !$deposited->hasData('persistentId');
+            })
+            ->andReturn(['status' => 'Success']);
+
+        $response = $this->createHandler()->addDataset(
+            $this->createRequest([], $this->depositParams([
+                'datasetFiles' => [['path' => '/etc/passwd', 'originalFileName' => 'passwd']],
+                'submissionId' => 99,
+                'datasetPersistentId' => 'doi:10.5072/FK2/UNTRUSTED',
+            ])),
+            new APIResponse(),
+            []
         );
 
         $this->assertSame(200, $response->getStatusCode());

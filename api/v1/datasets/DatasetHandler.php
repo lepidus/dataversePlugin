@@ -40,6 +40,16 @@ class DatasetHandler extends APIHandler
 
     private const EDITORIAL_DECISION_OPERATIONS = ['associateDataset', 'disassociateDataset', 'publishDataset'];
 
+    private const BASE_METADATA_FIELDS = [
+        'datasetTitle',
+        'datasetDescription',
+        'datasetKeywords',
+        'datasetLanguage',
+        'datasetSubject',
+        'datasetLicense',
+        'datasetRelationType',
+    ];
+
     public function __construct()
     {
         $this->_handlerPath = 'datasets';
@@ -203,6 +213,23 @@ class DatasetHandler extends APIHandler
         return (bool) $stageAssignmentDao->getBySubmissionAndUserIdAndStageId($submission->getId(), $user->getId())->next();
     }
 
+    private function getAdditionalMetadata(array $params, DatasetMetadataForm $metadataForm): array
+    {
+        $additionalMetadata = [];
+
+        foreach ($metadataForm->fields as $field) {
+            if (in_array($field->name, self::BASE_METADATA_FIELDS) || !array_key_exists($field->name, $params)) {
+                continue;
+            }
+
+            $metadataName = substr($field->name, strlen('dataset'));
+            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
+            $additionalMetadata[$metadataName] = $params[$field->name];
+        }
+
+        return $additionalMetadata;
+    }
+
     private function dataverseError($response, DataverseException $e)
     {
         error_log('Dataverse API error: ' . $e->getMessage());
@@ -272,20 +299,8 @@ class DatasetHandler extends APIHandler
         $data['relationType'] = $requestParams['datasetRelationType'];
 
         $metadataForm = new DatasetMetadataForm('', 'POST', null, 'workflow');
-        foreach ($metadataForm->fields as $field) {
-            if (!array_key_exists($field->name, $requestParams)) {
-                continue;
-            }
-
-            $metadataName = substr($field->name, strlen('dataset'));
-            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
-            if (!array_key_exists($metadataName, $data)) {
-                $data[$metadataName] = $requestParams[$field->name];
-            }
-        }
-
         $datasetService = new DatasetService();
-        $datasetService->update($data);
+        $datasetService->update(array_merge($data, $this->getAdditionalMetadata($requestParams, $metadataForm)));
 
         return $this->get($slimRequest, $response, $args);
     }
@@ -382,6 +397,8 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.notSolelyReadmeFile');
         }
 
+        $metadataForm = new DatasetMetadataForm('', 'POST', null, 'workflow');
+
         $datasetFactory = new SubmissionDatasetFactory($submission);
         try {
             $dataset = $datasetFactory->getDataset();
@@ -399,22 +416,7 @@ class DatasetHandler extends APIHandler
         $relatedPublication->setData('RelationType', $requestParams['datasetRelationType']);
         $dataset->setRelatedPublication($relatedPublication);
 
-        $excludedKeys = [
-            'datasetTitle',
-            'datasetDescription',
-            'datasetKeywords',
-            'datasetLanguage',
-            'datasetSubject',
-            'datasetLicense',
-            'datasetRelationType'
-        ];
-
-        foreach ($requestParams as $key => $value) {
-            if (in_array($key, $excludedKeys)) {
-                continue;
-            }
-            $metadataName = str_replace('dataset', '', $key);
-            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
+        foreach ($this->getAdditionalMetadata($requestParams, $metadataForm) as $metadataName => $value) {
             $dataset->setData($metadataName, $value);
         }
 
