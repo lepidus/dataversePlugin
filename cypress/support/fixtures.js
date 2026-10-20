@@ -51,7 +51,7 @@ export function useDataverseFixtures({configure = true, configuration = {}} = {}
                     }
                     return;
                 }
-                const action = `${api}/datasets/${studyId}`;
+                const action = `${api}/datasets/${studyId}?submissionId=${fixture.id}`;
                 requestFixture({url: action}).then(({body}) => {
                     if (body.versionState !== 'DRAFT') {
                         return;
@@ -133,7 +133,7 @@ function uploadDatasetFixtureFile(fixture, file, fileName, mimeType) {
     uploadFixtureFile(`${api}/temporaryFiles`, file, fileName, mimeType).then((uploaded) => {
         cy.window({log: false}).then((window) => {
             requestFixture({
-                method: 'POST', url: `${api}/draftDatasetFiles?submissionId=${fixture.id}&userId=${window.pkp.currentUser.id}`,
+                method: 'POST', url: `${api}/draftDatasetFiles?submissionId=${fixture.id}`,
                 headers: {'X-Csrf-Token': window.pkp.currentUser.csrfToken},
                 body: {datasetFile: {temporaryFileId: uploaded.id}, termsOfUse: true},
             });
@@ -224,7 +224,7 @@ export function depositDatasetFixture(fixture, {reviewFiles = false, author = 'd
     });
     cy.getDataverseStudyForTest(fixture.id).then((studyId) => {
         expect(studyId, 'Deposited fixture study ID').to.be.a('number').and.be.greaterThan(0);
-        requestFixture({url: `${api}/datasets/${studyId}`}).then(({body}) => {
+        requestFixture({url: `${api}/datasets/${studyId}?submissionId=${fixture.id}`}).then(({body}) => {
             expect(body.versionState, 'Deposited fixture state').to.equal('DRAFT');
             expect(body.persistentId, 'Deposited fixture DOI').to.match(/^doi:10\./);
         });
@@ -297,7 +297,7 @@ export function publishDatasetFixture(fixture) {
         expect(studyId, 'Owned fixture study ID').to.be.a('number').and.be.greaterThan(0);
         fixtureHeaders().then((headers) => {
             requestFixture({
-                method: 'POST', url: `${api}/datasets/${studyId}/publish`,
+                method: 'POST', url: `${api}/datasets/${studyId}/publish?submissionId=${fixture.id}`,
                 headers: {...headers, 'X-Http-Method-Override': 'PUT'},
             }).then(({body}) => {
                 expect(body.versionState, 'Published fixture state').to.equal('RELEASED');
