@@ -534,16 +534,15 @@ class DatasetHandler extends APIHandler
 
     public function getInReview($slimRequest, $response, $args)
     {
-        $queryParams = $slimRequest->getQueryParams();
-        $datasetId = $queryParams['datasetId'];
         $study = $this->getSubmissionStudy($args);
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
         try {
-            $dataverseClient = new DataverseClient();
-            $datasetLocks = $dataverseClient->getDatasetActions()->getDatasetLocks($datasetId);
+            $datasetActions = (new DataverseClient())->getDatasetActions();
+            $dataset = $datasetActions->get($study->getPersistentId());
+            $datasetLocks = $datasetActions->getDatasetLocks($dataset->getDatasetId());
         } catch (DataverseException $e) {
             error_log('Error getting dataset locks: ' . $e->getMessage());
             return $response

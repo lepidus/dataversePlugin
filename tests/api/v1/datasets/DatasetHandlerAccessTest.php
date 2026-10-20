@@ -256,6 +256,25 @@ class DatasetHandlerAccessTest extends PKPTestCase
         $this->assertSame(200, $response->getStatusCode());
     }
 
+    public function testInReviewChecksTheLocksOfTheStudyDataset(): void
+    {
+        $dataset = new Dataset();
+        $dataset->setDatasetId(77);
+        $datasetActions = Mockery::mock();
+        $datasetActions->shouldReceive('get')->with($this->study->getPersistentId())->andReturn($dataset);
+        $datasetActions->shouldReceive('getDatasetLocks')->once()->with(77)->andReturn([['lockType' => 'InReview']]);
+        Mockery::mock('overload:' . DataverseClient::class)
+            ->shouldReceive('getDatasetActions')->andReturn($datasetActions);
+
+        $response = $this->createHandler()->getInReview(
+            $this->createRequest(['datasetId' => 12345]),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(['inReview' => true], json_decode((string) $response->getBody(), true));
+    }
+
     private function mockDeposit(?DataverseException $requiredMetadataError = null): array
     {
         Locale::registerPath(dirname(__DIR__, 4) . '/locale');
