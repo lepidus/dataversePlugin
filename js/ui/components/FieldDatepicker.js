@@ -15,7 +15,13 @@ pkp.Vue.component('field-datepicker', {
                 return {monthNamesShort: $(input).datepicker('option', 'monthNames')};
             },
             onClose: () => {
-                $(this.$refs.input).datepicker('widget').removeClass('dataverse-datepicker');
+                const calendar = $(this.$refs.input).datepicker('widget');
+                // onClose fires before the core's closing animation finishes.
+                calendar.promise('fx').done(() => {
+                    if (!calendar.is(':visible')) {
+                        calendar.removeClass('dataverse-datepicker');
+                    }
+                });
             },
             onSelect: (value) => {
                 // jQuery selections do not fire the input event used by Vue's v-model.
