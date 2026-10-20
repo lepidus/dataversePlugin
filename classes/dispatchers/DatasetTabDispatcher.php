@@ -117,15 +117,18 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $metadataFormAction = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
         $associateFormAction = $this->getApiUrl('datasets/associate', ['submissionId' => $submission->getId()]);
         $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
-        $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles');
+        $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
 
         $factory = new SubmissionDatasetFactory($submission, false);
         $dataset = $factory->getDataset();
         $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
 
-        $datasetFiles = array_map(function ($draftDatasetFile) use ($fileActionApiUrl) {
+        $datasetFiles = array_map(function ($draftDatasetFile) use ($submission) {
             $fileVars = $draftDatasetFile->getAllData();
-            $fileVars['downloadUrl'] = $fileActionApiUrl . '/' . $draftDatasetFile->getFileId() . '/download';
+            $fileVars['downloadUrl'] = $this->getApiUrl(
+                'draftDatasetFiles/' . $draftDatasetFile->getId() . '/download',
+                ['submissionId' => $submission->getId()]
+            );
             return $fileVars;
         }, $draftDatasetFiles);
         ksort($datasetFiles);
