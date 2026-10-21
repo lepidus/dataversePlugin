@@ -66,12 +66,15 @@ class DataStatementSubmissionTest extends DatabaseTestCase
         );
     }
 
-    private function validatePublicationEdit(array $props, string $submissionProgress = ''): array
-    {
-        $submission = $this->createSubmission([
+    private function validatePublicationEdit(
+        array $props,
+        string $submissionProgress = '',
+        array $dataStatement = [
             'dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE],
             'dataStatementUrls' => [self::REPOSITORY_URL],
-        ], ['submissionProgress' => $submissionProgress]);
+        ]
+    ): array {
+        $submission = $this->createSubmission($dataStatement, ['submissionProgress' => $submissionProgress]);
         $this->context->setData('supportedSubmissionMetadataLocales', ['en']);
 
         return Repo::publication()->validate($submission->getCurrentPublication(), $props, $submission, $this->context);
@@ -88,6 +91,28 @@ class DataStatementSubmissionTest extends DatabaseTestCase
             [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')],
             $errors['dataStatementUrls']
         );
+    }
+
+    public function testRepositoryUrlsAreRequiredWhenThePublicationIsEdited(): void
+    {
+        $errors = $this->validatePublicationEdit(['dataStatementUrls' => []]);
+
+        $this->assertArrayHasKey('dataStatementUrls', $errors);
+        $this->assertEquals(
+            [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')],
+            $errors['dataStatementUrls']
+        );
+    }
+
+    public function testRepositoryTypeCannotBeSelectedWithoutUrls(): void
+    {
+        $errors = $this->validatePublicationEdit(
+            ['dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE]],
+            '',
+            ['dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND]]
+        );
+
+        $this->assertArrayHasKey('dataStatementUrls', $errors);
     }
 
     public function testRepositoryUrlThatIsNotTextIsReportedAsInvalid(): void
