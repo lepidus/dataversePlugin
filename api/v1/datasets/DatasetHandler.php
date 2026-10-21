@@ -631,7 +631,12 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        (new DataverseClient())->getDatasetFileActions()->download($datasetFile->getId(), $datasetFile->getFileName());
+        try {
+            (new DataverseClient())->getDatasetFileActions()->download($datasetFile->getId(), $datasetFile->getFileName());
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
+        }
+
         return $response->withStatus(200);
     }
 

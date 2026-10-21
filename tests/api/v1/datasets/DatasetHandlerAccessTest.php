@@ -205,6 +205,20 @@ class DatasetHandlerAccessTest extends PKPTestCase
         $this->assertSame(200, $response->getStatusCode());
     }
 
+    public function testFailedDownloadReturnsTheDataverseError(): void
+    {
+        $fileActions = $this->mockDatasetFileActions();
+        $fileActions->shouldReceive('download')->andThrow(new DataverseException('Service unavailable', 503));
+
+        $response = $this->createHandler()->downloadDatasetFile(
+            $this->createRequest(['fileId' => self::DATASET_FILE_ID]),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(503, $response->getStatusCode());
+    }
+
     public function testReviewerCannotDownloadFilesNotSelectedForReview(): void
     {
         $this->submission->setData('selectedDataFilesForReview', []);
