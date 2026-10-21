@@ -78,7 +78,6 @@ class DatasetFileActionsTest extends PKPTestCase
 
     public function testFailedDownloadRemovesItsTemporaryDirectory(): void
     {
-        ini_set('error_log', '/dev/null');
         $filesDir = realpath(Config::getVar('files', 'files_dir'));
         $directoriesBefore = glob($filesDir . '/datasetFile*');
 
