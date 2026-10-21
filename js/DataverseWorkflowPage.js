@@ -307,7 +307,8 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 }
 
                 if (datasetFieldName === 'relationType') {
-                    field.value = this.dataset.relatedPublication._data.RelationType;
+                    const relatedPublication = this.dataset.relatedPublication;
+                    field.value = relatedPublication ? relatedPublication._data.RelationType : null;
                 }
             }
 
