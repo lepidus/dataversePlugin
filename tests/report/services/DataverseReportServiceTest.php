@@ -12,6 +12,9 @@ use APP\plugins\generic\dataverse\report\classes\DataverseStatsReport;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\DataversePlugin;
 use Illuminate\Support\Facades\DB;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\dataverseAPI\search\DataverseSearchBuilder;
+use APP\publication\Publication;
 
 class DataverseReportServiceTest extends DatabaseTestCase
 {
@@ -309,5 +312,70 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $this->assertEquals(1, $reportService->getPublishedSubmissionsCount());
         $this->assertEquals(2, $reportService->getDeclinedSubmissionsCount());
         $this->assertEquals(3, $reportService->getTotalSubmissionsCount());
+    }
+
+    private function mockSearchBuilder(DataverseReportService $reportService, array &$filteredIds): void
+    {
+        $searchBuilder = $this->createMock(DataverseSearchBuilder::class);
+        $searchBuilder->method('addType')->willReturnSelf();
+        $searchBuilder->method('addFilterQuery')->willReturnCallback(
+            function ($field, $value) use ($searchBuilder, &$filteredIds) {
+                $filteredIds[] = $value;
+                return $searchBuilder;
+            }
+        );
+        $searchBuilder->method('count')->willReturn(3);
+        $reportService->method('getDataverseSearchBuilder')->willReturn($searchBuilder);
+    }
+
+    public function testCountsDatasetFilesOnlyOfTheContextDatasets(): void
+    {
+        $this->createTestSubmission(Submission::STATUS_QUEUED, null, true);
+        $otherContext = Application::getContextDAO()->newDataObject();
+        $otherContext->setPath('otherTest');
+        $otherContext->setPrimaryLocale('en');
+        $otherContext->setId(Application::getContextDAO()->insertObject($otherContext));
+
+        try {
+            $otherSubmission = new Submission();
+            $otherSubmission->setAllData([
+                'submissionProgress' => DataverseReportQueryBuilder::SUBMISSION_PROGRESS_COMPLETE,
+                'contextId' => $otherContext->getId(),
+            ]);
+            $otherSubmissionId = Repo::submission()->add($otherSubmission, new Publication(), $otherContext);
+            $study = Repo::dataverseStudy()->newDataObject();
+            $study->setAllData([
+                'submissionId' => $otherSubmissionId,
+                'persistentId' => 'otherContextId',
+                'persistentUri' => 'otherContextUri',
+                'editUri' => 'otherContextEditUri',
+                'editMediaUri' => 'otherContextEditMediaUri',
+                'statementUri' => 'otherContextStatementUri',
+            ]);
+            Repo::dataverseStudy()->add($study);
+
+            $reportService = $this->getMockBuilder(DataverseReportService::class)
+                ->setConstructorArgs([$this->context->getId(), DataverseStatsReport::OJS_APP_NAME])
+                ->onlyMethods(['getDataverseSearchBuilder'])
+                ->getMock();
+            $filteredIds = [];
+            $this->mockSearchBuilder($reportService, $filteredIds);
+
+            $this->assertEquals(3, $reportService->countDatasetFiles());
+            $this->assertEquals(['testId'], $filteredIds);
+        } finally {
+            Application::getContextDAO()->deleteObject($otherContext);
+        }
+    }
+
+    public function testContextWithoutDatasetsHasNoFilesInDatasets(): void
+    {
+        $reportService = $this->getMockBuilder(DataverseReportService::class)
+            ->setConstructorArgs([$this->context->getId(), DataverseStatsReport::OJS_APP_NAME])
+            ->onlyMethods(['getDataverseSearchBuilder'])
+            ->getMock();
+        $reportService->expects($this->never())->method('getDataverseSearchBuilder');
+
+        $this->assertSame(0, $reportService->countDatasetFiles());
     }
 }

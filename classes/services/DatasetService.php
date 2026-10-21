@@ -24,6 +24,7 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 
 class DatasetService extends DataverseService
 {
@@ -168,17 +169,23 @@ class DatasetService extends DataverseService
             return;
         }
 
+        $study = Repo::dataverseStudy()->getByPersistentId($dataset->getPersistentId());
+        $submission = Repo::submission()->get($study->getSubmissionId());
+
         foreach ($data as $name => $value) {
             if ($name == 'relationType') {
+                if (!$dataset->getRelatedPublication()) {
+                    $dataset->setRelatedPublication(
+                        (new SubmissionDatasetFactory($submission, false))
+                            ->getDatasetRelatedPublication($submission->getCurrentPublication())
+                    );
+                }
                 $dataset->getRelatedPublication()->setData('RelationType', $value);
                 continue;
             }
 
             $dataset->setData($name, $value);
         }
-
-        $study = Repo::dataverseStudy()->getByPersistentId($dataset->getPersistentId());
-        $submission = Repo::submission()->get($study->getSubmissionId());
 
         try {
             $dataverseClient->getDatasetActions()->update($dataset);

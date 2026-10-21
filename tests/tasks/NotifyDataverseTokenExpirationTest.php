@@ -41,6 +41,20 @@ class NotifyDataverseTokenExpirationTest extends PKPTestCase
 
         $this->assertEquals($expectedRecipients, $recipients);
     }
+
+    public function testContactEmailMatchingAUserIsNotDuplicated(): void
+    {
+        $task = $this->createTestableClass();
+        $context = new TestableContext(42, 'Primary Contact', ' Manager@Example.org ');
+
+        $recipients = $task->getRecipients($context);
+        $expectedRecipients = [
+            ['name' => 'Site Admin', 'email' => 'admin@example.org'],
+            ['name' => 'Journal Manager', 'email' => 'manager@example.org'],
+        ];
+
+        $this->assertEquals($expectedRecipients, $recipients);
+    }
 }
 
 class TestableNotifyDataverseTokenExpiration extends NotifyDataverseTokenExpiration

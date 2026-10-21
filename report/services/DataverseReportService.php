@@ -243,10 +243,14 @@ class DataverseReportService
     public function countDatasetFiles(): int
     {
         $args = ['contextIds' => [$this->contextId]];
-        $submissionsWithDataset = $this->getQueryBuilder()
+        $submissionsWithDataset = $this->getQueryBuilder($args)
             ->filterWithDataset()
             ->getQuery()
             ->get();
+
+        if ($submissionsWithDataset->isEmpty()) {
+            return 0;
+        }
 
         $searchBuilder = $this->getDataverseSearchBuilder()->addType('file');
 

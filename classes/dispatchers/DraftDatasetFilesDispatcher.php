@@ -91,7 +91,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
         $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
-        $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles');
+        $fileActionApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
 
         $datasetFilesListPanel = new DatasetFilesListPanel(
             'datasetFiles',
@@ -128,12 +128,14 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
     private function getDatasetFiles($request, $submissionId): array
     {
         $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submissionId)->toArray();
-        $datasetFilesApiUrl = $this->getApiUrl('draftDatasetFiles');
         $datasetFilesProps = [];
 
         foreach ($draftDatasetFiles as $draftDatasetFile) {
             $props = $draftDatasetFile->getAllData();
-            $props['downloadUrl'] = $datasetFilesApiUrl . '/' . $draftDatasetFile->getId() . '/download';
+            $props['downloadUrl'] = $this->getApiUrl(
+                'draftDatasetFiles/' . $draftDatasetFile->getId() . '/download',
+                ['submissionId' => $submissionId]
+            );
             $datasetFilesProps[] = $props;
         }
         ksort($datasetFilesProps);

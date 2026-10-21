@@ -1,6 +1,8 @@
 <?php
 
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use PKP\tests\PKPTestCase;
 
 class DatasetMetadataFormTest extends PKPTestCase
@@ -24,5 +26,34 @@ class DatasetMetadataFormTest extends PKPTestCase
 
         $this->assertCount(1, $form->fields);
         $this->assertSame('datasetDistributionDate', $form->fields[0]->name);
+    }
+
+    public function datasetsWithoutRelationType(): array
+    {
+        $datasetWithoutRelatedPublication = new Dataset();
+        $datasetWithUntypedRelatedPublication = new Dataset();
+        $datasetWithUntypedRelatedPublication->setRelatedPublication(
+            new DatasetRelatedPublication(null, 'Related article citation', null, null, null)
+        );
+
+        return [
+            'without related publication' => [$datasetWithoutRelatedPublication],
+            'with untyped related publication' => [$datasetWithUntypedRelatedPublication],
+        ];
+    }
+
+    /**
+     * @dataProvider datasetsWithoutRelationType
+     */
+    public function testDatasetWithoutRelationTypeHasEmptyRelationType(Dataset $dataset): void
+    {
+        $formReflection = new ReflectionClass(DatasetMetadataForm::class);
+        $form = $formReflection->newInstanceWithoutConstructor();
+        $getDatasetMetadata = $formReflection->getMethod('getDatasetMetadata');
+        $getDatasetMetadata->setAccessible(true);
+
+        $metadata = $getDatasetMetadata->invoke($form, $dataset);
+
+        $this->assertNull($metadata['relationType']);
     }
 }

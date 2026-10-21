@@ -6,7 +6,9 @@ use APP\core\Application;
 use APP\log\event\SubmissionEventLogEntry;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
+use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
+use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
@@ -20,15 +22,33 @@ use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use PKP\core\Core;
 use PKP\db\DAORegistry;
 use PKP\facades\Locale;
+use PKP\file\TemporaryFileManager;
 use PKP\handler\APIHandler;
-use PKP\security\authorization\PolicySet;
-use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
+use PKP\security\authorization\ContextAccessPolicy;
+use PKP\security\authorization\internal\PublicationCanBeEditedPolicy;
+use PKP\security\authorization\StageRolePolicy;
+use PKP\security\authorization\SubmissionAccessPolicy;
+use PKP\security\authorization\UserRolesRequiredPolicy;
 use PKP\security\Role;
 use PKP\security\Validation;
 
 class DatasetHandler extends APIHandler
 {
     private const MANAGER_ROLES = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR];
+
+    private const PUBLICATION_WRITE_OPERATIONS = ['addDataset', 'addFile', 'edit', 'deleteFile', 'deleteDataset'];
+
+    private const EDITORIAL_DECISION_OPERATIONS = ['associateDataset', 'disassociateDataset', 'publishDataset'];
+
+    private const BASE_METADATA_FIELDS = [
+        'datasetTitle',
+        'datasetDescription',
+        'datasetKeywords',
+        'datasetLanguage',
+        'datasetSubject',
+        'datasetLicense',
+        'datasetRelationType',
+    ];
 
     public function __construct()
     {
@@ -115,50 +135,115 @@ class DatasetHandler extends APIHandler
 
     public function authorize($request, &$args, $roleAssignments)
     {
-        $rolePolicy = new PolicySet(PolicySet::COMBINING_PERMIT_OVERRIDES);
+        $operation = $this->getSlimRequest()->getAttribute('route')->getName();
+        $permitDeclinedReviewer = $operation === 'downloadDatasetFile'
+            && !$request->getContext()->getData('restrictReviewerFileAccess');
 
-        foreach ($roleAssignments as $role => $operations) {
-            $rolePolicy->addPolicy(new RoleBasedHandlerOperationPolicy($request, $role, $operations));
+        $this->addPolicy(new UserRolesRequiredPolicy($request), true);
+        $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
+        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments, 'submissionId', $permitDeclinedReviewer));
+
+        if (in_array($operation, self::PUBLICATION_WRITE_OPERATIONS)) {
+            $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
         }
-        $this->addPolicy($rolePolicy);
+
+        if (in_array($operation, self::EDITORIAL_DECISION_OPERATIONS)) {
+            $this->addPolicy(new StageRolePolicy(self::MANAGER_ROLES, null, false));
+        }
 
         return parent::authorize($request, $args, $roleAssignments);
     }
 
-    private function userHasRoles(array $roles): bool
+    private function getSubmissionStudy(array $args): ?DataverseStudy
     {
-        $request = Application::get()->getRequest();
-        $user = $request->getUser();
-        $context = $request->getContext();
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+        $study = Repo::dataverseStudy()->get((int) $args['studyId']);
 
-        if (!$user || !$context) {
+        if (!$study || $study->getSubmissionId() != $submission->getId()) {
+            return null;
+        }
+
+        return $study;
+    }
+
+    private function getStudyDatasetFile(DataverseStudy $study, int $fileId): ?DatasetFile
+    {
+        $datasetFiles = (new DataverseClient())
+            ->getDatasetFileActions()
+            ->getByDatasetId($study->getPersistentId());
+
+        foreach ($datasetFiles as $datasetFile) {
+            if ((int) $datasetFile->getId() === $fileId) {
+                return $datasetFile;
+            }
+        }
+
+        return null;
+    }
+
+    private function isFileAvailableToUser(int $fileId): bool
+    {
+        $reviewAssignment = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_REVIEW_ASSIGNMENT);
+        $userRoles = (array) $this->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES);
+
+        if (
+            !$reviewAssignment
+            || array_intersect([Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER], $userRoles)
+            || $this->isAssignedToSubmission()
+        ) {
+            return true;
+        }
+
+        $context = Application::get()->getRequest()->getContext();
+        if ($context->getData('restrictReviewerFileAccess') && !$reviewAssignment->getDateConfirmed()) {
             return false;
         }
 
-        $roleDao = DAORegistry::getDAO('RoleDAO');
-        return (bool) $roleDao->userHasRole($context->getId(), $user->getId(), $roles);
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+
+        return in_array($fileId, (array) $submission->getData('selectedDataFilesForReview'));
     }
 
-    private function userHasManagerRole(): bool
+    protected function isAssignedToSubmission(): bool
     {
-        return $this->userHasRoles(self::MANAGER_ROLES);
-    }
-
-    private function userHasReviewerRole(): bool
-    {
-        return $this->userHasRoles([Role::ROLE_ID_REVIEWER]);
-    }
-
-    private function userIsAssignedToSubmission(int $submissionId): bool
-    {
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
         $user = Application::get()->getRequest()->getUser();
 
-        if (!$user) {
-            return false;
+        $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
+        return (bool) $stageAssignmentDao->getBySubmissionAndUserIdAndStageId($submission->getId(), $user->getId())->next();
+    }
+
+    private function createMetadataForm(): DatasetMetadataForm
+    {
+        (new DataverseClient())->getDataverseCollectionActions()->getRequiredMetadata();
+
+        return new DatasetMetadataForm('', 'POST', null, 'workflow');
+    }
+
+    private function getAdditionalMetadata(array $params, DatasetMetadataForm $metadataForm): array
+    {
+        $additionalMetadata = [];
+
+        foreach ($metadataForm->fields as $field) {
+            if (in_array($field->name, self::BASE_METADATA_FIELDS) || !array_key_exists($field->name, $params)) {
+                continue;
+            }
+
+            $metadataName = substr($field->name, strlen('dataset'));
+            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
+            $additionalMetadata[$metadataName] = $params[$field->name];
         }
 
-        $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
-        return (bool) $stageAssignmentDao->getBySubmissionAndUserIdAndStageId($submissionId, $user->getId())->next();
+        return $additionalMetadata;
+    }
+
+    private function dataverseError($response, DataverseException $e)
+    {
+        error_log('Dataverse API error: ' . $e->getMessage());
+
+        return $response
+            ->withStatus($e->getCode())
+            ->withJsonError($e->getUserMessageKey());
     }
 
     private function mapServiceStatusToHttpCode(string $status): ?int
@@ -174,15 +259,10 @@ class DatasetHandler extends APIHandler
 
     public function get($slimRequest, $response, $args)
     {
-        $study = Repo::dataverseStudy()->get($args['studyId']);
+        $study = $this->getSubmissionStudy($args);
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
-        }
-
-        $submissionId = $study->getSubmissionId();
-        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
-            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
         }
 
         try {
@@ -209,15 +289,16 @@ class DatasetHandler extends APIHandler
     {
         $requestParams = $slimRequest->getParsedBody();
         $locale = Locale::getLocale();
-        $study = Repo::dataverseStudy()->get($args['studyId']);
+        $study = $this->getSubmissionStudy($args);
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $submissionId = $study->getSubmissionId();
-        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
-            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
+        try {
+            $metadataForm = $this->createMetadataForm();
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
         }
 
         $data = [];
@@ -230,21 +311,8 @@ class DatasetHandler extends APIHandler
         $data['license'] = $requestParams['datasetLicense'];
         $data['relationType'] = $requestParams['datasetRelationType'];
 
-        $metadataForm = new DatasetMetadataForm('', 'POST', null, 'workflow');
-        foreach ($metadataForm->fields as $field) {
-            if (!array_key_exists($field->name, $requestParams)) {
-                continue;
-            }
-
-            $metadataName = substr($field->name, strlen('dataset'));
-            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
-            if (!array_key_exists($metadataName, $data)) {
-                $data[$metadataName] = $requestParams[$field->name];
-            }
-        }
-
         $datasetService = new DatasetService();
-        $datasetService->update($data);
+        $datasetService->update(array_merge($data, $this->getAdditionalMetadata($requestParams, $metadataForm)));
 
         return $this->get($slimRequest, $response, $args);
     }
@@ -252,12 +320,11 @@ class DatasetHandler extends APIHandler
     public function associateDataset($slimRequest, $response, $args)
     {
         $requestParams = $slimRequest->getParsedBody();
-        $queryParams = $slimRequest->getQueryParams();
-        $submissionId = $queryParams['submissionId'];
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
         $persistentId = $requestParams['datasetPersistentId'];
 
         $datasetService = new DatasetService();
-        $associationResult = $datasetService->associate($submissionId, $persistentId);
+        $associationResult = $datasetService->associate($submission->getId(), $persistentId);
 
         if ($associationResult['status'] !== DataverseService::STATUS_SUCCESS) {
             return $response
@@ -270,7 +337,7 @@ class DatasetHandler extends APIHandler
 
     public function disassociateDataset($slimRequest, $response, $args)
     {
-        $study = Repo::dataverseStudy()->get($args['studyId']);
+        $study = $this->getSubmissionStudy($args);
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
@@ -283,7 +350,7 @@ class DatasetHandler extends APIHandler
 
     public function publishDataset($slimRequest, $response, $args)
     {
-        $study = Repo::dataverseStudy()->get($args['studyId']);
+        $study = $this->getSubmissionStudy($args);
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
@@ -322,13 +389,10 @@ class DatasetHandler extends APIHandler
     public function addDataset($slimRequest, $response, $args)
     {
         $requestParams = $slimRequest->getParsedBody();
-        $queryParams = $slimRequest->getQueryParams();
         $locale = Locale::getLocale();
 
-        $submissionId = $queryParams['submissionId'];
-        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
-            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
-        }
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+        $submissionId = $submission->getId();
 
         $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submissionId)->toArray();
 
@@ -345,7 +409,11 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.notSolelyReadmeFile');
         }
 
-        $submission = Repo::submission()->get($submissionId);
+        try {
+            $metadataForm = $this->createMetadataForm();
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
+        }
 
         $datasetFactory = new SubmissionDatasetFactory($submission);
         try {
@@ -364,22 +432,7 @@ class DatasetHandler extends APIHandler
         $relatedPublication->setData('RelationType', $requestParams['datasetRelationType']);
         $dataset->setRelatedPublication($relatedPublication);
 
-        $excludedKeys = [
-            'datasetTitle',
-            'datasetDescription',
-            'datasetKeywords',
-            'datasetLanguage',
-            'datasetSubject',
-            'datasetLicense',
-            'datasetRelationType'
-        ];
-
-        foreach ($requestParams as $key => $value) {
-            if (in_array($key, $excludedKeys)) {
-                continue;
-            }
-            $metadataName = str_replace('dataset', '', $key);
-            $metadataName = $metadataName === strtoupper($metadataName) ? $metadataName : lcfirst($metadataName);
+        foreach ($this->getAdditionalMetadata($requestParams, $metadataForm) as $metadataName => $value) {
             $dataset->setData($metadataName, $value);
         }
 
@@ -400,9 +453,17 @@ class DatasetHandler extends APIHandler
     public function addFile($slimRequest, $response, $args)
     {
         $requestParams = $slimRequest->getParsedBody();
-        $fileId = $requestParams['datasetFile']['temporaryFileId'];
+        $fileId = (int) ($requestParams['datasetFile']['temporaryFileId'] ?? 0);
 
-        $study = Repo::dataverseStudy()->get($args['studyId']);
+        $study = $this->getSubmissionStudy($args);
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $user = Application::get()->getRequest()->getUser();
+        if (!(new TemporaryFileManager())->getFile($fileId, $user->getId())) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
 
         $datasetFileService = new DatasetFileService();
         $datasetFileService->add($study, $fileId);
@@ -412,12 +473,11 @@ class DatasetHandler extends APIHandler
 
     public function getFiles($slimRequest, $response, $args)
     {
-        $study = Repo::dataverseStudy()->get($args['studyId']);
+        $study = $this->getSubmissionStudy($args);
         $request = Application::get()->getRequest();
 
-        $submissionId = $study->getSubmissionId();
-        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
-            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
         try {
@@ -430,15 +490,17 @@ class DatasetHandler extends APIHandler
                 ->withJsonError($e->getUserMessageKey());
         }
 
-        $fileActionApiUrl = $request
-            ->getDispatcher()
-            ->url($request, Application::ROUTE_API, $request->getContext()->getPath(), 'datasets/' . $study->getId() . '/file');
-
-        $items = array_map(function ($datasetFile) use ($fileActionApiUrl) {
+        $items = array_map(function ($datasetFile) use ($request, $study) {
             $fileVars = $datasetFile->getVars();
-            $fileVars['downloadUrl'] = $fileActionApiUrl
-                . '?fileId=' . urlencode($datasetFile->getId())
-                . '&fileName=' . urlencode($datasetFile->getFileName());
+            $fileVars['downloadUrl'] = $request->getDispatcher()->url(
+                $request,
+                Application::ROUTE_API,
+                $request->getContext()->getPath(),
+                'datasets/' . $study->getId() . '/file',
+                null,
+                null,
+                ['submissionId' => $study->getSubmissionId(), 'fileId' => $datasetFile->getId()]
+            );
             return $fileVars;
         }, $datasetFiles);
 
@@ -449,14 +511,9 @@ class DatasetHandler extends APIHandler
 
     public function getCitation($slimRequest, $response, $args)
     {
-        $study = Repo::dataverseStudy()->get((int) $args['studyId']);
+        $study = $this->getSubmissionStudy($args);
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
-        }
-
-        $submissionId = $study->getSubmissionId();
-        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
-            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
         }
 
         $queryParams = $slimRequest->getQueryParams();
@@ -477,12 +534,15 @@ class DatasetHandler extends APIHandler
 
     public function getInReview($slimRequest, $response, $args)
     {
-        $queryParams = $slimRequest->getQueryParams();
-        $datasetId = $queryParams['datasetId'];
+        $study = $this->getSubmissionStudy($args);
+        if (!$study) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
 
         try {
-            $dataverseClient = new DataverseClient();
-            $datasetLocks = $dataverseClient->getDatasetActions()->getDatasetLocks($datasetId);
+            $datasetLocks = (new DataverseClient())
+                ->getDatasetActions()
+                ->getDatasetLocks($study->getPersistentId());
         } catch (DataverseException $e) {
             error_log('Error getting dataset locks: ' . $e->getMessage());
             return $response
@@ -502,35 +562,35 @@ class DatasetHandler extends APIHandler
     public function deleteFile($slimRequest, $response, $args)
     {
         $queryParams = $slimRequest->getQueryParams();
-        $study = Repo::dataverseStudy()->get($args['studyId']);
+        $study = $this->getSubmissionStudy($args);
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $submissionId = $study->getSubmissionId();
-        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
-            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
+        try {
+            $datasetFile = $this->getStudyDatasetFile($study, (int) ($queryParams['fileId'] ?? 0));
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
+        }
+
+        if (!$datasetFile) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
         $datasetFileService = new DatasetFileService();
-        $datasetFileService->delete($study, $queryParams['fileId'], $queryParams['fileName']);
+        $datasetFileService->delete($study, (string) $datasetFile->getId(), $datasetFile->getFileName());
 
         return $response->withJson(['message' => 'ok'], 200);
     }
 
     public function deleteDataset($slimRequest, $response, $args)
     {
-        $study = Repo::dataverseStudy()->get($args['studyId']);
+        $study = $this->getSubmissionStudy($args);
         $deleteMessage = null;
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
-        }
-
-        $submissionId = $study->getSubmissionId();
-        if (!$this->userHasManagerRole() && !$this->userIsAssignedToSubmission($submissionId)) {
-            return $response->withStatus(403)->withJsonError('api.403.unauthorized');
         }
 
         $requestParams = $slimRequest->getParsedBody();
@@ -550,39 +610,34 @@ class DatasetHandler extends APIHandler
     public function downloadDatasetFile($slimRequest, $response, $args)
     {
         $queryParams = $slimRequest->getQueryParams();
-        $fileId = (int) $queryParams['fileId'];
-        $study = Repo::dataverseStudy()->get($args['studyId']);
+        $fileId = (int) ($queryParams['fileId'] ?? 0);
+        $study = $this->getSubmissionStudy($args);
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $submissionId = $study->getSubmissionId();
-        if (!$this->userHasManagerRole()
-            && !$this->userHasReviewerRole()
-            && !$this->userIsAssignedToSubmission($submissionId)
-        ) {
+        if (!$this->isFileAvailableToUser($fileId)) {
             return $response->withStatus(403)->withJsonError('api.403.unauthorized');
         }
 
-        $filesActions = (new DataverseClient())->getDatasetFileActions();
         try {
-            $datasetFiles = $filesActions->getByDatasetId($study->getPersistentId());
+            $datasetFile = $this->getStudyDatasetFile($study, $fileId);
         } catch (DataverseException $e) {
-            error_log('Error getting dataset files: ' . $e->getMessage());
-            return $response
-                ->withStatus($e->getCode())
-                ->withJsonError($e->getUserMessageKey());
+            return $this->dataverseError($response, $e);
         }
 
-        foreach ($datasetFiles as $datasetFile) {
-            if ($datasetFile->getId() == $fileId) {
-                $filesActions->download($fileId, $datasetFile->getFileName());
-                return $response->withStatus(200);
-            }
+        if (!$datasetFile) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        return $response->withStatus(403)->withJsonError('api.403.unauthorized');
+        try {
+            (new DataverseClient())->getDatasetFileActions()->download($datasetFile->getId(), $datasetFile->getFileName());
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
+        }
+
+        return $response->withStatus(200);
     }
 
     private function createEventLog($study, $messageKey, $params)

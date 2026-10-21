@@ -32,8 +32,15 @@ Cypress.Commands.add('changeAuthorEditPermissionOnPublication', function(usernam
 	cy.logout();
 });
 
-Cypress.Commands.add('waitDataStatementTabLoading', function () {
-	cy.wait('@getDataverseNameRequest', {timeout: 10000}).its('response.statusCode').should('eq', 200);
+Cypress.Commands.add('waitDataStatementTabLoading', function (remainingAttempts = 3) {
+	cy.wait('@getDataverseNameRequest', {timeout: 10000}).its('response.statusCode').then((statusCode) => {
+		const isLoggedOutPageResponse = statusCode === 403 && remainingAttempts > 1;
+		if (isLoggedOutPageResponse) {
+			cy.waitDataStatementTabLoading(remainingAttempts - 1);
+			return;
+		}
+		expect(statusCode).to.equal(200);
+	});
 });
 
 Cypress.Commands.add('waitDatasetTabLoading', function () {
