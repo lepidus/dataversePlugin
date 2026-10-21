@@ -272,11 +272,10 @@ class DatasetHandlerAccessTest extends PKPTestCase
 
     public function testInReviewChecksTheLocksOfTheStudyDataset(): void
     {
-        $dataset = new Dataset();
-        $dataset->setDatasetId(77);
         $datasetActions = Mockery::mock();
-        $datasetActions->shouldReceive('get')->with($this->study->getPersistentId())->andReturn($dataset);
-        $datasetActions->shouldReceive('getDatasetLocks')->once()->with(77)->andReturn([['lockType' => 'InReview']]);
+        $datasetActions->shouldNotReceive('get');
+        $datasetActions->shouldReceive('getDatasetLocks')->once()
+            ->with($this->study->getPersistentId())->andReturn([['lockType' => 'InReview']]);
         Mockery::mock('overload:' . DataverseClient::class)
             ->shouldReceive('getDatasetActions')->andReturn($datasetActions);
 

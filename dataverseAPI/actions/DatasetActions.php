@@ -78,9 +78,12 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         );
     }
 
-    public function getDatasetLocks(int $datasetId): array
+    public function getDatasetLocks(string $persistentId): array
     {
-        $uri = $this->createNativeAPIURI(['datasets', $datasetId, 'locks']);
+        $uri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId', 'locks'],
+            ['persistentId' => $persistentId]
+        );
         $response = $this->nativeAPIRequest('GET', $uri);
         $jsonContent = json_decode($response->getBody(), true);
 

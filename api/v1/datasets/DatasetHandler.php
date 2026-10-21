@@ -540,9 +540,9 @@ class DatasetHandler extends APIHandler
         }
 
         try {
-            $datasetActions = (new DataverseClient())->getDatasetActions();
-            $dataset = $datasetActions->get($study->getPersistentId());
-            $datasetLocks = $datasetActions->getDatasetLocks($dataset->getDatasetId());
+            $datasetLocks = (new DataverseClient())
+                ->getDatasetActions()
+                ->getDatasetLocks($study->getPersistentId());
         } catch (DataverseException $e) {
             error_log('Error getting dataset locks: ' . $e->getMessage());
             return $response
