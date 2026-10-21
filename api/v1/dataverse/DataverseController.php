@@ -212,7 +212,6 @@ class DataverseController extends PKPBaseController
             $props['downloadUrl'] = $this->apiUrl('datasets/' . $study->getId() . '/file', [
                 'submissionId' => $study->getSubmissionId(),
                 'fileId' => $datasetFile->getId(),
-                'fileName' => $datasetFile->getFileName(),
             ]);
             return $props;
         }, $dataset->getFiles());

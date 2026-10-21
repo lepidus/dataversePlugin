@@ -69,6 +69,48 @@ class DatasetActionsTest extends PKPTestCase
         $this->assertEquals(0, $this->mockHandler->count());
     }
 
+    public function testPublishedCitationEscapesDatasetMetadata(): void
+    {
+        $persistentUrl = 'https://doi.org/10.12345/FK2/ABCDEFG';
+        $actions = $this->createActions([
+            new Response(200, [], json_encode([
+                'persistentUrl' => $persistentUrl,
+                'datasetVersion' => [
+                    'citation' => 'Author, 2026, "<img src=x onerror=alert(1)>", ' . $persistentUrl . ', Demo Dataverse, V1',
+                ],
+            ])),
+        ]);
+
+        $citation = $actions->getCitation('doi:10.12345/FK2/ABCDEFG', true)['citation'];
+
+        $this->assertSame(
+            'Author, 2026, &quot;&lt;img src=x onerror=alert(1)&gt;&quot;, '
+                . '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>, Demo Dataverse, V1',
+            $citation
+        );
+    }
+
+    public function testDraftCitationEscapesDatasetMetadata(): void
+    {
+        $persistentUrl = 'https://doi.org/10.12345/FK2/ABCDEFG';
+        $links = str_repeat('<link rel="related" href="https://test.dataverse.org/other"/>', 4);
+        $atomEntry = '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:dcterms="http://purl.org/dc/terms/">'
+            . $links . '<link rel="alternate" href="' . $persistentUrl . '"/>'
+            . '<dcterms:bibliographicCitation>Author, 2026, "&lt;script&gt;alert(1)&lt;/script&gt;", '
+            . $persistentUrl . ', Demo Dataverse, DRAFT VERSION</dcterms:bibliographicCitation>'
+            . '</entry>';
+        $actions = $this->createActions([new Response(200, [], $atomEntry)]);
+
+        $citation = $actions->getCitation('doi:10.12345/FK2/ABCDEFG', false)['citation'];
+
+        $this->assertSame(
+            'Author, 2026, &quot;&lt;script&gt;alert(1)&lt;/script&gt;&quot;, '
+                . '<a href="' . $persistentUrl . '">' . $persistentUrl . '</a>, Demo Dataverse, DRAFT VERSION',
+            $citation
+        );
+    }
+
     public function testUpdateSendsRequiredMetadataRequestThroughGivenClient(): void
     {
         $actions = $this->createActions([

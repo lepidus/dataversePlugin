@@ -179,7 +179,7 @@ class DatasetMetadataForm extends FormComponent
             'language' => $dataset->getLanguage(),
             'subject' => $dataset->getSubject(),
             'license' => $dataset->getLicense(),
-            'relationType' => $dataset->getRelatedPublication()->getRelationType()
+            'relationType' => $dataset->getRelatedPublication()?->getRelationType()
         ];
     }
 
