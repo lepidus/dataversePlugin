@@ -32,11 +32,11 @@ Cypress.Commands.add('changeAuthorEditPermissionOnPublication', function(usernam
 	cy.logout();
 });
 
-Cypress.Commands.add('waitDataStatementTabLoading', function (attempts = 3) {
-	// A page from the previous session can still answer its delayed request with 403 after logout.
+Cypress.Commands.add('waitDataStatementTabLoading', function (remainingAttempts = 3) {
 	cy.wait('@getDataverseNameRequest', {timeout: 10000}).its('response.statusCode').then((statusCode) => {
-		if (statusCode === 403 && attempts > 1) {
-			cy.waitDataStatementTabLoading(attempts - 1);
+		const isLoggedOutPageResponse = statusCode === 403 && remainingAttempts > 1;
+		if (isLoggedOutPageResponse) {
+			cy.waitDataStatementTabLoading(remainingAttempts - 1);
 			return;
 		}
 		expect(statusCode).to.equal(200);
