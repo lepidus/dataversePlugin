@@ -189,7 +189,7 @@ class DataStatementDispatcher extends DataverseDispatcher
         $publication = $params[1];
         $props = $params[2];
 
-        if (!$publication || !array_key_exists('dataStatementUrls', $props)) {
+        if (!$publication || !array_intersect(['dataStatementTypes', 'dataStatementUrls'], array_keys($props))) {
             return false;
         }
 
@@ -203,7 +203,13 @@ class DataStatementDispatcher extends DataverseDispatcher
             return false;
         }
 
-        if (!$this->allAreURLs((array) $props['dataStatementUrls'])) {
+        $dataStatementUrls = (array) (array_key_exists('dataStatementUrls', $props)
+            ? $props['dataStatementUrls']
+            : $publication->getData('dataStatementUrls'));
+
+        if (empty($dataStatementUrls)) {
+            $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')];
+        } elseif (!$this->allAreURLs($dataStatementUrls)) {
             $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')];
         }
 

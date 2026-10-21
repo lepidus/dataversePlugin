@@ -56,8 +56,14 @@ class DataStatementValidationTest extends DatabaseTestCase
         Services::get('schema')->get('publication', true);
     }
 
-    private function validatePublicationEdit(array $props, string $submissionProgress = ''): array
-    {
+    private function validatePublicationEdit(
+        array $props,
+        string $submissionProgress = '',
+        array $dataStatement = [
+            'dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE],
+            'dataStatementUrls' => [self::REPOSITORY_URL],
+        ]
+    ): array {
         $submission = new Submission();
         $submission->setAllData([
             'contextId' => $this->context->getId(),
@@ -65,11 +71,7 @@ class DataStatementValidationTest extends DatabaseTestCase
             'submissionProgress' => $submissionProgress,
         ]);
         $publication = new Publication();
-        $publication->setAllData([
-            'sectionId' => $this->sectionId,
-            'dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE],
-            'dataStatementUrls' => [self::REPOSITORY_URL],
-        ]);
+        $publication->setAllData(array_merge(['sectionId' => $this->sectionId], $dataStatement));
         $submissionId = Repo::submission()->add($submission, $publication, $this->context);
         $submission = Repo::submission()->get($submissionId);
 
@@ -87,6 +89,28 @@ class DataStatementValidationTest extends DatabaseTestCase
             [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')],
             $errors['dataStatementUrls']
         );
+    }
+
+    public function testRepositoryUrlsAreRequiredWhenThePublicationIsEdited(): void
+    {
+        $errors = $this->validatePublicationEdit(['dataStatementUrls' => []]);
+
+        $this->assertArrayHasKey('dataStatementUrls', $errors);
+        $this->assertEquals(
+            [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')],
+            $errors['dataStatementUrls']
+        );
+    }
+
+    public function testRepositoryTypeCannotBeSelectedWithoutUrls(): void
+    {
+        $errors = $this->validatePublicationEdit(
+            ['dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE]],
+            '',
+            ['dataStatementTypes' => [DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND]]
+        );
+
+        $this->assertArrayHasKey('dataStatementUrls', $errors);
     }
 
     public function testRepositoryUrlThatIsNotTextIsReportedAsInvalid(): void
