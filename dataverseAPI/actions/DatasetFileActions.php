@@ -79,15 +79,16 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         $uri = $this->createNativeAPIURI(['access', 'datafile', $datasetFileId]);
 
         $options = ['sink' => Utils::tryFopen($filePath, 'w')];
-
-        $this->nativeAPIRequest('GET', $uri, $options, false);
-
-        $mediaType = PKPString::mime_content_type($filePath, pathinfo($filename, PATHINFO_EXTENSION));
-        $downloadName = preg_replace('/["\\\\[:cntrl:]]/', '', $filename);
-
         $fileManager = new FileManager();
-        $fileManager->downloadByPath($filePath, $mediaType, false, $downloadName);
 
-        $fileManager->rmtree($datasetFileDir);
+        try {
+            $this->nativeAPIRequest('GET', $uri, $options, false);
+
+            $mediaType = PKPString::mime_content_type($filePath, pathinfo($filename, PATHINFO_EXTENSION));
+            $downloadName = preg_replace('/["\\\\[:cntrl:]]/', '', $filename);
+            $fileManager->downloadByPath($filePath, $mediaType, false, $downloadName);
+        } finally {
+            $fileManager->rmtree($datasetFileDir);
+        }
     }
 }

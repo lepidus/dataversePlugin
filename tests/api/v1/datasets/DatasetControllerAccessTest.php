@@ -144,6 +144,17 @@ class DatasetControllerAccessTest extends PKPTestCase
         return $reviewAssignment;
     }
 
+    public function testFailedDownloadReturnsTheDataverseError(): void
+    {
+        ini_set('error_log', '/dev/null');
+        $fileActions = $this->mockDatasetFileActions();
+        $fileActions->shouldReceive('download')->andThrow(new DataverseException('Service unavailable', 503));
+
+        $request = $this->createRequest('GET', '/datasets/' . self::STUDY_ID . '/file', ['fileId' => self::DATASET_FILE_ID]);
+
+        $this->assertSame(503, $this->createController()->downloadFile($request)->getStatusCode());
+    }
+
     public function testDownloadFileRejectsFilesOutsideTheStudyDataset(): void
     {
         $fileActions = $this->mockDatasetFileActions();

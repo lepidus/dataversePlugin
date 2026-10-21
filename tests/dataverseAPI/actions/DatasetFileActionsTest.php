@@ -1,6 +1,7 @@
 <?php
 
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetFileActions;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -36,13 +37,13 @@ class DatasetFileActionsTest extends PKPTestCase
         });
     }
 
-    private function createActions(string $contents = 'research data contents'): DatasetFileActions
+    private function createActions(string $contents = 'research data contents', int $status = 200): DatasetFileActions
     {
         $configuration = new DataverseConfiguration();
         $configuration->setDataverseUrl('https://test.dataverse.org/dataverses/testDataverse');
         $configuration->setAPIToken('apiToken');
 
-        $handler = new MockHandler([new Response(200, [], $contents)]);
+        $handler = new MockHandler([new Response($status, [], $contents)]);
         $client = new Client(['handler' => HandlerStack::create($handler)]);
 
         return new DatasetFileActions($configuration, $client);
@@ -73,5 +74,19 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->createActions()->download(2025434, "Data \"final\".csv");
 
         $this->assertSame('Data final.csv', $this->downloadedFileName);
+    }
+
+    public function testFailedDownloadRemovesItsTemporaryDirectory(): void
+    {
+        ini_set('error_log', '/dev/null');
+        $filesDir = realpath(Config::getVar('files', 'files_dir'));
+        $directoriesBefore = glob($filesDir . '/datasetFile*');
+
+        try {
+            $this->createActions('Internal error', 500)->download(2025434, 'Data.csv');
+            $this->fail('The Dataverse error was not reported');
+        } catch (DataverseException $e) {
+            $this->assertSame($directoriesBefore, glob($filesDir . '/datasetFile*'));
+        }
     }
 }

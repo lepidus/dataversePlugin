@@ -450,10 +450,14 @@ class DatasetController extends PKPBaseController
             return $this->notFound();
         }
 
-        (new DataverseClient())->getDatasetFileActions()->download(
-            $datasetFile->getId(),
-            $datasetFile->getFileName()
-        );
+        try {
+            (new DataverseClient())->getDatasetFileActions()->download(
+                $datasetFile->getId(),
+                $datasetFile->getFileName()
+            );
+        } catch (DataverseException $e) {
+            return $this->dataverseError($e);
+        }
 
         exit;
     }
