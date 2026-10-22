@@ -45,7 +45,7 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
 
         $submissionApiUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), 'submissions/' . $submission->getId());
         $dataset = new Dataset();
-        $datasetLanguage = $submission->getData('datasetLanguage') ?? \Locale::getDisplayLanguage($submission->getLocale(), 'en');
+        $datasetLanguage = $submission->getData('datasetLanguage') ?? \Locale::getDisplayLanguage($submission->getData('locale'), 'en');
         $dataset->setLanguage($datasetLanguage);
         $dataset->setSubject($submission->getData('datasetSubject'));
         $dataset->setLicense($submission->getData('datasetLicense'));
@@ -92,8 +92,13 @@ class DatasetMetadataDispatcher extends DataverseDispatcher
         $templateMgr = $params[1];
         $output = &$params[2];
 
+        $this->assignDataStatementConstants($templateMgr);
+
         try {
-            $flattenedFields = $this->getFlattenedRequiredMetadataFields();
+            $flattenedFields = array_map(function ($field) {
+                $field['submissionProp'] = 'dataset' . ucfirst($field['name']);
+                return $field;
+            }, $this->getFlattenedRequiredMetadataFields());
             $templateMgr->assign('requiredMetadataFields', $flattenedFields);
         } catch (DataverseException $e) {
             error_log('Error getting required metadata fields: ' . $e->getMessage());

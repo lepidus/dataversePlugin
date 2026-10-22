@@ -1,12 +1,16 @@
 <?php
 
-use PKP\tests\DatabaseTestCase;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
+use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
+use Illuminate\Support\Facades\Crypt;
+use PKP\tests\DatabaseTestCase;
 
 class DataverseConfigurationDAOTest extends DatabaseTestCase
 {
-    private $contextId = 9090;
+    use CreatesTestContext;
+
+    private $context;
     private $pluginName = 'dataverseplugin';
     private $pluginSettingsDAO;
     private $dataverseConfigurationDAO;
@@ -16,9 +20,17 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
     {
         parent::setUp();
 
+        $this->context = $this->createTestContext();
         $this->pluginSettingsDAO = DAORegistry::getDAO('PluginSettingsDAO');
         $this->dataverseConfigurationDAO = new DataverseConfigurationDAO();
         $this->dataverseConfiguration = $this->createTestDataverseConfiguration();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->deleteTestContext($this->context);
+
+        parent::tearDown();
     }
 
     protected function getAffectedTables(): array
@@ -52,11 +64,11 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
 
     public function testContextHasConfiguration(): void
     {
-        $this->assertFalse($this->dataverseConfigurationDAO->hasConfiguration($this->contextId));
+        $this->assertFalse($this->dataverseConfigurationDAO->hasConfiguration($this->context->getId()));
 
-        $this->dataverseConfigurationDAO->insert($this->contextId, $this->dataverseConfiguration);
+        $this->dataverseConfigurationDAO->insert($this->context->getId(), $this->dataverseConfiguration);
 
-        $this->assertTrue($this->dataverseConfigurationDAO->hasConfiguration($this->contextId));
+        $this->assertTrue($this->dataverseConfigurationDAO->hasConfiguration($this->context->getId()));
     }
 
     public function testReturnsCorrectConfigurationFromDatabase(): void
@@ -64,29 +76,55 @@ class DataverseConfigurationDAOTest extends DatabaseTestCase
         $settings = $this->dataverseConfiguration->getAllData();
         foreach ($settings as $name => $value) {
             $this->pluginSettingsDAO->updateSetting(
-                $this->contextId,
+                $this->context->getId(),
                 $this->pluginName,
                 $name,
-                $value,
+                $name === 'apiToken' ? Crypt::encryptString($value) : $value,
             );
         }
 
         $this->assertEquals(
             $this->dataverseConfiguration,
-            $this->dataverseConfigurationDAO->get($this->contextId)
+            $this->dataverseConfigurationDAO->get($this->context->getId())
         );
     }
 
     public function testDataverseConfigurationWasInsertedInDatabase(): void
     {
         $this->dataverseConfigurationDAO->insert(
-            $this->contextId,
+            $this->context->getId(),
             $this->dataverseConfiguration
         );
 
         $this->assertEquals(
             $this->dataverseConfiguration,
-            $this->dataverseConfigurationDAO->get($this->contextId)
+            $this->dataverseConfigurationDAO->get($this->context->getId())
         );
+    }
+
+    public function testStoresTokenEncryptedWithApplicationKey(): void
+    {
+        $this->dataverseConfigurationDAO->insert($this->context->getId(), $this->dataverseConfiguration);
+
+        $storedToken = $this->pluginSettingsDAO->getSetting($this->context->getId(), $this->pluginName, 'apiToken');
+
+        $this->assertNotSame('randomToken', $storedToken);
+        $this->assertSame('randomToken', Crypt::decryptString($storedToken));
+    }
+
+    public function testReturnsEmptyTokenWhenStoredTokenCannotBeDecrypted(): void
+    {
+        $this->dataverseConfigurationDAO->insert($this->context->getId(), $this->dataverseConfiguration);
+        $this->pluginSettingsDAO->updateSetting(
+            $this->context->getId(),
+            $this->pluginName,
+            'apiToken',
+            'invalid-encrypted-token'
+        );
+
+        $configuration = $this->dataverseConfigurationDAO->get($this->context->getId());
+
+        $this->assertSame('', $configuration->getAPIToken());
+        $this->assertSame('https://demo.dataverse.org/dataverse/example', $configuration->getDataverseUrl());
     }
 }

@@ -3,7 +3,6 @@
 namespace APP\plugins\generic\dataverse\classes\factories;
 
 use APP\submission\Submission;
-use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
 use APP\author\Author;
 use APP\core\Application;
 use PKP\file\TemporaryFile;
@@ -23,14 +22,12 @@ use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 class SubmissionDatasetFactory extends DatasetFactory
 {
     private $submission;
-    private bool $includeFiles;
     private $draftDatasetFileRepo;
     private $dataverseClient;
 
-    public function __construct(Submission $submission, bool $includeFiles = true)
+    public function __construct(Submission $submission)
     {
         $this->submission = $submission;
-        $this->includeFiles = $includeFiles;
         $this->draftDatasetFileRepo = Repo::draftDatasetFile();
     }
 
@@ -53,16 +50,15 @@ class SubmissionDatasetFactory extends DatasetFactory
         $datasetTitlePrefix = __('plugins.generic.dataverse.dataset.titlePrefix');
         $props['title'] = $datasetTitlePrefix . $publication->getLocalizedData('title');
         $props['description'] = $publication->getLocalizedData('abstract');
-        $props['keywords'] = $publication->getLocalizedData('keywords');
+        $props['keywords'] = array_column($publication->getLocalizedData('keywords') ?? [], 'name');
         $props['language'] = $this->submission->getData('datasetLanguage');
         $props['subject'] = $this->submission->getData('datasetSubject');
         $props['license'] = $this->submission->getData('datasetLicense');
         $props['authors'] = array_map([$this, 'createDatasetAuthor'], $authors);
         $props['contact'] = $this->createDatasetContact();
         $props['depositor'] = $this->getDatasetDepositor();
-        $props['dateOfDeposit'] = date('Y-m-d', time());
         $props['relatedPublication'] = $this->getDatasetRelatedPublication($publication);
-        $props['files'] = $this->includeFiles ? $this->getDatasetFiles() : [];
+        $props['files'] = $this->getDatasetFiles();
 
         $this->sanitizeAdditionalProps($props);
 
@@ -90,7 +86,7 @@ class SubmissionDatasetFactory extends DatasetFactory
     {
         return new DatasetAuthor(
             $author->getFullName(false, true),
-            $author->getLocalizedData('affiliation'),
+            $author->getLocalizedAffiliationNamesAsString() ?: null,
             DatasetAuthor::IDENTIFIER_SCHEME_ORCID,
             $this->getAuthorOrcidNumber($author->getOrcid())
         );
@@ -98,7 +94,7 @@ class SubmissionDatasetFactory extends DatasetFactory
 
     private function getAuthorOrcidNumber(?string $orcid): ?string
     {
-        return preg_match("~\d{4}-\d{4}-\d{4}-\d{3}(\d|X|x)~", $orcid, $matches) ? $matches[0] : null;
+        return preg_match("~\d{4}-\d{4}-\d{4}-\d{3}(\d|X|x)~", $orcid ?? '', $matches) ? $matches[0] : null;
     }
 
     private function createDatasetContact(): DatasetContact
@@ -114,7 +110,9 @@ class SubmissionDatasetFactory extends DatasetFactory
 
         $name = $contact->getFullName(false, true);
         $email = $contact->getEmail();
-        $affiliation = $contact->getLocalizedData('affiliation');
+        $affiliation = $contact instanceof Author
+            ? $contact->getLocalizedAffiliationNamesAsString() ?: null
+            : $contact->getLocalizedData('affiliation');
 
         return new DatasetContact($name, $email, $affiliation);
     }
@@ -124,7 +122,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $submissionUser = Application::get()->getRequest()->getUser();
         $userName = $submissionUser->getFullName(false, true);
 
-        $context = Application::getContextDAO()->getById($this->submission->getContextId());
+        $context = Application::getContextDAO()->getById($this->submission->getData('contextId'));
         $contextName = $context->getLocalizedName();
 
         return $userName . ' (via ' . $contextName . ')';
@@ -165,7 +163,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         }
 
         $temporaryFiles = array_map(
-            function (DraftDatasetFile $draftDatasetFile) {
+            function (DraftDatasetFile $draftDatasetFile) use ($draftDatasetFileRepo) {
                 $temporaryFileManager = new TemporaryFileManager();
                 $file = $temporaryFileManager->getFile(
                     $draftDatasetFile->getData('fileId'),
@@ -174,15 +172,18 @@ class SubmissionDatasetFactory extends DatasetFactory
                 if (!is_null($file)) {
                     return $file;
                 }
-                throw new MissingDepositFileException(__('plugins.generic.dataverse.error.sourceFileMissing'));
+                $draftDatasetFileRepo->delete($draftDatasetFile);
             },
             $draftDatasetFiles
         );
 
+        if (empty(array_filter($temporaryFiles))) {
+            return [];
+        }
+
         $datasetFiles = array_map(
             function (TemporaryFile $temporaryFile) {
                 $datasetFile = new DatasetFile();
-                $datasetFile->setId($temporaryFile->getId());
                 $datasetFile->setOriginalFileName($temporaryFile->getOriginalFileName());
                 $datasetFile->setPath($temporaryFile->getFilePath());
                 return $datasetFile;

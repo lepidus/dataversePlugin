@@ -20,11 +20,11 @@ All versions are compatible with Dataverse 5.x and 6.x.
 
 ## Requirements for usage
 
-1. **api_key_secret**
+1. **app_key**
 
-The OJS instance must have the `api_key_secret` configuration set up, you may contact your system administrator to do that (see [this post](https://forum.pkp.sfu.ca/t/how-to-generate-a-api-key-secret-code-in-ojs-3/72008)).
+The OJS/OPS instance must have the application key (`app_key`, in the `[general]` section of `config.inc.php`) set up. The 3.5 installer and upgrade create it; if it is missing, your system administrator can generate it with `php lib/pkp/tools/appKey.php generate`.
 
-This is required to use the API credentials provided, that are stored encrypted in the OJS database.
+This is required to use the API credentials provided, that are stored encrypted in the database. Changing the key afterwards makes the stored credentials unreadable, and they must be entered again in the plugin settings.
 
 ## Installation
 
@@ -62,7 +62,9 @@ After filling in the fields, just confirm the action by clicking `Save`. The plu
 
 A "Research Data" deposit dialog is shown in the "Files" step of the Submission proccess.
 
-Authors, moderators, editors or managers can also edit the dataset, before publication, on the Research Data tab added to the submission's workflow.
+Authors, moderators, editors or managers can also edit the dataset, before publication, on the "Research data" item added to the Dataverse section of the submission's workflow menu. A "Data statement" item is added right next to it, so the data availability statement can be reviewed and changed during the editorial workflow.
+
+The dataset citation and its status indicators appear in the Research data header, using the same status style as Publication. The files are displayed above the metadata form, without tabs.
 
 In OJS, reviewers can have access to research data files during the review process. Reviewers access to these files can be restricted on Workflow Settings, so they can only see research data when they agree to review the submission.
 
@@ -75,52 +77,38 @@ In OJS, reviewers can have access to research data files during the review proce
 
 ## Running Tests
 
-### Unit Tests
+Tests that talk to Dataverse use a real Dataverse collection. Export its credentials before running them:
 
-To execute the unit tests, run the following command from root of the PKP Appplication directory:
 ```
-find plugins/generic/dataverse -name tests -type d -exec php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit-env2.xml -v "{}" ";"
-```
-
-### Integration Tests
-
-Creates a `cypress.env.json` file in root of the PKP Application directory, with the following environment variables:
-- `baseUrl`
-- `dataverseUrl`
-- `dataverseApiToken`
-- `dataverseTermsOfUse`
-
-**Example**:
-
-```json
-{
-    "baseUrl": "http://localhost:8000",
-    "dataverseUrl": "https://demo.dataverse.org/dataverse/myDataverseAlias",
-    "dataverseApiToken": "abcd-abcd-abcd-abcd-abcdefghijkl",
-    "dataverseTermsOfUse": "https://dataverse.org/best-practices/harvard-dataverse-general-terms-use",
-    "dataverseAdditionalInstructions": "Additional instructions about research data submission:"
-}
+export DATAVERSE_URL="https://demo.dataverse.org/dataverse/myDataverseAlias"
+export DATAVERSE_API_TOKEN="abcd-abcd-abcd-abcd-abcdefghijkl"
+export DATAVERSE_TERMS_OF_USE="https://dataverse.org/best-practices/harvard-dataverse-general-terms-use"
+export DATAVERSE_CUSTOM_REQUIRED_METADATA_URL="https://demo.dataverse.org/dataverse/customRequiredMetadataFields"
 ```
 
-Next, to execute the Cypress tests run the following command from root of the PKP Appplication directory:
+`DATAVERSE_CUSTOM_REQUIRED_METADATA_URL` points to a collection, on the same server and reachable with the same token, whose metadata blocks require `alternativeURL`, `dsDescriptionDate`, `PSRI1` and `PSRI2`; it is used by the scenarios about metadata required by the collection. Without these variables, the PHPUnit tests that need them are skipped locally and fail in CI, and the Playwright suite does not start.
+
+### Unit and Integration Tests (PHPUnit)
+
+Run from the root of the PKP Application directory:
 ```
-npx cypress run --config 'specPattern=plugins/generic/dataverse/cypress/tests/Test*.cy.js'
+php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml plugins/generic/dataverse/tests
 ```
 
-For execute the tests with the Cypress UI, run:
+The configuration, submission, workflow and public page scenarios, including the metadata required by a collection, run against the application database, real files and the Dataverse collection above, without mocks.
+
+### End-to-end Tests (Playwright)
+
+Only behaviour that exists solely in the browser is tested here: client-side validation of the settings form, the conditional fields and sections of the submission wizard, the research data upload modal, the review step, the Research data and Data statement panels of the workflow, the editorial decision steps, the research data shown to reviewers and the public page. The publishing and the acceptance scenarios publish a dataset in the test collection on every run, and Dataverse does not let a regular API token delete a published dataset, so use a collection meant for testing.
+
+The application must be running with the reference test dataset (context `publicknowledge`, users `dbarnes`, `eostrom` and, in OJS, `jjanssen`) and the `en` locale. Inside the plugin directory:
 ```
-npx cypress open --config 'specPattern=plugins/generic/dataverse/cypress/tests/Test*.cy.js'
+npm install
+npx playwright install chromium
+npm run test:e2e
 ```
-Important: Cypress search for elements with expected strings. The locale of your operating system and PKP Application must be `en` for passing into the tests.
 
-Use a restored test dataset with the plugin migrations applied and the `publicknowledge` context.
-Each test prepares its own data. Run specs sequentially because plugin configuration is shared.
-
-Tests create real Dataverse datasets. Cleanup removes only their own submissions and draft datasets;
-published datasets and their local submissions are retained, as are records needed to recover failed cases.
-
-Set `dataverseCustomRequiredMetadataFieldsUrl` to a collection requiring Alternative URL,
-Description Date and PSRI to run the custom metadata cases; otherwise, those cases are pending.
+`BASE_URL` points to the application (default `http://localhost:8000`) and `APP_ROOT` to its root directory (default: three levels above the plugin). To run against OPS, set both, for example `APP_ROOT=/path/to/ops BASE_URL=http://localhost:8001 npm run test:e2e`.
 
 ## Credits
 This plugin was sponsored by the Scientific Electronic Library Online (SciELO) and developed by Lepidus Tecnologia.

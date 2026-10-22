@@ -3,30 +3,33 @@
 namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
 use APP\core\Application;
-use PKP\config\Config;
 use PKP\db\DAORegistry;
-use PKP\cache\CacheManager;
 use GuzzleHttp\Exception\TransferException;
+use Illuminate\Support\Facades\Cache;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 abstract class DataverseActions
 {
     protected $contextId;
+    protected $configuration;
     protected $serverURL;
     protected $apiToken;
     protected $dataverseAlias;
     protected $client;
-    protected $cacheManager;
 
     protected const ONE_DAY_SECONDS = 24 * 60 * 60;
     public function __construct(
         ?DataverseConfiguration $configuration = null,
-        ?\GuzzleHttp\Client $client = null
+        ?\GuzzleHttp\Client $client = null,
+        ?int $contextId = null
     ) {
+        $this->contextId = $contextId;
+
         if (is_null($configuration)) {
-            $this->contextId = Application::get()->getRequest()->getContext()->getId();
+            $this->contextId ??= Application::get()->getRequest()->getContext()->getId();
             $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($this->contextId);
         }
 
@@ -34,11 +37,37 @@ abstract class DataverseActions
             $client = Application::get()->getHttpClient();
         }
 
+        $this->configuration = $configuration;
         $this->serverURL = $configuration->getDataverseServerUrl();
         $this->apiToken = $configuration->getAPIToken();
         $this->dataverseAlias = $configuration->getDataverseCollection();
         $this->client = $client;
-        $this->cacheManager = CacheManager::getManager();
+    }
+
+    protected function createDataverseClient(): DataverseClient
+    {
+        return new DataverseClient($this->configuration, $this->contextId, $this->client);
+    }
+
+    public static function getCacheKey(string $cacheId, int $contextId): string
+    {
+        return $cacheId . '_' . $contextId;
+    }
+
+    protected function getCached(string $cacheId)
+    {
+        return is_null($this->contextId)
+            ? null
+            : Cache::get(self::getCacheKey($cacheId, $this->contextId));
+    }
+
+    protected function putCached(string $cacheId, $contents): void
+    {
+        if (is_null($this->contextId)) {
+            return;
+        }
+
+        Cache::put(self::getCacheKey($cacheId, $this->contextId), $contents, self::ONE_DAY_SECONDS);
     }
 
     public function createNativeAPIURI(array $pathParams, array $queryParams = []): string
@@ -69,20 +98,12 @@ abstract class DataverseActions
     public function nativeAPIRequest(string $method, string $uri, array $options = [], bool $returnResponse = true): ?DataverseResponse
     {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
-        $operation = $this->getRequestOperation($method, $uri);
-        $options += ['connect_timeout' => 5, 'timeout' => $this->getRequestTimeout($operation)];
+        $options += ['connect_timeout' => 5, 'timeout' => 15];
 
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
-            $exception = DataverseException::fromTransferException($e);
-            error_log(json_encode([
-                'component' => 'dataverse',
-                'operation' => $operation,
-                'category' => $exception->getFailureCategory(),
-                'status' => $exception->getCode(),
-            ]));
-            throw $exception;
+            throw DataverseException::fromTransferException($e);
         }
 
         if (!$returnResponse) {
@@ -99,20 +120,12 @@ abstract class DataverseActions
     public function swordAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
     {
         $options['auth'] = [$this->apiToken, ''];
-        $operation = $this->getRequestOperation($method, $uri);
-        $options += ['connect_timeout' => 5, 'timeout' => $this->getRequestTimeout($operation)];
+        $options += ['connect_timeout' => 5, 'timeout' => 15];
 
         try {
             $response = $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
-            $exception = DataverseException::fromTransferException($e);
-            error_log(json_encode([
-                'component' => 'dataverse',
-                'operation' => $operation,
-                'category' => $exception->getFailureCategory(),
-                'status' => $exception->getCode(),
-            ]));
-            throw $exception;
+            throw DataverseException::fromTransferException($e);
         }
 
         return new DataverseResponse(
@@ -121,33 +134,4 @@ abstract class DataverseActions
             $response->getBody()
         );
     }
-
-    private function getRequestOperation(string $method, string $uri): string
-    {
-        $path = (string) parse_url($uri, PHP_URL_PATH);
-        if ($method === 'POST' && substr($path, -4) === '/add') {
-            return 'upload';
-        }
-        if ($method === 'POST' && substr($path, -9) === '/datasets') {
-            return 'create';
-        }
-        return $method === 'GET' ? 'read' : 'write';
-    }
-
-    private function getRequestTimeout(string $operation): int
-    {
-        $defaults = ['read' => 15, 'create' => 30, 'upload' => 60, 'write' => 30];
-        $configured = Config::getVar('dataverse', $operation . '_timeout');
-        $timeout = filter_var($configured, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 300]]);
-        if ($timeout !== false) {
-            return $timeout;
-        }
-        return $defaults[$operation];
-    }
-
-    public function cacheDismiss()
-    {
-        return null;
-    }
-
 }

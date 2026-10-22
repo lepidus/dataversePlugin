@@ -6,10 +6,13 @@ use APP\publication\Publication;
 use PKP\plugins\Hook;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
+use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
 
 class DraftDatasetFileRepositoryTest extends DatabaseTestCase
 {
-    private $contextId = 1;
+    use CreatesTestContext;
+
+    private $context;
     private $draftDatasetFiles;
     private $firstSubmissionId;
     private $secondSubmissionId;
@@ -18,6 +21,7 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
     {
         parent::setUp();
         $this->addDraftDatasetFileSchema();
+        $this->context = $this->createTestContext();
         $this->firstSubmissionId = $this->createSubmission();
         $this->secondSubmissionId = $this->createSubmission();
 
@@ -34,6 +38,7 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
         $secondSubmission = Repo::submission()->get($this->secondSubmissionId);
         Repo::submission()->delete($firstSubmission);
         Repo::submission()->delete($secondSubmission);
+        $this->deleteTestContext($this->context);
     }
 
     protected function getAffectedTables()
@@ -60,13 +65,11 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
 
     private function createSubmission(): int
     {
-        $context = DAORegistry::getDAO('JournalDAO')->getById($this->contextId);
-
         $submission = new Submission();
-        $submission->setData('contextId', $this->contextId);
+        $submission->setData('contextId', $this->context->getId());
         $publication = new Publication();
 
-        return Repo::submission()->add($submission, $publication, $context);
+        return Repo::submission()->add($submission, $publication, $this->context);
     }
 
     private function createDraftDatasetFile($submissionId, $userId, $fileId, $fileName): DraftDatasetFile
@@ -112,7 +115,7 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
 
     public function testGetAll(): void
     {
-        $retrievedFiles = Repo::draftDatasetFile()->getAll($this->contextId)->toArray();
+        $retrievedFiles = Repo::draftDatasetFile()->getAll($this->context->getId())->toArray();
 
         $this->assertCount(2, $retrievedFiles);
 
@@ -127,7 +130,7 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
         $draftDatasetFile = $this->draftDatasetFiles[0];
         Repo::draftDatasetFile()->delete($draftDatasetFile);
 
-        $retrievedFiles = Repo::draftDatasetFile()->getAll($this->contextId)->toArray();
+        $retrievedFiles = Repo::draftDatasetFile()->getAll($this->context->getId())->toArray();
         $secondDraftDatasetFile = $this->draftDatasetFiles[1];
         $retrievedDatasetFile = $retrievedFiles[$secondDraftDatasetFile->getId()];
         $this->assertCount(1, $retrievedFiles);
@@ -138,7 +141,7 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
     {
         Repo::draftDatasetFile()->deleteBySubmissionId($this->secondSubmissionId);
 
-        $retrievedFiles = Repo::draftDatasetFile()->getAll($this->contextId)->toArray();
+        $retrievedFiles = Repo::draftDatasetFile()->getAll($this->context->getId())->toArray();
         $firstDraftDatasetFile = $this->draftDatasetFiles[0];
         $retrievedDatasetFile = $retrievedFiles[$firstDraftDatasetFile->getId()];
         $this->assertCount(1, $retrievedFiles);

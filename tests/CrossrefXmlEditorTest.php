@@ -2,7 +2,6 @@
 
 use PKP\doi\Doi;
 use PKP\tests\DatabaseTestCase;
-use APP\core\Application;
 use APP\publication\Publication;
 use APP\submission\Submission;
 use APP\plugins\generic\dataverse\classes\CrossrefXmlEditor;
@@ -12,12 +11,16 @@ use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataStatementDispatcher;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
 use APP\plugins\generic\dataverse\DataversePlugin;
 
 class CrossrefXmlEditorTest extends DatabaseTestCase
 {
+    use CreatesTestContext;
+
     private CrossrefXmlEditor $xmlEditor;
-    private $contextId = 1;
+    private $context;
     private ?Submission $submission = null;
     private ?Publication $publication = null;
     private ?int $doiId = null;
@@ -27,12 +30,19 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
     private string $persistentId = 'doi:10.5072/FK2/ABCDEF';
     private string $externalDatasetUrl = 'https://doi.org/10.1234/zenodo.98765';
 
+    protected function getMockedRegistryKeys(): array
+    {
+        return ['hooks'];
+    }
+
     public function setUp(): void
     {
         parent::setUp();
         $plugin = new DataversePlugin();
         $dispatcher = new DataStatementDispatcher($plugin);
+        app()->get('schema')->get('publication', true);
 
+        $this->context = $this->createTestContext();
         $this->createTestSubmission();
         $this->study = $this->createDataverseStudy();
         $this->dataset = $this->createTestDataset();
@@ -48,21 +58,22 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         if ($doi) {
             Repo::doi()->delete($doi);
         }
+
+        $this->deleteTestContext($this->context);
+        app()->get('schema')->get('publication', true);
     }
 
     private function createTestSubmission()
     {
-        $context = Application::getContextDAO()->getById($this->contextId);
-
         $submission = new Submission();
-        $submission->setData('contextId', $this->contextId);
+        $submission->setData('contextId', $this->context->getId());
         $publication = new Publication();
 
-        $submissionId = Repo::submission()->add($submission, $publication, $context);
+        $submissionId = Repo::submission()->add($submission, $publication, $this->context);
         $this->submission = Repo::submission()->get($submissionId);
 
         $doi = Repo::doi()->newDataObject([
-            'contextId' => $this->contextId,
+            'contextId' => $this->context->getId(),
             'doi' => $this->doi,
             'status' => Doi::STATUS_REGISTERED,
         ]);
@@ -124,35 +135,33 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
 
     public function testAddsDatasetRelationToWorkNode(): void
     {
-        $worksXml = $this->openTestXml('work_node.xml');
         $doi = preg_replace('/^doi:/i', '', $this->persistentId);
 
-        $noPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(0);
-        $this->xmlEditor->addDatasetRelationToWorkNode($noPreviousRelWorkNode, $doi);
-
-        $withPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(1);
-        $this->xmlEditor->addDatasetRelationToWorkNode($withPreviousRelWorkNode, $doi);
-
-        $resultXml = $worksXml->saveXML();
-        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/work_node.xml');
-
-        $this->assertXmlStringEqualsXmlString($expectedXml, $resultXml);
+        $this->assertAddingOfRelationToWorkNodeMatchesExpected(
+            'preprint_deposit_versioned.xml',
+            'posted_content',
+            $doi,
+            false,
+            'preprint_deposit_versioned.xml'
+        );
     }
 
     public function testAddsExternalDatasetRelationToWorkNode(): void
     {
-        $worksXml = $this->openTestXml('work_node.xml');
-
-        $noPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(0);
-        $this->xmlEditor->addDatasetRelationToWorkNode($noPreviousRelWorkNode, $this->externalDatasetUrl, true);
-
-        $withPreviousRelWorkNode = $worksXml->getElementsByTagName('work')->item(1);
-        $this->xmlEditor->addDatasetRelationToWorkNode($withPreviousRelWorkNode, $this->externalDatasetUrl, true);
-
-        $resultXml = $worksXml->saveXML();
-        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/work_node_external.xml');
-
-        $this->assertXmlStringEqualsXmlString($expectedXml, $resultXml);
+        $this->assertAddingOfRelationToWorkNodeMatchesExpected(
+            'article_deposit.xml',
+            'journal_article',
+            $this->externalDatasetUrl,
+            true,
+            'article_deposit_external.xml'
+        );
+        $this->assertAddingOfRelationToWorkNodeMatchesExpected(
+            'preprint_deposit_versioned.xml',
+            'posted_content',
+            $this->externalDatasetUrl,
+            true,
+            'preprint_deposit_versioned_external.xml'
+        );
     }
 
     public function testAddsDatasetRelationToDepositXml(): void
@@ -168,12 +177,46 @@ class CrossrefXmlEditorTest extends DatabaseTestCase
         $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit.xml', 'preprint_deposit_external.xml');
     }
 
+    public function testAddsExternalDatasetRelationWithoutDatasetInDataverse(): void
+    {
+        $this->addExternalDatasetsToPublication();
+        Repo::dataverseStudy()->delete($this->study);
+
+        $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit.xml', 'preprint_deposit_external_only.xml');
+    }
+
+    public function testAddsExternalDatasetRelationWhenDataverseIsUnavailable(): void
+    {
+        $this->addExternalDatasetsToPublication();
+        $mockDatasetActions = $this->createMock(DatasetActions::class);
+        $mockDatasetActions->method('get')->willThrowException(new DataverseException('Service unavailable', 503));
+        $this->xmlEditor = new CrossrefXmlEditor($mockDatasetActions);
+
+        $this->assertAddingOfRelationToXmlMatchesExpected('preprint_deposit.xml', 'preprint_deposit_external_only.xml');
+    }
+
+    private function assertAddingOfRelationToWorkNodeMatchesExpected(
+        string $fixture,
+        string $workNodeName,
+        string $identifier,
+        bool $isExternalDataset,
+        string $expectedFixture
+    ): void {
+        $depositXml = $this->openTestXml($fixture);
+        $workNode = $depositXml->getElementsByTagName($workNodeName)->item(0);
+
+        $this->xmlEditor->addDatasetRelationToWorkNode($workNode, $identifier, $isExternalDataset);
+
+        $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/' . $expectedFixture);
+
+        $this->assertXmlStringEqualsXmlString($expectedXml, $depositXml->saveXML());
+    }
+
     private function assertAddingOfRelationToXmlMatchesExpected(string $fixture, string $expectedFixture): void
     {
-        $depositXml = new DOMDocument();
-        $depositXml->load(__DIR__ . '/fixtures/crossref/' . $fixture);
+        $depositXml = $this->openTestXml($fixture);
 
-        $result = $this->xmlEditor->addDatasetRelationToDepositXml($depositXml, $this->contextId);
+        $result = $this->xmlEditor->addDatasetRelationToDepositXml($depositXml, $this->context->getId());
 
         $expectedXml = file_get_contents(__DIR__ . '/fixtures/crossref/expected/' . $expectedFixture);
 

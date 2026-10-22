@@ -3,14 +3,12 @@
 namespace APP\plugins\generic\dataverse\dataverseAPI\packagers;
 
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
-use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 
 class NativeAPIDatasetPackager
 {
     private $dataset;
     private $packageDirPath;
-    private $dataverseMetadata;
     private $datasetLicense;
     private $datasetMetadata = [];
     private $files = [];
@@ -18,7 +16,6 @@ class NativeAPIDatasetPackager
 
     public function __construct(Dataset $dataset, ?DataverseClient $dataverseClient = null)
     {
-        $this->dataverseMetadata = new DataverseMetadata();
         $this->dataverseClient = $dataverseClient;
         $this->packageDirPath = tempnam('/tmp', 'dataverse');
         unlink($this->packageDirPath);
@@ -46,7 +43,7 @@ class NativeAPIDatasetPackager
 
         foreach ($datasetData as $attr => $value) {
             $metadataField = $this->getMetadataField($attr);
-            if (empty($metadataField) || is_null($value)) {
+            if (empty($metadataField) || $value === null || $value === '' || $value === []) {
                 continue;
             }
             switch ($metadataField['typeClass']) {
@@ -117,11 +114,6 @@ class NativeAPIDatasetPackager
                 'typeName' => 'datasetContact',
                 'multiple' => true,
                 'typeClass' => 'compound'
-            ],
-            'dateOfDeposit' => [
-                'typeName' => 'dateOfDeposit',
-                'multiple' => false,
-                'typeClass' => 'primitive'
             ],
             'depositor' => [
                 'typeName' => 'depositor',
@@ -274,7 +266,7 @@ class NativeAPIDatasetPackager
         $newChildFields = $this->buildChildFieldValues($field['childFields'], $datasetData);
 
         if ($field['multiple']) {
-            $currentFieldValue[0] = array_merge($currentFieldValue[0], $newChildFields);
+            $currentFieldValue[0] = array_merge($currentFieldValue[0] ?? [], $newChildFields);
         } else {
             $currentFieldValue = array_merge($currentFieldValue, $newChildFields);
         }

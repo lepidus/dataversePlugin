@@ -21,7 +21,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         );
         $response = $this->nativeAPIRequest('GET', $uri);
 
-        $datasetFactory = new JsonDatasetFactory($response->getBody());
+        $datasetFactory = new JsonDatasetFactory($response->getBody(), $this->createDataverseClient());
         return $datasetFactory->getDataset();
     }
 
@@ -67,23 +67,19 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
 
     private function formatCitation(string $citation, string $persistentUrl): string
     {
-        $citation = preg_replace('/,+.UNF[^]]+]/', '', $citation);
-        $escapedCitation = htmlspecialchars($citation, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        $escapedPersistentUrl = htmlspecialchars($persistentUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-
-        return str_replace(
-            $escapedPersistentUrl,
-            '<a href="' . $escapedPersistentUrl . '">' . $escapedPersistentUrl . '</a>',
-            $escapedCitation
+        $escapedUrl = htmlspecialchars($persistentUrl, ENT_QUOTES);
+        $citation = str_replace(
+            $escapedUrl,
+            '<a href="' . $escapedUrl . '">' . $escapedUrl . '</a>',
+            htmlspecialchars($citation, ENT_QUOTES)
         );
+
+        return preg_replace('/,+.UNF[^]]+]/', '', $citation);
     }
 
-    public function getDatasetLocks(string $persistentId): array
+    public function getDatasetLocks(int $datasetId): array
     {
-        $uri = $this->createNativeAPIURI(
-            ['datasets', ':persistentId', 'locks'],
-            ['persistentId' => $persistentId]
-        );
+        $uri = $this->createNativeAPIURI(['datasets', $datasetId, 'locks']);
         $response = $this->nativeAPIRequest('GET', $uri);
         $jsonContent = json_decode($response->getBody(), true);
 
@@ -92,7 +88,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
 
     public function create(Dataset $dataset): DatasetIdentifier
     {
-        $packager = new NativeAPIDatasetPackager($dataset);
+        $packager = new NativeAPIDatasetPackager($dataset, $this->createDataverseClient());
         $packager->createDatasetPackage();
 
         $uri = $this->getCurrentDataverseURI() . '/datasets';
@@ -112,7 +108,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
 
     public function update(Dataset $dataset): void
     {
-        $packager = new NativeAPIDatasetPackager($dataset);
+        $packager = new NativeAPIDatasetPackager($dataset, $this->createDataverseClient());
         $packager->createDatasetPackage();
 
         $uri = $this->createNativeAPIURI(

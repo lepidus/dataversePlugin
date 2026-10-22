@@ -3,8 +3,8 @@
 /**
  * @file plugins/generic/dataverse/DataversePlugin.inc.php
  *
- * Copyright (c) 2019 - 2026 Lepidus Tecnologia
- * Copyright (c) 2020 - 2026 SciELO
+ * Copyright (c) 2019 - 2025 Lepidus Tecnologia
+ * Copyright (c) 2020 - 2025 SciELO
  * Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
  *
  * @class DataversePlugin
@@ -17,6 +17,8 @@ namespace APP\plugins\generic\dataverse;
 
 use PKP\plugins\GenericPlugin;
 use PKP\plugins\PluginRegistry;
+use PKP\plugins\interfaces\HasTaskScheduler;
+use PKP\scheduledTask\PKPScheduler;
 use APP\core\Application;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
@@ -25,10 +27,12 @@ use PKP\core\JSONMessage;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\migrations\DataverseMigration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
+use APP\plugins\generic\dataverse\classes\dispatchers\CrossrefDispatcher;
+use APP\plugins\generic\dataverse\classes\tasks\NotifyDataverseTokenExpiration;
 use APP\plugins\generic\dataverse\DataverseSettingsForm;
 use APP\plugins\generic\dataverse\report\DataverseReportPlugin;
 
-class DataversePlugin extends GenericPlugin
+class DataversePlugin extends GenericPlugin implements HasTaskScheduler
 {
     public function register($category, $path, $mainContextId = null)
     {
@@ -48,6 +52,8 @@ class DataversePlugin extends GenericPlugin
             PluginRegistry::register('reports', $this->getReportPlugin(), $this->getPluginPath());
         }
 
+        new CrossrefDispatcher($this);
+
         return $success;
     }
 
@@ -55,14 +61,12 @@ class DataversePlugin extends GenericPlugin
     {
         $dispatcherClasses = [
             'DataStatementDispatcher',
-            'DataStatementTabDispatcher',
             'DraftDatasetFilesDispatcher',
             'DatasetMetadataDispatcher',
             'DatasetInformationDispatcher',
-            'DatasetTabDispatcher',
+            'WorkflowDispatcher',
             'DatasetReviewDispatcher',
-            'DataverseEventsDispatcher',
-            'CrossrefDispatcher'
+            'DataverseEventsDispatcher'
         ];
 
         foreach ($dispatcherClasses as $dispatcherClass) {
@@ -145,5 +149,14 @@ class DataversePlugin extends GenericPlugin
     public function getInstallMigration(): DataverseMigration
     {
         return new DataverseMigration();
+    }
+
+    public function registerSchedules(PKPScheduler $scheduler): void
+    {
+        $scheduler
+            ->addSchedule(new NotifyDataverseTokenExpiration())
+            ->daily()
+            ->name(NotifyDataverseTokenExpiration::class)
+            ->withoutOverlapping();
     }
 }

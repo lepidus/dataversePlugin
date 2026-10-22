@@ -9,9 +9,10 @@ use APP\decision\Decision;
 use PKP\decision\steps\Form;
 use PKP\components\forms\FormComponent;
 use Illuminate\Support\Facades\Event;
-use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
-use APP\plugins\generic\dataverse\api\v1\dataverse\DataverseHandler;
-use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileHandler;
+use APP\plugins\generic\dataverse\api\v1\datasets\DatasetController;
+use APP\plugins\generic\dataverse\api\v1\dataverse\DataverseController;
+use APP\plugins\generic\dataverse\api\v1\draftDatasetFiles\DraftDatasetFileController;
+use PKP\handler\APIHandler;
 use APP\plugins\generic\dataverse\classes\components\forms\SelectDataFilesForReviewForm;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
@@ -32,30 +33,13 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         Event::subscribe(new ProcessDataverseDecisionsActions());
 
         Hook::add('Schema::get::draftDatasetFile', [$this, 'loadDraftDatasetFileSchema']);
-        Hook::add('Schema::get::submission', [$this, 'modifySubmissionSchema']);
-        Hook::add('Schema::get::eventLog', [$this, 'modifyEventLogSchema']);
         Hook::add('Dispatcher::dispatch', [$this, 'setupDataverseAPIHandlers']);
+        Hook::add('Schema::get::submission', [$this, 'modifySubmissionSchema']);
         Hook::add('Form::config::before', [$this, 'addDatasetPublishNoticeInPublishing']);
         Hook::add('Publication::publish', [$this, 'publishDeposit'], Hook::SEQUENCE_CORE);
         Hook::add('TemplateManager::display', [$this, 'editDecisions']);
         Hook::add('LoadComponentHandler', [$this, 'setupDataverseComponentHandlers']);
         Hook::add('Publication::edit', [$this, 'updateDatasetOnPublicationUpdate']);
-        Hook::add('AcronPlugin::parseCronTab', [$this, 'addDataverseTasksToCrontab']);
-    }
-
-    public function loadDraftDatasetFileSchema($hookname, $params): bool
-    {
-        $schema = &$params[0];
-        $draftDatasetFileSchemaFile = BASE_SYS_DIR . '/plugins/generic/dataverse/schemas/draftDatasetFile.json';
-
-        if (file_exists($draftDatasetFileSchemaFile)) {
-            $schema = json_decode(file_get_contents($draftDatasetFileSchemaFile));
-            if (!$schema) {
-                fatalError('Schema failed to decode. This usually means it is invalid JSON. Requested: ' . $draftDatasetFileSchemaFile . '. Last JSON error: ' . json_last_error());
-            }
-        }
-
-        return Hook::CONTINUE;
     }
 
     public function modifySubmissionSchema(string $hookName, array $params): bool
@@ -93,23 +77,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             error_log('Dataverse Error while modifying submission schema: ' . $e->getMessage());
         }
 
-        return Hook::CONTINUE;
-    }
-
-    public function modifyEventLogSchema(string $hookName, array $params): bool
-    {
-        $schema = &$params[0];
-        $messageParams = ['dataverseError', 'filename', 'persistentId'];
-
-        foreach ($messageParams as $param) {
-            $schema->properties->{$param} = (object) [
-                'type' => 'string',
-                'apiSummary' => true,
-                'validation' => ['nullable'],
-            ];
-        }
-
-        return Hook::CONTINUE;
+        return false;
     }
 
     private function addDatasetPublishFieldsToForm(FormComponent $form, $params)
@@ -214,7 +182,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return;
         }
 
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getContextId());
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getData('contextId'));
         if ($configuration->getDatasetPublish() === DataverseConfiguration::DATASET_PUBLISH_SUBMISSION_ACCEPTED) {
             return;
         }
@@ -412,21 +380,37 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return;
         }
 
-        if (str_contains($request->getRequestPath(), 'api/v1/datasets')) {
-            $handler = new DatasetHandler();
-        } elseif (str_contains($request->getRequestPath(), 'api/v1/dataverse')) {
-            $handler = new DataverseHandler();
-        } elseif (str_contains($request->getRequestPath(), 'api/v1/draftDatasetFiles')) {
-            $handler = new DraftDatasetFileHandler();
+        $controllers = [
+            'api/v1/draftDatasetFiles' => DraftDatasetFileController::class,
+            'api/v1/datasets' => DatasetController::class,
+            'api/v1/dataverse' => DataverseController::class,
+        ];
+
+        foreach ($controllers as $path => $controllerClass) {
+            if (!str_contains($request->getRequestPath(), $path)) {
+                continue;
+            }
+
+            $handler = new APIHandler(new $controllerClass());
+            $router->setHandler($handler);
+            $handler->runRoutes();
+            exit;
+        }
+    }
+
+    public function loadDraftDatasetFileSchema($hookname, $params): bool
+    {
+        $schema = &$params[0];
+        $draftDatasetFileSchemaFile = BASE_SYS_DIR . '/plugins/generic/dataverse/schemas/draftDatasetFile.json';
+
+        if (file_exists($draftDatasetFileSchemaFile)) {
+            $schema = json_decode(file_get_contents($draftDatasetFileSchemaFile));
+            if (!$schema) {
+                fatalError('Schema failed to decode. This usually means it is invalid JSON. Requested: ' . $draftDatasetFileSchemaFile . '. Last JSON error: ' . json_last_error());
+            }
         }
 
-        if (!isset($handler)) {
-            return;
-        }
-
-        $router->setHandler($handler);
-        $handler->getApp()->run();
-        exit;
+        return false;
     }
 
     public function setupDataverseComponentHandlers($hookName, $params): bool
@@ -439,12 +423,5 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return true;
         }
         return false;
-    }
-
-    public function addDataverseTasksToCrontab($hookName, $params)
-    {
-        $taskFilesPath = &$params[0];
-        $taskFilesPath[] = $this->plugin->getPluginPath() . DIRECTORY_SEPARATOR . 'scheduledTasks.xml';
-        return Hook::CONTINUE;
     }
 }

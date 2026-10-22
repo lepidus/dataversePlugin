@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE install SYSTEM "../../../lib/pkp/dtd/install.dtd">
 
-<install version="3.4.8.0">
-    <migration class="APP\plugins\generic\dataverse\classes\migrations\APITokenEncryptionMigration" />
-    <migration class="APP\plugins\generic\dataverse\classes\migrations\DepositMigration" />
+<install version="3.4.5.2">
+    <upgrade maxversion="3.4.5.2">
+        <migration class="APP\plugins\generic\dataverse\classes\migrations\LaravelEncryptionMigration" />
+    </upgrade>
 </install>

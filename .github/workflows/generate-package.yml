@@ -33,7 +33,7 @@ jobs:
         run: |
           mkdir $PLUGIN_NAME
           shopt -s extglob
-          cp -r !($PLUGIN_NAME|.git*|.|..|tests|cypress) $PLUGIN_NAME
+          cp -r !($PLUGIN_NAME|.git*|.|..|tests) $PLUGIN_NAME
           tar -zcvf $PLUGIN_NAME.tar.gz $PLUGIN_NAME
         shell: bash
       - name: Create the release

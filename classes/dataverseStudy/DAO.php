@@ -53,7 +53,7 @@ class DAO extends \PKP\db\DAO
                 'persistent_id'     =>  $study->getPersistentId()
             ]);
 
-        return $this->_getInsertId($this->table, 'study_id');
+        return $this->getInsertId();
     }
 
     public function updateStudy(DataverseStudy $study): void

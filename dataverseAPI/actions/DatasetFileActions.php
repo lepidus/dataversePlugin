@@ -3,8 +3,8 @@
 namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
 use GuzzleHttp\Psr7\Utils;
-use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use PKP\config\Config;
+use PKP\core\PKPString;
 use PKP\file\FileManager;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetFileActionsInterface;
@@ -39,7 +39,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         }, $jsonContent['data']);
     }
 
-    public function add(string $persistentId, string $filename, string $filePath): array
+    public function add(string $persistentId, string $filename, string $filePath): void
     {
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId', 'add'],
@@ -59,26 +59,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             ],
         ];
 
-        $response = $this->nativeAPIRequest('POST', $uri, $options);
-        $content = json_decode((string) $response->getBody(), true);
-        $files = $content['data']['files'] ?? [];
-        if (!is_array($files) || !$files) {
-            throw new DataverseException(__('plugins.generic.dataverse.error.depositPending'));
-        }
-        return array_map(function ($file): array {
-            if (!is_array($file)) {
-                throw new DataverseException(__('plugins.generic.dataverse.error.depositPending'));
-            }
-            $dataFile = $file['dataFile'] ?? [];
-            if (!is_array($dataFile) || !isset($dataFile['id']) || !is_int($dataFile['id']) || $dataFile['id'] < 1) {
-                throw new DataverseException(__('plugins.generic.dataverse.error.depositPending'));
-            }
-            return [
-                'id' => $dataFile['id'],
-                'checksum' => $dataFile['checksum'] ?? null,
-                'size' => $dataFile['filesize'] ?? null,
-            ];
-        }, $files);
+        $this->nativeAPIRequest('POST', $uri, $options);
     }
 
     public function delete(int $datasetFileId): void
@@ -94,7 +75,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         unlink($datasetFileDir);
         mkdir($datasetFileDir);
 
-        $filePath = $datasetFileDir . DIRECTORY_SEPARATOR . $filename;
+        $filePath = $datasetFileDir . DIRECTORY_SEPARATOR . 'datasetFile';
         $uri = $this->createNativeAPIURI(['access', 'datafile', $datasetFileId]);
 
         $options = ['sink' => Utils::tryFopen($filePath, 'w')];
@@ -102,7 +83,10 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
         try {
             $this->nativeAPIRequest('GET', $uri, $options, false);
-            $fileManager->downloadByPath($filePath);
+
+            $mediaType = PKPString::mime_content_type($filePath, pathinfo($filename, PATHINFO_EXTENSION));
+            $downloadName = preg_replace('/["\\\\[:cntrl:]]/', '', $filename);
+            $fileManager->downloadByPath($filePath, $mediaType, false, $downloadName);
         } finally {
             $fileManager->rmtree($datasetFileDir);
         }

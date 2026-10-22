@@ -17,13 +17,6 @@ msgstr "Plugin Dataverse"
 msgid "plugins.generic.dataverse.description"
 msgstr "Deposita conjuntos de dados e/ou outros documentos suplementares no Dataverse."
 
-msgid "plugins.generic.dataverse.settings.emptyApiSecretKey"
-msgstr ""
-"Seu OJS/OPS está sem uma configuração de segurança ('api_key_secret'). Você pode contactar o administrador do sistema para defini-la no arquivo de configuração.<br><br>"
-"A configuração api_key_secret é usada para armazenar suas credenciais do Dataverse com segurança."
-" Mais informações sobre como configurá-la podem ser encontradas <a href=\"https://forum.pkp.sfu.ca/t/how-to-generate-a-api-key-secret-code-in-ojs-3/72008/\" target=\"_blank\">neste tópico do Fórum da Comunidade PKP</a>.<br><br>"
-"Uma vez configurado, retorne para introduzir suas credenciais."
-
 msgid "plugins.generic.dataverse.settings.description"
 msgstr ""
 "Configure a API Dataverse para depositar dados de pesquisa em um repositório Dataverse.<br>"
@@ -78,6 +71,11 @@ msgstr "O endereço URL do Dataverse é obrigatório."
 
 msgid "plugins.generic.dataverse.settings.dataverseUrlNotValid"
 msgstr "Não foi possível conectar ao Dataverse. Erro retornado: {$msg}"
+
+msgid "plugins.generic.dataverse.settings.missingAppKey"
+msgstr ""
+"Seu OJS/OPS está sem a chave da aplicação ('app_key' na seção [general] do config.inc.php). Você pode contatar o administrador do sistema para gerá-la com o comando <code>php lib/pkp/tools/appKey.php generate</code>.<br><br>"
+"A chave da aplicação é usada para armazenar suas credenciais do Dataverse com segurança. Uma vez configurada, retorne aqui para informar suas credenciais."
 
 msgid "plugins.generic.dataverse.settings.tokenRequired"
 msgstr "Por favor, informe uma chave de API para Dataverse."
@@ -144,10 +142,7 @@ msgid "plugins.generic.dataverse.error.readmeFile.required"
 msgstr "É obrigatório o envio de um arquivo README, em formato PDF, MD ou TXT, que acompanhe os arquivos de dados de pesquisa"
 
 msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
-msgstr "Os dados de pesquisa devem conter ao menos um arquivo legível e não vazio além dos arquivos README, enviado diretamente ou dentro de um arquivo ZIP."
-
-msgid "plugins.generic.dataverse.error.getFailed"
-msgstr "Erro ao obter dados de pesquisa no Dataverse: {$error}"
+msgstr "Os dados da pesquisa não podem ser constituídos apenas pelo arquivo README"
 
 msgid "plugins.generic.dataverse.error.exception.unavailable"
 msgstr "O serviço Dataverse está temporariamente indisponível"
@@ -185,7 +180,7 @@ msgid "plugins.generic.dataverse.error.deleteFailed"
 msgstr "Erro ao excluir dados de pesquisa no Dataverse: {$error}"
 
 msgid "plugins.generic.dataverse.error.publishFailed"
-msgstr "Erro ao publicar dados de pesquisa no Dataverse: {$dataverseError}"
+msgstr "Erro ao publicar dados de pesquisa no Dataverse: {$error}"
 
 msgid  "plugins.generic.dataverse.error.addFileFailed"
 msgstr "Erro ao adicionar o arquivo de dados de pesquisa \"{$filename}\": {$error}"
@@ -312,6 +307,9 @@ msgstr "Excluir e enviar e-mail"
 msgid "plugins.generic.dataverse.researchData.publish"
 msgstr "Publicar dados de pesquisa"
 
+msgid "plugins.generic.dataverse.researchData.publishing"
+msgstr "Publicando os dados de pesquisa. Isso pode levar alguns instantes..."
+
 msgid "plugins.generic.dataverse.researchData.label.draft"
 msgstr "Esboço"
 
@@ -326,9 +324,6 @@ msgstr "Dados de replicação para: "
 
 msgid "plugins.generic.dataverse.metadataForm.loadingDataset"
 msgstr "Carregando informações dos dados de pesquisa..."
-
-msgid "plugins.generic.dataverse.metadataForm.loadingDatasetCitation"
-msgstr "Carregando citação..."
 
 msgid "plugins.generic.dataverse.metadataForm.title"
 msgstr "Título"
@@ -497,60 +492,11 @@ msgstr "É obrigatório informar a justificativa para a não disponibilidade dos
 msgid "plugins.generic.dataverse.dataStatement.researchDataSubmitted"
 msgstr "Os dados de pesquisa foram submetidos ao repositório <strong>{$dataverseName}</strong>."
 
-
-
 msgid "plugins.generic.dataverse.report.displayName"
 msgstr "Relatório do Dataverse"
 
 msgid "plugins.generic.dataverse.report.description"
 msgstr "Relatório de declaração de dados e depósito de dados de pesquisa do Dataverse."
-
-msgid "plugins.generic.dataverse.report.period"
-msgstr "Período"
-
-msgid "plugins.generic.dataverse.report.filterMessage"
-msgstr "Selecione o tipo de filtragem desejado:"
-
-msgid "plugins.generic.dataverse.report.filterBySubmission"
-msgstr "Filtrar por data de submissão"
-
-msgid "plugins.generic.dataverse.report.filterByDecision"
-msgstr "Filtrar por data da decisão final"
-
-msgid "plugins.generic.dataverse.report.dateSubmittedInterval"
-msgstr "Intervalo da data de submissão"
-
-msgid "plugins.generic.dataverse.report.finalDecisionDateInterval"
-msgstr "Intervalo da data da decisão final"
-
-msgid "plugins.generic.dataverse.report.until"
-msgstr "Até"
-
-msgid "plugins.generic.dataverse.report.noticeTimeGenerateReport"
-msgstr "O processo de geração do relatório pode demorar poucos minutos, dependendo"
-" dos parâmetros selecionados e do número de submissões presentes no sistema. "
-"Caso a demora se estenda por mais tempo, contate a equipe de suporte."
-
-msgid "plugins.generic.dataverse.report.generate"
-msgstr "Gerar Relatório"
-
-msgid "plugins.generic.dataverse.report.headers.submissionsWithDataset"
-msgstr "Submissões com datasets"
-
-msgid "plugins.generic.dataverse.report.headers.statement.accepted"
-msgstr "Declaração de dados (aceitas)"
-
-msgid "plugins.generic.dataverse.report.headers.statement.published"
-msgstr "Declaração de dados (postadas)"
-
-msgid "plugins.generic.dataverse.report.headers.statement.declined"
-msgstr "Declaração de dados (rejeitadas)"
-
-msgid "plugins.generic.dataverse.report.headers.statement.total"
-msgstr "Declaração de dados (total)"
-
-msgid "plugins.generic.dataverse.report.headers.datasetsMetrics"
-msgstr "Métricas de datasets"
 
 msgid "plugins.generic.dataverse.report.headers.acceptedSubmissions"
 msgstr "Submissões aceitas"
@@ -558,20 +504,11 @@ msgstr "Submissões aceitas"
 msgid "plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset"
 msgstr "Submissões aceitas com dataset"
 
-msgid "plugins.generic.dataverse.report.headers.publishedSubmissions"
-msgstr "Submissões postadas"
-
-msgid "plugins.generic.dataverse.report.headers.publishedSubmissionsWithDataset"
-msgstr "Submissões postadas com dataset"
-
 msgid "plugins.generic.dataverse.report.headers.declinedSubmissions"
 msgstr "Submissões rejeitadas"
 
 msgid "plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset"
 msgstr "Submissões rejeitadas com dataset"
-
-msgid "plugins.generic.dataverse.report.headers.totalSubmissions"
-msgstr "Total de submissões (excluindo incompletas)"
 
 msgid "plugins.generic.dataverse.report.headers.datasetsWithDepositError"
 msgstr "Datasets com erro no depósito"
@@ -581,21 +518,3 @@ msgstr "Datasets com erro na publicação"
 
 msgid "plugins.generic.dataverse.report.headers.filesInDatasets"
 msgstr "Arquivos nos datasets"
-
-msgid "plugins.generic.dataverse.report.headers.statement.inManuscript"
-msgstr "No manuscrito"
-
-msgid "plugins.generic.dataverse.report.headers.statement.repoAvailable"
-msgstr "Em um ou mais repositório(s)"
-
-msgid "plugins.generic.dataverse.report.headers.statement.onDemand"
-msgstr "Sob demanda"
-
-msgid "plugins.generic.dataverse.report.headers.statement.publiclyUnavailable"
-msgstr "Indisponíveis publicamente"
-
-msgid "plugins.generic.dataverse.error.depositPending"
-msgstr "O depósito não foi confirmado. Entre em contato com a revista para verificar o depósito existente antes de tentar novamente."
-
-msgid "plugins.generic.dataverse.error.sourceFileMissing"
-msgstr "Um arquivo selecionado para o depósito não está mais disponível. Reenvie o arquivo ausente antes de depositar os dados de pesquisa."

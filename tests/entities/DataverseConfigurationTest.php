@@ -6,6 +6,7 @@ use APP\core\PageRouter;
 use APP\core\Request;
 use PKP\core\Dispatcher;
 use PKP\core\Registry;
+use PKP\facades\Locale;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DefaultAdditionalInstructions;
 
@@ -30,11 +31,22 @@ class DataverseConfigurationTest extends PKPTestCase
         return ['request'];
     }
 
+    private $previousLocale;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->previousLocale = Locale::getLocale();
+        Locale::setLocale('en');
         $this->setupRequest();
         $this->dataverseConfiguration = $this->createTestDataverseConfiguration();
+    }
+
+    protected function tearDown(): void
+    {
+        Locale::setLocale($this->previousLocale);
+
+        parent::tearDown();
     }
 
     private function setupRequest(): void

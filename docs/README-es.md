@@ -18,11 +18,11 @@ Consulte la última versión compatible con su aplicación en la [Página de Ver
 
 ## Requisitos para uso
 
-1. **api_key_secret**
+1. **app_key**
 
-La instancia de OJS debe tener la configuración `api_key_secret` configurada, puedes contactar a tu administrador de sistema para hacerlo (ver [esta publicación](https://forum.pkp.sfu.ca/t/how-to-generate-a-api-key-secret-code-in-ojs-3/72008)).
+La instancia de OJS/OPS debe tener la clave de la aplicación (`app_key`, en la sección `[general]` de `config.inc.php`) configurada. La instalación y la actualización a la 3.5 la crean; si falta, su administrador del sistema puede generarla con `php lib/pkp/tools/appKey.php generate`.
 
-Esto es necesario para utilizar las credenciales de API proporcionadas, que se almacenan cifradas en la base de datos de OJS.
+Esto es necesario para utilizar las credenciales de API proporcionadas, que se almacenan cifradas en la base de datos. Cambiar la clave después hace ilegibles las credenciales almacenadas, que deben introducirse nuevamente en la configuración del plugin.
 
 ## Instalación
 
@@ -62,7 +62,9 @@ Después de completar los campos, solo confirma la acción haciendo clic en `Gua
 
 Se añade una sección llamada "Datos de investigación" al paso "Archivos" durante el proceso de envío. Además, los metadatos del conjunto de datos deben completarse en el paso "Para los editores/as".
 
-Los autores, moderadores, editores o gerentes también pueden editar el conjunto de datos antes de su publicación, en la pestaña "Datos de investigación" mostrada en el flujo de trabajo de envío.
+Los autores, moderadores, editores o gerentes también pueden editar el conjunto de datos antes de su publicación, en el ítem "Datos de investigación" añadido a la sección Dataverse del menú del flujo de trabajo del envío. Junto a él se añade un ítem "Declaración de datos", para que la declaración de disponibilidad de datos pueda ser consultada y modificada durante el flujo de trabajo editorial.
+
+La cita del conjunto de datos y sus indicadores de estado aparecen en el encabezado de Datos de investigación, con el mismo estilo de estado usado en Publicación. Los archivos se muestran encima del formulario de metadatos, sin pestañas.
 
 En OJS, los evaluadores pueden recibir acceso a los archivos de datos de investigación durante el proceso de evaluación. El acceso de los evaluadores a estos archivos puede ser restringido en la Configuración del Flujo de Trabajo, para que solo visualicen los archivos cuando acepten evaluar la presentación.
 
@@ -73,45 +75,39 @@ En OJS, los evaluadores pueden recibir acceso a los archivos de datos de investi
     - `php tools/upgrade.php upgrade`
 
 ## Ejecución de pruebas
-### Pruebas unitarias
 
-Para ejecutar las pruebas unitarias, ejecuta el siguiente comando en la raíz del directorio de tu aplicación PKP:
+Las pruebas que se comunican con Dataverse usan una colección Dataverse real. Exporta sus credenciales antes de ejecutarlas:
 
 ```
-find plugins/generic/dataverse -name tests -type d -exec php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit-env2.xml -v "{}" ";"
+export DATAVERSE_URL="https://demo.dataverse.org/dataverse/myDataverseAlias"
+export DATAVERSE_API_TOKEN="abcd-abcd-abcd-abcd-abcdefghijkl"
+export DATAVERSE_TERMS_OF_USE="https://dataverse.org/best-practices/harvard-dataverse-general-terms-use"
+export DATAVERSE_CUSTOM_REQUIRED_METADATA_URL="https://demo.dataverse.org/dataverse/customRequiredMetadataFields"
 ```
 
-### Pruebas de aceptación
+`DATAVERSE_CUSTOM_REQUIRED_METADATA_URL` apunta a una colección, en el mismo servidor y accesible con el mismo token, cuyos bloques de metadatos exigen `alternativeURL`, `dsDescriptionDate`, `PSRI1` y `PSRI2`; la usan los escenarios de metadatos exigidos por la colección. Sin estas variables, las pruebas PHPUnit que las necesitan se omiten localmente y fallan en la CI, y la suite de Playwright no se inicia.
 
-Crea un archivo cypress.env.json en la raíz del directorio de tu aplicación PKP, con las siguientes variables:
-- `baseUrl`
-- `dataverseUrl`
-- `dataverseApiToken`
-- `dataverseTermsOfUse`
+### Pruebas unitarias y de integración (PHPUnit)
 
-**Ejemplo:**
-
-```json
-{
-    "baseUrl": "http://localhost:8000",
-    "dataverseUrl": "https://demo.dataverse.org/dataverse/myDataverseAlias",
-    "dataverseApiToken": "abcd-abcd-abcd-abcd-abcdefghijkl",
-    "dataverseTermsOfUse": "https://dataverse.org/best-practices/harvard-dataverse-general-terms-use",
-    "dataverseAdditionalInstructions": "Instruções adicionar sobre submissão de dados de pesquisa:"
-}
+Ejecuta desde la raíz del directorio de tu aplicación PKP:
+```
+php lib/pkp/lib/vendor/phpunit/phpunit/phpunit --configuration lib/pkp/tests/phpunit.xml plugins/generic/dataverse/tests
 ```
 
-Luego, para ejecutar las pruebas de Cypress, ejecuta el siguiente comando desde la raíz de la aplicación:
+Los escenarios de configuración, de envío, del flujo de trabajo y de la página pública, incluidos los metadatos exigidos por una colección, se ejecutan contra la base de datos de la aplicación, archivos reales y la colección Dataverse anterior, sin mocks.
+
+### Pruebas de extremo a extremo (Playwright)
+
+Aquí solo se prueba el comportamiento que existe únicamente en el navegador: la validación del formulario de configuración hecha en el navegador, los campos y secciones condicionales del asistente de envío, el modal de carga de datos de investigación, el paso de revisión, los paneles Datos de investigación y Declaración de datos del flujo de trabajo, los pasos de las decisiones editoriales, los datos de investigación mostrados a los evaluadores y la página pública. Los escenarios de publicación y de aceptación publican un dataset en la colección de prueba en cada ejecución, y Dataverse no permite que un token de API común elimine un dataset publicado, así que usa una colección destinada a pruebas.
+
+La aplicación debe estar en ejecución con el conjunto de datos de prueba de referencia (contexto `publicknowledge`, usuarios `dbarnes`, `eostrom` y, en OJS, `jjanssen`) y el idioma `en`. En el directorio del plugin:
 ```
-npx cypress run --config specPattern=plugins/generic/dataverse/cypress/tests
+npm install
+npx playwright install chromium
+npm run test:e2e
 ```
 
-Para ejecutar las pruebas con la interfaz de usuario de Cypress, ejecuta:
-```
-npx cypress open --config specPattern=plugins/generic/dataverse/cypress/tests
-```
-
-Importante: Cypress busca elementos utilizando cadenas exactas. El idioma de tu aplicación PKP debe estar en inglés para pasar las pruebas.
+`BASE_URL` apunta a la aplicación (por defecto `http://localhost:8000`) y `APP_ROOT` a su directorio raíz (por defecto: tres niveles por encima del plugin). Para ejecutarlas en OPS, define ambas, por ejemplo `APP_ROOT=/ruta/a/ops BASE_URL=http://localhost:8001 npm run test:e2e`.
 
 ## Créditos
 

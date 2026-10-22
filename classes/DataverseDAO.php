@@ -6,6 +6,13 @@ use Illuminate\Support\Facades\DB;
 
 class DataverseDAO
 {
+    public function getContextIdByDoi(string $doi): ?int
+    {
+        return DB::table('dois')
+            ->where('doi', '=', $doi)
+            ->value('context_id');
+    }
+
     public function getSubmissionIdByDoi(string $doi, int $contextId): ?int
     {
         return DB::table('submissions as s')

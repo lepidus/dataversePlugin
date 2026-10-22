@@ -28,7 +28,7 @@ class DatasetMetadataFormTest extends PKPTestCase
         $this->assertSame('datasetDistributionDate', $form->fields[0]->name);
     }
 
-    public function datasetsWithoutRelationType(): array
+    public static function datasetsWithoutRelationType(): array
     {
         $datasetWithoutRelatedPublication = new Dataset();
         $datasetWithUntypedRelatedPublication = new Dataset();
@@ -42,15 +42,12 @@ class DatasetMetadataFormTest extends PKPTestCase
         ];
     }
 
-    /**
-     * @dataProvider datasetsWithoutRelationType
-     */
+    #[PHPUnit\Framework\Attributes\DataProvider('datasetsWithoutRelationType')]
     public function testDatasetWithoutRelationTypeHasEmptyRelationType(Dataset $dataset): void
     {
         $formReflection = new ReflectionClass(DatasetMetadataForm::class);
         $form = $formReflection->newInstanceWithoutConstructor();
         $getDatasetMetadata = $formReflection->getMethod('getDatasetMetadata');
-        $getDatasetMetadata->setAccessible(true);
 
         $metadata = $getDatasetMetadata->invoke($form, $dataset);
 
