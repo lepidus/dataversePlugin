@@ -41,6 +41,8 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
     public function add(string $persistentId, string $filename, string $filePath): array
     {
+        $this->waitForIngest($persistentId);
+
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId', 'add'],
             ['persistentId' => $persistentId]
@@ -79,6 +81,41 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
                 'size' => $dataFile['filesize'] ?? null,
             ];
         }, $files);
+    }
+
+    private function waitForIngest(string $persistentId): void
+    {
+        $configuredTimeout = Config::getVar('dataverse', 'ingest_wait_timeout');
+        $timeout = filter_var($configuredTimeout, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1, 'max_range' => 300],
+        ]);
+        $deadline = hrtime(true) / 1e9 + ($timeout === false ? 30 : $timeout);
+        $uri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId', 'locks'],
+            ['persistentId' => $persistentId, 'type' => 'Ingest']
+        );
+
+        while (true) {
+            $remaining = $deadline - hrtime(true) / 1e9;
+            if ($remaining <= 0) {
+                throw new DataverseException(__('plugins.generic.dataverse.error.ingestTimeout'));
+            }
+
+            $response = $this->nativeAPIRequest('GET', $uri, [
+                'connect_timeout' => min(5.0, $remaining),
+                'timeout' => $remaining,
+            ]);
+            $content = json_decode((string) $response->getBody());
+            if (!is_array($content->data ?? null)) {
+                throw new DataverseException(__('plugins.generic.dataverse.error.depositPending'));
+            }
+            if ($content->data === []) {
+                return;
+            }
+
+            $remaining = max(0, $deadline - hrtime(true) / 1e9);
+            usleep((int) min(250000, $remaining * 1e6));
+        }
     }
 
     public function delete(int $datasetFileId): void

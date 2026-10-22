@@ -122,6 +122,20 @@ published datasets and their local submissions are retained, as are records need
 Set `dataverseCustomRequiredMetadataFieldsUrl` to a collection requiring Alternative URL,
 Description Date and PSRI to run the custom metadata cases; otherwise, those cases are pending.
 
+### Waiting for tabular ingest
+
+Before each file upload, the plugin waits for the dataset's `Ingest` lock to be released.
+The default wait limit is 30 seconds per file. Administrators may override it in the application's
+`config.inc.php` (integer seconds, from 1 to 300):
+
+```ini
+[dataverse]
+ingest_wait_timeout = 30
+```
+
+If the limit expires or the lock lookup fails, the plugin stops the deposit and preserves its
+progress for verification. It does not automatically repeat an upload with an uncertain result.
+
 ## Credits
 This plugin was sponsored by the Scientific Electronic Library Online (SciELO) and developed by Lepidus Tecnologia.
 
