@@ -12,6 +12,8 @@ use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
 
 class DatasetFileActions extends DataverseActions implements DatasetFileActionsInterface
 {
+    protected const INGEST_WAIT_TIMEOUT_SECONDS = 30;
+
     public function getByDatasetId(string $persistentId): array
     {
         $uri = $this->createNativeAPIURI(
@@ -41,6 +43,8 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
     public function add(string $persistentId, string $filename, string $filePath): array
     {
+        $this->waitForIngest($persistentId);
+
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId', 'add'],
             ['persistentId' => $persistentId]
@@ -79,6 +83,41 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
                 'size' => $dataFile['filesize'] ?? null,
             ];
         }, $files);
+    }
+
+    private function waitForIngest(string $persistentId): void
+    {
+        $deadline = hrtime(true) / 1_000_000_000 + static::INGEST_WAIT_TIMEOUT_SECONDS;
+        $locksUri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId', 'locks'],
+            ['persistentId' => $persistentId, 'type' => 'Ingest']
+        );
+
+        while (true) {
+            $remainingSeconds = $deadline - hrtime(true) / 1_000_000_000;
+            if ($remainingSeconds <= 0) {
+                throw new DataverseException(__('plugins.generic.dataverse.error.ingestTimeout'));
+            }
+
+            $response = $this->nativeAPIRequest('GET', $locksUri, [
+                'connect_timeout' => min(5.0, $remainingSeconds),
+                'timeout' => $remainingSeconds,
+            ]);
+            $content = json_decode((string) $response->getBody());
+            $locks = $content->data ?? null;
+
+            if (!is_array($locks)) {
+                throw new DataverseException(__('plugins.generic.dataverse.error.depositPending'));
+            }
+
+            if ($locks === []) {
+                return;
+            }
+
+            $remainingSeconds = max(0, $deadline - hrtime(true) / 1_000_000_000);
+            $sleepMicroseconds = min(250_000, $remainingSeconds * 1_000_000);
+            usleep((int) $sleepMicroseconds);
+        }
     }
 
     public function delete(int $datasetFileId): void

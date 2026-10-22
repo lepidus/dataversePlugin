@@ -596,3 +596,6 @@ msgstr "The deposit has not been confirmed. Contact the journal to check the exi
 
 msgid "plugins.generic.dataverse.error.sourceFileMissing"
 msgstr "A selected deposit file is no longer available. Replace the missing file before depositing the research data."
+
+msgid "plugins.generic.dataverse.error.ingestTimeout"
+msgstr "Dataverse is still processing the previously uploaded files. The deposit has been paused for verification."

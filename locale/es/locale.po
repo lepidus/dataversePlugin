@@ -603,3 +603,6 @@ msgstr "El depósito no se ha confirmado. Contacte con la revista para verificar
 
 msgid "plugins.generic.dataverse.error.sourceFileMissing"
 msgstr "Un archivo seleccionado para el depósito ya no está disponible. Vuelva a cargar el archivo ausente antes de depositar los datos de investigación."
+
+msgid "plugins.generic.dataverse.error.ingestTimeout"
+msgstr "Dataverse todavía está procesando los archivos enviados anteriormente. El depósito se ha detenido para su verificación."
