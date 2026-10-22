@@ -247,6 +247,28 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $this->assertNotEmpty($dataset->getTitle());
     }
 
+    public function testAuthorWithoutOrcidHasNoDatasetIdentifier(): void
+    {
+        $this->author->setOrcid(null);
+        $factory = new SubmissionDatasetFactory($this->submission, false);
+        $factory->setDataverseClient($this->mockDataverseClient);
+
+        set_error_handler(function ($severity, $message, $file, $line) {
+            if ($severity === E_DEPRECATED) {
+                throw new \ErrorException($message, 0, $severity, $file, $line);
+            }
+            return false;
+        });
+        try {
+            $dataset = $factory->getDataset();
+        } finally {
+            restore_error_handler();
+        }
+
+        $authors = array_values($dataset->getAuthors());
+        $this->assertNull($authors[0]->getIdentifier());
+    }
+
     public function testFactoryCreateDatasetFromSubmission(): void
     {
         $factory = new SubmissionDatasetFactory($this->submission);
