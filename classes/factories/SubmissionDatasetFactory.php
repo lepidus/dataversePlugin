@@ -98,6 +98,10 @@ class SubmissionDatasetFactory extends DatasetFactory
 
     private function getAuthorOrcidNumber(?string $orcid): ?string
     {
+        if ($orcid === null) {
+            return null;
+        }
+
         return preg_match("~\d{4}-\d{4}-\d{4}-\d{3}(\d|X|x)~", $orcid, $matches) ? $matches[0] : null;
     }
 
