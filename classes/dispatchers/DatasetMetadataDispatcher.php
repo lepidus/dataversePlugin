@@ -2,26 +2,55 @@
 
 namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
-use PKP\plugins\Hook;
 use APP\core\Application;
 use APP\pages\submission\SubmissionHandler;
-use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
+use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
-use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\template\TemplateManager;
+use PKP\plugins\Hook;
 use PKP\validation\ValidatorFactory;
 
 class DatasetMetadataDispatcher extends DataverseDispatcher
 {
     protected function registerHooks(): void
     {
+        Hook::add('TemplateManager::display', [$this, 'addDatepickerResources']);
         Hook::add('TemplateManager::display', [$this, 'addToEditorsStep']);
         Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewStep']);
         Hook::add('Submission::validateSubmit', [$this, 'validateSubmissionFields']);
+    }
+
+    public function addDatepickerResources(string $hookName, array $params): bool
+    {
+        $request = Application::get()->getRequest();
+        if (!in_array($request->getRequestedPage(), ['submission', 'workflow', 'authorDashboard'])) {
+            return false;
+        }
+
+        $params[0]->addStyleSheet(
+            'dataverse-field-datepicker',
+            $this->plugin->getPluginFullPath() . '/styles/fieldDatepicker.css',
+            [
+                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
+                'contexts' => ['backend'],
+            ]
+        );
+
+        $params[0]->addJavaScript(
+            'dataverse-field-datepicker',
+            $this->plugin->getPluginFullPath() . '/js/ui/components/FieldDatepicker.js',
+            [
+                'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
+                'contexts' => ['backend'],
+            ]
+        );
+
+        return false;
     }
 
     public function addToEditorsStep(string $hookName, array $params)

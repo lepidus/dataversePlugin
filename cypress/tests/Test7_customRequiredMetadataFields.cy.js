@@ -103,6 +103,51 @@ describe('Dataverse Plugin - Custom required metadata fields', function () {
         cy.logout();
     });
 
+    it('Shows the date calendar only when its field is focused', function () {
+        createSubmissionFixture(fixtures, submission, {submitted: false, statementTypes: [3]})
+            .then((created) => { fixture = created; });
+
+        // Hidden metadata fields must not display a calendar in other steps.
+        cy.get('#ui-datepicker-div').should('not.be.visible');
+        cy.then(() => { cy.visit(`/index.php/publicknowledge/submission?id=${fixture.id}#review`); });
+        const steps = {
+            details: 'Details', files: 'Upload Files', contributors: 'Contributors',
+            editors: 'For the Editors', review: 'Review',
+        };
+        Object.entries(steps).forEach(([id, label]) => {
+            cy.contains('.pkpSteps__step__label', label).click();
+            cy.location('hash').should('eq', `#${id}`);
+            cy.get('#ui-datepicker-div').should('not.be.visible');
+        });
+
+        // Select a date through the core calendar and retain it when navigating.
+        cy.contains('.pkpSteps__step__label', 'For the Editors').click();
+        cy.location('hash').should('eq', '#editors');
+        cy.get('#datasetMetadata-datasetDsDescriptionDate-control').clear().type('2026-10-01');
+        cy.get('#ui-datepicker-div').should('be.visible');
+        cy.get('#ui-datepicker-div').contains('a', /^15$/).click();
+        cy.get('#datasetMetadata-datasetDsDescriptionDate-control').should('have.value', '2026-10-15');
+        cy.get('#ui-datepicker-div').should('not.be.visible');
+
+        // Outside clicks close the calendar without changing the chosen date.
+        cy.get('#datasetMetadata-datasetDsDescriptionDate-control').click();
+        cy.get('#ui-datepicker-div').should('be.visible');
+        cy.get('#ui-datepicker-div .ui-datepicker-title').click();
+        cy.get('#ui-datepicker-div').should('be.visible');
+        cy.get('h1').click('left');
+        cy.get('#ui-datepicker-div').should('not.be.visible');
+        cy.get('#datasetMetadata-datasetDsDescriptionDate-control').should('have.value', '2026-10-15');
+
+        cy.get('#datasetMetadata-datasetDsDescriptionDate-control').click();
+        cy.get('#ui-datepicker-div').should('be.visible');
+        cy.contains('.pkpSteps__step__label', 'Upload Files').click();
+        cy.location('hash').should('eq', '#files');
+        cy.get('#ui-datepicker-div').should('not.be.visible');
+        cy.contains('.pkpSteps__step__label', 'For the Editors').click();
+        cy.location('hash').should('eq', '#editors');
+        cy.get('#datasetMetadata-datasetDsDescriptionDate-control').should('have.value', '2026-10-15');
+    });
+
     it('Can not submit without filling custom required metadata fields', function () {
         const metadataFields = [
             'Alternative URL',

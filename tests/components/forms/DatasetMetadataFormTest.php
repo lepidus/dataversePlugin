@@ -56,4 +56,43 @@ class DatasetMetadataFormTest extends PKPTestCase
 
         $this->assertNull($metadata['relationType']);
     }
+    /** @dataProvider metadataFieldTypes */
+    public function testMetadataFieldUsesExpectedControl(
+        string $type,
+        bool $controlledVocabulary,
+        string $expectedComponent
+    ): void {
+        $reflection = new ReflectionClass(DatasetMetadataForm::class);
+        $form = $reflection->newInstanceWithoutConstructor();
+        $addMetadataField = $reflection->getMethod('addMetadataField');
+        $addMetadataField->setAccessible(true);
+        $dataset = new \APP\plugins\generic\dataverse\classes\entities\Dataset();
+        $dataset->setData('dsDescriptionDate', '2026-10-19');
+
+        $addMetadataField->invoke($form, [
+            'name' => 'dsDescriptionDate',
+            'type' => $type,
+            'displayName' => 'Description Date',
+            'description' => 'Date of the description',
+            'isRequired' => true,
+            'isControlledVocabulary' => $controlledVocabulary,
+            'controlledVocabularyValues' => ['2026-10-19'],
+        ], $dataset);
+
+        $config = $form->fields[0]->getConfig();
+        $this->assertSame($expectedComponent, $config['component']);
+        $this->assertSame('2026-10-19', $config['value']);
+        $this->assertSame('datasetDsDescriptionDate', $config['name']);
+        $this->assertTrue($config['isRequired']);
+    }
+
+    public function metadataFieldTypes(): array
+    {
+        return [
+            'date uses the core calendar' => ['DATE', false, 'field-datepicker'],
+            'text keeps its text control' => ['TEXT', false, 'field-text'],
+            'controlled dates keep their options' => ['DATE', true, 'field-select'],
+        ];
+    }
+
 }
