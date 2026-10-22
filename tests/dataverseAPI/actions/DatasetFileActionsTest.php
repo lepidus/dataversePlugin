@@ -38,8 +38,6 @@ class DatasetFileActionsTest extends PKPTestCase
 
     public function testIngestWaitTimeoutDoesNotUpload(): void
     {
-        $config = &Config::getData();
-        $config['dataverse']['ingest_wait_timeout'] = 1;
         $history = [];
         $handler = HandlerStack::create(new MockHandler(array_fill(
             0,
@@ -47,7 +45,7 @@ class DatasetFileActionsTest extends PKPTestCase
             new Response(200, [], '{"data":[{"lockType":"Ingest"}]}')
         )));
         $handler->push(Middleware::history($history));
-        $actions = $this->createActions(new Client(['handler' => $handler]));
+        $actions = $this->createActions(new Client(['handler' => $handler]), ShortIngestWaitDatasetFileActions::class);
 
         try {
             $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
@@ -131,12 +129,14 @@ class DatasetFileActionsTest extends PKPTestCase
         ]));
     }
 
-    private function createActions(Client $client): DatasetFileActions
-    {
+    private function createActions(
+        Client $client,
+        string $actionsClass = DatasetFileActions::class
+    ): DatasetFileActions {
         $configuration = new DataverseConfiguration();
         $configuration->setDataverseUrl('https://test.dataverse.org/dataverse/test');
         $configuration->setAPIToken('test-token');
-        return new DatasetFileActions($configuration, $client);
+        return new $actionsClass($configuration, $client);
     }
 
     public function testFailedDownloadRemovesItsTemporaryDirectory(): void
@@ -157,4 +157,9 @@ class DatasetFileActionsTest extends PKPTestCase
             $this->assertSame($directoriesBefore, glob($filesDir . '/datasetFile*'));
         }
     }
+}
+
+class ShortIngestWaitDatasetFileActions extends DatasetFileActions
+{
+    protected const INGEST_WAIT_TIMEOUT_SECONDS = 1;
 }
