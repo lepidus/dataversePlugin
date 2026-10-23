@@ -16,6 +16,10 @@ Este plugin es compatible con las siguientes aplicaciones PKP:
 
 Consulte la última versión compatible con su aplicación en la [Página de Versiones](https://github.com/lepidus/dataversePlugin/releases).
 
+## Mantenimiento
+
+Para el registro incorrecto core `3.4.6.2`, consulte la [reparación manual de la versión OJS/OPS 3.4](core-version-repair.md#español).
+
 ## Requisitos para uso
 
 1. **api_key_secret**

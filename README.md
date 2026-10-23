@@ -18,6 +18,10 @@ Check the latest compatible version for your application on the [Releases page](
 
 All versions are compatible with Dataverse 5.x and 6.x.
 
+## Maintenance
+
+For the incorrect core `3.4.6.2` entry, see the [manual OJS/OPS 3.4 version repair](docs/core-version-repair.md#english).
+
 ## Requirements for usage
 
 1. **api_key_secret**
