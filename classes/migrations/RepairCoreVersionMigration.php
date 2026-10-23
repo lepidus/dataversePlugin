@@ -46,13 +46,13 @@ class RepairCoreVersionMigration extends Migration
 
         $connection = DB::connection();
         $driver = $connection->getDriverName();
-        if (!in_array($driver, ['mysql', 'mariadb', 'pgsql'], true)) {
+        if (!in_array($driver, ['mysql', 'pgsql'], true)) {
             throw new RuntimeException('Unsupported database driver for this repair.');
         }
         if ($connection->transactionLevel() !== 0) {
             throw new RuntimeException('Run this repair outside an existing transaction.');
         }
-        if (in_array($driver, ['mysql', 'mariadb'], true)) {
+        if ($driver === 'mysql') {
             $table = $connection->selectOne(
                 'SELECT ENGINE AS engine FROM information_schema.tables WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?',
                 [$connection->getDatabaseName(), $connection->getTablePrefix() . 'versions']
