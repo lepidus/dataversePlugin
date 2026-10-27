@@ -2,6 +2,7 @@
 <!DOCTYPE install SYSTEM "../../../lib/pkp/dtd/install.dtd">
 
 <install>
+    <migration class="APP\plugins\generic\dataverse\classes\migrations\RepairDataverseCoreVersion" />
     <migration class="APP\plugins\generic\dataverse\classes\migrations\APITokenEncryptionMigration" />
     <migration class="APP\plugins\generic\dataverse\classes\migrations\DepositMigration" />
 </install>
