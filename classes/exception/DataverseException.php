@@ -8,6 +8,7 @@ use GuzzleHttp\Exception\TransferException;
 class DataverseException extends Exception
 {
     public const AUTH_ERROR_STATUS_CODE = 401;
+    private const CURL_TIMEOUT_ERRNO = 28;
     private const UNAVAILABLE_STATUS_CODE = 503;
     private const API_ERROR_STATUS_CODES = [400, 403, 404, 409, 422];
     private const AUTHENTICATION_ERROR_MESSAGE = 'plugins.generic.dataverse.error.exception.invalidToken';
@@ -52,6 +53,24 @@ class DataverseException extends Exception
             self::UNAVAILABLE_STATUS_CODE,
             $exception
         );
+    }
+
+    public function getFailureCategory(): string
+    {
+        $previous = $this->getPrevious();
+
+        if ($previous instanceof TransferException) {
+            $handlerContext = method_exists($previous, 'getHandlerContext') ? $previous->getHandlerContext() : [];
+            if (($handlerContext['errno'] ?? null) === self::CURL_TIMEOUT_ERRNO) {
+                return 'timeout';
+            }
+
+            if (!method_exists($previous, 'hasResponse') || !$previous->hasResponse()) {
+                return 'connection';
+            }
+        }
+
+        return $this->getCode() === self::AUTH_ERROR_STATUS_CODE ? 'authentication' : 'http';
     }
 
     public function getUserMessageKey(): string

@@ -60,6 +60,19 @@ Portanto, recomenda-se a criação de um usuário específico para o periódico 
 
 Após preencher os campos, apenas confirme a ação clicando em `Salvar`. O plugin irá funcionar apenas após concluir essa configuração.
 
+#### Limites de tempo das requisições
+As conexões com o Dataverse têm limite de 5 segundos, e cada requisição tem um limite total que depende da operação: 15 segundos para leituras, 30 segundos para a criação do dataset, 60 segundos para o envio de cada arquivo e 30 segundos para as demais alterações (inclusive exclusões). Administradores podem alterar esses limites no `config.inc.php` da aplicação:
+
+```ini
+[dataverse]
+read_timeout = 15
+create_timeout = 30
+upload_timeout = 60
+write_timeout = 30
+```
+
+Os valores devem ser números inteiros de segundos entre 1 e 300; qualquer outro valor usa o padrão. Os arquivos são depositados um após o outro na mesma requisição, então, antes de aumentar um limite, verifique se os limites de requisição do PHP e do servidor web cobrem o tempo de todos os envios juntos. Uma requisição que atinge o limite é informada como tempo esgotado: o Dataverse pode ter concluído a operação mesmo assim.
+
 ### Uso
 
 Uma seção chamada "Dados de pesquisa" é adicionada ao passo "Arquivos" durante o processo de submissão. Além disso, os metadados do conjunto de dados devem ser preenchidos no passo "Para editores".
