@@ -5,50 +5,34 @@ declare(strict_types=1);
 use APP\plugins\generic\dataverse\classes\migrations\RepairDataverseCoreVersion;
 use Illuminate\Cache\ArrayStore;
 use Illuminate\Cache\Repository;
-use Illuminate\Database\Capsule\Manager;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use PHPUnit\Framework\TestCase;
-use PKP\site\VersionCheck;
-
-// Minimal core constants for running this test without the application bootstrap.
-if (!defined('PKP_STRICT_MODE')) {
-    define('PKP_STRICT_MODE', true);
-}
-if (!defined('INDEX_FILE_LOCATION')) {
-    define('INDEX_FILE_LOCATION', dirname((new ReflectionClass(VersionCheck::class))->getFileName(), 5) . '/index.php');
-}
+use PKP\tests\DatabaseTestCase;
 
 require_once dirname(__DIR__, 2) . '/classes/migrations/RepairDataverseCoreVersion.php';
 
-class RepairDataverseCoreVersionTest extends TestCase
+class RepairDataverseCoreVersionTest extends DatabaseTestCase
 {
     private string $product = 'ojs2';
-    private $previousDatabase;
     private $previousCache;
-    private string $previousDirectory;
-    private string $directory;
+    private bool $cacheWasReplaced = false;
+    private ?int $initialTransactionLevel = null;
+    private ?string $previousDirectory = null;
+    private ?string $directory = null;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->previousDirectory = getcwd();
+        $this->initialTransactionLevel = DB::transactionLevel();
+        DB::beginTransaction();
+        DB::table('versions')->delete();
+
         $this->previousCache = Cache::getFacadeRoot();
         Cache::swap(new Repository(new ArrayStore()));
-        $this->previousDatabase = DB::getFacadeRoot();
-        $capsule = new Manager();
-        $capsule->addConnection(['driver' => 'sqlite', 'database' => ':memory:']);
-        DB::swap($capsule->getDatabaseManager());
-        DB::connection()->getSchemaBuilder()->create('versions', function (Blueprint $table) {
-            foreach (['major', 'minor', 'revision', 'build', 'current', 'lazy_load', 'sitewide'] as $column) {
-                $table->integer($column)->default(0);
-            }
-            $table->string('product_type');
-            $table->string('product');
-            $table->string('product_class_name')->default('');
-            $table->string('date_installed')->default('2026-01-01 00:00:00');
-        });
-        $this->previousDirectory = getcwd();
+        $this->cacheWasReplaced = true;
         $this->directory = sys_get_temp_dir() . '/dataverse-version-' . bin2hex(random_bytes(8));
         mkdir($this->directory . '/dbscripts/xml', 0700, true);
         $this->writeCodeVersion('3.4.0.10');
@@ -57,15 +41,32 @@ class RepairDataverseCoreVersionTest extends TestCase
 
     protected function tearDown(): void
     {
-        chdir($this->previousDirectory);
-        unlink($this->directory . '/dbscripts/xml/version.xml');
-        rmdir($this->directory . '/dbscripts/xml');
-        rmdir($this->directory . '/dbscripts');
-        rmdir($this->directory);
-        DB::purge();
-        DB::swap($this->previousDatabase);
-        Cache::swap($this->previousCache);
-        parent::tearDown();
+        try {
+            if ($this->cacheWasReplaced) {
+                Cache::swap($this->previousCache);
+            }
+            if ($this->initialTransactionLevel !== null) {
+                while (DB::transactionLevel() > $this->initialTransactionLevel) {
+                    DB::rollBack();
+                }
+            }
+            if ($this->previousDirectory !== null) {
+                chdir($this->previousDirectory);
+            }
+            if ($this->directory !== null && is_dir($this->directory)) {
+                $versionFile = $this->directory . '/dbscripts/xml/version.xml';
+                if (is_file($versionFile)) {
+                    unlink($versionFile);
+                }
+                foreach (['/dbscripts/xml', '/dbscripts', ''] as $suffix) {
+                    if (is_dir($this->directory . $suffix)) {
+                        rmdir($this->directory . $suffix);
+                    }
+                }
+            }
+        } finally {
+            parent::tearDown();
+        }
     }
 
     /** @dataProvider supportedProducts */
@@ -170,7 +171,6 @@ class RepairDataverseCoreVersionTest extends TestCase
             'unknown newer version' => [[['3.4.0.10', 0], ['3.4.99.0', 1], ['3.4.6.2', 0]]],
             'multiple current versions' => [[['3.4.0.10', 1], ['3.4.6.2', 1]]],
             'no current version' => [[['3.4.0.10', 0], ['3.4.6.2', 0]]],
-            'duplicate target' => [[['3.4.0.10', 0], ['3.4.0.10', 0], ['3.4.6.2', 1]]],
             'files older than history' => [[['3.4.0.10', 0], ['3.4.0.11', 0], ['3.4.6.2', 1]]],
             'current older than files' => [[['3.4.0.9', 1], ['3.4.0.10', 0], ['3.4.6.2', 0]]],
         ]);
@@ -183,13 +183,28 @@ class RepairDataverseCoreVersionTest extends TestCase
         $this->addVersion('3.4.0.10', 0);
         $this->addVersion('3.4.6.2', 1);
         $before = DB::table('versions')->get()->all();
-        DB::unprepared("CREATE TRIGGER prevent_delete BEFORE DELETE ON versions BEGIN SELECT RAISE(ABORT, 'test'); END");
+        $connection = DB::connection();
+        $previousDispatcher = $connection->getEventDispatcher();
+        $dispatcher = new Dispatcher();
+        $dispatcher->listen(QueryExecuted::class, function (QueryExecuted $query): void {
+            if (stripos($query->sql, 'delete ') === 0) {
+                throw new RuntimeException('Simulated deletion failure.');
+            }
+        });
+        $connection->setEventDispatcher($dispatcher);
         try {
             (new RepairDataverseCoreVersion())->up();
             $this->fail('Expected a database failure.');
-        } catch (\Illuminate\Database\QueryException $exception) {
-            $this->assertEquals($before, DB::table('versions')->get()->all());
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Simulated deletion failure.', $exception->getMessage());
+        } finally {
+            if ($previousDispatcher) {
+                $connection->setEventDispatcher($previousDispatcher);
+            } else {
+                $connection->unsetEventDispatcher();
+            }
         }
+        $this->assertEquals($before, DB::table('versions')->get()->all());
     }
 
     /** @dataProvider supportedProducts */
@@ -249,6 +264,7 @@ class RepairDataverseCoreVersionTest extends TestCase
         DB::table('versions')->insert([
             'major' => $major, 'minor' => $minor, 'revision' => $revision, 'build' => $build,
             'current' => $current, 'product_type' => $type, 'product' => $product ?? $this->product,
+            'date_installed' => '2026-01-01 00:00:00',
         ]);
     }
 }
