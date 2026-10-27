@@ -162,6 +162,10 @@ to `JsonDatasetFactory` and `create()`/`update()` hand one to `NativeAPIDatasetP
 the collection's required metadata. Skipping that is what makes a missing configuration blow up several calls
 deep, and what lets a `MockHandler` in a test leak into a real HTTP request.
 
+`DatasetFileActions::add()` polls the dataset's `Ingest` locks (up to 30 s) before every upload, because Dataverse
+rejects or mishandles an upload sent while it is still ingesting the previous file; a lock that outlasts the wait,
+or a lock lookup that fails, stops the upload with a `DataverseException`.
+
 Failures throw `DataverseException`. Callers are expected to catch it and degrade gracefully — an unreachable
 Dataverse should produce a notice or a disabled tab, never a fatal error. `packagers/NativeAPIDatasetPackager`
 serializes a `Dataset` into the JSON the Native API expects; `search/DataverseSearchBuilder` builds search queries.

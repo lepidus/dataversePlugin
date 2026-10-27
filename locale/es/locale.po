@@ -522,3 +522,6 @@ msgstr "Datasets con error en la publicación"
 
 msgid "plugins.generic.dataverse.report.headers.filesInDatasets"
 msgstr "Archivos en datasets"
+
+msgid "plugins.generic.dataverse.error.ingestTimeout"
+msgstr "Dataverse todavía está procesando los archivos enviados anteriormente. El depósito se ha detenido para su verificación."
