@@ -221,11 +221,10 @@ test.describe('with a collection that requires additional metadata', () => {
 		}
 
 		await openStep(page, 'editors');
+		await expect(field('datasetDsDescriptionDate')).toHaveAttribute('type', 'date');
 		await field('datasetAlternativeURL').fill('invalid-url');
-		await field('datasetDsDescriptionDate').fill('june 32, 2023');
 		await openReview(page);
 		await expect(reviewItem('datasetAlternativeURL')).toContainText('This is not a valid URL.');
-		await expect(reviewItem('datasetDsDescriptionDate')).toContainText('This is not a valid date.');
 
 		await openStep(page, 'editors');
 		await field('datasetAlternativeURL').fill('https://example.com');

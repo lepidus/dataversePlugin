@@ -66,6 +66,8 @@ class CollectionRequiredMetadataSubmissionTest extends DatabaseTestCase
             $this->assertTrue($field->isRequired);
         }
         $this->assertContains('Yes', array_column($form->getField('datasetPSRI1')->options, 'value'));
+        $this->assertSame('date', $form->getField('datasetDsDescriptionDate')->inputType);
+        $this->assertSame('text', $form->getField('datasetAlternativeURL')->inputType);
     }
 
     public function testCollectionRequiredMetadataIsRequired(): void

@@ -26,6 +26,7 @@ class DatasetMetadataFormTest extends PKPTestCase
 
         $this->assertCount(1, $form->fields);
         $this->assertSame('datasetDistributionDate', $form->fields[0]->name);
+        $this->assertSame('date', $form->fields[0]->inputType);
     }
 
     public static function datasetsWithoutRelationType(): array

@@ -125,6 +125,8 @@ class DatasetMetadataForm extends FormComponent
 
         if (!empty($field['isControlledVocabulary'])) {
             $config['options'] = $this->mapControlledVocabularyOptions($field['controlledVocabularyValues']);
+        } elseif ($field['type'] === 'DATE') {
+            $config['inputType'] = 'date';
         }
 
         return $config;
