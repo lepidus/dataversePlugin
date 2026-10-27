@@ -498,27 +498,6 @@ msgstr "Relatório do Dataverse"
 msgid "plugins.generic.dataverse.report.description"
 msgstr "Relatório de declaração de dados e depósito de dados de pesquisa do Dataverse."
 
-msgid "plugins.generic.dataverse.report.headers.acceptedSubmissions"
-msgstr "Submissões aceitas"
-
-msgid "plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset"
-msgstr "Submissões aceitas com dataset"
-
-msgid "plugins.generic.dataverse.report.headers.declinedSubmissions"
-msgstr "Submissões rejeitadas"
-
-msgid "plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset"
-msgstr "Submissões rejeitadas com dataset"
-
-msgid "plugins.generic.dataverse.report.headers.datasetsWithDepositError"
-msgstr "Datasets com erro no depósito"
-
-msgid "plugins.generic.dataverse.report.headers.datasetsWithPublishError"
-msgstr "Datasets com erro na publicação"
-
-msgid "plugins.generic.dataverse.report.headers.filesInDatasets"
-msgstr "Arquivos nos datasets"
-
 msgid "plugins.generic.dataverse.report.period"
 msgstr "Período"
 
@@ -586,3 +565,24 @@ msgstr "Sob demanda"
 
 msgid "plugins.generic.dataverse.report.headers.statement.publiclyUnavailable"
 msgstr "Indisponíveis publicamente"
+
+msgid "plugins.generic.dataverse.report.headers.acceptedSubmissions"
+msgstr "Submissões aceitas"
+
+msgid "plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset"
+msgstr "Submissões aceitas com dataset"
+
+msgid "plugins.generic.dataverse.report.headers.declinedSubmissions"
+msgstr "Submissões rejeitadas"
+
+msgid "plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset"
+msgstr "Submissões rejeitadas com dataset"
+
+msgid "plugins.generic.dataverse.report.headers.datasetsWithDepositError"
+msgstr "Datasets com erro no depósito"
+
+msgid "plugins.generic.dataverse.report.headers.datasetsWithPublishError"
+msgstr "Datasets com erro na publicação"
+
+msgid "plugins.generic.dataverse.report.headers.filesInDatasets"
+msgstr "Arquivos nos datasets"
