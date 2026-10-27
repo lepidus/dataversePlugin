@@ -1,47 +1,94 @@
 <?php
 
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\entities\DatasetIdentifier;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
+use APP\publication\Publication;
 use APP\submission\Submission;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
-use PKP\tests\PKPTestCase;
+use PKP\db\DAORegistry;
+use PKP\tests\DatabaseTestCase;
 
 #[RunTestsInSeparateProcesses]
 #[PreserveGlobalState(false)]
-class DatasetServiceDepositTest extends PKPTestCase
+class DatasetServiceDepositTest extends DatabaseTestCase
 {
-    public function testFailedCleanupAfterFileDepositErrorIsReportedAsDepositError(): void
+    use CreatesTestContext;
+
+    private $context;
+    private Submission $submission;
+    private string $filePath;
+
+    protected function setUp(): void
     {
+        parent::setUp();
         ini_set('error_log', '/dev/null');
+        DAORegistry::registerDAO('DataverseConfigurationDAO', new DataverseConfigurationDAO());
+        $this->context = $this->createTestContext();
+        $configuration = new DataverseConfiguration();
+        $configuration->setDataverseUrl('https://dataverse.invalid/dataverse/placeholder');
+        $configuration->setAPIToken('test-token');
+        (new DataverseConfigurationDAO())->insert($this->context->getId(), $configuration);
+        $submission = new Submission();
+        $submission->setData('contextId', $this->context->getId());
+        $submissionId = Repo::submission()->add($submission, new Publication(), $this->context);
+        $this->submission = Repo::submission()->get($submissionId);
+        $this->filePath = tempnam(sys_get_temp_dir(), 'dataverse-deposit-');
+        file_put_contents($this->filePath, 'year,value');
+    }
+
+    protected function tearDown(): void
+    {
+        unlink($this->filePath);
+        $this->deleteTestContext($this->context);
+        parent::tearDown();
+    }
+
+    public function testFailedFileUploadKeepsTheDatasetAndBlocksARepeatedDeposit(): void
+    {
         $identifier = new DatasetIdentifier();
         $identifier->setPersistentId('doi:10.5072/FK2/TEST');
         $datasetActions = Mockery::mock();
-        $datasetActions->shouldReceive('create')->andReturn($identifier);
-        $datasetActions->shouldReceive('delete')->andThrow(new DataverseException('Dataset is locked', 403));
+        $datasetActions->shouldReceive('create')->once()->andReturn($identifier);
+        $datasetActions->shouldNotReceive('delete');
         $fileActions = Mockery::mock();
-        $fileActions->shouldReceive('add')->andThrow(new DataverseException('File rejected', 400));
+        $fileActions->shouldReceive('add')->once()->andThrow(new DataverseException('File rejected', 400));
         $client = Mockery::mock('overload:' . DataverseClient::class);
         $client->shouldReceive('getDatasetActions')->andReturn($datasetActions);
         $client->shouldReceive('getDatasetFileActions')->andReturn($fileActions);
-
-        $datasetFile = new DatasetFile();
-        $datasetFile->setOriginalFileName('Data.csv');
-        $datasetFile->setPath('/tmp/Data.csv');
-        $dataset = new Dataset();
-        $dataset->setFiles([$datasetFile]);
-
         $service = $this->getMockBuilder(DatasetService::class)
             ->onlyMethods(['registerAndNotifyError'])
             ->getMock();
 
-        $depositInfo = $service->deposit(new Submission(), $dataset);
+        $firstAttempt = $service->deposit($this->submission, $this->createDataset());
+        $secondAttempt = $service->deposit($this->submission, $this->createDataset());
 
-        $this->assertSame('Error', $depositInfo['status']);
-        $this->assertSame('plugins.generic.dataverse.error.datasetFileDeposit', $depositInfo['message']);
+        $this->assertSame('plugins.generic.dataverse.error.depositPending', $firstAttempt['message']);
+        $this->assertSame('plugins.generic.dataverse.error.depositPending', $secondAttempt['message']);
+        $operation = DB::table('dataverse_deposits')->where('submission_id', $this->submission->getId())->first();
+        $this->assertSame('uploading', $operation->state);
+        $this->assertSame('doi:10.5072/FK2/TEST', $operation->persistent_id);
+        $this->assertNull(Repo::dataverseStudy()->getBySubmissionId($this->submission->getId()));
+    }
+
+    private function createDataset(): Dataset
+    {
+        $datasetFile = new DatasetFile();
+        $datasetFile->setId(1);
+        $datasetFile->setOriginalFileName('Data.csv');
+        $datasetFile->setPath($this->filePath);
+        $dataset = new Dataset();
+        $dataset->setFiles([$datasetFile]);
+
+        return $dataset;
     }
 }

@@ -138,6 +138,33 @@ class DatasetFileActionsTest extends PKPTestCase
         ];
     }
 
+    public function testUploadOfAnArchiveReturnsTheReceiptOfEveryRemoteFile(): void
+    {
+        $actions = $this->createActionsRespondingWith([
+            new Response(200, [], '{"data":[]}'),
+            new Response(200, [], json_encode(['data' => ['files' => [
+                ['dataFile' => ['id' => 10, 'checksum' => ['type' => 'MD5', 'value' => 'abc'], 'filesize' => 12]],
+                ['dataFile' => ['id' => 11, 'checksum' => ['type' => 'MD5', 'value' => 'def'], 'filesize' => 20]],
+            ]]])),
+        ]);
+
+        $this->assertSame([
+            ['id' => 10, 'checksum' => ['type' => 'MD5', 'value' => 'abc'], 'size' => 12],
+            ['id' => 11, 'checksum' => ['type' => 'MD5', 'value' => 'def'], 'size' => 20],
+        ], $actions->add('doi:10.1234/ABC', 'source.zip', __FILE__));
+    }
+
+    public function testUploadWithoutFileReceiptIsNotConfirmed(): void
+    {
+        $actions = $this->createActionsRespondingWith([
+            new Response(200, [], '{"data":[]}'),
+            new Response(200, [], '{"data":{"files":[]}}'),
+        ]);
+
+        $this->expectException(DataverseException::class);
+        $actions->add('doi:10.1234/ABC', 'source.zip', __FILE__);
+    }
+
     public function testDownloadKeepsTheFileInsideTheFilesDirectory(): void
     {
         $filesDir = realpath(Config::getVar('files', 'files_dir'));

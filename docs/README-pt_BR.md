@@ -70,6 +70,16 @@ A citação do conjunto de dados e seus indicadores de status aparecem no cabeç
 
 No OJS, avaliadores podem receber acesso aos arquivos de dados de pesquisa durante o processo de avaliação. O acesso dos avaliadores à esses arquivos pode ser restringido nas Configurações do Fluxo de Trabalho, para que eles visualizem os arquivos apenas quando aceitarem avaliar a submissão.
 
+#### Depósitos interrompidos
+O plugin registra cada etapa do depósito antes de chamar o Dataverse. Se um depósito for interrompido depois que o conjunto de dados foi criado, uma nova tentativa reutiliza o mesmo conjunto de dados e envia apenas os arquivos que ainda não foram confirmados. Quando o resultado de uma etapa é desconhecido — a requisição atingiu o limite de tempo ou o processo parou durante a criação do conjunto de dados ou o envio de um arquivo —, novas tentativas para aquela submissão são recusadas com uma mensagem pedindo para entrar em contato com a revista, para que o plugin nunca crie um conjunto de dados duplicado nem envie um arquivo duas vezes.
+
+Esses depósitos devem ser conciliados por um administrador, diretamente no banco de dados, apenas para a submissão afetada:
+
+1. Garanta que nenhuma requisição da submissão ainda esteja em execução e faça backup das suas linhas em `dataverse_deposits`, `dataverse_studies` e `draft_dataset_files`.
+2. No estado `creating`, verifique no Dataverse se o conjunto de dados foi criado. Se foi, salve o seu identificador persistente em `persistent_id`; se o Dataverse comprovar que nada foi criado, a operação pode voltar para `reserved`.
+3. No estado `uploading`, verifique quais arquivos do manifesto chegaram ao conjunto de dados e registre os seus ids do Dataverse em `receipts`; um arquivo que não chegou ao Dataverse fica sem recibo.
+4. Em uma única transação restrita ao `submission_id`, ao `state` e à `revision` inspecionados, mude o estado para `ready` e incremente `revision`; depois, tente o depósito novamente pelo painel "Dados de pesquisa".
+
 ## Instruções para Desenvolvimento:
 
 1. Clone o repositório do plugin Dataverse

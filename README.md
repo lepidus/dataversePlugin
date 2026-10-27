@@ -68,6 +68,16 @@ The dataset citation and its status indicators appear in the Research data heade
 
 In OJS, reviewers can have access to research data files during the review process. Reviewers access to these files can be restricted on Workflow Settings, so they can only see research data when they agree to review the submission.
 
+#### Interrupted deposits
+The plugin records every deposit step before calling Dataverse. If a deposit is interrupted after the dataset was created, a new attempt reuses the same dataset and sends only the files that were not confirmed yet. When the result of a step is unknown — the request timed out or the process stopped while creating the dataset or sending a file — new attempts for that submission are refused with a message asking to contact the journal, so the plugin never creates a duplicate dataset or sends a file twice.
+
+These deposits must be reconciled by an administrator, directly in the database, for the affected submission only:
+
+1. Make sure no request for the submission is still running, and back up its rows in `dataverse_deposits`, `dataverse_studies` and `draft_dataset_files`.
+2. For the state `creating`, find in Dataverse whether the dataset was created. If it was, save its persistent ID in `persistent_id`; if Dataverse proves nothing was created, the operation can go back to `reserved`.
+3. For the state `uploading`, find which files of the manifest reached the dataset and record their Dataverse ids in `receipts`; a file that did not reach Dataverse stays without a receipt.
+4. In a single transaction restricted to the `submission_id`, the inspected `state` and `revision`, set the state to `ready` and increment `revision`, then try the deposit again from the "Research data" panel.
+
 ## Development Instructions:
 
 1. Clone the Dataverse plugin repository

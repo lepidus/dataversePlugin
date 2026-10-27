@@ -68,6 +68,16 @@ La cita del conjunto de datos y sus indicadores de estado aparecen en el encabez
 
 En OJS, los evaluadores pueden recibir acceso a los archivos de datos de investigación durante el proceso de evaluación. El acceso de los evaluadores a estos archivos puede ser restringido en la Configuración del Flujo de Trabajo, para que solo visualicen los archivos cuando acepten evaluar la presentación.
 
+#### Depósitos interrumpidos
+El plugin registra cada etapa del depósito antes de llamar a Dataverse. Si un depósito se interrumpe después de que el conjunto de datos fue creado, un nuevo intento reutiliza el mismo conjunto de datos y envía solo los archivos que aún no fueron confirmados. Cuando el resultado de una etapa es desconocido — la solicitud alcanzó el límite de tiempo o el proceso se detuvo durante la creación del conjunto de datos o el envío de un archivo —, los nuevos intentos para ese envío se rechazan con un mensaje que pide contactar con la revista, para que el plugin nunca cree un conjunto de datos duplicado ni envíe un archivo dos veces.
+
+Estos depósitos deben ser conciliados por un administrador, directamente en la base de datos, solo para el envío afectado:
+
+1. Asegúrese de que ninguna solicitud del envío siga en ejecución y haga una copia de seguridad de sus filas en `dataverse_deposits`, `dataverse_studies` y `draft_dataset_files`.
+2. En el estado `creating`, verifique en Dataverse si el conjunto de datos fue creado. Si lo fue, guarde su identificador persistente en `persistent_id`; si Dataverse demuestra que no se creó nada, la operación puede volver a `reserved`.
+3. En el estado `uploading`, verifique qué archivos del manifiesto llegaron al conjunto de datos y registre sus ids de Dataverse en `receipts`; un archivo que no llegó a Dataverse queda sin recibo.
+4. En una única transacción restringida al `submission_id`, al `state` y a la `revision` inspeccionados, cambie el estado a `ready` e incremente `revision`; después, intente el depósito de nuevo desde el panel "Datos de investigación".
+
 ## Instrucciones para desarrollo:
 1. Clona el repositorio del plugin Dataverse.
 2. Para utilizar el plugin en una aplicación PKP, copia su directorio en el directorio `/plugins/generic`, asegurándote de que el directorio se llame `dataverse`.

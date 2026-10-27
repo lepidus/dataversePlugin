@@ -166,6 +166,12 @@ msgid "plugins.generic.dataverse.error.datasetDeposit.author"
 msgstr "Erro ao depositar dados de pesquisa no Dataverse: {$error}<br>"
 "Por favor, escolha outra opção de declaração de dados ou tente novamente mais tarde."
 
+msgid "plugins.generic.dataverse.error.depositPending"
+msgstr "O depósito não foi confirmado. Entre em contato com a revista para verificar o depósito existente antes de tentar novamente."
+
+msgid "plugins.generic.dataverse.error.depositPending.author"
+msgstr "O depósito não foi confirmado. Entre em contato com a revista para verificar o depósito existente antes de tentar novamente."
+
 msgid "plugins.generic.dataverse.error.datasetFileDeposit"
 msgstr "Erro ao depositar o arquivo de dados \"{$fileName}\" no Dataverse: {$error}"
 

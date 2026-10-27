@@ -204,6 +204,17 @@ component form classes, not here.
 Both tables (`dataverse_studies`, `draft_dataset_files`) are created by
 `classes/migrations/DataverseMigration`. `upgrade.xml` lists migrations applied to existing installs.
 
+A third table, `dataverse_deposits` (`DepositMigration`, run from `DataverseMigration`), records one deposit operation
+per submission: its state, a monotonic `revision`, the created persistent ID, the manifest of source files (id, name,
+size, SHA-256) and the receipt of every confirmed upload. `DepositWorkflow` writes each intent before the remote call
+— `reserved` → `creating` → `ready` ⇄ `uploading` → `finalizing` → `complete` — through `DepositRepository`, whose
+transitions only succeed for the expected state and revision. A retry in `ready` reuses the persistent ID and skips
+uploaded files; a request that finds `creating` or `uploading` is refused, because a lost response does not prove
+the mutation failed, and nothing is deleted or created again automatically. Those records are reconciled by hand
+(see the README). Deleting or disassociating a dataset retires a `complete` operation, so a new deposit or a manual
+association can follow; an association is refused while any operation is not retired. Every deposit failure is
+reported as `error.depositPending`.
+
 ### Services
 
 `classes/services/` (`DatasetService`, `DatasetFileService`, `DataStatementService`) orchestrate API calls,

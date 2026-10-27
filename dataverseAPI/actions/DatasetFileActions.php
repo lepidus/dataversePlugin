@@ -43,7 +43,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         }, $jsonContent['data']);
     }
 
-    public function add(string $persistentId, string $filename, string $filePath): void
+    public function add(string $persistentId, string $filename, string $filePath): array
     {
         $this->waitForIngest($persistentId);
 
@@ -65,7 +65,30 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             ],
         ];
 
-        $this->nativeAPIRequest('POST', $uri, $options);
+        $response = $this->nativeAPIRequest('POST', $uri, $options);
+        $uploadedFiles = json_decode((string) $response->getBody(), true)['data']['files'] ?? null;
+
+        if (!is_array($uploadedFiles) || empty($uploadedFiles)) {
+            throw new DataverseException(__('plugins.generic.dataverse.error.depositPending'));
+        }
+
+        return array_map(fn ($uploadedFile) => $this->getUploadReceipt($uploadedFile), $uploadedFiles);
+    }
+
+    private function getUploadReceipt($uploadedFile): array
+    {
+        $dataFile = is_array($uploadedFile) ? ($uploadedFile['dataFile'] ?? null) : null;
+        $dataFileId = is_array($dataFile) ? ($dataFile['id'] ?? null) : null;
+
+        if (!is_int($dataFileId) || $dataFileId < 1) {
+            throw new DataverseException(__('plugins.generic.dataverse.error.depositPending'));
+        }
+
+        return [
+            'id' => $dataFileId,
+            'checksum' => $dataFile['checksum'] ?? null,
+            'size' => $dataFile['filesize'] ?? null,
+        ];
     }
 
     private function waitForIngest(string $persistentId): void

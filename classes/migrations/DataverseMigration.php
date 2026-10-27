@@ -44,6 +44,7 @@ class DataverseMigration extends Migration
             });
         }
 
+        (new DepositMigration())->up();
         (new LaravelEncryptionMigration())->up();
     }
 }
