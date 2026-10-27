@@ -64,7 +64,9 @@ class DatasetServiceTest extends DatabaseTestCase
     {
         $this->assertContains(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $this->getDataStatementTypes());
         $this->assertEquals('https://doi.org/' . str_replace('doi:', '', $this->persistentId), $this->getStudy()->getPersistentUri());
-        $this->assertFalse($this->getDatasetFromDataverse()->isPublished());
+        $dataset = $this->getDatasetFromDataverse();
+        $this->assertFalse($dataset->isPublished());
+        $this->assertEquals(date('Y-m-d'), $dataset->getDateOfDeposit());
         $this->assertEventLogged($this->submission, __('plugins.generic.dataverse.log.researchDataDeposited', ['persistentId' => $this->persistentId]));
     }
 
@@ -89,6 +91,7 @@ class DatasetServiceTest extends DatabaseTestCase
         $this->assertEquals('Computer and Information Science', $dataset->getSubject());
         $this->assertEquals('CC0 1.0', $dataset->getLicense());
         $this->assertEquals('IsCitedBy', $dataset->getRelatedPublication()->getRelationType());
+        $this->assertEquals(date('Y-m-d'), $dataset->getDateOfDeposit());
         $this->assertEventLogged($this->submission, __('plugins.generic.dataverse.log.researchDataUpdated'));
     }
 

@@ -289,6 +289,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $expectedDataset->setLicense($this->submission->getData('datasetLicense'));
         $expectedDataset->setAuthors([$this->author->getId() => $datasetAuthor]);
         $expectedDataset->setContact($datasetContact);
+        $expectedDataset->setDateOfDeposit(date('Y-m-d'));
         $expectedDataset->setDepositor($datasetDepositor);
         $expectedDataset->setRelatedPublication($datasetRelatedPublication);
         $expectedDataset->setFiles([$this->draftDatasetFile->getId() => $datasetFile]);

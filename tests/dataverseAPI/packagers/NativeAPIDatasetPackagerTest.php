@@ -59,6 +59,25 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $this->assertContains($titleMetadata, $this->packager->getDatasetMetadata());
     }
 
+    public function testNativeApiPackagerBuildsDateOfDepositMetadata(): void
+    {
+        $dataset = new Dataset();
+        $dataset->setDateOfDeposit('2026-09-22');
+
+        $this->packager = new NativeAPIDatasetPackager($dataset);
+        $this->packager->loadPackageData();
+
+        $this->assertContains(
+            [
+                'typeName' => 'dateOfDeposit',
+                'multiple' => false,
+                'typeClass' => 'primitive',
+                'value' => '2026-09-22'
+            ],
+            $this->packager->getDatasetMetadata()
+        );
+    }
+
     public function testNativeApiPackagerBuildsSimpleCompoundMetadata(): void
     {
         $dataset = new Dataset();
