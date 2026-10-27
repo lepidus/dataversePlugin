@@ -70,7 +70,7 @@ class DatasetFileActionsTest extends PKPTestCase
         $actions = $this->createActionsRespondingWith([
             new Response(200, [], '{"data":[{"lockType":"Ingest"}]}'),
             new Response(200, [], '{"data":[]}'),
-            new Response(200, [], '{"status":"OK"}'),
+            new Response(200, [], '{"status":"OK","data":{"files":[{"dataFile":{"id":10}}]}}'),
         ], $history);
 
         $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
