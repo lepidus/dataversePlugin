@@ -190,12 +190,15 @@ the canonical "this submission has no dataset" test, used all over the dispatche
 `DraftDatasetFile` is a file uploaded during the wizard but not yet deposited; its properties are described by
 `schemas/draftDatasetFile.json`, loaded via the `Schema::get::draftDatasetFile` hook.
 
-Despite the name, `DraftDatasetFilesValidator` does **not** validate that schema. It holds two wizard business
+Despite the name, `DraftDatasetFilesValidator` does **not** validate that schema. It holds three wizard business
 rules: `galleyContainsResearchData()` (compares galley files against dataset files by size + MD5, to warn when
-research data was also uploaded as a manuscript file) and `datasetHasReadmeFile()` (looks for a PDF or plain
-text file whose name contains a readme keyword — `readme`, `leiame`, `leia-me`, `leame` — and prunes draft
-records whose temporary file has vanished). Schema/field validation belongs in the schema JSON and the
-component form classes, not here.
+research data was also uploaded as a manuscript file), `datasetHasReadmeFile()` (looks for a non-empty PDF or plain
+text file whose name contains a readme keyword — `readme`, `leiame`, `leia-me`, `leame`) and
+`datasetHasNonReadmeFile()`, which asks `ResearchDataFileValidator` whether any file carries research data besides
+READMEs. That check reads the stored bytes: a ZIP (detected by signature) counts only through a non-empty regular
+member that is not a README, while nested ZIPs and opaque packages (TAR, GZIP, RAR, 7z, BZIP2, XZ) never count,
+because their contents are not inspected. A draft whose temporary file has vanished satisfies neither rule and is
+kept, not deleted. Schema/field validation belongs in the schema JSON and the component form classes, not here.
 
 Both tables (`dataverse_studies`, `draft_dataset_files`) are created by
 `classes/migrations/DataverseMigration`. `upgrade.xml` lists migrations applied to existing installs.

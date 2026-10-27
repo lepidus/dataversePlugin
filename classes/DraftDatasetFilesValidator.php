@@ -4,7 +4,6 @@ namespace APP\plugins\generic\dataverse\classes;
 
 use PKP\config\Config;
 use PKP\file\TemporaryFileManager;
-use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DraftDatasetFilesValidator
 {
@@ -43,16 +42,41 @@ class DraftDatasetFilesValidator
             );
 
             if (is_null($tempFile)) {
-                Repo::draftDatasetFile()->delete($file);
                 continue;
             }
 
             $fileName = strtolower($file->getFileName());
             $fileType = $tempFile->getData('filetype');
+            $filePath = $tempFile->getFilePath();
 
             if (
                 $this->filenameHasReadmeKeyword($fileName)
                 && ($fileType == 'application/pdf' || $fileType == 'text/plain')
+                && is_file($filePath)
+                && is_readable($filePath)
+                && filesize($filePath) > 0
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function datasetHasNonReadmeFile(array $draftDatasetFiles): bool
+    {
+        $temporaryFileManager = new TemporaryFileManager();
+        $researchDataFileValidator = new ResearchDataFileValidator();
+
+        foreach ($draftDatasetFiles as $file) {
+            $tempFile = $temporaryFileManager->getFile(
+                $file->getData('fileId'),
+                $file->getData('userId')
+            );
+
+            if (
+                !is_null($tempFile)
+                && $researchDataFileValidator->containsResearchData($tempFile->getFilePath(), $file->getFileName())
             ) {
                 return true;
             }
