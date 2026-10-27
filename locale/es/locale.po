@@ -173,6 +173,9 @@ msgid "plugins.generic.dataverse.error.datasetFileDeposit.author"
 msgstr "Erro al depositar lo archivo de datos \"{$fileName}\" en Dataverse: {$error}<br>"
 "Por favor, compruebe si hay algún problema con el archivo y sustitúyalo si es necesario"
 
+msgid "plugins.generic.dataverse.error.ingestTimeout"
+msgstr "Dataverse todavía está procesando los archivos enviados anteriormente. El depósito se ha detenido para su verificación."
+
 msgid "plugins.generic.dataverse.error.updateFailed"
 msgstr "Erro al actualizar datos de investigación en Dataverse: {$error}"
 
@@ -522,6 +525,3 @@ msgstr "Datasets con error en la publicación"
 
 msgid "plugins.generic.dataverse.report.headers.filesInDatasets"
 msgstr "Archivos en datasets"
-
-msgid "plugins.generic.dataverse.error.ingestTimeout"
-msgstr "Dataverse todavía está procesando los archivos enviados anteriormente. El depósito se ha detenido para su verificación."
