@@ -19,6 +19,7 @@ class DataverseReportService
         'plugins.generic.dataverse.error.depositFailed',
         'plugins.generic.dataverse.error.datasetDeposit',
         'plugins.generic.dataverse.error.datasetFileDeposit',
+        'plugins.generic.dataverse.error.depositPending',
     ];
     private const PUBLISH_ERROR_MESSAGES = ['plugins.generic.dataverse.error.publishFailed'];
 
