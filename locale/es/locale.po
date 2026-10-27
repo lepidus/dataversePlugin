@@ -522,3 +522,6 @@ msgstr "Datasets con error en la publicación"
 
 msgid "plugins.generic.dataverse.report.headers.filesInDatasets"
 msgstr "Archivos en datasets"
+
+msgid "plugins.generic.dataverse.error.sourceFileMissing"
+msgstr "Un archivo seleccionado para el depósito ya no está disponible. Vuelva a cargar el archivo ausente antes de depositar los datos de investigación."

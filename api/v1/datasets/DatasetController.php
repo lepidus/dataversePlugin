@@ -10,6 +10,7 @@ use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
@@ -250,7 +251,12 @@ class DatasetController extends PKPBaseController
             return response()->json($metadataErrors, Response::HTTP_BAD_REQUEST);
         }
 
-        $dataset = (new SubmissionDatasetFactory($submission))->getDataset();
+        try {
+            $dataset = (new SubmissionDatasetFactory($submission))->getDataset();
+        } catch (MissingDepositFileException $e) {
+            return $this->error('plugins.generic.dataverse.error.sourceFileMissing', [], Response::HTTP_NOT_FOUND);
+        }
+
         $dataset->setTitle($params['datasetTitle']);
         $dataset->setDescription($params['datasetDescription']);
         $dataset->setKeywords($this->getKeywords($params));

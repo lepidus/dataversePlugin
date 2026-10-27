@@ -515,3 +515,6 @@ msgstr "Datasets with error in the publication"
 
 msgid "plugins.generic.dataverse.report.headers.filesInDatasets"
 msgstr "Files in datasets"
+
+msgid "plugins.generic.dataverse.error.sourceFileMissing"
+msgstr "A selected deposit file is no longer available. Replace the missing file before depositing the research data."

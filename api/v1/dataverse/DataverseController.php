@@ -113,7 +113,7 @@ class DataverseController extends PKPBaseController
 
     private function getDepositState(Submission $submission): array
     {
-        $dataset = (new SubmissionDatasetFactory($submission))->getDataset();
+        $dataset = (new SubmissionDatasetFactory($submission, false))->getDataset();
 
         $files = [];
         foreach (Repo::draftDatasetFile()->getBySubmissionId($submission->getId()) as $draftDatasetFile) {

@@ -72,7 +72,9 @@ What the plugin actually does, in workflow order:
    the new persistent ID. It bails out silently unless three conditions hold: the publication's
    `dataStatementTypes` includes `DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED`, the assembled `Dataset` has at
    least one file, and it has a subject. A submission that "should have deposited but didn't" almost always
-   failed one of these, not the API call.
+   failed one of these, not the API call. The other cause is a draft file whose temporary file is gone: the factory
+   throws `MissingDepositFileException` instead of depositing the remaining files, the author gets an error
+   notification and every draft record is kept, so the file can be replaced and deposited from the workflow.
 4. **Workflow "Research data" panel**: a Publication menu item that lets you view/edit dataset metadata, add and
    delete files, publish, disassociate or delete the dataset, or associate the submission with a dataset that
    already exists in the repository — and, when nothing has been deposited yet, upload research data and
@@ -172,7 +174,8 @@ serializes a `Dataset` into the JSON the Native API expects; `search/DataverseSe
   `DatasetIdentifier`, `DatasetRelatedPublication`, `DataverseCollection`, `DataverseResponse`). These mirror
   Dataverse's model and are **not** persisted locally.
 - `classes/factories/` — build a `Dataset` from a source. `JsonDatasetFactory` from a Dataverse API response,
-  `SubmissionDatasetFactory` from a submission (its constructor takes the `Submission` only; the publication is
+  `SubmissionDatasetFactory` from a submission (its constructor takes the `Submission` and an `$includeFiles` flag,
+  false for the metadata preview of the workflow panel, which must not read the draft files; the publication is
   passed separately to `getDatasetRelatedPublication()`, and the draft-file repository is swappable via
   `setDraftDatasetFileRepo()` for tests). Both extend `DatasetFactory` and implement `sanitizeProps()`;
   `getDataset()` is final. New dataset sources should be new factories.
