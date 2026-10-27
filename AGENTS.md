@@ -90,7 +90,8 @@ What the plugin actually does, in workflow order:
    public article/preprint page shows the dataset citation. Crossref deposits get a `relations` program with
    an `inter_work_relation` node (`relationship-type="isSupplementedBy"`), whose `identifier-type` is `doi`
    for datasets deposited by the plugin and `url` for externally hosted ones.
-9. **Report**: a CSV report of submissions with research data, exposed as a report sub-plugin.
+9. **Report**: a CSV report of submissions with research data, filtered by a submission or final decision date
+   range, exposed as a report sub-plugin.
 10. **Token expiration warning**: a scheduled task that emails site administrators, journal/server managers and
     the context contact address at fixed intervals (4, 3, 2 and 1 weeks, then 1 day) before the API token expires.
 
@@ -269,8 +270,15 @@ Two things bite when writing templates that the application compiles as Vue mark
 
 ### Report sub-plugin
 
-`report/DataverseReportPlugin` is a `ReportPlugin` registered from the main plugin's `register()`. It builds a
-CSV of submissions with research data through `DataverseReportService` and `DataverseReportQueryBuilder`.
+`report/DataverseReportPlugin` is a `ReportPlugin` registered from the main plugin's `register()`. Its page is a
+legacy `Form` (`DataverseReportForm`, `templates/dataverseReport.tpl`) where the user picks a submitted-date or
+final-decision-date range; submitting it streams the CSV built by `DataverseStatsReportBuilder` from the counts of
+`DataverseReportService`, which filters submissions through `DataverseReportQueryBuilder`. In OJS the final decision is
+the latest accept or decline; in OPS, where there is no accept decision, it is the posting date or the latest decline.
+
+The deposit, deposit-error and publish-error counts look for the plugin's entries in the submission event log. Those
+entries are stored already translated in the user's locale, so the service matches the text that precedes the first
+parameter of the message in every installed locale, and the bare locale key for entries written by older versions.
 
 ### Scheduled task
 

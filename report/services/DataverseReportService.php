@@ -4,115 +4,132 @@ namespace APP\plugins\generic\dataverse\report\services;
 
 use APP\core\Application;
 use APP\decision\Decision;
+use APP\submission\Submission;
 use PKP\db\DAORegistry;
-use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
+use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\dataverseAPI\search\DataverseSearchBuilder;
+use APP\plugins\generic\dataverse\report\classes\DataStatementStats;
+use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
 
 class DataverseReportService
 {
-    public function getOverview(int $contextId): array
-    {
-        $overview = [];
+    private const DECLINE_DECISIONS = [Decision::DECLINE, Decision::INITIAL_DECLINE];
+    private const DEPOSITED_MESSAGES = ['plugins.generic.dataverse.log.researchDataDeposited'];
+    private const DEPOSIT_ERROR_MESSAGES = [
+        'plugins.generic.dataverse.error.depositFailed',
+        'plugins.generic.dataverse.error.datasetDeposit',
+        'plugins.generic.dataverse.error.datasetFileDeposit',
+    ];
+    private const PUBLISH_ERROR_MESSAGES = ['plugins.generic.dataverse.error.publishFailed'];
 
-        if (Application::get()->getName() == 'ojs2') {
-            $overview = array_merge($overview, [
-                'acceptedSubmissions' => $this->countSubmissions([
-                    'contextIds' => [$contextId],
-                    'decisions' => [Decision::ACCEPT]
-                ]),
-                'acceptedSubmissionsWithDataset' => $this->countSubmissionsWithDataset([
-                    'contextIds' => [$contextId],
-                    'decisions' => [Decision::ACCEPT]
-                ])
-            ]);
-        }
+    private ?string $beginSubmissionInterval = null;
+    private ?string $endSubmissionInterval = null;
+    private ?string $beginFinalDecisionInterval = null;
+    private ?string $endFinalDecisionInterval = null;
 
-        return array_merge($overview, [
-            'declinedSubmissions' => $this->countSubmissions([
-                'contextIds' => [$contextId],
-                'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
-            ]),
-            'declinedSubmissionsWithDataset' => $this->countSubmissionsWithDataset([
-                'contextIds' => [$contextId],
-                'decisions' => [Decision::DECLINE, Decision::INITIAL_DECLINE]
-            ]),
-            'datasetsWithDepositError' => $this->countDatasetsWithError(
-                [
-                    'plugins.generic.dataverse.error.depositFailed',
-                    'plugins.generic.dataverse.error.datasetDeposit',
-                    'plugins.generic.dataverse.error.datasetFileDeposit'
-                ],
-                ['contextIds' => [$contextId],]
-            ),
-            'datasetsWithPublishError' => $this->countDatasetsWithError(
-                ['plugins.generic.dataverse.error.publishFailed'],
-                ['contextIds' => [$contextId],]
-            ),
-            'filesInDatasets' => $this->countDatasetFiles($contextId),
-        ]);
+    public function __construct(
+        private int $contextId,
+        private string $applicationName
+    ) {
     }
 
-    public function getReportHeaders(): array
+    public function setDateSubmittedInterval(string $beginning, string $ending): void
     {
-        $headers = [];
-
-        if (Application::get()->getName() == 'ojs2') {
-            $headers = array_merge($headers, [
-                __('plugins.generic.dataverse.report.headers.acceptedSubmissions'),
-                __('plugins.generic.dataverse.report.headers.acceptedSubmissionsWithDataset'),
-            ]);
-        }
-
-        return array_merge($headers, [
-            __('plugins.generic.dataverse.report.headers.declinedSubmissions'),
-            __('plugins.generic.dataverse.report.headers.declinedSubmissionsWithDataset'),
-            __('plugins.generic.dataverse.report.headers.datasetsWithDepositError'),
-            __('plugins.generic.dataverse.report.headers.datasetsWithPublishError'),
-            __('plugins.generic.dataverse.report.headers.filesInDatasets'),
-        ]);
+        $this->beginSubmissionInterval = $beginning;
+        $this->endSubmissionInterval = $ending;
     }
 
-    public function countSubmissions(array $args = []): int
+    public function setFinalDecisionDateInterval(string $beginning, string $ending): void
     {
-        return $this->getQueryBuilder($args)->getQuery()->count();
+        $this->beginFinalDecisionInterval = $beginning;
+        $this->endFinalDecisionInterval = $ending;
     }
 
-    public function countSubmissionsWithDataset(array $args = []): int
+    public function getAcceptedSubmissionsCount(): int
     {
-        return $this->getQueryBuilder($args)->getWithDataset()->count();
+        return $this->getQueryBuilder(['decisions' => [Decision::ACCEPT]])->getCount();
     }
 
-    public function countDatasetsWithError(array $messages, array $args = []): int
+    public function getDeclinedSubmissionsCount(): int
     {
-        return $this->getQueryBuilder($args)->countDatasetsWithError($messages);
+        return $this->getQueryBuilder($this->declinedArgs())->getCount();
     }
 
-    public function getQueryBuilder($args = []): DataverseReportQueryBuilder
+    public function getPublishedSubmissionsCount(): int
     {
-        $queryBuilder = new DataverseReportQueryBuilder();
-
-        if (!empty($args['contextIds'])) {
-            $queryBuilder->filterByContexts($args['contextIds']);
-        }
-        if (!empty($args['decisions'])) {
-            $queryBuilder->filterByDecisions($args['decisions']);
-        }
-
-        return $queryBuilder;
+        return $this->getQueryBuilder(['statuses' => [Submission::STATUS_PUBLISHED]])->getCount();
     }
 
-    public function countDatasetFiles(int $contextId): int
+    public function getTotalSubmissionsCount(): int
     {
-        $submissionsWithDataset = $this->getQueryBuilder([
-            'contextIds' => [$contextId]
-        ])->getWithDataset()->get();
+        return $this->getQueryBuilder()->getCount();
+    }
+
+    public function getAcceptedSubmissionsWithDatasetCount(): int
+    {
+        return $this->getQueryBuilder(['decisions' => [Decision::ACCEPT]])->filterWithDataset()->getCount();
+    }
+
+    public function getPublishedSubmissionsWithDatasetCount(): int
+    {
+        return $this->getQueryBuilder(['statuses' => [Submission::STATUS_PUBLISHED]])->filterWithDataset()->getCount();
+    }
+
+    public function getDeclinedSubmissionsWithDatasetCount(): int
+    {
+        $withDatasetIds = $this->getQueryBuilder($this->declinedArgs())
+            ->filterWithDataset()
+            ->getSubmissionIds();
+        $withDepositLogIds = $this->getQueryBuilder($this->declinedArgs())
+            ->filterWithEventLogs($this->getLoggedMessages(self::DEPOSITED_MESSAGES))
+            ->getSubmissionIds();
+
+        return count(array_unique(array_merge($withDatasetIds, $withDepositLogIds)));
+    }
+
+    public function getDatasetsWithDepositErrorCount(): int
+    {
+        return $this->getQueryBuilder()
+            ->filterWithEventLogs($this->getLoggedMessages(self::DEPOSIT_ERROR_MESSAGES))
+            ->getCount();
+    }
+
+    public function getDatasetsWithPublishErrorCount(): int
+    {
+        return $this->getQueryBuilder()
+            ->filterWithEventLogs($this->getLoggedMessages(self::PUBLISH_ERROR_MESSAGES))
+            ->getCount();
+    }
+
+    public function getAcceptedStatementStatistics(): DataStatementStats
+    {
+        return $this->getStatementStatistics(['decisions' => [Decision::ACCEPT]]);
+    }
+
+    public function getPublishedStatementStatistics(): DataStatementStats
+    {
+        return $this->getStatementStatistics(['statuses' => [Submission::STATUS_PUBLISHED]]);
+    }
+
+    public function getDeclinedStatementStatistics(): DataStatementStats
+    {
+        return $this->getStatementStatistics($this->declinedArgs());
+    }
+
+    public function getTotalStatementStatistics(): DataStatementStats
+    {
+        return $this->getStatementStatistics();
+    }
+
+    public function countDatasetFiles(): int
+    {
+        $submissionsWithDataset = $this->getQueryBuilder()->filterWithDataset()->getQuery()->get();
 
         if ($submissionsWithDataset->isEmpty()) {
             return 0;
         }
 
-        $searchBuilder = $this->getDataverseSearchBuilder($contextId)->addType('file');
-
+        $searchBuilder = $this->getDataverseSearchBuilder()->addType('file');
         foreach ($submissionsWithDataset as $submission) {
             $searchBuilder->addFilterQuery('parentIdentifier', $submission->persistent_id);
         }
@@ -120,11 +137,77 @@ class DataverseReportService
         return $searchBuilder->count();
     }
 
-    public function getDataverseSearchBuilder(int $contextId): DataverseSearchBuilder
+    public function getQueryBuilder(array $args = []): DataverseReportQueryBuilder
     {
-        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
-        $httpClient = Application::get()->getHttpClient();
+        $queryBuilder = (new DataverseReportQueryBuilder($this->applicationName))
+            ->filterByContexts([$this->contextId]);
 
-        return new DataverseSearchBuilder($configuration, $httpClient);
+        if (!empty($args['decisions'])) {
+            $queryBuilder->filterByDecisions($args['decisions']);
+        }
+        if (!empty($args['statuses'])) {
+            $queryBuilder->filterByStatuses($args['statuses']);
+        }
+        if (!empty($this->beginSubmissionInterval) && !empty($this->endSubmissionInterval)) {
+            $queryBuilder->withinDateSubmittedInterval($this->beginSubmissionInterval, $this->endSubmissionInterval);
+        }
+        if (!empty($this->beginFinalDecisionInterval) && !empty($this->endFinalDecisionInterval)) {
+            $queryBuilder->withinFinalDecisionDateInterval(
+                $this->beginFinalDecisionInterval,
+                $this->endFinalDecisionInterval
+            );
+        }
+
+        return $queryBuilder;
+    }
+
+    public function getDataverseSearchBuilder(): DataverseSearchBuilder
+    {
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($this->contextId);
+
+        return new DataverseSearchBuilder($configuration, Application::get()->getHttpClient());
+    }
+
+    private function declinedArgs(): array
+    {
+        return [
+            'decisions' => self::DECLINE_DECISIONS,
+            'statuses' => [Submission::STATUS_DECLINED],
+        ];
+    }
+
+    private function getStatementStatistics(array $args = []): DataStatementStats
+    {
+        $statementTypesCounts = [
+            DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT => 0,
+            DataStatementService::DATA_STATEMENT_TYPE_REPO_AVAILABLE => 0,
+            DataStatementService::DATA_STATEMENT_TYPE_ON_DEMAND => 0,
+            DataStatementService::DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE => 0
+        ];
+
+        foreach ($this->getQueryBuilder($args)->getDataStatementTypes() as $statementTypes) {
+            foreach ($statementTypes as $statementType) {
+                if (isset($statementTypesCounts[$statementType])) {
+                    $statementTypesCounts[$statementType]++;
+                }
+            }
+        }
+
+        return new DataStatementStats($statementTypesCounts);
+    }
+
+    private function getLoggedMessages(array $messageKeys): array
+    {
+        $locales = Application::get()->getRequest()->getSite()->getInstalledLocales();
+        $messages = [];
+
+        foreach ($messageKeys as $messageKey) {
+            $messages[] = $messageKey;
+            foreach ($locales as $locale) {
+                $messages[] = strstr(__($messageKey, [], $locale), '{$', true) ?: __($messageKey, [], $locale);
+            }
+        }
+
+        return array_values(array_unique($messages));
     }
 }
