@@ -58,6 +58,19 @@ Therefore, we recommend the creation of a specific user for the journal/preprint
 
 After filling in the fields, just confirm the action by clicking `Save`. The plugin will only work after filling in these data.
 
+#### Request time limits
+Connections to Dataverse have a 5-second limit, and each request has a total limit that depends on the operation: 15 seconds for reads, 30 seconds for dataset creation, 60 seconds for each file upload and 30 seconds for other changes (including deletion). Administrators can change these limits in the application's `config.inc.php`:
+
+```ini
+[dataverse]
+read_timeout = 15
+create_timeout = 30
+upload_timeout = 60
+write_timeout = 30
+```
+
+Values must be whole numbers of seconds between 1 and 300; any other value falls back to the default. Files are deposited one after the other in the same request, so before increasing a limit, check that the PHP and web server request limits cover the time of all uploads together. A request that reaches its limit is reported as a timeout: Dataverse may still have completed the operation.
+
 ### Use
 
 A "Research Data" deposit dialog is shown in the "Files" step of the Submission proccess.

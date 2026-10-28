@@ -162,7 +162,13 @@ to `JsonDatasetFactory` and `create()`/`update()` hand one to `NativeAPIDatasetP
 the collection's required metadata. Skipping that is what makes a missing configuration blow up several calls
 deep, and what lets a `MockHandler` in a test leak into a real HTTP request.
 
-Failures throw `DataverseException`. Callers are expected to catch it and degrade gracefully — an unreachable
+Every request goes through `DataverseActions::sendRequest()`, which sets a 5-second connection limit and a total
+limit by operation (read 15 s, dataset creation 30 s, file upload 60 s, other writes 30 s), overridable through
+`[dataverse] <operation>_timeout` in `config.inc.php` (1–300) or by an explicit `timeout` option from the caller.
+
+Failures throw `DataverseException`, logged as a JSON line with the operation and
+`getFailureCategory()` (`timeout`, `connection`, `authentication` or `http`). A timeout means the outcome is unknown,
+not that the operation failed. Callers are expected to catch it and degrade gracefully — an unreachable
 Dataverse should produce a notice or a disabled tab, never a fatal error. `packagers/NativeAPIDatasetPackager`
 serializes a `Dataset` into the JSON the Native API expects; `search/DataverseSearchBuilder` builds search queries.
 
