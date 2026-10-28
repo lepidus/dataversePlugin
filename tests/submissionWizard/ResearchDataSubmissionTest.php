@@ -134,14 +134,18 @@ class ResearchDataSubmissionTest extends DatabaseTestCase
     {
         $submission = $this->createDataverseSubmission();
         $this->addSubmissionFile($submission, 'dummy.pdf', '%PDF-1.4 manuscript');
-        $this->addDraftDatasetFile($submission, ...self::README_FILE);
+        $readmeFile = $this->addDraftDatasetFile($submission, ...self::README_FILE);
         $dataFile = $this->addDraftDatasetFile($submission, ...self::DATA_FILE);
-        (new TemporaryFileManager())->deleteById($dataFile->getData('fileId'), $this->user->getId());
-        $this->temporaryFileIds = array_diff($this->temporaryFileIds, [$dataFile->getData('fileId')]);
+        (new TemporaryFileManager())->deleteById($readmeFile->getData('fileId'), $this->user->getId());
+        $this->temporaryFileIds = array_diff($this->temporaryFileIds, [$readmeFile->getData('fileId')]);
 
         $errors = $this->validate($submission);
 
-        $this->assertEquals([__('plugins.generic.dataverse.error.researchDataFileMissing')], $errors['datasetFiles']);
+        $this->assertEquals(
+            [__('plugins.generic.dataverse.error.researchDataFileMissing', ['fileNames' => self::README_FILE[0]])],
+            $errors['datasetFiles']
+        );
+        $this->assertNotNull(DataverseRepo::draftDatasetFile()->get($readmeFile->getId()));
         $this->assertNotNull(DataverseRepo::draftDatasetFile()->get($dataFile->getId()));
     }
 

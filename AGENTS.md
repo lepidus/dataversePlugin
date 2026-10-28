@@ -72,7 +72,11 @@ What the plugin actually does, in workflow order:
    the new persistent ID. It bails out silently unless three conditions hold: the publication's
    `dataStatementTypes` includes `DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED`, the assembled `Dataset` has at
    least one file, and it has a subject. A submission that "should have deposited but didn't" almost always
-   failed one of these, not the API call.
+   failed one of these, not the API call. The other cause is a draft file whose temporary file is gone. Submission
+   validation already rejects that case, so it only reaches the listener when the file disappears after validation:
+   the factory then throws `MissingDepositFileException` instead of depositing the remaining files,
+   `DatasetService::reportMissingDepositFile()` notifies the author and logs the file name in the submission history,
+   and every draft record is kept, so the file can be replaced and deposited from the workflow.
 4. **Workflow "Research data" panel**: a Publication menu item that lets you view/edit dataset metadata, add and
    delete files, publish, disassociate or delete the dataset, or associate the submission with a dataset that
    already exists in the repository — and, when nothing has been deposited yet, upload research data and
@@ -172,7 +176,8 @@ serializes a `Dataset` into the JSON the Native API expects; `search/DataverseSe
   `DatasetIdentifier`, `DatasetRelatedPublication`, `DataverseCollection`, `DataverseResponse`). These mirror
   Dataverse's model and are **not** persisted locally.
 - `classes/factories/` — build a `Dataset` from a source. `JsonDatasetFactory` from a Dataverse API response,
-  `SubmissionDatasetFactory` from a submission (its constructor takes the `Submission` only; the publication is
+  `SubmissionDatasetFactory` from a submission (its constructor takes the `Submission` and an `$includeFiles` flag,
+  false for the metadata preview of the workflow panel, which must not read the draft files; the publication is
   passed separately to `getDatasetRelatedPublication()`, and the draft-file repository is swappable via
   `setDraftDatasetFileRepo()` for tests). Both extend `DatasetFactory` and implement `sanitizeProps()`;
   `getDataset()` is final. New dataset sources should be new factories.
@@ -191,8 +196,8 @@ the canonical "this submission has no dataset" test, used all over the dispatche
 `schemas/draftDatasetFile.json`, loaded via the `Schema::get::draftDatasetFile` hook.
 
 Despite the name, `DraftDatasetFilesValidator` does **not** validate that schema. It holds the wizard business rules,
-also applied by `DatasetController` before a deposit from the workflow panel: `datasetHasMissingFile()` (a draft whose
-temporary file is gone is reported, never deleted), `galleyContainsResearchData()` (compares galley files against
+also applied by `DatasetController` before a deposit from the workflow panel: `getMissingFileNames()` (a draft whose
+temporary file is gone is reported by name, never deleted), `galleyContainsResearchData()` (compares galley files against
 dataset files by size + MD5, to warn when research data was also uploaded as a manuscript file),
 `datasetHasReadmeFile()` (a non-empty PDF or plain text file whose name has a readme keyword — `readme`, `leiame`,
 `leia-me`, `leame` — not preceded by a letter, so `spreadmeasurements.csv` is not a README; Markdown is detected as

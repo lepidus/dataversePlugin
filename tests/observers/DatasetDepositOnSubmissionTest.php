@@ -6,6 +6,9 @@ use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\tests\helpers\DataverseIntegrationFixture;
 use APP\submission\Submission;
+use PKP\db\DAORegistry;
+use PKP\file\TemporaryFileManager;
+use PKP\notification\Notification;
 use PKP\tests\DatabaseTestCase;
 
 class DatasetDepositOnSubmissionTest extends DatabaseTestCase
@@ -79,5 +82,39 @@ class DatasetDepositOnSubmissionTest extends DatabaseTestCase
         $this->submit($submission);
 
         $this->assertNull(DataverseRepo::dataverseStudy()->getBySubmissionId($submission->getId()));
+    }
+
+    public function testSubmissionWithAMissingSourceFileIsNotDepositedAndKeepsItsDraftFiles(): void
+    {
+        $submission = $this->createSubmissionWithResearchData();
+        $draftFiles = DataverseRepo::draftDatasetFile()->getBySubmissionId($submission->getId())->values();
+        $missingFile = $draftFiles->first();
+        (new TemporaryFileManager())->deleteById($missingFile->getData('fileId'), $this->user->getId());
+        $this->temporaryFileIds = array_diff($this->temporaryFileIds, [$missingFile->getData('fileId')]);
+
+        $errorLog = ini_set('error_log', '/dev/null');
+        try {
+            $this->submit($submission);
+        } finally {
+            ini_set('error_log', $errorLog);
+        }
+
+        $expectedMessage = __(
+            'plugins.generic.dataverse.error.sourceFileMissing',
+            ['fileName' => $missingFile->getFileName()]
+        );
+        $keptDraftFiles = DataverseRepo::draftDatasetFile()->getBySubmissionId($submission->getId());
+        $this->assertNull(DataverseRepo::dataverseStudy()->getBySubmissionId($submission->getId()));
+        $this->assertCount($draftFiles->count(), $keptDraftFiles);
+        $notification = Notification::withUserId($this->user->getId())
+            ->withType(Notification::NOTIFICATION_TYPE_ERROR)
+            ->latest('notification_id')
+            ->first();
+        $this->assertNotNull($notification);
+        $this->assertEquals(
+            $expectedMessage,
+            DAORegistry::getDAO('NotificationSettingsDAO')->getNotificationSettings($notification->id)['contents'] ?? null
+        );
+        $this->assertEventLogged($submission, $expectedMessage);
     }
 }

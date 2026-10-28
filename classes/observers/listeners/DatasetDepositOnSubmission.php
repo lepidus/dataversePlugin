@@ -5,6 +5,7 @@ namespace APP\plugins\generic\dataverse\classes\observers\listeners;
 use Illuminate\Events\Dispatcher;
 use PKP\observers\events\SubmissionSubmitted;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
@@ -29,8 +30,12 @@ class DatasetDepositOnSubmission
             return;
         }
 
-        $datasetFactory = new SubmissionDatasetFactory($submission);
-        $dataset = $datasetFactory->getDataset();
+        try {
+            $dataset = (new SubmissionDatasetFactory($submission))->getDataset();
+        } catch (MissingDepositFileException $e) {
+            (new DatasetService())->reportMissingDepositFile($submission, $e->getFileName());
+            return;
+        }
 
         if (empty($dataset->getFiles()) or empty($dataset->getSubject())) {
             return;

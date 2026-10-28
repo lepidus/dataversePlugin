@@ -145,7 +145,7 @@ msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
 msgstr "Os dados de pesquisa devem conter ao menos um arquivo legível e não vazio além dos arquivos README, enviado diretamente ou dentro de um arquivo ZIP."
 
 msgid "plugins.generic.dataverse.error.researchDataFileMissing"
-msgstr "Um arquivo de dados de pesquisa não está mais disponível. Exclua-o e envie-o novamente antes de submeter os dados de pesquisa."
+msgstr "Arquivos de dados de pesquisa que não estão mais disponíveis: {$fileNames}. Exclua-os e envie-os novamente antes de submeter os dados de pesquisa."
 
 msgid "plugins.generic.dataverse.error.exception.unavailable"
 msgstr "O serviço Dataverse está temporariamente indisponível"
@@ -521,3 +521,6 @@ msgstr "Datasets com erro na publicação"
 
 msgid "plugins.generic.dataverse.report.headers.filesInDatasets"
 msgstr "Arquivos nos datasets"
+
+msgid "plugins.generic.dataverse.error.sourceFileMissing"
+msgstr "O arquivo {$fileName} selecionado para o depósito não está mais disponível. Reenvie-o antes de depositar os dados de pesquisa."

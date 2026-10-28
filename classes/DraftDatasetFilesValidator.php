@@ -39,16 +39,18 @@ class DraftDatasetFilesValidator
         return array_map(fn ($draftDatasetFile) => $this->getTemporaryFile($draftDatasetFile), $draftDatasetFiles);
     }
 
-    public function datasetHasMissingFile(array $draftDatasetFiles): bool
+    public function getMissingFileNames(array $draftDatasetFiles): array
     {
+        $missingFileNames = [];
+
         foreach ($draftDatasetFiles as $draftDatasetFile) {
             $temporaryFile = $this->getTemporaryFile($draftDatasetFile);
             if (is_null($temporaryFile) || !is_file($temporaryFile->getFilePath())) {
-                return true;
+                $missingFileNames[] = $draftDatasetFile->getFileName();
             }
         }
 
-        return false;
+        return $missingFileNames;
     }
 
     public function datasetHasReadmeFile(array $draftDatasetFiles): bool

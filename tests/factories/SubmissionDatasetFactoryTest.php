@@ -295,4 +295,18 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
 
         $this->assertEquals($expectedDataset, $dataset);
     }
+
+    public function testDatasetPreviewDoesNotReadDraftFiles(): void
+    {
+        $draftDatasetFileRepo = $this->createMock(DraftDatasetFileRepo::class);
+        $draftDatasetFileRepo->expects($this->never())->method('getBySubmissionId');
+
+        $factory = new SubmissionDatasetFactory($this->submission, false);
+        $factory->setDraftDatasetFileRepo($draftDatasetFileRepo);
+        $factory->setDataverseClient($this->mockDataverseClient);
+        $dataset = $factory->getDataset();
+
+        $this->assertSame([], $dataset->getFiles());
+        $this->assertNotEmpty($dataset->getTitle());
+    }
 }
