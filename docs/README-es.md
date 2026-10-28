@@ -59,17 +59,18 @@ Por lo tanto, se recomienda crear un usuario específico para la revista o servi
 Después de completar los campos, solo confirma la acción haciendo clic en `Guardar`. El plugin funcionará solo después de completar esta configuración.
 
 #### Límites de tiempo de las solicitudes
-Las conexiones con Dataverse tienen un límite de 5 segundos, y cada solicitud tiene un límite total que depende de la operación: 15 segundos para lecturas, 30 segundos para la creación del dataset, 60 segundos para la carga de cada archivo y 30 segundos para los demás cambios (incluidas las eliminaciones). Los administradores pueden cambiar estos límites en el `config.inc.php` de la aplicación:
+Las conexiones con Dataverse tienen un límite de 5 segundos, y cada solicitud tiene un límite total que depende de la operación: 15 segundos para lecturas, 60 segundos para la descarga de cada archivo, 30 segundos para la creación del dataset, 60 segundos para la carga de cada archivo y 30 segundos para los demás cambios (incluidas las eliminaciones). Los administradores pueden cambiar estos límites en el `config.inc.php` de la aplicación:
 
 ```ini
 [dataverse]
 read_timeout = 15
+download_timeout = 60
 create_timeout = 30
 upload_timeout = 60
 write_timeout = 30
 ```
 
-Los valores deben ser números enteros de segundos entre 1 y 300; cualquier otro valor usa el predeterminado. Los archivos se depositan uno tras otro en la misma solicitud, por lo que, antes de aumentar un límite, verifique que los límites de solicitud de PHP y del servidor web cubran el tiempo de todas las cargas juntas. Una solicitud que alcanza su límite se informa como tiempo agotado: Dataverse puede haber completado la operación de todos modos.
+Los valores deben ser números enteros de segundos entre 1 y 300, escritos sin cero a la izquierda (la aplicación lee `060` como un número octal); cualquier otro valor, como `on` o `1.5`, usa el predeterminado. Los archivos se depositan uno tras otro en la misma solicitud, por lo que, antes de aumentar un límite, verifique que los límites de solicitud de PHP y del servidor web cubran el tiempo de todas las cargas juntas. Una solicitud que alcanza su límite se informa como tiempo agotado: Dataverse puede haber completado la operación de todos modos.
 
 ### Uso
 
