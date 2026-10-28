@@ -2,6 +2,8 @@
 
 use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
 use APP\plugins\generic\dataverse\classes\deposit\DepositWorkflow;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use PHPUnit\Framework\TestCase;
 
 class MemoryDepositRepository extends DepositRepository
@@ -83,6 +85,37 @@ class DepositWorkflowTest extends TestCase
             }
         }
         $this->assertSame(1, $uploads);
+    }
+
+    public function testUploadThatWasNotSentCanBeRetriedOnTheSameDataset(): void
+    {
+        $repository = new MemoryDepositRepository();
+        $workflow = new DepositWorkflow($repository);
+        $creates = 0;
+        $uploads = 0;
+        $create = function () use (&$creates): string {
+            $creates++;
+            return 'doi:10.1234/ABC';
+        };
+        $upload = function (string $persistentId) use (&$uploads): array {
+            $uploads++;
+            if ($uploads === 1) {
+                throw new UploadNotSentException('data.zip', new DataverseException('Ingest still running'));
+            }
+            return [['id' => 10]];
+        };
+
+        try {
+            $workflow->run(1, $this->manifest, $create, $upload, fn () => $this->fail('Complete'));
+            $this->fail('The upload was not sent');
+        } catch (UploadNotSentException $e) {
+            $this->assertSame('ready', $repository->operation['state']);
+        }
+        $workflow->run(1, $this->manifest, $create, $upload, fn ($doi) => $this->assertSame('doi:10.1234/ABC', $doi));
+
+        $this->assertSame('complete', $repository->operation['state']);
+        $this->assertSame(1, $creates);
+        $this->assertSame(2, $uploads);
     }
 
     public function testRetryAfterLocalFailureUsesSameDoiAndConfirmedReceipts(): void

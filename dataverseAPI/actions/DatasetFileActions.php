@@ -7,6 +7,7 @@ use PKP\config\Config;
 use PKP\core\PKPString;
 use PKP\file\FileManager;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetFileActionsInterface;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
@@ -46,7 +47,11 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
     public function add(string $persistentId, string $filename, string $filePath): array
     {
-        $this->waitForIngest($persistentId);
+        try {
+            $this->waitForIngest($persistentId);
+        } catch (DataverseException $e) {
+            throw new UploadNotSentException($filename, $e);
+        }
 
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId', 'add'],

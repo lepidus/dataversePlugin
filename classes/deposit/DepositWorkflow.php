@@ -2,6 +2,7 @@
 
 namespace APP\plugins\generic\dataverse\classes\deposit;
 
+use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use RuntimeException;
 
 class DepositWorkflow
@@ -42,7 +43,12 @@ class DepositWorkflow
                 continue;
             }
             $this->repository->transition($submissionId, 'ready', 'uploading');
-            $receipt = $upload($persistentId, $key);
+            try {
+                $receipt = $upload($persistentId, $key);
+            } catch (UploadNotSentException $e) {
+                $this->repository->transition($submissionId, 'uploading', 'ready');
+                throw $e;
+            }
             if (!$receipt) {
                 throw new RuntimeException('The file upload response has no receipt.');
             }

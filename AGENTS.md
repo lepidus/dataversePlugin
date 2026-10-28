@@ -220,8 +220,11 @@ transitions only succeed for the expected state and revision. A retry in `ready`
 uploaded files; a request that finds `creating` or `uploading` is refused, because a lost response does not prove
 the mutation failed, and nothing is deleted or created again automatically. Those records are reconciled by hand
 (see the README). Deleting or disassociating a dataset retires a `complete` operation, so a new deposit or a manual
-association can follow; an association is refused while any operation is not retired. Every deposit failure is
-reported as `error.depositPending`.
+association can follow; an association is refused while any operation is not retired. The one failure known not to
+have reached Dataverse is an `UploadNotSentException`, which `DatasetFileActions::add()` raises when the ingest wait
+fails before the upload is sent: `DepositWorkflow` moves the operation back from `uploading` to `ready`, so the next
+attempt resumes from that file, and `DatasetService` reports it as `error.datasetFileDeposit`. Every other deposit
+failure is reported as `error.depositPending`.
 
 ### Services
 

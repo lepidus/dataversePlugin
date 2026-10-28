@@ -2,6 +2,7 @@
 
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetFileActions;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -94,8 +95,9 @@ class DatasetFileActionsTest extends PKPTestCase
         try {
             $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
             $this->fail('The upload was sent while the dataset was locked');
-        } catch (DataverseException $e) {
+        } catch (UploadNotSentException $e) {
             $this->assertSame(__('plugins.generic.dataverse.error.ingestTimeout'), $e->getMessage());
+            $this->assertSame('data.csv', $e->getFileName());
             $this->assertNotEmpty($history);
             $this->assertSame(['GET'], array_unique($this->requestMethods($history)));
         }
@@ -109,7 +111,7 @@ class DatasetFileActionsTest extends PKPTestCase
         try {
             $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
             $this->fail('The upload was sent without waiting for the ingest');
-        } catch (DataverseException $e) {
+        } catch (UploadNotSentException $e) {
             $this->assertSame(__('plugins.generic.dataverse.error.ingestTimeout'), $e->getMessage());
             $this->assertSame([], $history);
         }
@@ -123,7 +125,7 @@ class DatasetFileActionsTest extends PKPTestCase
         try {
             $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
             $this->fail('The upload was sent without checking the dataset locks');
-        } catch (DataverseException $e) {
+        } catch (UploadNotSentException $e) {
             $this->assertSame(401, $e->getCode());
             $this->assertSame(['GET'], $this->requestMethods($history));
         }
@@ -138,7 +140,7 @@ class DatasetFileActionsTest extends PKPTestCase
         try {
             $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
             $this->fail('The upload was sent without a valid lock list');
-        } catch (DataverseException $e) {
+        } catch (UploadNotSentException $e) {
             $this->assertSame(['GET'], $this->requestMethods($history));
         }
     }

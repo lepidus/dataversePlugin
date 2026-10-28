@@ -21,6 +21,7 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
 use APP\plugins\generic\dataverse\classes\deposit\DepositWorkflow;
@@ -74,6 +75,14 @@ class DatasetService extends DataverseService
                     $this->completeDeposit($submission, $persistentId);
                 }
             );
+        } catch (UploadNotSentException $e) {
+            $params = ['error' => $e->getMessage(), 'fileName' => $e->getFileName()];
+            $this->registerAndNotifyError($submission, 'plugins.generic.dataverse.error.datasetFileDeposit', $params);
+            return [
+                'status' => 'Error',
+                'message' => 'plugins.generic.dataverse.error.datasetFileDeposit',
+                'messageParams' => $params,
+            ];
         } catch (Throwable $e) {
             $this->reportPendingDeposit($submission, $e);
             return [

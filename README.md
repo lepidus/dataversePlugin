@@ -79,7 +79,7 @@ Authors, moderators, editors or managers can also edit the dataset, before publi
 
 The dataset citation and its status indicators appear in the Research data header, using the same status style as Publication. The files are displayed above the metadata form, without tabs.
 
-Before each file upload, the plugin waits up to 30 seconds for Dataverse to finish processing (ingesting) the files already in the dataset. If Dataverse is still processing them after that, the file is not uploaded and an error asks the user to try again in a few minutes; when this happens during a deposit, the deposit stops as described in Interrupted deposits.
+Before each file upload, the plugin waits up to 30 seconds for Dataverse to finish processing (ingesting) the files already in the dataset. If Dataverse is still processing them after that, the file is not uploaded and an error asks the user to try again in a few minutes; when this happens during a deposit, the dataset and the files already sent are kept, and a new deposit continues from the file that was not sent.
 
 In OJS, reviewers can have access to research data files during the review process. Reviewers access to these files can be restricted on Workflow Settings, so they can only see research data when they agree to review the submission.
 

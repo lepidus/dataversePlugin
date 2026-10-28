@@ -6,6 +6,7 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\entities\DatasetIdentifier;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
@@ -78,6 +79,43 @@ class DatasetServiceDepositTest extends DatabaseTestCase
         $this->assertSame('uploading', $operation->state);
         $this->assertSame('doi:10.5072/FK2/TEST', $operation->persistent_id);
         $this->assertNull(Repo::dataverseStudy()->getBySubmissionId($this->submission->getId()));
+    }
+
+    public function testUploadNotSentDuringTheIngestCanBeDepositedAgain(): void
+    {
+        $identifier = new DatasetIdentifier();
+        $identifier->setPersistentId('doi:10.5072/FK2/TEST');
+        $datasetActions = Mockery::mock();
+        $datasetActions->shouldReceive('create')->once()->andReturn($identifier);
+        $fileActions = Mockery::mock();
+        $fileActions->shouldReceive('add')->twice()->andReturnUsing(
+            fn () => throw new UploadNotSentException('Data.csv', new DataverseException('Ingest still running')),
+            fn () => [['id' => 10]]
+        );
+        $client = Mockery::mock('overload:' . DataverseClient::class);
+        $client->shouldReceive('getDatasetActions')->andReturn($datasetActions);
+        $client->shouldReceive('getDatasetFileActions')->andReturn($fileActions);
+        $service = $this->getMockBuilder(DatasetService::class)
+            ->onlyMethods(['registerAndNotifyError', 'registerEventLog'])
+            ->getMock();
+
+        $firstAttempt = $service->deposit($this->submission, $this->createDataset());
+        $stateAfterFirstAttempt = DB::table('dataverse_deposits')
+            ->where('submission_id', $this->submission->getId())
+            ->value('state');
+        $secondAttempt = $service->deposit($this->submission, $this->createDataset());
+
+        $this->assertSame('plugins.generic.dataverse.error.datasetFileDeposit', $firstAttempt['message']);
+        $this->assertSame(
+            ['error' => 'Ingest still running', 'fileName' => 'Data.csv'],
+            $firstAttempt['messageParams']
+        );
+        $this->assertSame('ready', $stateAfterFirstAttempt);
+        $this->assertSame('Success', $secondAttempt['status']);
+        $this->assertSame(
+            'doi:10.5072/FK2/TEST',
+            Repo::dataverseStudy()->getBySubmissionId($this->submission->getId())->getPersistentId()
+        );
     }
 
     private function createDataset(): Dataset
