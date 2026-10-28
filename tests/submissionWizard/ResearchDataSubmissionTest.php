@@ -1,8 +1,10 @@
 <?php
 
 use APP\facades\Repo;
+use APP\plugins\generic\dataverse\classes\facades\Repo as DataverseRepo;
 use APP\plugins\generic\dataverse\classes\services\DataStatementService;
 use APP\plugins\generic\dataverse\tests\helpers\DataverseIntegrationFixture;
+use PKP\file\TemporaryFileManager;
 use PKP\tests\DatabaseTestCase;
 
 class ResearchDataSubmissionTest extends DatabaseTestCase
@@ -91,6 +93,58 @@ class ResearchDataSubmissionTest extends DatabaseTestCase
         $this->assertEquals([__('plugins.generic.dataverse.error.notSolelyReadmeFile')], $errors['datasetFiles']);
     }
 
+    public function testResearchDataCannotBeOnlyReadmeFiles(): void
+    {
+        $submission = $this->createDataverseSubmission();
+        $this->addDraftDatasetFile($submission, ...self::README_FILE);
+        $this->addDraftDatasetFile($submission, 'README.txt', 'text/plain', 'How to read the data');
+
+        $errors = $this->validate($submission);
+
+        $this->assertEquals([__('plugins.generic.dataverse.error.notSolelyReadmeFile')], $errors['datasetFiles']);
+    }
+
+    public function testEmptyDataFileIsNotResearchData(): void
+    {
+        $submission = $this->createDataverseSubmission();
+        $this->addDraftDatasetFile($submission, ...self::README_FILE);
+        $this->addDraftDatasetFile($submission, 'data.csv', 'text/csv', '');
+
+        $errors = $this->validate($submission);
+
+        $this->assertEquals([__('plugins.generic.dataverse.error.notSolelyReadmeFile')], $errors['datasetFiles']);
+    }
+
+    public function testZipWithDataFilesIsAccepted(): void
+    {
+        $submission = $this->createDataverseSubmission();
+        $this->addSubmissionFile($submission, 'dummy.pdf', '%PDF-1.4 manuscript');
+        $this->addDraftDatasetFile($submission, ...self::README_FILE);
+        $this->addDraftDatasetFile($submission, 'README.zip', 'application/zip', $this->createZipContents([
+            'README.txt' => 'How to read the data',
+            'data.csv' => "year,value\n2024,1\n",
+        ]));
+
+        $errors = $this->validate($submission);
+
+        $this->assertArrayNotHasKey('datasetFiles', $errors);
+    }
+
+    public function testDraftFileWithoutTemporaryFileIsReportedAndKept(): void
+    {
+        $submission = $this->createDataverseSubmission();
+        $this->addSubmissionFile($submission, 'dummy.pdf', '%PDF-1.4 manuscript');
+        $this->addDraftDatasetFile($submission, ...self::README_FILE);
+        $dataFile = $this->addDraftDatasetFile($submission, ...self::DATA_FILE);
+        (new TemporaryFileManager())->deleteById($dataFile->getData('fileId'), $this->user->getId());
+        $this->temporaryFileIds = array_diff($this->temporaryFileIds, [$dataFile->getData('fileId')]);
+
+        $errors = $this->validate($submission);
+
+        $this->assertEquals([__('plugins.generic.dataverse.error.researchDataFileMissing')], $errors['datasetFiles']);
+        $this->assertNotNull(DataverseRepo::draftDatasetFile()->get($dataFile->getId()));
+    }
+
     public function testReadmeWithDataFilesIsAccepted(): void
     {
         $submission = $this->createDataverseSubmission();
@@ -125,5 +179,20 @@ class ResearchDataSubmissionTest extends DatabaseTestCase
             array_keys($errors),
             fn (string $key) => str_starts_with($key, 'dataset') && $key !== 'datasetFiles'
         ));
+    }
+
+    private function createZipContents(array $entries): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'dataverse-zip-');
+        $zip = new ZipArchive();
+        $zip->open($path, ZipArchive::OVERWRITE);
+        foreach ($entries as $name => $contents) {
+            $zip->addFromString($name, $contents);
+        }
+        $zip->close();
+        $contents = file_get_contents($path);
+        unlink($path);
+
+        return $contents;
     }
 }
