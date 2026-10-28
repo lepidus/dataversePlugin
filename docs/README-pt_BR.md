@@ -68,6 +68,8 @@ Autores, moderadores, editores ou gerentes também podem editar o conjunto de da
 
 A citação do conjunto de dados e seus indicadores de status aparecem no cabeçalho de Dados de pesquisa, com o mesmo estilo de status usado em Publicação. Os arquivos são exibidos acima do formulário de metadados, sem abas.
 
+Antes de enviar cada arquivo, o plugin espera até 30 segundos para que o Dataverse termine de processar (ingest) os arquivos que já estão no conjunto de dados. Se o Dataverse ainda estiver processando depois desse tempo, o arquivo não é enviado e um erro pede para tentar novamente em alguns minutos; quando isso acontece no depósito feito na submissão, o conjunto de dados incompleto é excluído assim que o processamento termina.
+
 No OJS, avaliadores podem receber acesso aos arquivos de dados de pesquisa durante o processo de avaliação. O acesso dos avaliadores à esses arquivos pode ser restringido nas Configurações do Fluxo de Trabalho, para que eles visualizem os arquivos apenas quando aceitarem avaliar a submissão.
 
 ## Instruções para Desenvolvimento:

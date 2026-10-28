@@ -166,9 +166,12 @@ Failures throw `DataverseException`. Callers are expected to catch it and degrad
 Dataverse should produce a notice or a disabled tab, never a fatal error. `packagers/NativeAPIDatasetPackager`
 serializes a `Dataset` into the JSON the Native API expects; `search/DataverseSearchBuilder` builds search queries.
 
-`DatasetFileActions::add()` polls the dataset's `Ingest` locks (up to 30 s) before every upload, because Dataverse
-rejects or mishandles an upload sent while it is still ingesting the previous file; a lock that outlasts the wait,
-or a lock lookup that fails, stops the upload with a `DataverseException`.
+`DatasetFileActions::add()` polls the dataset's `Ingest` locks (up to 30 s, on the monotonic clock) before every upload,
+because Dataverse rejects or mishandles an upload sent while it is still ingesting the previous file; a lock that
+outlasts the wait, or a lock lookup that fails, stops the upload with a `DataverseException`. The wait never sends a
+lock request with less than 1 ms left: Guzzle hands cURL whole milliseconds, and a 0 ms limit means no limit at all.
+Dataverse also refuses to delete a dataset while it is locked (403 "Dataset cannot be edited due to dataset lock"), so
+`DatasetService` calls `waitForIngest()` before deleting the incomplete dataset of a failed deposit.
 
 ### Entities, factories, repositories
 

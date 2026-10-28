@@ -171,7 +171,7 @@ msgstr "Error depositing the data file \"{$fileName}\" to Dataverse: {$error}<br
 "Please check if there is a problem with the file and replace it if necessary"
 
 msgid "plugins.generic.dataverse.error.ingestTimeout"
-msgstr "Dataverse is still processing the previously uploaded files. The deposit has been paused for verification."
+msgstr "Dataverse did not finish processing the files already sent to this dataset in time, so this file was not uploaded. Try again in a few minutes."
 
 msgid "plugins.generic.dataverse.error.updateFailed"
 msgstr "Error updating research data in Dataverse: {$error}"
