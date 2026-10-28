@@ -38,6 +38,37 @@ class ResearchDataFileValidatorTest extends PKPTestCase
         $this->assertFalse($this->validator->containsResearchData($readmeZip, 'data.zip'));
     }
 
+    public function testReadmeKeywordInsideAnotherWordIsNotAReadme(): void
+    {
+        $data = $this->createFile("a,b\n1,2\n");
+
+        $this->assertTrue($this->validator->containsResearchData($data, 'spreadmeasurements.csv'));
+        $this->assertTrue($this->validator->containsResearchData($data, 'bleamer-data.csv'));
+        $this->assertFalse($this->validator->containsResearchData($data, 'data-readme.txt'));
+        $this->assertFalse($this->validator->containsResearchData($data, 'README_v2.txt'));
+        $this->assertFalse($this->validator->containsResearchData($data, 'Leia-me.pdf'));
+    }
+
+    public function testZipBasedDocumentsAreResearchData(): void
+    {
+        $spreadsheet = file_get_contents($this->createZip(['[Content_Types].xml' => '<Types/>', 'xl/workbook.xml' => '<workbook/>']));
+        $openDocument = file_get_contents($this->createZip(['mimetype' => 'application/vnd.oasis.opendocument.spreadsheet']));
+
+        $this->assertTrue($this->validator->containsResearchData($this->createZip(['README.txt' => 'r', 'results.xlsx' => $spreadsheet]), 'data.zip'));
+        $this->assertTrue($this->validator->containsResearchData($this->createZip(['results.ods' => $openDocument]), 'data.zip'));
+        $this->assertFalse($this->validator->containsResearchData($this->createZip(['README.docx' => $spreadsheet]), 'data.zip'));
+    }
+
+    public function testZipLargerThanTheInspectionLimitCountsWhenItsFirstEntriesHaveData(): void
+    {
+        $entries = [];
+        for ($index = 0; $index <= 10000; $index++) {
+            $entries["values-{$index}.csv"] = '1';
+        }
+
+        $this->assertTrue($this->validator->containsResearchData($this->createZip($entries), 'data.zip'));
+    }
+
     public function testZipCountsOnlyThroughANonEmptyRegularNonReadmeMember(): void
     {
         $data = $this->createZip([

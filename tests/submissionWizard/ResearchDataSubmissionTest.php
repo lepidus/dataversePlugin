@@ -130,18 +130,19 @@ class ResearchDataSubmissionTest extends DatabaseTestCase
         $this->assertArrayNotHasKey('datasetFiles', $errors);
     }
 
-    public function testDraftFileWithoutTemporaryFileIsKept(): void
+    public function testDraftFileWithoutTemporaryFileIsReportedAndKept(): void
     {
         $submission = $this->createDataverseSubmission();
-        $readme = $this->addDraftDatasetFile($submission, ...self::README_FILE);
-        $this->addDraftDatasetFile($submission, ...self::DATA_FILE);
-        (new TemporaryFileManager())->deleteById($readme->getData('fileId'), $this->user->getId());
-        $this->temporaryFileIds = array_diff($this->temporaryFileIds, [$readme->getData('fileId')]);
+        $this->addSubmissionFile($submission, 'dummy.pdf', '%PDF-1.4 manuscript');
+        $this->addDraftDatasetFile($submission, ...self::README_FILE);
+        $dataFile = $this->addDraftDatasetFile($submission, ...self::DATA_FILE);
+        (new TemporaryFileManager())->deleteById($dataFile->getData('fileId'), $this->user->getId());
+        $this->temporaryFileIds = array_diff($this->temporaryFileIds, [$dataFile->getData('fileId')]);
 
         $errors = $this->validate($submission);
 
-        $this->assertEquals([__('plugins.generic.dataverse.error.readmeFile.required')], $errors['datasetFiles']);
-        $this->assertNotNull(DataverseRepo::draftDatasetFile()->get($readme->getId()));
+        $this->assertEquals([__('plugins.generic.dataverse.error.researchDataFileMissing')], $errors['datasetFiles']);
+        $this->assertNotNull(DataverseRepo::draftDatasetFile()->get($dataFile->getId()));
     }
 
     public function testReadmeWithDataFilesIsAccepted(): void

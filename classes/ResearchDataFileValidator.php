@@ -7,32 +7,53 @@ use ZipArchive;
 class ResearchDataFileValidator
 {
     private const MAX_ZIP_ENTRIES = 10000;
+    private const HEADER_LENGTH = 512;
+    private const README_NAME_PATTERN = '/(^|[^a-z])(readme|leiame|leia-me|leame)/';
+    private const ZIP_BASED_DATA_EXTENSIONS = ['xlsx', 'xlsm', 'xltx', 'docx', 'pptx', 'ods', 'odt', 'odp', 'odg'];
+    private const OPAQUE_ARCHIVE_EXTENSIONS = ['.tar', '.tar.gz', '.tgz', '.gz', '.rar', '.7z', '.bz2', '.xz'];
+
+    public static function isReadmeName(string $name): bool
+    {
+        $baseName = strtolower(basename(str_replace('\\', '/', $name)));
+
+        return (bool) preg_match(self::README_NAME_PATTERN, $baseName);
+    }
 
     public function containsResearchData(string $path, string $name): bool
     {
-        $size = @filesize($path);
-        if (!is_file($path) || !is_readable($path) || $size === false || $size === 0) {
+        $header = $this->readHeader($path);
+        if ($header === null) {
             return false;
+        }
+
+        if ($this->hasZipBasedDataExtension($name)) {
+            return !self::isReadmeName($name);
+        }
+
+        if ($this->isZipSignature($header)) {
+            return $this->zipContainsResearchData($path);
+        }
+
+        return !self::isReadmeName($name)
+            && !$this->hasZipExtension($name)
+            && !$this->isOpaqueArchive($header, $name);
+    }
+
+    private function readHeader(string $path): ?string
+    {
+        if (!is_file($path) || !is_readable($path) || !@filesize($path)) {
+            return null;
         }
 
         $stream = @fopen($path, 'rb');
         if ($stream === false) {
-            return false;
+            return null;
         }
-        $header = @fread($stream, 512);
+
+        $header = @fread($stream, self::HEADER_LENGTH);
         fclose($stream);
-        if ($header === false || $header === '') {
-            return false;
-        }
 
-        if ($this->isZipSignature($header) || $this->hasZipExtension($name)) {
-            if (!$this->isZipSignature($header)) {
-                return false;
-            }
-            return $this->zipContainsResearchData($path);
-        }
-
-        return !$this->isReadmeName($name) && !$this->isOpaqueArchive($header, $name);
+        return $header ?: null;
     }
 
     private function zipContainsResearchData(string $path): bool
@@ -47,35 +68,9 @@ class ResearchDataFileValidator
         }
 
         try {
-            if ($zip->numFiles === 0 || $zip->numFiles > self::MAX_ZIP_ENTRIES) {
-                return false;
-            }
-
-            for ($index = 0; $index < $zip->numFiles; $index++) {
-                $entry = @$zip->statIndex($index);
-                if ($entry === false || !isset($entry['name'], $entry['size'])) {
-                    return false;
-                }
-
-                $name = $entry['name'];
-                if (
-                    substr($name, -1) === '/'
-                    || $entry['size'] === 0
-                    || $this->isReadmeName($name)
-                    || !$this->isRegularZipEntry($zip, $index)
-                ) {
-                    continue;
-                }
-
-                $header = @$zip->getFromIndex($index, 512);
-
-                if (
-                    $header !== false
-                    && $header !== ''
-                    && !$this->isZipSignature($header)
-                    && !$this->hasZipExtension($name)
-                    && !$this->isOpaqueArchive($header, $name)
-                ) {
+            $inspectedEntries = min($zip->numFiles, self::MAX_ZIP_ENTRIES);
+            for ($index = 0; $index < $inspectedEntries; $index++) {
+                if ($this->zipEntryIsResearchData($zip, $index)) {
                     return true;
                 }
             }
@@ -86,19 +81,49 @@ class ResearchDataFileValidator
         }
     }
 
-    private function isRegularZipEntry(ZipArchive $zip, int $index): bool
+    private function zipEntryIsResearchData(ZipArchive $zip, int $index): bool
     {
-        $operations = 0;
-        $attributes = 0;
-        if (!$zip->getExternalAttributesIndex($index, $operations, $attributes)) {
+        $entry = @$zip->statIndex($index);
+        if ($entry === false || !isset($entry['name'], $entry['size'])) {
             return false;
         }
-        if ($operations !== ZipArchive::OPSYS_UNIX) {
+
+        $name = $entry['name'];
+        if (
+            str_ends_with($name, '/')
+            || $entry['size'] === 0
+            || self::isReadmeName($name)
+            || !$this->isRegularZipEntry($zip, $index)
+        ) {
+            return false;
+        }
+
+        if ($this->hasZipBasedDataExtension($name)) {
             return true;
         }
 
-        $type = ($attributes >> 16) & 0170000;
-        return $type === 0 || $type === 0100000;
+        $header = @$zip->getFromIndex($index, self::HEADER_LENGTH);
+
+        return $header !== false
+            && $header !== ''
+            && !$this->isZipSignature($header)
+            && !$this->hasZipExtension($name)
+            && !$this->isOpaqueArchive($header, $name);
+    }
+
+    private function isRegularZipEntry(ZipArchive $zip, int $index): bool
+    {
+        $operatingSystem = 0;
+        $attributes = 0;
+        if (!$zip->getExternalAttributesIndex($index, $operatingSystem, $attributes)) {
+            return false;
+        }
+        if ($operatingSystem !== ZipArchive::OPSYS_UNIX) {
+            return true;
+        }
+
+        $fileType = ($attributes >> 16) & 0170000;
+        return $fileType === 0 || $fileType === 0100000;
     }
 
     private function isZipSignature(string $header): bool
@@ -109,8 +134,8 @@ class ResearchDataFileValidator
     private function isOpaqueArchive(string $header, string $name): bool
     {
         $lowerName = strtolower($name);
-        foreach (['.tar', '.tar.gz', '.tgz', '.gz', '.rar', '.7z', '.bz2', '.xz'] as $extension) {
-            if (substr($lowerName, -strlen($extension)) === $extension) {
+        foreach (self::OPAQUE_ARCHIVE_EXTENSIONS as $extension) {
+            if (str_ends_with($lowerName, $extension)) {
                 return true;
             }
         }
@@ -125,17 +150,11 @@ class ResearchDataFileValidator
 
     private function hasZipExtension(string $name): bool
     {
-        return strtolower(substr($name, -4)) === '.zip';
+        return strtolower(pathinfo($name, PATHINFO_EXTENSION)) === 'zip';
     }
 
-    private function isReadmeName(string $name): bool
+    private function hasZipBasedDataExtension(string $name): bool
     {
-        $name = strtolower(basename(str_replace('\\', '/', $name)));
-        foreach (['readme', 'leiame', 'leia-me', 'leame'] as $keyword) {
-            if (strpos($name, $keyword) !== false) {
-                return true;
-            }
-        }
-        return false;
+        return in_array(strtolower(pathinfo($name, PATHINFO_EXTENSION)), self::ZIP_BASED_DATA_EXTENSIONS, true);
     }
 }

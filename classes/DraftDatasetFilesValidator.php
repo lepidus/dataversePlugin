@@ -3,55 +3,66 @@
 namespace APP\plugins\generic\dataverse\classes;
 
 use PKP\config\Config;
+use PKP\file\TemporaryFile;
 use PKP\file\TemporaryFileManager;
 
 class DraftDatasetFilesValidator
 {
+    private const README_FILE_TYPES = ['application/pdf', 'text/plain'];
+
+    private array $temporaryFiles = [];
+
     public function galleyContainsResearchData(array $galleyFiles, array $datasetFiles): bool
     {
         $filesDir = Config::getVar('files', 'files_dir');
-        $contains = false;
 
         foreach ($galleyFiles as $galleyFile) {
             $galleyFilePath = $filesDir . '/' . $galleyFile->getData('path');
 
-            foreach ($datasetFiles as $datasetFile) {
+            foreach (array_filter($datasetFiles) as $datasetFile) {
                 $datasetFilePath = $datasetFile->getFilePath();
 
                 if (
                     filesize($galleyFilePath) == filesize($datasetFilePath)
                     && md5_file($galleyFilePath) == md5_file($datasetFilePath)
                 ) {
-                    $contains = true;
-                    break;
+                    return true;
                 }
             }
         }
 
-        return $contains;
+        return false;
+    }
+
+    public function getTemporaryFiles(array $draftDatasetFiles): array
+    {
+        return array_map(fn ($draftDatasetFile) => $this->getTemporaryFile($draftDatasetFile), $draftDatasetFiles);
+    }
+
+    public function datasetHasMissingFile(array $draftDatasetFiles): bool
+    {
+        foreach ($draftDatasetFiles as $draftDatasetFile) {
+            $temporaryFile = $this->getTemporaryFile($draftDatasetFile);
+            if (is_null($temporaryFile) || !is_file($temporaryFile->getFilePath())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function datasetHasReadmeFile(array $draftDatasetFiles): bool
     {
-        $temporaryFileManager = new TemporaryFileManager();
-
-        foreach ($draftDatasetFiles as $file) {
-            $tempFile = $temporaryFileManager->getFile(
-                $file->getData('fileId'),
-                $file->getData('userId')
-            );
-
-            if (is_null($tempFile)) {
+        foreach ($draftDatasetFiles as $draftDatasetFile) {
+            $temporaryFile = $this->getTemporaryFile($draftDatasetFile);
+            if (is_null($temporaryFile)) {
                 continue;
             }
 
-            $fileName = strtolower($file->getFileName());
-            $fileType = $tempFile->getData('filetype');
-            $filePath = $tempFile->getFilePath();
-
+            $filePath = $temporaryFile->getFilePath();
             if (
-                $this->filenameHasReadmeKeyword($fileName)
-                && ($fileType == 'application/pdf' || $fileType == 'text/plain')
+                ResearchDataFileValidator::isReadmeName($draftDatasetFile->getFileName())
+                && in_array($temporaryFile->getData('filetype'), self::README_FILE_TYPES)
                 && is_file($filePath)
                 && is_readable($filePath)
                 && filesize($filePath) > 0
@@ -65,18 +76,13 @@ class DraftDatasetFilesValidator
 
     public function datasetHasNonReadmeFile(array $draftDatasetFiles): bool
     {
-        $temporaryFileManager = new TemporaryFileManager();
         $researchDataFileValidator = new ResearchDataFileValidator();
 
-        foreach ($draftDatasetFiles as $file) {
-            $tempFile = $temporaryFileManager->getFile(
-                $file->getData('fileId'),
-                $file->getData('userId')
-            );
-
+        foreach ($draftDatasetFiles as $draftDatasetFile) {
+            $temporaryFile = $this->getTemporaryFile($draftDatasetFile);
             if (
-                !is_null($tempFile)
-                && $researchDataFileValidator->containsResearchData($tempFile->getFilePath(), $file->getFileName())
+                !is_null($temporaryFile)
+                && $researchDataFileValidator->containsResearchData($temporaryFile->getFilePath(), $draftDatasetFile->getFileName())
             ) {
                 return true;
             }
@@ -85,15 +91,14 @@ class DraftDatasetFilesValidator
         return false;
     }
 
-    private function filenameHasReadmeKeyword(string $fileName): bool
+    private function getTemporaryFile($draftDatasetFile): ?TemporaryFile
     {
-        $readmeKeywords = ['readme', 'leiame', 'leia-me', 'leame'];
+        $fileId = $draftDatasetFile->getData('fileId');
 
-        foreach ($readmeKeywords as $keyword) {
-            if (str_contains($fileName, $keyword)) {
-                return true;
-            }
+        if (!array_key_exists($fileId, $this->temporaryFiles)) {
+            $this->temporaryFiles[$fileId] = (new TemporaryFileManager())->getFile($fileId, $draftDatasetFile->getData('userId'));
         }
-        return false;
+
+        return $this->temporaryFiles[$fileId];
     }
 }

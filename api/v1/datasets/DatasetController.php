@@ -231,6 +231,10 @@ class DatasetController extends PKPBaseController
 
         $draftDatasetFilesValidator = new DraftDatasetFilesValidator();
 
+        if ($draftDatasetFilesValidator->datasetHasMissingFile($draftDatasetFiles)) {
+            return $this->error('plugins.generic.dataverse.error.researchDataFileMissing', [], Response::HTTP_NOT_FOUND);
+        }
+
         if (!$draftDatasetFilesValidator->datasetHasReadmeFile($draftDatasetFiles)) {
             return $this->error('plugins.generic.dataverse.error.readmeFile.required', [], Response::HTTP_NOT_FOUND);
         }

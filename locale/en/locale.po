@@ -141,6 +141,9 @@ msgstr "It is mandatory to send a README file, in PDF, MD or TXT format, to acco
 msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
 msgstr "The research data must contain at least one readable, non-empty file besides README files, either directly or inside a ZIP archive."
 
+msgid "plugins.generic.dataverse.error.researchDataFileMissing"
+msgstr "A research data file is no longer available. Delete it and upload it again before submitting the research data."
+
 msgid "plugins.generic.dataverse.error.exception.unavailable"
 msgstr "Dataverse service is temporarily unavailable"
 

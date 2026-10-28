@@ -144,6 +144,9 @@ msgstr "Es obligatorio enviar un archivo README, en formato PDF, MD o TXT, que a
 msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
 msgstr "Los datos de investigación deben contener al menos un archivo legible y no vacío además de los archivos README, enviado directamente o dentro de un archivo ZIP."
 
+msgid "plugins.generic.dataverse.error.researchDataFileMissing"
+msgstr "Un archivo de datos de investigación ya no está disponible. Elimínelo y vuelva a cargarlo antes de enviar los datos de investigación."
+
 msgid "plugins.generic.dataverse.error.exception.unavailable"
 msgstr "El servicio Dataverse no está disponible temporalmente"
 

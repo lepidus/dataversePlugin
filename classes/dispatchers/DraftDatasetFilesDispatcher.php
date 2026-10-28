@@ -4,7 +4,6 @@ namespace APP\plugins\generic\dataverse\classes\dispatchers;
 
 use PKP\plugins\Hook;
 use APP\core\Application;
-use PKP\file\TemporaryFileManager;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
@@ -152,7 +151,9 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
             if (empty($draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.researchData.required')];
-            } elseif ($this->galleyContainsResearchData($submission, $draftDatasetFiles)) {
+            } elseif ($validator->datasetHasMissingFile($draftDatasetFiles)) {
+                $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.researchDataFileMissing')];
+            } elseif ($this->galleyContainsResearchData($submission, $draftDatasetFiles, $validator)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.notification.galleyContainsResearchData')];
             } elseif (!$validator->datasetHasReadmeFile($draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.readmeFile.required')];
@@ -164,7 +165,7 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         return false;
     }
 
-    private function galleyContainsResearchData($submission, $draftDatasetFiles): bool
+    private function galleyContainsResearchData($submission, $draftDatasetFiles, DraftDatasetFilesValidator $validator): bool
     {
         $submissionFiles = Repo::submissionFile()
             ->getCollector()
@@ -176,15 +177,6 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             return false;
         }
 
-        $temporaryFileManager = new TemporaryFileManager();
-        $datasetFiles = array_map(function ($draftFile) use ($temporaryFileManager) {
-            return $temporaryFileManager->getFile(
-                $draftFile->getData('fileId'),
-                $draftFile->getData('userId')
-            );
-        }, $draftDatasetFiles);
-
-        $validator = new DraftDatasetFilesValidator();
-        return $validator->galleyContainsResearchData($submissionFiles, $datasetFiles);
+        return $validator->galleyContainsResearchData($submissionFiles, $validator->getTemporaryFiles($draftDatasetFiles));
     }
 }
