@@ -1,11 +1,15 @@
 <?php
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ConnectException;
+use PKP\config\Config;
 use PKP\tests\PKPTestCase;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
@@ -307,6 +311,125 @@ class DataverseActionsTest extends PKPTestCase
             $this->assertSame(__('plugins.generic.dataverse.error.exception.unavailable'), $exception->getMessage());
             $this->assertSame(__('plugins.generic.dataverse.error.unavailable'), $exception->getUserMessage());
         }
+    }
+
+    public function testRequestTimeoutDependsOnTheOperation(): void
+    {
+        $observedTimeouts = [];
+        $actions = new ConcreteDataverseActions($this->configuration, $this->createTimeoutObservingClient($observedTimeouts));
+
+        $actions->nativeAPIRequest('GET', 'https://example.com/api/datasets/1');
+        $actions->nativeAPIRequest('GET', 'https://example.com/api/access/datafile/1', [], false);
+        $actions->nativeAPIRequest('POST', 'https://example.com/api/dataverses/test/datasets');
+        $actions->nativeAPIRequest('POST', 'https://example.com/api/datasets/:persistentId/add?persistentId=doi:10.1/X');
+        $actions->nativeAPIRequest('DELETE', 'https://example.com/api/datasets/1');
+        $actions->swordAPIRequest('DELETE', 'https://example.com/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/1');
+        $actions->nativeAPIRequest('POST', 'https://example.com/api/datasets/1/add', ['timeout' => 42]);
+
+        $this->assertSame([[5, 15], [5, 60], [5, 30], [5, 60], [5, 30], [5, 30], [5, 42]], $observedTimeouts);
+    }
+
+    public function testConfiguredRequestTimeoutOutsideTheAllowedRangeFallsBackToTheDefault(): void
+    {
+        $config = &Config::getData();
+        $originalDataverseConfig = $config['dataverse'] ?? null;
+        $observedTimeouts = [];
+        $actions = new ConcreteDataverseActions($this->configuration, $this->createTimeoutObservingClient($observedTimeouts));
+
+        try {
+            foreach ([0, 301, 1.5, true, 'invalid', null, 90] as $uploadTimeout) {
+                $config['dataverse']['upload_timeout'] = $uploadTimeout;
+                $actions->nativeAPIRequest('POST', 'https://example.com/api/datasets/1/add');
+            }
+        } finally {
+            if (is_null($originalDataverseConfig)) {
+                unset($config['dataverse']);
+            } else {
+                $config['dataverse'] = $originalDataverseConfig;
+            }
+        }
+
+        $this->assertSame([60, 60, 60, 60, 60, 60, 90], array_column($observedTimeouts, 1));
+    }
+
+    public function testFailureCategoryDistinguishesTimeoutConnectionAuthenticationAndHttpErrors(): void
+    {
+        $request = new Request('POST', 'https://example.com');
+        $timeout = DataverseException::fromTransferException(
+            new ConnectException('sensitive transport detail', $request, null, ['errno' => 28])
+        );
+        $connection = DataverseException::fromTransferException(new ConnectException('refused', $request));
+        $authentication = DataverseException::fromTransferException(
+            new RequestException('unauthorized', $request, new Response(401, [], '{"message": "Bad API key"}'))
+        );
+        $http = DataverseException::fromTransferException(
+            new RequestException('bad request', $request, new Response(400, [], '{"message": "Invalid field"}'))
+        );
+
+        $this->assertSame('timeout', $timeout->getFailureCategory());
+        $this->assertStringNotContainsString('sensitive', $timeout->getMessage());
+        $this->assertSame('connection', $connection->getFailureCategory());
+        $this->assertSame('authentication', $authentication->getFailureCategory());
+        $this->assertSame('http', $http->getFailureCategory());
+    }
+
+    public function testResponseBodyIsNotReadWhenTheResponseIsNotReturned(): void
+    {
+        $sinkPath = tempnam(sys_get_temp_dir(), 'datasetFile');
+        $sink = Utils::tryFopen($sinkPath, 'w');
+        $client = new Client(['handler' => function () use ($sink) {
+            return new FulfilledPromise(new Response(200, [], Utils::streamFor($sink)));
+        }]);
+        $actions = new ConcreteDataverseActions($this->configuration, $client);
+
+        try {
+            $response = $actions->nativeAPIRequest(
+                'GET',
+                'https://example.com/api/access/datafile/1',
+                ['sink' => $sink],
+                false
+            );
+        } finally {
+            unlink($sinkPath);
+        }
+
+        $this->assertNull($response);
+    }
+
+    public function testFailureLogHasTheStatusReturnedByDataverse(): void
+    {
+        $logPath = tempnam(sys_get_temp_dir(), 'dataverseLog');
+        $errorLog = ini_set('error_log', $logPath);
+        $request = new Request('GET', 'https://example.com/api/datasets/1');
+        $client = new Client(['handler' => HandlerStack::create(new MockHandler([
+            new Response(504),
+            new ConnectException('refused', $request),
+        ]))]);
+        $actions = new ConcreteDataverseActions($this->configuration, $client);
+
+        try {
+            foreach ([1, 2] as $attempt) {
+                try {
+                    $actions->nativeAPIRequest('GET', 'https://example.com/api/datasets/1');
+                } catch (DataverseException $exception) {
+                }
+            }
+            $log = file_get_contents($logPath);
+        } finally {
+            ini_set('error_log', $errorLog);
+            unlink($logPath);
+        }
+
+        $this->assertStringContainsString('"operation":"read","category":"http","status":504', $log);
+        $this->assertStringContainsString('"operation":"read","category":"connection","status":null', $log);
+    }
+
+    private function createTimeoutObservingClient(array &$observedTimeouts): Client
+    {
+        return new Client(['handler' => function ($request, array $options) use (&$observedTimeouts) {
+            $observedTimeouts[] = [$options['connect_timeout'], $options['timeout']];
+            return new FulfilledPromise(new Response(200, [], '{}'));
+        }]);
     }
 }
 

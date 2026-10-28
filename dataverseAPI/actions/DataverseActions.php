@@ -3,8 +3,10 @@
 namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
 use APP\core\Application;
+use PKP\config\Config;
 use PKP\db\DAORegistry;
 use GuzzleHttp\Exception\TransferException;
+use Psr\Http\Message\ResponseInterface;
 use Illuminate\Support\Facades\Cache;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
@@ -21,6 +23,16 @@ abstract class DataverseActions
     protected $client;
 
     protected const ONE_DAY_SECONDS = 24 * 60 * 60;
+    private const DEFAULT_REQUEST_TIMEOUTS = [
+        'read' => 15,
+        'download' => 60,
+        'create' => 30,
+        'upload' => 60,
+        'write' => 30,
+    ];
+    private const MIN_REQUEST_TIMEOUT = 1;
+    private const MAX_REQUEST_TIMEOUT = 300;
+
     public function __construct(
         ?DataverseConfiguration $configuration = null,
         ?\GuzzleHttp\Client $client = null,
@@ -98,18 +110,54 @@ abstract class DataverseActions
     public function nativeAPIRequest(string $method, string $uri, array $options = [], bool $returnResponse = true): ?DataverseResponse
     {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
-        $options += ['connect_timeout' => 5, 'timeout' => 15];
-
-        try {
-            $response = $this->client->request($method, $uri, $options);
-        } catch (TransferException $e) {
-            throw DataverseException::fromTransferException($e);
-        }
+        $response = $this->sendRequest($method, $uri, $options);
 
         if (!$returnResponse) {
             return null;
         }
 
+        return $this->createDataverseResponse($response);
+    }
+
+    public function swordAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
+    {
+        $options['auth'] = [$this->apiToken, ''];
+
+        return $this->createDataverseResponse($this->sendRequest($method, $uri, $options));
+    }
+
+    private function sendRequest(string $method, string $uri, array $options): ResponseInterface
+    {
+        $operation = $this->getRequestOperation($method, $uri);
+        $options += ['connect_timeout' => 5, 'timeout' => $this->getRequestTimeout($operation)];
+
+        try {
+            $response = $this->client->request($method, $uri, $options);
+        } catch (TransferException $e) {
+            $exception = DataverseException::fromTransferException($e);
+            error_log(json_encode([
+                'component' => 'dataverse',
+                'operation' => $operation,
+                'category' => $exception->getFailureCategory(),
+                'status' => $this->getResponseStatus($e),
+            ]));
+            throw $exception;
+        }
+
+        return $response;
+    }
+
+    private function getResponseStatus(TransferException $e): ?int
+    {
+        if (!method_exists($e, 'hasResponse') || !$e->hasResponse()) {
+            return null;
+        }
+
+        return $e->getResponse()->getStatusCode();
+    }
+
+    private function createDataverseResponse(ResponseInterface $response): DataverseResponse
+    {
         return new DataverseResponse(
             $response->getStatusCode(),
             $response->getReasonPhrase(),
@@ -117,21 +165,33 @@ abstract class DataverseActions
         );
     }
 
-    public function swordAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
+    private function getRequestOperation(string $method, string $uri): string
     {
-        $options['auth'] = [$this->apiToken, ''];
-        $options += ['connect_timeout' => 5, 'timeout' => 15];
+        $path = (string) parse_url($uri, PHP_URL_PATH);
 
-        try {
-            $response = $this->client->request($method, $uri, $options);
-        } catch (TransferException $e) {
-            throw DataverseException::fromTransferException($e);
+        if ($method === 'POST' && str_ends_with($path, '/add')) {
+            return 'upload';
         }
 
-        return new DataverseResponse(
-            $response->getStatusCode(),
-            $response->getReasonPhrase(),
-            $response->getBody()
-        );
+        if ($method === 'POST' && str_ends_with($path, '/datasets')) {
+            return 'create';
+        }
+
+        if ($method === 'GET' && str_contains($path, '/access/datafile/')) {
+            return 'download';
+        }
+
+        return $method === 'GET' ? 'read' : 'write';
+    }
+
+    private function getRequestTimeout(string $operation): int
+    {
+        $timeout = Config::getVar('dataverse', $operation . '_timeout');
+
+        if (!is_int($timeout) || $timeout < self::MIN_REQUEST_TIMEOUT || $timeout > self::MAX_REQUEST_TIMEOUT) {
+            return self::DEFAULT_REQUEST_TIMEOUTS[$operation];
+        }
+
+        return $timeout;
     }
 }
