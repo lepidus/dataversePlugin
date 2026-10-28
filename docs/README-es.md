@@ -80,6 +80,8 @@ Los autores, moderadores, editores o gerentes también pueden editar el conjunto
 
 La cita del conjunto de datos y sus indicadores de estado aparecen en el encabezado de Datos de investigación, con el mismo estilo de estado usado en Publicación. Los archivos se muestran encima del formulario de metadatos, sin pestañas.
 
+Antes de cargar cada archivo, el plugin espera hasta 30 segundos a que Dataverse termine de procesar (ingest) los archivos que ya están en el conjunto de datos. Si Dataverse todavía los está procesando después de ese tiempo, el archivo no se carga y un error pide intentarlo de nuevo en unos minutos; cuando esto ocurre durante el depósito hecho en el envío, el conjunto de datos incompleto se elimina cuando termina el procesamiento.
+
 En OJS, los evaluadores pueden recibir acceso a los archivos de datos de investigación durante el proceso de evaluación. El acceso de los evaluadores a estos archivos puede ser restringido en la Configuración del Flujo de Trabajo, para que solo visualicen los archivos cuando acepten evaluar la presentación.
 
 ## Instrucciones para desarrollo:

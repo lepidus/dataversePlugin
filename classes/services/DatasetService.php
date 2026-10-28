@@ -109,6 +109,7 @@ class DatasetService extends DataverseService
     private function deleteIncompleteDataset(DataverseClient $dataverseClient, string $persistentId): void
     {
         try {
+            $dataverseClient->getDatasetFileActions()->waitForIngest($persistentId);
             $dataverseClient->getDatasetActions()->delete($persistentId);
         } catch (DataverseException $e) {
             error_log('Dataverse API error while deleting incomplete dataset ' . $persistentId . ': ' . $e->getMessage());

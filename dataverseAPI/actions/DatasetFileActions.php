@@ -6,12 +6,17 @@ use GuzzleHttp\Psr7\Utils;
 use PKP\config\Config;
 use PKP\core\PKPString;
 use PKP\file\FileManager;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetFileActionsInterface;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
 
 class DatasetFileActions extends DataverseActions implements DatasetFileActionsInterface
 {
+    protected const INGEST_WAIT_TIMEOUT_SECONDS = 30;
+    private const INGEST_POLL_INTERVAL_MICROSECONDS = 250_000;
+    private const MIN_LOCK_REQUEST_SECONDS = 0.001;
+
     public function getByDatasetId(string $persistentId): array
     {
         $uri = $this->createNativeAPIURI(
@@ -41,6 +46,8 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
     public function add(string $persistentId, string $filename, string $filePath): void
     {
+        $this->waitForIngest($persistentId);
+
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId', 'add'],
             ['persistentId' => $persistentId]
@@ -60,6 +67,43 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         ];
 
         $this->nativeAPIRequest('POST', $uri, $options);
+    }
+
+    public function waitForIngest(string $persistentId): void
+    {
+        $deadline = $this->getMonotonicSeconds() + static::INGEST_WAIT_TIMEOUT_SECONDS;
+        $locksUri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId', 'locks'],
+            ['persistentId' => $persistentId, 'type' => 'Ingest']
+        );
+
+        while (($remainingSeconds = $deadline - $this->getMonotonicSeconds()) >= self::MIN_LOCK_REQUEST_SECONDS) {
+            $response = $this->nativeAPIRequest('GET', $locksUri, [
+                'connect_timeout' => min(5, $remainingSeconds),
+                'timeout' => $remainingSeconds,
+            ]);
+            $locks = json_decode($response->getBody(), true)['data'] ?? null;
+
+            if (!is_array($locks) || !array_is_list($locks)) {
+                throw new DataverseException(__('plugins.generic.dataverse.error.exception.unavailable'), 503);
+            }
+
+            if (empty($locks)) {
+                return;
+            }
+
+            usleep((int) min(
+                self::INGEST_POLL_INTERVAL_MICROSECONDS,
+                max(0, $deadline - $this->getMonotonicSeconds()) * 1_000_000
+            ));
+        }
+
+        throw new DataverseException(__('plugins.generic.dataverse.error.ingestTimeout'));
+    }
+
+    private function getMonotonicSeconds(): float
+    {
+        return hrtime(true) / 1_000_000_000;
     }
 
     public function delete(int $datasetFileId): void
