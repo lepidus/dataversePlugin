@@ -15,6 +15,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 {
     protected const INGEST_WAIT_TIMEOUT_SECONDS = 30;
     private const INGEST_POLL_INTERVAL_MICROSECONDS = 250_000;
+    private const MIN_LOCK_REQUEST_SECONDS = 0.001;
 
     public function getByDatasetId(string $persistentId): array
     {
@@ -91,15 +92,15 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         ];
     }
 
-    private function waitForIngest(string $persistentId): void
+    public function waitForIngest(string $persistentId): void
     {
-        $deadline = microtime(true) + static::INGEST_WAIT_TIMEOUT_SECONDS;
+        $deadline = $this->getMonotonicSeconds() + static::INGEST_WAIT_TIMEOUT_SECONDS;
         $locksUri = $this->createNativeAPIURI(
             ['datasets', ':persistentId', 'locks'],
             ['persistentId' => $persistentId, 'type' => 'Ingest']
         );
 
-        while (($remainingSeconds = $deadline - microtime(true)) > 0) {
+        while (($remainingSeconds = $deadline - $this->getMonotonicSeconds()) >= self::MIN_LOCK_REQUEST_SECONDS) {
             $response = $this->nativeAPIRequest('GET', $locksUri, [
                 'connect_timeout' => min(5, $remainingSeconds),
                 'timeout' => $remainingSeconds,
@@ -114,10 +115,18 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
                 return;
             }
 
-            usleep((int) min(self::INGEST_POLL_INTERVAL_MICROSECONDS, max(0, $deadline - microtime(true)) * 1_000_000));
+            usleep((int) min(
+                self::INGEST_POLL_INTERVAL_MICROSECONDS,
+                max(0, $deadline - $this->getMonotonicSeconds()) * 1_000_000
+            ));
         }
 
         throw new DataverseException(__('plugins.generic.dataverse.error.ingestTimeout'));
+    }
+
+    private function getMonotonicSeconds(): float
+    {
+        return hrtime(true) / 1_000_000_000;
     }
 
     public function delete(int $datasetFileId): void

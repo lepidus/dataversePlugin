@@ -8,6 +8,8 @@ interface DatasetFileActionsInterface
 
     public function add(string $persistentId, string $filename, string $filePath): array;
 
+    public function waitForIngest(string $persistentId): void;
+
     public function delete(int $datasetFileId): void;
 
     public function download(int $datasetFileId, string $filename): void;

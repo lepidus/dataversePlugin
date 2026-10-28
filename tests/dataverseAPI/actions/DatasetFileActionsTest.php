@@ -101,6 +101,20 @@ class DatasetFileActionsTest extends PKPTestCase
         }
     }
 
+    public function testNoLockRequestIsSentWithLessThanOneMillisecondLeft(): void
+    {
+        $history = [];
+        $actions = $this->createActionsRespondingWith([], $history, ExpiredIngestWaitDatasetFileActions::class);
+
+        try {
+            $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
+            $this->fail('The upload was sent without waiting for the ingest');
+        } catch (DataverseException $e) {
+            $this->assertSame(__('plugins.generic.dataverse.error.ingestTimeout'), $e->getMessage());
+            $this->assertSame([], $history);
+        }
+    }
+
     public function testUploadIsNotSentWhenTheLockLookupFails(): void
     {
         $history = [];
@@ -209,4 +223,9 @@ class DatasetFileActionsTest extends PKPTestCase
 class ShortIngestWaitDatasetFileActions extends DatasetFileActions
 {
     protected const INGEST_WAIT_TIMEOUT_SECONDS = 1;
+}
+
+class ExpiredIngestWaitDatasetFileActions extends DatasetFileActions
+{
+    protected const INGEST_WAIT_TIMEOUT_SECONDS = 0.0005;
 }
