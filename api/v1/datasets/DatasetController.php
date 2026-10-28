@@ -229,11 +229,17 @@ class DatasetController extends PKPBaseController
             return $this->error('plugins.generic.dataverse.researchDataFile.error', [], Response::HTTP_NOT_FOUND);
         }
 
-        if (!(new DraftDatasetFilesValidator())->datasetHasReadmeFile($draftDatasetFiles)) {
+        $draftDatasetFilesValidator = new DraftDatasetFilesValidator();
+
+        if ($draftDatasetFilesValidator->datasetHasMissingFile($draftDatasetFiles)) {
+            return $this->error('plugins.generic.dataverse.error.researchDataFileMissing', [], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$draftDatasetFilesValidator->datasetHasReadmeFile($draftDatasetFiles)) {
             return $this->error('plugins.generic.dataverse.error.readmeFile.required', [], Response::HTTP_NOT_FOUND);
         }
 
-        if (count($draftDatasetFiles) == 1) {
+        if (!$draftDatasetFilesValidator->datasetHasNonReadmeFile($draftDatasetFiles)) {
             return $this->error('plugins.generic.dataverse.error.notSolelyReadmeFile', [], Response::HTTP_NOT_FOUND);
         }
 

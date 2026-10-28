@@ -190,12 +190,20 @@ the canonical "this submission has no dataset" test, used all over the dispatche
 `DraftDatasetFile` is a file uploaded during the wizard but not yet deposited; its properties are described by
 `schemas/draftDatasetFile.json`, loaded via the `Schema::get::draftDatasetFile` hook.
 
-Despite the name, `DraftDatasetFilesValidator` does **not** validate that schema. It holds two wizard business
-rules: `galleyContainsResearchData()` (compares galley files against dataset files by size + MD5, to warn when
-research data was also uploaded as a manuscript file) and `datasetHasReadmeFile()` (looks for a PDF or plain
-text file whose name contains a readme keyword — `readme`, `leiame`, `leia-me`, `leame` — and prunes draft
-records whose temporary file has vanished). Schema/field validation belongs in the schema JSON and the
-component form classes, not here.
+Despite the name, `DraftDatasetFilesValidator` does **not** validate that schema. It holds the wizard business rules,
+also applied by `DatasetController` before a deposit from the workflow panel: `datasetHasMissingFile()` (a draft whose
+temporary file is gone is reported, never deleted), `galleyContainsResearchData()` (compares galley files against
+dataset files by size + MD5, to warn when research data was also uploaded as a manuscript file),
+`datasetHasReadmeFile()` (a non-empty PDF or plain text file whose name has a readme keyword — `readme`, `leiame`,
+`leia-me`, `leame` — not preceded by a letter, so `spreadmeasurements.csv` is not a README; Markdown is detected as
+`text/plain`) and `datasetHasNonReadmeFile()`, which asks `ResearchDataFileValidator` whether any file carries research
+data besides READMEs. The validator looks up each temporary file once per instance, so call sites share one instance.
+
+`ResearchDataFileValidator` reads the stored bytes. ZIP-based documents (`xlsx`, `docx`, `ods`, …) are data by their
+extension; any other ZIP (detected by signature) counts only through a non-empty regular member that is not a README,
+inspecting at most its first 10,000 entries. Nested ZIPs and opaque packages (TAR, GZIP, RAR, 7z, BZIP2, XZ), alone or
+inside a ZIP, never count, because their contents are not inspected — the rule ported from 3.4. Schema/field
+validation belongs in the schema JSON and the component form classes, not here.
 
 Both tables (`dataverse_studies`, `draft_dataset_files`) are created by
 `classes/migrations/DataverseMigration`. `upgrade.xml` lists migrations applied to existing installs.

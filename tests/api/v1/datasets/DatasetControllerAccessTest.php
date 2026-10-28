@@ -238,8 +238,10 @@ class DatasetControllerAccessTest extends PKPTestCase
         $draftRepository = Mockery::mock(DraftDatasetFileRepository::class);
         $draftRepository->shouldReceive('getBySubmissionId')->andReturn(LazyCollection::make($draftFiles));
         app()->instance(DraftDatasetFileRepository::class, $draftRepository);
-        Mockery::mock('overload:' . DraftDatasetFilesValidator::class)
-            ->shouldReceive('datasetHasReadmeFile')->andReturn(true);
+        $draftValidator = Mockery::mock('overload:' . DraftDatasetFilesValidator::class);
+        $draftValidator->shouldReceive('datasetHasMissingFile')->andReturn(false);
+        $draftValidator->shouldReceive('datasetHasReadmeFile')->andReturn(true);
+        $draftValidator->shouldReceive('datasetHasNonReadmeFile')->andReturn(true);
 
         $datasetFiles = [$this->createDatasetFile(1, 'README.txt'), $this->createDatasetFile(2, 'Data.csv')];
         $dataset = new Dataset();
@@ -284,8 +286,10 @@ class DatasetControllerAccessTest extends PKPTestCase
         $draftRepository = Mockery::mock(DraftDatasetFileRepository::class);
         $draftRepository->shouldReceive('getBySubmissionId')->andReturn(LazyCollection::make(['README.txt', 'Data.csv']));
         app()->instance(DraftDatasetFileRepository::class, $draftRepository);
-        Mockery::mock('overload:' . DraftDatasetFilesValidator::class)
-            ->shouldReceive('datasetHasReadmeFile')->andReturn(true);
+        $draftValidator = Mockery::mock('overload:' . DraftDatasetFilesValidator::class);
+        $draftValidator->shouldReceive('datasetHasMissingFile')->andReturn(false);
+        $draftValidator->shouldReceive('datasetHasReadmeFile')->andReturn(true);
+        $draftValidator->shouldReceive('datasetHasNonReadmeFile')->andReturn(true);
 
         $collectionActions = $this->getMockBuilder(DataverseCollectionActions::class)
             ->disableOriginalConstructor()->onlyMethods(['getRequiredMetadata', 'getLicenses'])->getMock();
