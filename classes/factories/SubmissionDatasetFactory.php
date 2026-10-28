@@ -172,7 +172,7 @@ class SubmissionDatasetFactory extends DatasetFactory
                     $draftDatasetFile->getData('userId')
                 );
                 if (is_null($file)) {
-                    throw new MissingDepositFileException(__('plugins.generic.dataverse.error.sourceFileMissing'));
+                    throw new MissingDepositFileException($draftDatasetFile->getFileName());
                 }
                 return $file;
             },

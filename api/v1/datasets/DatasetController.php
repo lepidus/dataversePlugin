@@ -232,8 +232,13 @@ class DatasetController extends PKPBaseController
 
         $draftDatasetFilesValidator = new DraftDatasetFilesValidator();
 
-        if ($draftDatasetFilesValidator->datasetHasMissingFile($draftDatasetFiles)) {
-            return $this->error('plugins.generic.dataverse.error.researchDataFileMissing', [], Response::HTTP_NOT_FOUND);
+        $missingFileNames = $draftDatasetFilesValidator->getMissingFileNames($draftDatasetFiles);
+        if (!empty($missingFileNames)) {
+            return $this->error(
+                'plugins.generic.dataverse.error.researchDataFileMissing',
+                ['fileNames' => implode(', ', $missingFileNames)],
+                Response::HTTP_NOT_FOUND
+            );
         }
 
         if (!$draftDatasetFilesValidator->datasetHasReadmeFile($draftDatasetFiles)) {
@@ -260,7 +265,7 @@ class DatasetController extends PKPBaseController
         try {
             $dataset = (new SubmissionDatasetFactory($submission))->getDataset();
         } catch (MissingDepositFileException $e) {
-            return $this->error('plugins.generic.dataverse.error.sourceFileMissing', [], Response::HTTP_NOT_FOUND);
+            return response()->json(['error' => $e->getMessage()], Response::HTTP_NOT_FOUND);
         }
 
         $dataset->setTitle($params['datasetTitle']);

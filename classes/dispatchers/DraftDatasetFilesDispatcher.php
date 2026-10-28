@@ -148,11 +148,15 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         ) {
             $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
             $validator = new DraftDatasetFilesValidator();
+            $missingFileNames = $validator->getMissingFileNames($draftDatasetFiles);
 
             if (empty($draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.researchData.required')];
-            } elseif ($validator->datasetHasMissingFile($draftDatasetFiles)) {
-                $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.researchDataFileMissing')];
+            } elseif (!empty($missingFileNames)) {
+                $errors['datasetFiles'] = [__(
+                    'plugins.generic.dataverse.error.researchDataFileMissing',
+                    ['fileNames' => implode(', ', $missingFileNames)]
+                )];
             } elseif ($this->galleyContainsResearchData($submission, $draftDatasetFiles, $validator)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.notification.galleyContainsResearchData')];
             } elseif (!$validator->datasetHasReadmeFile($draftDatasetFiles)) {

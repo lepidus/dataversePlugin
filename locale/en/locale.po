@@ -142,7 +142,7 @@ msgid "plugins.generic.dataverse.error.notSolelyReadmeFile"
 msgstr "The research data must contain at least one readable, non-empty file besides README files, either directly or inside a ZIP archive."
 
 msgid "plugins.generic.dataverse.error.researchDataFileMissing"
-msgstr "A research data file is no longer available. Delete it and upload it again before submitting the research data."
+msgstr "Research data files no longer available: {$fileNames}. Delete them and upload them again before submitting the research data."
 
 msgid "plugins.generic.dataverse.error.exception.unavailable"
 msgstr "Dataverse service is temporarily unavailable"
@@ -520,4 +520,4 @@ msgid "plugins.generic.dataverse.report.headers.filesInDatasets"
 msgstr "Files in datasets"
 
 msgid "plugins.generic.dataverse.error.sourceFileMissing"
-msgstr "A selected deposit file is no longer available. Replace the missing file before depositing the research data."
+msgstr "The file {$fileName} selected for the deposit is no longer available. Replace it before depositing the research data."

@@ -164,6 +164,14 @@ class DatasetService extends DataverseService
         );
     }
 
+    public function reportMissingDepositFile(Submission $submission, string $fileName): void
+    {
+        $params = ['fileName' => $fileName];
+        $params['error'] = __('plugins.generic.dataverse.error.sourceFileMissing', $params);
+
+        $this->registerAndNotifyError($submission, 'plugins.generic.dataverse.error.sourceFileMissing', $params);
+    }
+
     public function delete(DataverseStudy $study, ?string $deleteMessage): void
     {
         $submission = Repo::submission()->get($study->getSubmissionId());

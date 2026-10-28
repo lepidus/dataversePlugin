@@ -2,10 +2,7 @@
 
 namespace APP\plugins\generic\dataverse\classes\observers\listeners;
 
-use APP\core\Application;
-use APP\notification\NotificationManager;
 use Illuminate\Events\Dispatcher;
-use PKP\notification\Notification;
 use PKP\observers\events\SubmissionSubmitted;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
@@ -36,12 +33,7 @@ class DatasetDepositOnSubmission
         try {
             $dataset = (new SubmissionDatasetFactory($submission))->getDataset();
         } catch (MissingDepositFileException $e) {
-            (new NotificationManager())->createTrivialNotification(
-                Application::get()->getRequest()->getUser()->getId(),
-                Notification::NOTIFICATION_TYPE_ERROR,
-                ['contents' => $e->getMessage()]
-            );
-            error_log('Dataverse deposit source file missing: submission=' . $submission->getId());
+            (new DatasetService())->reportMissingDepositFile($submission, $e->getFileName());
             return;
         }
 
