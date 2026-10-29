@@ -390,6 +390,10 @@ point the plugin at `DATAVERSE_CUSTOM_REQUIRED_METADATA_URL`: `CollectionRequire
 form fields, the validation by type and the wizard deposit, and Playwright covers the review step and the deposit
 from the workflow panel, where `DatasetController` maps the request fields to the dataset.
 
+A `DATE` field the collection requires is a native date input (`inputType: 'date'`) only while it is empty or holds a
+full `YYYY-MM-DD` date. Dataverse also stores `YYYY` and `YYYY-MM`, and a date input shows those as empty while the
+form still sends them back, so a dataset holding a partial date keeps a text input in the workflow panel.
+
 ## Release mechanics
 
 Pushing a `v*` tag triggers `.github/workflows/generate-package.yml`, which **fails** unless:
