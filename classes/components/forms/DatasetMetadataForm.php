@@ -125,11 +125,16 @@ class DatasetMetadataForm extends FormComponent
 
         if (!empty($field['isControlledVocabulary'])) {
             $config['options'] = $this->mapControlledVocabularyOptions($field['controlledVocabularyValues']);
-        } elseif ($field['type'] === 'DATE') {
+        } elseif ($field['type'] === 'DATE' && $this->fitsDateInput($config['value'])) {
             $config['inputType'] = 'date';
         }
 
         return $config;
+    }
+
+    private function fitsDateInput($value): bool
+    {
+        return empty($value) || preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $value) === 1;
     }
 
     private function mapControlledVocabularyOptions(array $values): array

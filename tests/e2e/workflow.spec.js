@@ -381,6 +381,8 @@ test.describe('with a collection that requires additional metadata', () => {
 			await expect(fieldErrors(label)).toBeVisible();
 		}
 
+		await expect(field('datasetDsDescriptionDate')).toHaveAttribute('type', 'date');
+		await expect(field('datasetAlternativeURL')).toHaveAttribute('type', 'text');
 		await field('datasetAlternativeURL').fill('https://example.com');
 		await field('datasetDsDescriptionDate').fill('2023-06-01');
 		await field('datasetPSRI1').selectOption('Yes');
