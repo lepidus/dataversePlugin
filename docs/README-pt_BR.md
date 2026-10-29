@@ -64,6 +64,8 @@ Após preencher os campos, apenas confirme a ação clicando em `Salvar`. O plug
 
 Uma seção chamada "Dados de pesquisa" é adicionada ao passo "Arquivos" durante o processo de submissão. Além disso, os metadados do conjunto de dados devem ser preenchidos no passo "Para editores".
 
+Quando o plugin cria um conjunto de dados, ele preenche a Data de depósito (Deposit Date) dos metadados de citação com o dia do depósito; editar os metadados depois mantém essa data. Ela nunca é pedida aos autores, mesmo que a coleção a marque como obrigatória.
+
 Autores, moderadores, editores ou gerentes também podem editar o conjunto de dados, antes de sua publicação, no item "Dados de pesquisa" adicionado à seção Dataverse do menu do fluxo de trabalho da submissão. Ao lado dele é adicionado um item "Declaração de dados", para que a declaração de disponibilidade de dados possa ser consultada e alterada durante o fluxo de trabalho editorial.
 
 A citação do conjunto de dados e seus indicadores de status aparecem no cabeçalho de Dados de pesquisa, com o mesmo estilo de status usado em Publicação. Os arquivos são exibidos acima do formulário de metadados, sem abas.

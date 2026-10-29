@@ -22,6 +22,7 @@ class DatasetServiceTest extends DatabaseTestCase
 
     private Submission $submission;
     private string $persistentId;
+    private array $depositDays;
 
     protected function setUp(): void
     {
@@ -29,7 +30,9 @@ class DatasetServiceTest extends DatabaseTestCase
         $this->setUpFixture();
         $this->configureWithRealDataverse();
         $this->registerPlugin('workflow');
+        $dayBeforeDeposit = date('Y-m-d');
         $this->submission = $this->createDepositedSubmission();
+        $this->depositDays = [$dayBeforeDeposit, date('Y-m-d')];
         $this->persistentId = $this->getStudy()->getPersistentId();
         $this->trackDataset($this->persistentId);
     }
@@ -66,12 +69,16 @@ class DatasetServiceTest extends DatabaseTestCase
         $this->assertEquals('https://doi.org/' . str_replace('doi:', '', $this->persistentId), $this->getStudy()->getPersistentUri());
         $dataset = $this->getDatasetFromDataverse();
         $this->assertFalse($dataset->isPublished());
-        $this->assertEquals(date('Y-m-d'), $dataset->getDateOfDeposit());
+        $this->assertContains($dataset->getDateOfDeposit(), $this->depositDays);
         $this->assertEventLogged($this->submission, __('plugins.generic.dataverse.log.researchDataDeposited', ['persistentId' => $this->persistentId]));
     }
 
     public function testUpdateSendsTheEditedMetadataToDataverse(): void
     {
+        $depositedDataset = $this->getDatasetFromDataverse();
+        $depositedDataset->setDateOfDeposit('2020-01-15');
+        (new DataverseClient())->getDatasetActions()->update($depositedDataset);
+
         (new DatasetService())->update([
             'persistentId' => $this->persistentId,
             'title' => 'Test metadata editing',
@@ -91,7 +98,7 @@ class DatasetServiceTest extends DatabaseTestCase
         $this->assertEquals('Computer and Information Science', $dataset->getSubject());
         $this->assertEquals('CC0 1.0', $dataset->getLicense());
         $this->assertEquals('IsCitedBy', $dataset->getRelatedPublication()->getRelationType());
-        $this->assertEquals(date('Y-m-d'), $dataset->getDateOfDeposit());
+        $this->assertEquals('2020-01-15', $dataset->getDateOfDeposit());
         $this->assertEventLogged($this->submission, __('plugins.generic.dataverse.log.researchDataUpdated'));
     }
 

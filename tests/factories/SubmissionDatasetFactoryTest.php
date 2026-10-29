@@ -248,7 +248,9 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $factory = new SubmissionDatasetFactory($this->submission);
         $factory->setDraftDatasetFileRepo($this->mockDraftDatasetFileRepo);
         $factory->setDataverseClient($this->mockDataverseClient);
+        $dayBeforeDeposit = date('Y-m-d');
         $dataset = $factory->getDataset();
+        $this->assertContains($dataset->getDateOfDeposit(), [$dayBeforeDeposit, date('Y-m-d')]);
 
         $datasetAuthor = new DatasetAuthor(
             $this->author->getFullName(false, true),
@@ -289,7 +291,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $expectedDataset->setLicense($this->submission->getData('datasetLicense'));
         $expectedDataset->setAuthors([$this->author->getId() => $datasetAuthor]);
         $expectedDataset->setContact($datasetContact);
-        $expectedDataset->setDateOfDeposit(date('Y-m-d'));
+        $expectedDataset->setDateOfDeposit($dataset->getDateOfDeposit());
         $expectedDataset->setDepositor($datasetDepositor);
         $expectedDataset->setRelatedPublication($datasetRelatedPublication);
         $expectedDataset->setFiles([$this->draftDatasetFile->getId() => $datasetFile]);

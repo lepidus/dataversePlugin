@@ -62,6 +62,8 @@ Después de completar los campos, solo confirma la acción haciendo clic en `Gua
 
 Se añade una sección llamada "Datos de investigación" al paso "Archivos" durante el proceso de envío. Además, los metadatos del conjunto de datos deben completarse en el paso "Para los editores/as".
 
+Cuando el plugin crea un conjunto de datos, completa la Fecha de depósito (Deposit Date) de sus metadatos de cita con el día del depósito; editar los metadatos después conserva esa fecha. Nunca se pide a los autores, aunque la colección la marque como obligatoria.
+
 Los autores, moderadores, editores o gerentes también pueden editar el conjunto de datos antes de su publicación, en el ítem "Datos de investigación" añadido a la sección Dataverse del menú del flujo de trabajo del envío. Junto a él se añade un ítem "Declaración de datos", para que la declaración de disponibilidad de datos pueda ser consultada y modificada durante el flujo de trabajo editorial.
 
 La cita del conjunto de datos y sus indicadores de estado aparecen en el encabezado de Datos de investigación, con el mismo estilo de estado usado en Publicación. Los archivos se muestran encima del formulario de metadatos, sin pestañas.

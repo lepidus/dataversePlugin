@@ -62,6 +62,8 @@ After filling in the fields, just confirm the action by clicking `Save`. The plu
 
 A "Research Data" deposit dialog is shown in the "Files" step of the Submission proccess.
 
+When the plugin creates a dataset, it fills in the Deposit Date of its citation metadata with the day of the deposit; editing the metadata later keeps that date. Authors are never asked for it, even if the collection marks it as required.
+
 Authors, moderators, editors or managers can also edit the dataset, before publication, on the "Research data" item added to the Dataverse section of the submission's workflow menu. A "Data statement" item is added right next to it, so the data availability statement can be reviewed and changed during the editorial workflow.
 
 The dataset citation and its status indicators appear in the Research data header, using the same status style as Publication. The files are displayed above the metadata form, without tabs.
