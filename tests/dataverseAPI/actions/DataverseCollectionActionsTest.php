@@ -51,7 +51,7 @@ class DataverseCollectionActionsTest extends PKPTestCase
         );
     }
 
-    public function testRequiredMetadataExcludesPublicationRelationType(): void
+    public function testRequiredMetadataExcludesFieldsThePluginFillsItself(): void
     {
         $configuration = new DataverseConfiguration();
         $configuration->setDataverseUrl('https://test.dataverse.org/dataverses/testDataverse');
@@ -63,6 +63,10 @@ class DataverseCollectionActionsTest extends PKPTestCase
                 'fields' => [
                     [
                         'name' => 'publicationRelationType',
+                        'isRequired' => true,
+                    ],
+                    [
+                        'name' => 'dateOfDeposit',
                         'isRequired' => true,
                     ],
                     [

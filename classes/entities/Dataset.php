@@ -99,6 +99,16 @@ class Dataset extends DataObject
         $this->setData('contact', $contact);
     }
 
+    public function getDateOfDeposit(): ?string
+    {
+        return $this->getData('dateOfDeposit');
+    }
+
+    public function setDateOfDeposit(string $dateOfDeposit): void
+    {
+        $this->setData('dateOfDeposit', $dateOfDeposit);
+    }
+
     public function getDepositor(): ?string
     {
         return $this->getData('depositor');

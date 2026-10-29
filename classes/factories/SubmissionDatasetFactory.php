@@ -59,6 +59,7 @@ class SubmissionDatasetFactory extends DatasetFactory
         $props['license'] = $this->submission->getData('datasetLicense');
         $props['authors'] = array_map([$this, 'createDatasetAuthor'], $authors);
         $props['contact'] = $this->createDatasetContact();
+        $props['dateOfDeposit'] = date('Y-m-d');
         $props['depositor'] = $this->getDatasetDepositor();
         $props['relatedPublication'] = $this->getDatasetRelatedPublication($publication);
         $props['files'] = $this->includeFiles ? $this->getDatasetFiles() : [];
