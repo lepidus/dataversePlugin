@@ -12,6 +12,9 @@ use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
 use APP\publication\Publication;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use APP\submission\Submission;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
@@ -87,6 +90,7 @@ class DatasetServiceDepositTest extends DatabaseTestCase
         $identifier->setPersistentId('doi:10.5072/FK2/TEST');
         $datasetActions = Mockery::mock();
         $datasetActions->shouldReceive('create')->once()->andReturn($identifier);
+        $datasetActions->shouldReceive('update')->once();
         $fileActions = Mockery::mock();
         $fileActions->shouldReceive('add')->twice()->andReturnUsing(
             fn () => throw new UploadNotSentException('Data.csv', new DataverseException('Ingest still running')),
@@ -114,6 +118,98 @@ class DatasetServiceDepositTest extends DatabaseTestCase
         $this->assertSame('Success', $secondAttempt['status']);
         $this->assertSame(
             'doi:10.5072/FK2/TEST',
+            Repo::dataverseStudy()->getBySubmissionId($this->submission->getId())->getPersistentId()
+        );
+    }
+
+    public function testDatasetRejectedByDataverseReportsItsErrorAndCanBeDepositedAgain(): void
+    {
+        $identifier = new DatasetIdentifier();
+        $identifier->setPersistentId('doi:10.5072/FK2/TEST');
+        $request = new Request('POST', 'https://dataverse.invalid/api/dataverses/placeholder/datasets');
+        $rejection = DataverseException::fromTransferException(
+            new ClientException('rejected', $request, new Response(400, [], '{"message":"Invalid license"}'))
+        );
+        $datasetActions = Mockery::mock();
+        $datasetActions->shouldReceive('create')->twice()->andReturnUsing(
+            fn () => throw $rejection,
+            fn () => $identifier
+        );
+        $fileActions = Mockery::mock();
+        $fileActions->shouldReceive('add')->once()->andReturn([['id' => 10]]);
+        $client = Mockery::mock('overload:' . DataverseClient::class);
+        $client->shouldReceive('getDatasetActions')->andReturn($datasetActions);
+        $client->shouldReceive('getDatasetFileActions')->andReturn($fileActions);
+        $service = $this->getMockBuilder(DatasetService::class)
+            ->onlyMethods(['registerAndNotifyError', 'registerEventLog'])
+            ->getMock();
+
+        $firstAttempt = $service->deposit($this->submission, $this->createDataset());
+        $secondAttempt = $service->deposit($this->submission, $this->createDataset());
+
+        $this->assertSame('plugins.generic.dataverse.error.datasetDeposit', $firstAttempt['message']);
+        $this->assertSame(['error' => 'Invalid license'], $firstAttempt['messageParams']);
+        $this->assertSame('Success', $secondAttempt['status']);
+    }
+
+    public function testResumedDepositSendsTheEditedMetadata(): void
+    {
+        $identifier = new DatasetIdentifier();
+        $identifier->setPersistentId('doi:10.5072/FK2/TEST');
+        $updatedTitles = [];
+        $datasetActions = Mockery::mock();
+        $datasetActions->shouldReceive('create')->once()->andReturn($identifier);
+        $datasetActions->shouldReceive('update')->once()->andReturnUsing(
+            function (Dataset $dataset) use (&$updatedTitles): void {
+                $updatedTitles[$dataset->getPersistentId()] = $dataset->getTitle();
+            }
+        );
+        $fileActions = Mockery::mock();
+        $fileActions->shouldReceive('add')->twice()->andReturnUsing(
+            fn () => throw new UploadNotSentException('Data.csv', new DataverseException('Ingest still running')),
+            fn () => [['id' => 10]]
+        );
+        $client = Mockery::mock('overload:' . DataverseClient::class);
+        $client->shouldReceive('getDatasetActions')->andReturn($datasetActions);
+        $client->shouldReceive('getDatasetFileActions')->andReturn($fileActions);
+        $service = $this->getMockBuilder(DatasetService::class)
+            ->onlyMethods(['registerAndNotifyError', 'registerEventLog'])
+            ->getMock();
+
+        $service->deposit($this->submission, $this->createDataset());
+        $editedDataset = $this->createDataset();
+        $editedDataset->setTitle('Edited title');
+        $resumedAttempt = $service->deposit($this->submission, $editedDataset);
+
+        $this->assertSame('Success', $resumedAttempt['status']);
+        $this->assertSame(['doi:10.5072/FK2/TEST' => 'Edited title'], $updatedTitles);
+    }
+
+    public function testDatasetMissingFromDataverseCanBeReplaced(): void
+    {
+        $identifiers = array_map(function (string $persistentId): DatasetIdentifier {
+            $identifier = new DatasetIdentifier();
+            $identifier->setPersistentId($persistentId);
+            return $identifier;
+        }, ['doi:10.5072/FK2/GONE', 'doi:10.5072/FK2/NEW']);
+        $datasetActions = Mockery::mock();
+        $datasetActions->shouldReceive('create')->twice()->andReturnValues($identifiers);
+        $fileActions = Mockery::mock();
+        $fileActions->shouldReceive('add')->twice()->andReturn([['id' => 10]]);
+        $client = Mockery::mock('overload:' . DataverseClient::class);
+        $client->shouldReceive('getDatasetActions')->andReturn($datasetActions);
+        $client->shouldReceive('getDatasetFileActions')->andReturn($fileActions);
+        $service = $this->getMockBuilder(DatasetService::class)
+            ->onlyMethods(['registerAndNotifyError', 'registerEventLog'])
+            ->getMock();
+        $service->deposit($this->submission, $this->createDataset());
+
+        $service->removeMissingDataset(Repo::dataverseStudy()->getBySubmissionId($this->submission->getId()));
+        $newDeposit = $service->deposit($this->submission, $this->createDataset());
+
+        $this->assertSame('Success', $newDeposit['status']);
+        $this->assertSame(
+            'doi:10.5072/FK2/NEW',
             Repo::dataverseStudy()->getBySubmissionId($this->submission->getId())->getPersistentId()
         );
     }

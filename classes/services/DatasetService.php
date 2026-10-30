@@ -53,11 +53,7 @@ class DatasetService extends DataverseService
         $files = array_values($dataset->getFiles());
 
         try {
-            $completedOperation = $this->getCompletedDeposit($submissionId);
-            if ($completedOperation && empty($files)) {
-                $this->clearDepositedDrafts($submissionId, json_decode($completedOperation->manifest, true, 512, JSON_THROW_ON_ERROR));
-                return ['status' => 'Success'];
-            }
+            $this->assertCompletedDepositIsAssociated($submissionId);
 
             $manifest = $this->createDepositManifest($submission, $files);
             $dataverseClient = new DataverseClient();
@@ -73,6 +69,20 @@ class DatasetService extends DataverseService
                 function (string $persistentId) use ($submission): void {
                     $this->createStudy($submission, $persistentId);
                     $this->completeDeposit($submission, $persistentId);
+                },
+                function (string $persistentId) use ($dataverseClient, $dataset): void {
+                    $dataset->setPersistentId($persistentId);
+                    $dataverseClient->getDatasetActions()->update($dataset);
+                },
+                function (string $persistentId) use ($dataverseClient): void {
+                    try {
+                        $dataverseClient->getDatasetFileActions()->waitForIngest($persistentId);
+                        $dataverseClient->getDatasetActions()->delete($persistentId);
+                    } catch (DataverseException $e) {
+                        if ($e->getCode() !== 404) {
+                            throw $e;
+                        }
+                    }
                 }
             );
         } catch (UploadNotSentException $e) {
@@ -84,19 +94,14 @@ class DatasetService extends DataverseService
                 'messageParams' => $params,
             ];
         } catch (Throwable $e) {
-            $this->reportPendingDeposit($submission, $e);
-            return [
-                'status' => 'Error',
-                'message' => 'plugins.generic.dataverse.error.depositPending',
-                'messageParams' => ['error' => __('plugins.generic.dataverse.error.depositPending')],
-            ];
+            return $this->reportFailedDeposit($submission, $e);
         }
 
         $this->clearDepositedDrafts($submissionId, $manifest);
         return ['status' => 'Success'];
     }
 
-    private function getCompletedDeposit(int $submissionId): ?object
+    private function assertCompletedDepositIsAssociated(int $submissionId): void
     {
         $completedOperation = DB::table('dataverse_deposits')
             ->where('submission_id', $submissionId)
@@ -104,15 +109,13 @@ class DatasetService extends DataverseService
             ->first();
 
         if (!$completedOperation) {
-            return null;
+            return;
         }
 
         $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
         if (!$study || $study->getPersistentId() !== $completedOperation->persistent_id) {
             throw new RuntimeException('The completed deposit association changed.');
         }
-
-        return $completedOperation;
     }
 
     private function createDepositManifest(Submission $submission, array $files): array
@@ -143,27 +146,33 @@ class DatasetService extends DataverseService
         return $manifest;
     }
 
-    private function reportPendingDeposit(Submission $submission, Throwable $e): void
+    private function reportFailedDeposit(Submission $submission, Throwable $e): array
     {
         $operation = null;
+        $message = 'plugins.generic.dataverse.error.depositPending';
+        $params = ['error' => __($message)];
 
         try {
             $operation = DB::table('dataverse_deposits')->where('submission_id', $submission->getId())->first();
-            $this->registerAndNotifyError(
-                $submission,
-                'plugins.generic.dataverse.error.depositPending',
-                ['error' => get_class($e)]
-            );
+            $outcomeIsUnknown = in_array($operation->state ?? null, ['creating', 'uploading'], true);
+            if ($e instanceof DataverseException && !$outcomeIsUnknown) {
+                $message = 'plugins.generic.dataverse.error.datasetDeposit';
+                $params = ['error' => $e->getUserMessage()];
+            }
+            $this->registerAndNotifyError($submission, $message, $params);
         } catch (Throwable $reportingError) {
             error_log('Dataverse deposit reporting failed: submission=' . $submission->getId()
-                . ' exception=' . get_class($reportingError));
+                . ' exception=' . get_class($reportingError) . ' message=' . $reportingError->getMessage());
         }
 
-        error_log('Dataverse deposit requires attention: submission=' . $submission->getId()
+        error_log('Dataverse deposit failed: submission=' . $submission->getId()
             . ' state=' . ($operation->state ?? 'unreserved')
             . ' doi=' . ($operation->persistent_id ?? 'unknown')
             . ' category=' . ($e instanceof DataverseException ? $e->getFailureCategory() : 'local')
-            . ' exception=' . get_class($e));
+            . ' exception=' . get_class($e)
+            . ' message=' . $e->getMessage());
+
+        return ['status' => 'Error', 'message' => $message, 'messageParams' => $params];
     }
 
     private function clearDepositedDrafts(int $submissionId, array $manifest): void
@@ -263,7 +272,13 @@ class DatasetService extends DataverseService
             return;
         }
 
-        $this->removeStudy($study, $submission);
+        try {
+            $this->removeStudy($study, $submission);
+        } catch (RuntimeException $e) {
+            error_log('Dataverse dataset ' . $dataset->getPersistentId()
+                . ' was deleted, but its association was not removed: ' . $e->getMessage());
+            return;
+        }
 
         $request = Application::get()->getRequest();
         $user = $request->getUser();
@@ -277,6 +292,13 @@ class DatasetService extends DataverseService
             $submission,
             'plugins.generic.dataverse.log.researchDataDeleted'
         );
+    }
+
+    public function removeMissingDataset(DataverseStudy $study): void
+    {
+        (new DepositRepository())->retire($study->getSubmissionId(), function () use ($study): void {
+            Repo::dataverseStudy()->delete($study);
+        });
     }
 
     public function disassociate(DataverseStudy $study): void
@@ -321,7 +343,14 @@ class DatasetService extends DataverseService
 
         return DB::transaction(function () use ($submission, $submissionId, $persistentId): array {
             (new DepositRepository())->lockSubmission($submissionId);
-            if (Repo::dataverseStudy()->getBySubmissionId($submissionId) || $this->hasActiveDeposit($submissionId)) {
+            if (Repo::dataverseStudy()->getBySubmissionId($submissionId)) {
+                return [
+                    'status' => DataverseService::STATUS_ERROR,
+                    'message' => 'plugins.generic.dataverse.error.submissionHasStudy',
+                ];
+            }
+
+            if ($this->hasActiveDeposit($submissionId)) {
                 return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.depositPending'];
             }
 

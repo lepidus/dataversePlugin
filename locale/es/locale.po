@@ -167,10 +167,13 @@ msgstr "Error al depositar los datos de investigación en Dataverse: {$error}<br
 "Por favor, elija otra opción de declaración de datos o intente nuevamente más tarde."
 
 msgid "plugins.generic.dataverse.error.depositPending"
-msgstr "El depósito no se ha confirmado. Contacte con la revista para verificar el depósito existente antes de volver a intentarlo."
+msgstr "El depósito no se ha confirmado. Contacte con el equipo editorial para verificar el depósito existente antes de volver a intentarlo."
 
 msgid "plugins.generic.dataverse.error.depositPending.author"
-msgstr "El depósito no se ha confirmado. Contacte con la revista para verificar el depósito existente antes de volver a intentarlo."
+msgstr "El depósito no se ha confirmado. Contacte con el equipo editorial para verificar el depósito existente antes de volver a intentarlo."
+
+msgid "plugins.generic.dataverse.error.uploadNotConfirmed"
+msgstr "Dataverse no confirmó la recepción del archivo."
 
 msgid "plugins.generic.dataverse.error.datasetFileDeposit"
 msgstr "Erro al depositar lo archivo de datos \"{$fileName}\" en Dataverse: {$error}"

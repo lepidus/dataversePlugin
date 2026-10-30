@@ -177,8 +177,39 @@ class DatasetFileActionsTest extends PKPTestCase
             new Response(200, [], '{"data":{"files":[]}}'),
         ]);
 
-        $this->expectException(DataverseException::class);
+        $this->expectExceptionMessage(__('plugins.generic.dataverse.error.uploadNotConfirmed'));
         $actions->add('doi:10.1234/ABC', 'source.zip', __FILE__);
+    }
+
+    public function testUploadRejectedByDataverseIsReportedAsNotSent(): void
+    {
+        $actions = $this->createActionsRespondingWith([
+            new Response(200, [], '{"data":[]}'),
+            new Response(400, [], '{"message":"File type not allowed"}'),
+        ]);
+
+        try {
+            $actions->add('doi:10.1234/ABC', 'source.exe', __FILE__);
+            $this->fail('The rejected upload was accepted');
+        } catch (UploadNotSentException $e) {
+            $this->assertSame('source.exe', $e->getFileName());
+            $this->assertSame('File type not allowed', $e->getMessage());
+        }
+    }
+
+    public function testUploadWithoutResponseIsNotReportedAsNotSent(): void
+    {
+        $actions = $this->createActionsRespondingWith([
+            new Response(200, [], '{"data":[]}'),
+            new Response(503, [], 'Service Unavailable'),
+        ]);
+
+        try {
+            $actions->add('doi:10.1234/ABC', 'source.csv', __FILE__);
+            $this->fail('The failed upload was accepted');
+        } catch (DataverseException $e) {
+            $this->assertNotInstanceOf(UploadNotSentException::class, $e);
+        }
     }
 
     public function testDownloadKeepsTheFileInsideTheFilesDirectory(): void

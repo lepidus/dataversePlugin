@@ -84,14 +84,15 @@ Before each file upload, the plugin waits up to 30 seconds for Dataverse to fini
 In OJS, reviewers can have access to research data files during the review process. Reviewers access to these files can be restricted on Workflow Settings, so they can only see research data when they agree to review the submission.
 
 #### Interrupted deposits
-The plugin records every deposit step before calling Dataverse. If a deposit is interrupted after the dataset was created, a new attempt reuses the same dataset and sends only the files that were not confirmed yet. When the result of a step is unknown — the request timed out or the process stopped while creating the dataset or sending a file — new attempts for that submission are refused with a message asking to contact the journal, so the plugin never creates a duplicate dataset or sends a file twice.
+The plugin records every deposit step before calling Dataverse. If a deposit is interrupted after the dataset was created, a new attempt reuses the same dataset: it sends the metadata again, so changes made in the meantime are kept, and sends only the files that were not confirmed yet. If the research data files were changed in the meantime, the partial dataset is deleted and the deposit starts again with the new selection. When Dataverse rejects a step (an invalid license or an expired token, for example), nothing was changed there, the error is shown, and the deposit can be tried again once the cause is fixed. When the result of a step is unknown — the request timed out or the process stopped while creating the dataset or sending a file — new attempts for that submission are refused with a message asking to contact the editorial team, so the plugin never creates a duplicate dataset or sends a file twice.
 
 These deposits must be reconciled by an administrator, directly in the database, for the affected submission only:
 
 1. Make sure no request for the submission is still running, and back up its rows in `dataverse_deposits`, `dataverse_studies` and `draft_dataset_files`.
-2. For the state `creating`, find in Dataverse whether the dataset was created. If it was, save its persistent ID in `persistent_id`; if Dataverse proves nothing was created, the operation can go back to `reserved`.
+2. For the state `creating`, find in Dataverse whether the dataset was created. If it was, save its persistent ID in `persistent_id` and go on to step 4. If Dataverse proves nothing was created, set the state to `retired` and increment `revision`, restricted to the `submission_id`, the inspected `state` and `revision`: the next deposit starts from the beginning.
 3. For the state `uploading`, find which files of the manifest reached the dataset and record their Dataverse ids in `receipts`; a file that did not reach Dataverse stays without a receipt.
-4. In a single transaction restricted to the `submission_id`, the inspected `state` and `revision`, set the state to `ready` and increment `revision`, then try the deposit again from the "Research data" panel.
+4. With `persistent_id` filled in, in a single transaction restricted to the `submission_id`, the inspected `state` and `revision`, set the state to `ready` and increment `revision`, then try the deposit again from the "Research data" panel.
+5. If the Dataverse URL changed after the dataset was created, the deposit cannot go on in the new collection: keep or delete the dataset in the previous one as needed, then set the state to `retired` and increment `revision`.
 
 ## Development Instructions:
 

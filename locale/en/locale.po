@@ -164,10 +164,13 @@ msgstr "Error depositing research data to Dataverse: {$error}<br>"
 "Please choose another data statement option or try again later."
 
 msgid "plugins.generic.dataverse.error.depositPending"
-msgstr "The deposit has not been confirmed. Contact the journal to check the existing deposit before trying again."
+msgstr "The deposit has not been confirmed. Contact the editorial team to check the existing deposit before trying again."
 
 msgid "plugins.generic.dataverse.error.depositPending.author"
-msgstr "The deposit has not been confirmed. Contact the journal to check the existing deposit before trying again."
+msgstr "The deposit has not been confirmed. Contact the editorial team to check the existing deposit before trying again."
+
+msgid "plugins.generic.dataverse.error.uploadNotConfirmed"
+msgstr "Dataverse did not confirm that the file was received."
 
 msgid "plugins.generic.dataverse.error.datasetFileDeposit"
 msgstr "Error depositing the data file \"{$fileName}\" to Dataverse: {$error}"

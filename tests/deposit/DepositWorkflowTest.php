@@ -4,6 +4,9 @@ use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
 use APP\plugins\generic\dataverse\classes\deposit\DepositWorkflow;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
 class MemoryDepositRepository extends DepositRepository
@@ -13,7 +16,7 @@ class MemoryDepositRepository extends DepositRepository
 
     public function reserve(int $submissionId, array $manifest): array
     {
-        if ($this->operation === null) {
+        if ($this->operation === null || $this->operation['state'] === 'retired') {
             $this->operation = [
                 'state' => 'reserved',
                 'persistent_id' => null,
@@ -150,12 +153,136 @@ class DepositWorkflowTest extends TestCase
         $workflow->run(1, [['sourceId' => 99]], fn () => $this->fail(), fn () => $this->fail(), fn () => $this->fail());
     }
 
-    public function testChangedSourceSelectionCannotResumePartialDeposit(): void
+    public function testChangedSourceSelectionIsAdoptedBeforeTheDatasetIsCreated(): void
     {
         $repository = new MemoryDepositRepository();
         $repository->reserve(1, $this->manifest);
         $workflow = new DepositWorkflow($repository);
+        $changedManifest = [['sourceId' => 8, 'sha256' => 'def', 'size' => 3, 'name' => 'other.csv']];
+
+        $workflow->run(1, $changedManifest, fn () => 'doi:10.1234/ABC', fn () => [['id' => 10]], fn () => null);
+
+        $this->assertSame('complete', $repository->operation['state']);
+        $this->assertSame($changedManifest, json_decode($repository->operation['manifest'], true));
+    }
+
+    public function testRejectedCreationCanBeTriedAgain(): void
+    {
+        $repository = new MemoryDepositRepository();
+        $workflow = new DepositWorkflow($repository);
+        $creates = 0;
+        $create = function () use (&$creates): string {
+            $creates++;
+            if ($creates === 1) {
+                throw $this->rejectedRequest();
+            }
+            return 'doi:10.1234/ABC';
+        };
+
+        try {
+            $workflow->run(1, $this->manifest, $create, fn () => [['id' => 10]], fn () => $this->fail('Complete'));
+            $this->fail('Dataverse rejected the dataset');
+        } catch (DataverseException $e) {
+            $this->assertSame('retired', $repository->operation['state']);
+        }
+        $workflow->run(1, $this->manifest, $create, fn () => [['id' => 10]], fn () => null);
+
+        $this->assertSame('complete', $repository->operation['state']);
+        $this->assertSame(2, $creates);
+    }
+
+    public function testResumedDepositSendsTheMetadataAgain(): void
+    {
+        $repository = new MemoryDepositRepository();
+        $workflow = new DepositWorkflow($repository);
+        $updates = [];
+        $uploads = 0;
+        $upload = function () use (&$uploads): array {
+            $uploads++;
+            if ($uploads === 1) {
+                throw new UploadNotSentException('data.zip', new DataverseException('Ingest still running'));
+            }
+            return [['id' => 10]];
+        };
+        $update = function (string $persistentId) use (&$updates): void {
+            $updates[] = $persistentId;
+        };
+
+        try {
+            $workflow->run(1, $this->manifest, fn () => 'doi:10.1234/ABC', $upload, fn () => null, $update);
+        } catch (UploadNotSentException $e) {
+        }
+        $workflow->run(1, $this->manifest, fn () => $this->fail('Duplicate dataset'), $upload, fn () => null, $update);
+
+        $this->assertSame(['doi:10.1234/ABC'], $updates);
+        $this->assertSame('complete', $repository->operation['state']);
+    }
+
+    public function testChangedSourceSelectionReplacesThePartialDataset(): void
+    {
+        $repository = new MemoryDepositRepository();
+        $workflow = new DepositWorkflow($repository);
+        $discarded = [];
+        $persistentIds = ['doi:10.1234/FIRST', 'doi:10.1234/SECOND'];
+        $create = function () use (&$persistentIds): string {
+            return array_shift($persistentIds);
+        };
+        $changedManifest = [['sourceId' => 8, 'sha256' => 'def', 'size' => 3, 'name' => 'other.csv']];
+        $discard = function (string $persistentId) use (&$discarded): void {
+            $discarded[] = $persistentId;
+        };
+
+        try {
+            $workflow->run(
+                1,
+                $this->manifest,
+                $create,
+                fn () => throw new UploadNotSentException('data.zip', new DataverseException('Ingest still running')),
+                fn () => null
+            );
+        } catch (UploadNotSentException $e) {
+        }
+        $workflow->run(1, $changedManifest, $create, fn () => [['id' => 11]], fn () => null, null, $discard);
+
+        $this->assertSame(['doi:10.1234/FIRST'], $discarded);
+        $this->assertSame('complete', $repository->operation['state']);
+        $this->assertSame('doi:10.1234/SECOND', $repository->operation['persistent_id']);
+        $this->assertSame($changedManifest, json_decode($repository->operation['manifest'], true));
+    }
+
+    public function testPartialDatasetInAnotherRepositoryNeedsReconciliation(): void
+    {
+        $repository = new MemoryDepositRepository();
+        $workflow = new DepositWorkflow($repository);
+        $manifest = [['sourceId' => 4, 'repository' => 'https://old.example/dataverse/a']];
+        try {
+            $workflow->run(
+                1,
+                $manifest,
+                fn () => 'doi:10.1234/ABC',
+                fn () => throw new UploadNotSentException('data.zip', new DataverseException('Ingest still running')),
+                fn () => null
+            );
+        } catch (UploadNotSentException $e) {
+        }
+
         $this->expectException(RuntimeException::class);
-        $workflow->run(1, [['sourceId' => 8]], fn () => $this->fail(), fn () => $this->fail(), fn () => $this->fail());
+        $workflow->run(
+            1,
+            [['sourceId' => 4, 'repository' => 'https://new.example/dataverse/b']],
+            fn () => $this->fail('Duplicate dataset'),
+            fn () => $this->fail('Upload'),
+            fn () => $this->fail('Complete'),
+            null,
+            fn () => $this->fail('The dataset in the previous repository was discarded')
+        );
+    }
+
+    private function rejectedRequest(): DataverseException
+    {
+        $request = new Request('POST', 'https://dataverse.example/api/dataverses/test/datasets');
+        $response = new Response(400, [], '{"message":"Invalid license"}');
+
+        return DataverseException::fromTransferException(new ClientException('Invalid license', $request, $response));
     }
 }

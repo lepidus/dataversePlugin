@@ -216,15 +216,20 @@ A third table, `dataverse_deposits` (`DepositMigration`, run from `DataverseMigr
 per submission: its state, a monotonic `revision`, the created persistent ID, the manifest of source files (id, name,
 size, SHA-256) and the receipt of every confirmed upload. `DepositWorkflow` writes each intent before the remote call
 — `reserved` → `creating` → `ready` ⇄ `uploading` → `finalizing` → `complete` — through `DepositRepository`, whose
-transitions only succeed for the expected state and revision. A retry in `ready` reuses the persistent ID and skips
-uploaded files; a request that finds `creating` or `uploading` is refused, because a lost response does not prove
-the mutation failed, and nothing is deleted or created again automatically. Those records are reconciled by hand
-(see the README). Deleting or disassociating a dataset retires a `complete` operation, so a new deposit or a manual
-association can follow; an association is refused while any operation is not retired. The one failure known not to
-have reached Dataverse is an `UploadNotSentException`, which `DatasetFileActions::add()` raises when the ingest wait
-fails before the upload is sent: `DepositWorkflow` moves the operation back from `uploading` to `ready`, so the next
-attempt resumes from that file, and `DatasetService` reports it as `error.datasetFileDeposit`. Every other deposit
-failure is reported as `error.depositPending`.
+transitions only succeed for the expected state and revision. A retry in `ready` sends the dataset metadata again
+(`DatasetActions::update()`, so edits made after the interruption are kept), reuses the persistent ID and skips
+uploaded files. A retry whose file selection changed adopts it while still `reserved`; in `ready` it deletes the partial
+dataset (a 404 counts as deleted), retires the operation and starts over, unless the Dataverse URL changed, which
+needs reconciliation. A request that finds `creating` or `uploading` is refused, because a lost response does not prove
+the mutation failed; those records are reconciled by hand (see the README). A 4xx response does prove it:
+`DataverseException::wasRejected()` is true for it, and for every `UploadNotSentException`, which
+`DatasetFileActions::add()` raises when the ingest wait fails or Dataverse rejects the upload. A rejected creation retires
+the operation and a rejected upload moves it back from `uploading` to `ready`, so the cause can be fixed and the
+deposit tried again; `DatasetService` reports those with the error from Dataverse (`error.datasetFileDeposit` or
+`error.datasetDeposit`), and only failures that leave `creating` or `uploading` behind as `error.depositPending`.
+Deleting or disassociating a dataset retires a `complete` operation, and so does finding that its dataset is gone from
+Dataverse (`DatasetService::removeMissingDataset()`), so a new deposit or a manual association can follow; an
+association is refused while any operation is not retired.
 
 ### Services
 

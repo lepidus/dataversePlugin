@@ -14,6 +14,11 @@ class UploadNotSentException extends DataverseException
         return $this->fileName;
     }
 
+    public function wasRejected(): bool
+    {
+        return true;
+    }
+
     public function getFailureCategory(): string
     {
         return $this->getPrevious()->getFailureCategory();

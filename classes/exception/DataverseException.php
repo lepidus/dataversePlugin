@@ -55,6 +55,22 @@ class DataverseException extends Exception
         );
     }
 
+    public function wasRejected(): bool
+    {
+        $previous = $this->getPrevious();
+        if (
+            !$previous instanceof TransferException
+            || !method_exists($previous, 'hasResponse')
+            || !$previous->hasResponse()
+        ) {
+            return false;
+        }
+
+        $statusCode = $previous->getResponse()->getStatusCode();
+
+        return $statusCode >= 400 && $statusCode < 500;
+    }
+
     public function getFailureCategory(): string
     {
         $previous = $this->getPrevious();
