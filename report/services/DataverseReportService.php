@@ -16,7 +16,6 @@ class DataverseReportService
     private const DECLINE_DECISIONS = [Decision::DECLINE, Decision::INITIAL_DECLINE];
     private const DEPOSITED_MESSAGES = ['plugins.generic.dataverse.log.researchDataDeposited'];
     private const DEPOSIT_ERROR_MESSAGES = [
-        'plugins.generic.dataverse.error.depositFailed',
         'plugins.generic.dataverse.error.datasetDeposit',
         'plugins.generic.dataverse.error.datasetFileDeposit',
         'plugins.generic.dataverse.error.depositPending',
@@ -48,7 +47,7 @@ class DataverseReportService
 
     public function getAcceptedSubmissionsCount(): int
     {
-        return $this->getQueryBuilder(['decisions' => [Decision::ACCEPT]])->getCount();
+        return $this->getQueryBuilder($this->acceptedArgs())->getCount();
     }
 
     public function getDeclinedSubmissionsCount(): int
@@ -68,7 +67,7 @@ class DataverseReportService
 
     public function getAcceptedSubmissionsWithDatasetCount(): int
     {
-        return $this->getQueryBuilder(['decisions' => [Decision::ACCEPT]])->filterWithDataset()->getCount();
+        return $this->getQueryBuilder($this->acceptedArgs())->filterWithDataset()->getCount();
     }
 
     public function getPublishedSubmissionsWithDatasetCount(): int
@@ -104,7 +103,7 @@ class DataverseReportService
 
     public function getAcceptedStatementStatistics(): DataStatementStats
     {
-        return $this->getStatementStatistics(['decisions' => [Decision::ACCEPT]]);
+        return $this->getStatementStatistics($this->acceptedArgs());
     }
 
     public function getPublishedStatementStatistics(): DataStatementStats
@@ -149,6 +148,9 @@ class DataverseReportService
         if (!empty($args['statuses'])) {
             $queryBuilder->filterByStatuses($args['statuses']);
         }
+        if (!empty($args['excludedStatuses'])) {
+            $queryBuilder->excludeStatuses($args['excludedStatuses']);
+        }
         if (!empty($this->beginSubmissionInterval) && !empty($this->endSubmissionInterval)) {
             $queryBuilder->withinDateSubmittedInterval($this->beginSubmissionInterval, $this->endSubmissionInterval);
         }
@@ -167,6 +169,14 @@ class DataverseReportService
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($this->contextId);
 
         return new DataverseSearchBuilder($configuration, Application::get()->getHttpClient());
+    }
+
+    private function acceptedArgs(): array
+    {
+        return [
+            'decisions' => [Decision::ACCEPT],
+            'excludedStatuses' => [Submission::STATUS_DECLINED],
+        ];
     }
 
     private function declinedArgs(): array

@@ -517,7 +517,7 @@ msgid "plugins.generic.dataverse.report.until"
 msgstr "Until"
 
 msgid "plugins.generic.dataverse.report.noticeTimeGenerateReport"
-msgstr "The report generation proccesss can take a few minutes, depending on the"
+msgstr "The report generation process can take a few minutes, depending on the"
 " parameters selected and the number of submissions present in the system. "
 "In case it lasts longer, please contact the support team."
 

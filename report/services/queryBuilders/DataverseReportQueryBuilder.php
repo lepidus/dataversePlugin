@@ -2,6 +2,7 @@
 
 namespace APP\plugins\generic\dataverse\report\services\queryBuilders;
 
+use APP\core\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
 use APP\decision\Decision;
@@ -9,9 +10,18 @@ use APP\plugins\generic\dataverse\report\classes\DataverseStatsReport;
 
 class DataverseReportQueryBuilder
 {
+    private const FINAL_DECISION_CHANGES = [
+        Decision::ACCEPT,
+        Decision::DECLINE,
+        Decision::INITIAL_DECLINE,
+        Decision::REVERT_DECLINE,
+        Decision::REVERT_INITIAL_DECLINE,
+    ];
+
     protected $contextIds = [];
     protected $decisions = [];
     protected $statuses = [];
+    protected $excludedStatuses = [];
     protected $eventLogMessages = [];
     protected $withDataset = false;
     protected $beginSubmissionInterval;
@@ -38,6 +48,12 @@ class DataverseReportQueryBuilder
     public function filterByStatuses(array $statuses): self
     {
         $this->statuses = $statuses;
+        return $this;
+    }
+
+    public function excludeStatuses(array $statuses): self
+    {
+        $this->excludedStatuses = $statuses;
         return $this;
     }
 
@@ -85,10 +101,10 @@ class DataverseReportQueryBuilder
             ->pluck('ps.setting_value')
             ->toArray();
 
-        return array_map(
-            fn (string $dataStatementType) => json_decode($dataStatementType, true) ?? [],
-            $dataStatementTypes
-        );
+        return array_map(function (?string $dataStatementType): array {
+            $decodedTypes = json_decode((string) $dataStatementType, true);
+            return is_array($decodedTypes) ? $decodedTypes : [];
+        }, $dataStatementTypes);
     }
 
     public function getQuery(): Builder
@@ -102,6 +118,10 @@ class DataverseReportQueryBuilder
 
         if (!empty($this->statuses)) {
             $query->whereIn('s.status', $this->statuses);
+        }
+
+        if (!empty($this->excludedStatuses)) {
+            $query->whereNotIn('s.status', $this->excludedStatuses);
         }
 
         if (!empty($this->beginSubmissionInterval) && !empty($this->endSubmissionInterval)) {
@@ -141,6 +161,7 @@ class DataverseReportQueryBuilder
         $query->whereExists(function (Builder $subQuery) {
             $subQuery->select(DB::raw(1))
                 ->from('event_log as el')
+                ->where('el.assoc_type', Application::ASSOC_TYPE_SUBMISSION)
                 ->whereColumn('el.assoc_id', 's.submission_id')
                 ->where(function (Builder $messageQuery) {
                     foreach ($this->eventLogMessages as $message) {
@@ -170,11 +191,14 @@ class DataverseReportQueryBuilder
         $this->joinLatestDecision($query, true);
 
         $query->where(function (Builder $query) {
-            $query->whereExists(function (Builder $query) {
+            $query->whereIn('s.submission_id', function (Builder $query) {
                 $query->from('publications as p')
-                    ->whereColumn('p.submission_id', 's.submission_id')
-                    ->whereBetween('p.date_published', [$this->beginFinalDecisionInterval, $this->endFinalDecisionInterval])
-                    ->select('p.date_published');
+                    ->select('p.submission_id')
+                    ->groupBy('p.submission_id')
+                    ->havingRaw(
+                        'MIN(p.date_published) BETWEEN ? AND ?',
+                        [$this->beginFinalDecisionInterval, $this->endFinalDecisionInterval]
+                    );
             });
 
             $query->orWhere(function (Builder $query) {
@@ -192,6 +216,7 @@ class DataverseReportQueryBuilder
                 ->where('last_ed.edit_decision_id', function (Builder $query) {
                     $query->from('edit_decisions as ed2')
                         ->whereColumn('ed2.submission_id', 's.submission_id')
+                        ->whereIn('ed2.decision', self::FINAL_DECISION_CHANGES)
                         ->orderBy('ed2.date_decided', 'DESC')
                         ->orderBy('ed2.edit_decision_id', 'DESC')
                         ->limit(1)
