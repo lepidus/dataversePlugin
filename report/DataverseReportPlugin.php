@@ -4,8 +4,6 @@ namespace APP\plugins\generic\dataverse\report;
 
 use PKP\plugins\ReportPlugin;
 use PKP\config\Config;
-use APP\plugins\generic\dataverse\report\services\queryBuilders\DataverseReportQueryBuilder;
-use APP\plugins\generic\dataverse\report\services\DataverseReportService;
 
 class DataverseReportPlugin extends ReportPlugin
 {
@@ -35,17 +33,17 @@ class DataverseReportPlugin extends ReportPlugin
 
     public function display($args, $request)
     {
-        $context = $request->getContext();
+        $form = new DataverseReportForm($this, $request->getContext()->getId());
+        $form->initData();
 
-        $reportService = new DataverseReportService();
+        if ($request->isPost()) {
+            $form->readInputData();
+            if ($form->validate()) {
+                $form->execute();
+                return;
+            }
+        }
 
-        $overview = $reportService->getOverview($context->getId());
-
-        header('content-type: text/comma-separated-values');
-        header('content-disposition: attachment; filename=dataverse-' . date('Ymd') . '.csv');
-        $fp = fopen('php://output', 'wt');
-        fputcsv($fp, $reportService->getReportHeaders());
-        fputcsv($fp, $overview);
-        fclose($fp);
+        $form->display($request);
     }
 }

@@ -80,6 +80,8 @@ When the plugin creates a dataset, it fills in the Deposit Date of its citation 
 
 Authors, moderators, editors or managers can also edit the dataset, before publication, on the "Research data" item added to the Dataverse section of the submission's workflow menu. A "Data statement" item is added right next to it, so the data availability statement can be reviewed and changed during the editorial workflow.
 
+The "Dataverse Report" in Statistics > Reports generates a CSV for a period of submission dates or of final decision dates. A final decision is an acceptance or decline that no later decision undid, such as sending the submission back to review or reverting the decline (sending it to production keeps the acceptance); in OPS, it is the first posting of the preprint or its decline; and an accepted submission that was declined afterwards is counted only as declined. The CSV has the accepted (OJS) or posted (OPS), declined and total submissions, how many of them have research data, the data statement types of each group, the datasets with deposit or publication errors and the number of files in the deposited datasets.
+
 The dataset citation and its status indicators appear in the Research data header, using the same status style as Publication. The files are displayed above the metadata form, without tabs.
 
 Before each file upload, the plugin waits up to 30 seconds for Dataverse to finish processing (ingesting) the files already in the dataset. If Dataverse is still processing them after that, the file is not uploaded and an error asks the user to try again in a few minutes; when this happens during a deposit, the dataset and the files already sent are kept, and a new deposit continues from the file that was not sent.

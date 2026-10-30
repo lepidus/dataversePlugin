@@ -513,6 +513,74 @@ msgstr "Relatório do Dataverse"
 msgid "plugins.generic.dataverse.report.description"
 msgstr "Relatório de declaração de dados e depósito de dados de pesquisa do Dataverse."
 
+msgid "plugins.generic.dataverse.report.period"
+msgstr "Período"
+
+msgid "plugins.generic.dataverse.report.filterMessage"
+msgstr "Selecione o tipo de filtragem desejado:"
+
+msgid "plugins.generic.dataverse.report.filterBySubmission"
+msgstr "Filtrar por data de submissão"
+
+msgid "plugins.generic.dataverse.report.filterByDecision"
+msgstr "Filtrar por data da decisão final"
+
+msgid "plugins.generic.dataverse.report.dateSubmittedInterval"
+msgstr "Intervalo da data de submissão"
+
+msgid "plugins.generic.dataverse.report.finalDecisionDateInterval"
+msgstr "Intervalo da data da decisão final"
+
+msgid "plugins.generic.dataverse.report.until"
+msgstr "Até"
+
+msgid "plugins.generic.dataverse.report.noticeTimeGenerateReport"
+msgstr "O processo de geração do relatório pode demorar poucos minutos, dependendo"
+" dos parâmetros selecionados e do número de submissões presentes no sistema. "
+"Caso a demora se estenda por mais tempo, contate a equipe de suporte."
+
+msgid "plugins.generic.dataverse.report.generate"
+msgstr "Gerar Relatório"
+
+msgid "plugins.generic.dataverse.report.headers.submissionsWithDataset"
+msgstr "Submissões com datasets"
+
+msgid "plugins.generic.dataverse.report.headers.statement.accepted"
+msgstr "Declaração de dados (aceitas)"
+
+msgid "plugins.generic.dataverse.report.headers.statement.published"
+msgstr "Declaração de dados (postadas)"
+
+msgid "plugins.generic.dataverse.report.headers.statement.declined"
+msgstr "Declaração de dados (rejeitadas)"
+
+msgid "plugins.generic.dataverse.report.headers.statement.total"
+msgstr "Declaração de dados (total)"
+
+msgid "plugins.generic.dataverse.report.headers.datasetsMetrics"
+msgstr "Métricas de datasets"
+
+msgid "plugins.generic.dataverse.report.headers.publishedSubmissions"
+msgstr "Submissões postadas"
+
+msgid "plugins.generic.dataverse.report.headers.publishedSubmissionsWithDataset"
+msgstr "Submissões postadas com dataset"
+
+msgid "plugins.generic.dataverse.report.headers.totalSubmissions"
+msgstr "Total de submissões (excluindo incompletas)"
+
+msgid "plugins.generic.dataverse.report.headers.statement.inManuscript"
+msgstr "No manuscrito"
+
+msgid "plugins.generic.dataverse.report.headers.statement.repoAvailable"
+msgstr "Em um ou mais repositório(s)"
+
+msgid "plugins.generic.dataverse.report.headers.statement.onDemand"
+msgstr "Sob demanda"
+
+msgid "plugins.generic.dataverse.report.headers.statement.publiclyUnavailable"
+msgstr "Indisponíveis publicamente"
+
 msgid "plugins.generic.dataverse.report.headers.acceptedSubmissions"
 msgstr "Submissões aceitas"
 
