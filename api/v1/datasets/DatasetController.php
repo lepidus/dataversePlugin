@@ -173,7 +173,7 @@ class DatasetController extends PKPBaseController
             $dataset = (new DataverseClient())->getDatasetActions()->get($study->getPersistentId());
         } catch (DataverseException $e) {
             if ($e->getCode() === 404) {
-                Repo::dataverseStudy()->delete($study);
+                (new DatasetService())->removeMissingDataset($study);
 
                 return $this->notFound();
             }

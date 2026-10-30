@@ -182,8 +182,7 @@ serializes a `Dataset` into the JSON the Native API expects; `search/DataverseSe
 because Dataverse rejects or mishandles an upload sent while it is still ingesting the previous file; a lock that
 outlasts the wait, or a lock lookup that fails, stops the upload with a `DataverseException`. The wait never sends a
 lock request with less than 1 ms left: Guzzle hands cURL whole milliseconds, and a 0 ms limit means no limit at all.
-Dataverse also refuses to delete a dataset while it is locked (403 "Dataset cannot be edited due to dataset lock"), so
-`DatasetService` calls `waitForIngest()` before deleting the incomplete dataset of a failed deposit.
+Dataverse also refuses to delete a dataset while it is locked (403 "Dataset cannot be edited due to dataset lock").
 
 ### Entities, factories, repositories
 
@@ -227,6 +226,25 @@ validation belongs in the schema JSON and the component form classes, not here.
 
 Both tables (`dataverse_studies`, `draft_dataset_files`) are created by
 `classes/migrations/DataverseMigration`. `upgrade.xml` lists migrations applied to existing installs.
+
+A third table, `dataverse_deposits` (`DepositMigration`, run from `DataverseMigration`), records one deposit operation
+per submission: its state, a monotonic `revision`, the created persistent ID, the manifest of source files (id, name,
+size, SHA-256) and the receipt of every confirmed upload. `DepositWorkflow` writes each intent before the remote call
+— `reserved` → `creating` → `ready` ⇄ `uploading` → `finalizing` → `complete` — through `DepositRepository`, whose
+transitions only succeed for the expected state and revision. A retry in `ready` sends the dataset metadata again
+(`DatasetActions::update()`, so edits made after the interruption are kept), reuses the persistent ID and skips
+uploaded files. A retry whose file selection changed adopts it while still `reserved`; in `ready` it deletes the partial
+dataset (a 404 counts as deleted), retires the operation and starts over, unless the Dataverse URL changed, which
+needs reconciliation. A request that finds `creating` or `uploading` is refused, because a lost response does not prove
+the mutation failed; those records are reconciled by hand (see the README). A 4xx response does prove it:
+`DataverseException::wasRejected()` is true for it, and for every `UploadNotSentException`, which
+`DatasetFileActions::add()` raises when the ingest wait fails or Dataverse rejects the upload. A rejected creation retires
+the operation and a rejected upload moves it back from `uploading` to `ready`, so the cause can be fixed and the
+deposit tried again; `DatasetService` reports those with the error from Dataverse (`error.datasetFileDeposit` or
+`error.datasetDeposit`), and only failures that leave `creating` or `uploading` behind as `error.depositPending`.
+Deleting or disassociating a dataset retires a `complete` operation, and so does finding that its dataset is gone from
+Dataverse (`DatasetService::removeMissingDataset()`), so a new deposit or a manual association can follow; an
+association is refused while any operation is not retired.
 
 ### Services
 

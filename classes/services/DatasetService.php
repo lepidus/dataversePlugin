@@ -21,7 +21,13 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
+use APP\plugins\generic\dataverse\classes\deposit\DepositWorkflow;
+use Illuminate\Support\Facades\DB;
+use RuntimeException;
+use Throwable;
 
 class DatasetService extends DataverseService
 {
@@ -43,47 +49,145 @@ class DatasetService extends DataverseService
 
     public function deposit(Submission $submission, Dataset $dataset): array
     {
-        $dataverseClient = new DataverseClient();
+        $submissionId = $submission->getId();
+        $files = array_values($dataset->getFiles());
 
         try {
-            $datasetIdentifier = $dataverseClient->getDatasetActions()->create($dataset);
-        } catch (DataverseException $e) {
-            $this->registerAndNotifyError(
-                $submission,
-                'plugins.generic.dataverse.error.datasetDeposit',
-                ['error' => $e->getMessage()]
+            $this->assertCompletedDepositIsAssociated($submissionId);
+
+            $manifest = $this->createDepositManifest($submission, $files);
+            $dataverseClient = new DataverseClient();
+            (new DepositWorkflow(new DepositRepository()))->run(
+                $submissionId,
+                $manifest,
+                fn (): string => $dataverseClient->getDatasetActions()->create($dataset)->getPersistentId(),
+                fn (string $persistentId, int $key): array => $dataverseClient->getDatasetFileActions()->add(
+                    $persistentId,
+                    $files[$key]->getOriginalFileName(),
+                    $files[$key]->getPath()
+                ),
+                function (string $persistentId) use ($submission): void {
+                    $this->createStudy($submission, $persistentId);
+                    $this->completeDeposit($submission, $persistentId);
+                },
+                function (string $persistentId) use ($dataverseClient, $dataset): void {
+                    $dataset->setPersistentId($persistentId);
+                    $dataverseClient->getDatasetActions()->update($dataset);
+                },
+                function (string $persistentId) use ($dataverseClient): void {
+                    try {
+                        $dataverseClient->getDatasetFileActions()->waitForIngest($persistentId);
+                        $dataverseClient->getDatasetActions()->delete($persistentId);
+                    } catch (DataverseException $e) {
+                        if ($e->getCode() !== 404) {
+                            throw $e;
+                        }
+                    }
+                }
             );
+        } catch (UploadNotSentException $e) {
+            $params = ['error' => $e->getMessage(), 'fileName' => $e->getFileName()];
+            $this->registerAndNotifyError($submission, 'plugins.generic.dataverse.error.datasetFileDeposit', $params);
             return [
                 'status' => 'Error',
-                'message' => 'plugins.generic.dataverse.error.datasetDeposit',
-                'messageParams' => ['error' => $e->getMessage()]
+                'message' => 'plugins.generic.dataverse.error.datasetFileDeposit',
+                'messageParams' => $params,
+            ];
+        } catch (Throwable $e) {
+            return $this->reportFailedDeposit($submission, $e);
+        }
+
+        $this->clearDepositedDrafts($submissionId, $manifest);
+        return ['status' => 'Success'];
+    }
+
+    private function assertCompletedDepositIsAssociated(int $submissionId): void
+    {
+        $completedOperation = DB::table('dataverse_deposits')
+            ->where('submission_id', $submissionId)
+            ->where('state', 'complete')
+            ->first();
+
+        if (!$completedOperation) {
+            return;
+        }
+
+        $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
+        if (!$study || $study->getPersistentId() !== $completedOperation->persistent_id) {
+            throw new RuntimeException('The completed deposit association changed.');
+        }
+    }
+
+    private function createDepositManifest(Submission $submission, array $files): array
+    {
+        $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($submission->getData('contextId'));
+        $manifest = [];
+
+        foreach ($files as $file) {
+            $checksum = hash_file('sha256', $file->getPath());
+            $size = filesize($file->getPath());
+            if ($checksum === false || $size === false) {
+                throw new RuntimeException('Cannot read the deposit source file.');
+            }
+
+            $manifest[] = [
+                'sourceId' => $file->getId(),
+                'repository' => $configuration->getDataverseUrl(),
+                'name' => $file->getOriginalFileName(),
+                'size' => $size,
+                'sha256' => $checksum,
             ];
         }
 
-        foreach ($dataset->getFiles() as $file) {
-            try {
-                $dataverseClient->getDatasetFileActions()->add(
-                    $datasetIdentifier->getPersistentId(),
-                    $file->getOriginalFileName(),
-                    $file->getPath()
-                );
-            } catch (DataverseException $e) {
-                $this->registerAndNotifyError(
-                    $submission,
-                    'plugins.generic.dataverse.error.datasetFileDeposit',
-                    ['error' => $e->getMessage(), 'fileName' => $file->getOriginalFileName()]
-                );
-                $this->deleteIncompleteDataset($dataverseClient, $datasetIdentifier->getPersistentId());
-                return [
-                    'status' => 'Error',
-                    'message' => 'plugins.generic.dataverse.error.datasetFileDeposit',
-                    'messageParams' => ['error' => $e->getMessage(), 'fileName' => $file->getOriginalFileName()]
-                ];
-            }
+        if (empty($manifest)) {
+            throw new RuntimeException('The deposit has no source files.');
         }
 
-        $this->createStudy($submission, $datasetIdentifier->getPersistentId());
+        return $manifest;
+    }
 
+    private function reportFailedDeposit(Submission $submission, Throwable $e): array
+    {
+        $operation = null;
+        $message = 'plugins.generic.dataverse.error.depositPending';
+        $params = ['error' => __($message)];
+
+        try {
+            $operation = DB::table('dataverse_deposits')->where('submission_id', $submission->getId())->first();
+            $outcomeIsUnknown = in_array($operation->state ?? null, ['creating', 'uploading'], true);
+            if ($e instanceof DataverseException && !$outcomeIsUnknown) {
+                $message = 'plugins.generic.dataverse.error.datasetDeposit';
+                $params = ['error' => $e->getUserMessage()];
+            }
+            $this->registerAndNotifyError($submission, $message, $params);
+        } catch (Throwable $reportingError) {
+            error_log('Dataverse deposit reporting failed: submission=' . $submission->getId()
+                . ' exception=' . get_class($reportingError) . ' message=' . $reportingError->getMessage());
+        }
+
+        error_log('Dataverse deposit failed: submission=' . $submission->getId()
+            . ' state=' . ($operation->state ?? 'unreserved')
+            . ' doi=' . ($operation->persistent_id ?? 'unknown')
+            . ' category=' . ($e instanceof DataverseException ? $e->getFailureCategory() : 'local')
+            . ' exception=' . get_class($e)
+            . ' message=' . $e->getMessage());
+
+        return ['status' => 'Error', 'message' => $message, 'messageParams' => $params];
+    }
+
+    private function clearDepositedDrafts(int $submissionId, array $manifest): void
+    {
+        $sourceIds = array_column($manifest, 'sourceId');
+
+        foreach (Repo::draftDatasetFile()->getBySubmissionId($submissionId) as $draftFile) {
+            if (in_array($draftFile->getData('fileId'), $sourceIds)) {
+                Repo::draftDatasetFile()->delete($draftFile);
+            }
+        }
+    }
+
+    private function completeDeposit(Submission $submission, string $persistentId): void
+    {
         $publication = $submission->getCurrentPublication();
         $dataStatementTypes = $publication->getData('dataStatementTypes');
         if (empty($dataStatementTypes)) {
@@ -97,23 +201,9 @@ class DatasetService extends DataverseService
         $this->registerEventLog(
             $submission,
             'plugins.generic.dataverse.log.researchDataDeposited',
-            ['persistentId' => $datasetIdentifier->getPersistentId()],
+            ['persistentId' => $persistentId],
             SubmissionEventLogEntry::SUBMISSION_LOG_SUBMISSION_SUBMIT
         );
-
-        Repo::draftDatasetFile()->deleteBySubmissionId($submission->getId());
-
-        return ['status' => 'Success'];
-    }
-
-    private function deleteIncompleteDataset(DataverseClient $dataverseClient, string $persistentId): void
-    {
-        try {
-            $dataverseClient->getDatasetFileActions()->waitForIngest($persistentId);
-            $dataverseClient->getDatasetActions()->delete($persistentId);
-        } catch (DataverseException $e) {
-            error_log('Dataverse API error while deleting incomplete dataset ' . $persistentId . ': ' . $e->getMessage());
-        }
     }
 
     public function update(array $data): void
@@ -190,17 +280,13 @@ class DatasetService extends DataverseService
             return;
         }
 
-        Repo::dataverseStudy()->delete($study);
-
-        $publication = $submission->getCurrentPublication();
-        $dataStatementTypes = $publication->getData('dataStatementTypes');
-
-        if (($key = array_search(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) !== false) {
-            unset($dataStatementTypes[$key]);
-            sort($dataStatementTypes);
+        try {
+            $this->removeStudy($study, $submission);
+        } catch (RuntimeException $e) {
+            error_log('Dataverse dataset ' . $dataset->getPersistentId()
+                . ' was deleted, but its association was not removed: ' . $e->getMessage());
+            return;
         }
-
-        Repo::publication()->edit($publication, ['dataStatementTypes' => $dataStatementTypes]);
 
         $request = Application::get()->getRequest();
         $user = $request->getUser();
@@ -216,19 +302,18 @@ class DatasetService extends DataverseService
         );
     }
 
+    public function removeMissingDataset(DataverseStudy $study): void
+    {
+        (new DepositRepository())->retire($study->getSubmissionId(), function () use ($study): void {
+            Repo::dataverseStudy()->delete($study);
+        });
+    }
+
     public function disassociate(DataverseStudy $study): void
     {
         $submission = Repo::submission()->get($study->getSubmissionId());
-        $publication = $submission->getCurrentPublication();
-        $dataStatementTypes = $publication->getData('dataStatementTypes');
 
-        Repo::dataverseStudy()->delete($study);
-
-        if (($key = array_search(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) !== false) {
-            unset($dataStatementTypes[$key]);
-            sort($dataStatementTypes);
-        }
-        Repo::publication()->edit($publication, ['dataStatementTypes' => $dataStatementTypes]);
+        $this->removeStudy($study, $submission);
 
         $this->registerEventLog(
             $submission,
@@ -264,8 +349,51 @@ class DatasetService extends DataverseService
             return ['status' => DataverseService::STATUS_NOT_FOUND, 'message' => 'plugins.generic.dataverse.error.associate.notFound'];
         }
 
-        $this->createStudy($submission, $persistentId);
-        return ['status' => DataverseService::STATUS_SUCCESS];
+        return DB::transaction(function () use ($submission, $submissionId, $persistentId): array {
+            (new DepositRepository())->lockSubmission($submissionId);
+            if (Repo::dataverseStudy()->getBySubmissionId($submissionId)) {
+                return [
+                    'status' => DataverseService::STATUS_ERROR,
+                    'message' => 'plugins.generic.dataverse.error.submissionHasStudy',
+                ];
+            }
+
+            if ($this->hasActiveDeposit($submissionId)) {
+                return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.depositPending'];
+            }
+
+            $this->createStudy($submission, $persistentId);
+            return ['status' => DataverseService::STATUS_SUCCESS];
+        });
+    }
+
+    private function hasActiveDeposit(int $submissionId): bool
+    {
+        return DB::table('dataverse_deposits')
+            ->where('submission_id', $submissionId)
+            ->where('state', '!=', 'retired')
+            ->exists();
+    }
+
+    private function removeStudy(DataverseStudy $study, Submission $submission): void
+    {
+        (new DepositRepository())->retire($submission->getId(), function () use ($study, $submission): void {
+            $currentStudy = Repo::dataverseStudy()->getBySubmissionId($study->getSubmissionId());
+            if (!$currentStudy || $currentStudy->getId() !== $study->getId()) {
+                throw new RuntimeException('The dataset association changed during this request.');
+            }
+
+            Repo::dataverseStudy()->delete($study);
+
+            $publication = Repo::publication()->get($submission->getCurrentPublication()->getId());
+            $dataStatementTypes = $publication->getData('dataStatementTypes') ?? [];
+            if (($key = array_search(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) !== false) {
+                unset($dataStatementTypes[$key]);
+                sort($dataStatementTypes);
+            }
+
+            Repo::publication()->edit($publication, ['dataStatementTypes' => $dataStatementTypes]);
+        });
     }
 
     public function publish(Submission $submission, DataverseStudy $study): void

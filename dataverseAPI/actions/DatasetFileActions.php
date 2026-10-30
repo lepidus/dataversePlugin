@@ -7,6 +7,7 @@ use PKP\config\Config;
 use PKP\core\PKPString;
 use PKP\file\FileManager;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetFileActionsInterface;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
@@ -44,9 +45,13 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         }, $jsonContent['data']);
     }
 
-    public function add(string $persistentId, string $filename, string $filePath): void
+    public function add(string $persistentId, string $filename, string $filePath): array
     {
-        $this->waitForIngest($persistentId);
+        try {
+            $this->waitForIngest($persistentId);
+        } catch (DataverseException $e) {
+            throw new UploadNotSentException($filename, $e);
+        }
 
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId', 'add'],
@@ -66,7 +71,37 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             ],
         ];
 
-        $this->nativeAPIRequest('POST', $uri, $options);
+        try {
+            $response = $this->nativeAPIRequest('POST', $uri, $options);
+        } catch (DataverseException $e) {
+            if ($e->wasRejected()) {
+                throw new UploadNotSentException($filename, $e);
+            }
+            throw $e;
+        }
+        $uploadedFiles = json_decode((string) $response->getBody(), true)['data']['files'] ?? null;
+
+        if (!is_array($uploadedFiles) || empty($uploadedFiles)) {
+            throw new DataverseException(__('plugins.generic.dataverse.error.uploadNotConfirmed'));
+        }
+
+        return array_map(fn ($uploadedFile) => $this->getUploadReceipt($uploadedFile), $uploadedFiles);
+    }
+
+    private function getUploadReceipt($uploadedFile): array
+    {
+        $dataFile = is_array($uploadedFile) ? ($uploadedFile['dataFile'] ?? null) : null;
+        $dataFileId = is_array($dataFile) ? ($dataFile['id'] ?? null) : null;
+
+        if (!is_int($dataFileId) || $dataFileId < 1) {
+            throw new DataverseException(__('plugins.generic.dataverse.error.uploadNotConfirmed'));
+        }
+
+        return [
+            'id' => $dataFileId,
+            'checksum' => $dataFile['checksum'] ?? null,
+            'size' => $dataFile['filesize'] ?? null,
+        ];
     }
 
     public function waitForIngest(string $persistentId): void

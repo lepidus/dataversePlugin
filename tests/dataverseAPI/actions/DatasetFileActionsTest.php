@@ -2,6 +2,7 @@
 
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetFileActions;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -94,8 +95,9 @@ class DatasetFileActionsTest extends PKPTestCase
         try {
             $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
             $this->fail('The upload was sent while the dataset was locked');
-        } catch (DataverseException $e) {
+        } catch (UploadNotSentException $e) {
             $this->assertSame(__('plugins.generic.dataverse.error.ingestTimeout'), $e->getMessage());
+            $this->assertSame('data.csv', $e->getFileName());
             $this->assertNotEmpty($history);
             $this->assertSame(['GET'], array_unique($this->requestMethods($history)));
         }
@@ -109,7 +111,7 @@ class DatasetFileActionsTest extends PKPTestCase
         try {
             $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
             $this->fail('The upload was sent without waiting for the ingest');
-        } catch (DataverseException $e) {
+        } catch (UploadNotSentException $e) {
             $this->assertSame(__('plugins.generic.dataverse.error.ingestTimeout'), $e->getMessage());
             $this->assertSame([], $history);
         }
@@ -123,7 +125,7 @@ class DatasetFileActionsTest extends PKPTestCase
         try {
             $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
             $this->fail('The upload was sent without checking the dataset locks');
-        } catch (DataverseException $e) {
+        } catch (UploadNotSentException $e) {
             $this->assertSame(401, $e->getCode());
             $this->assertSame(['GET'], $this->requestMethods($history));
         }
@@ -138,7 +140,7 @@ class DatasetFileActionsTest extends PKPTestCase
         try {
             $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
             $this->fail('The upload was sent without a valid lock list');
-        } catch (DataverseException $e) {
+        } catch (UploadNotSentException $e) {
             $this->assertSame(['GET'], $this->requestMethods($history));
         }
     }
@@ -150,6 +152,64 @@ class DatasetFileActionsTest extends PKPTestCase
             'object instead of lock list' => ['{"data":{"lockType":"Ingest"}}'],
             'invalid JSON' => ['not JSON'],
         ];
+    }
+
+    public function testUploadOfAnArchiveReturnsTheReceiptOfEveryRemoteFile(): void
+    {
+        $actions = $this->createActionsRespondingWith([
+            new Response(200, [], '{"data":[]}'),
+            new Response(200, [], json_encode(['data' => ['files' => [
+                ['dataFile' => ['id' => 10, 'checksum' => ['type' => 'MD5', 'value' => 'abc'], 'filesize' => 12]],
+                ['dataFile' => ['id' => 11, 'checksum' => ['type' => 'MD5', 'value' => 'def'], 'filesize' => 20]],
+            ]]])),
+        ]);
+
+        $this->assertSame([
+            ['id' => 10, 'checksum' => ['type' => 'MD5', 'value' => 'abc'], 'size' => 12],
+            ['id' => 11, 'checksum' => ['type' => 'MD5', 'value' => 'def'], 'size' => 20],
+        ], $actions->add('doi:10.1234/ABC', 'source.zip', __FILE__));
+    }
+
+    public function testUploadWithoutFileReceiptIsNotConfirmed(): void
+    {
+        $actions = $this->createActionsRespondingWith([
+            new Response(200, [], '{"data":[]}'),
+            new Response(200, [], '{"data":{"files":[]}}'),
+        ]);
+
+        $this->expectExceptionMessage(__('plugins.generic.dataverse.error.uploadNotConfirmed'));
+        $actions->add('doi:10.1234/ABC', 'source.zip', __FILE__);
+    }
+
+    public function testUploadRejectedByDataverseIsReportedAsNotSent(): void
+    {
+        $actions = $this->createActionsRespondingWith([
+            new Response(200, [], '{"data":[]}'),
+            new Response(400, [], '{"message":"File type not allowed"}'),
+        ]);
+
+        try {
+            $actions->add('doi:10.1234/ABC', 'source.exe', __FILE__);
+            $this->fail('The rejected upload was accepted');
+        } catch (UploadNotSentException $e) {
+            $this->assertSame('source.exe', $e->getFileName());
+            $this->assertSame('File type not allowed', $e->getMessage());
+        }
+    }
+
+    public function testUploadWithoutResponseIsNotReportedAsNotSent(): void
+    {
+        $actions = $this->createActionsRespondingWith([
+            new Response(200, [], '{"data":[]}'),
+            new Response(503, [], 'Service Unavailable'),
+        ]);
+
+        try {
+            $actions->add('doi:10.1234/ABC', 'source.csv', __FILE__);
+            $this->fail('The failed upload was accepted');
+        } catch (DataverseException $e) {
+            $this->assertNotInstanceOf(UploadNotSentException::class, $e);
+        }
     }
 
     public function testDownloadKeepsTheFileInsideTheFilesDirectory(): void

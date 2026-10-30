@@ -84,9 +84,20 @@ Autores, moderadores, editores ou gerentes também podem editar o conjunto de da
 
 A citação do conjunto de dados e seus indicadores de status aparecem no cabeçalho de Dados de pesquisa, com o mesmo estilo de status usado em Publicação. Os arquivos são exibidos acima do formulário de metadados, sem abas.
 
-Antes de enviar cada arquivo, o plugin espera até 30 segundos para que o Dataverse termine de processar (ingest) os arquivos que já estão no conjunto de dados. Se o Dataverse ainda estiver processando depois desse tempo, o arquivo não é enviado e um erro pede para tentar novamente em alguns minutos; quando isso acontece no depósito feito na submissão, o conjunto de dados incompleto é excluído assim que o processamento termina.
+Antes de enviar cada arquivo, o plugin espera até 30 segundos para que o Dataverse termine de processar (ingest) os arquivos que já estão no conjunto de dados. Se o Dataverse ainda estiver processando depois desse tempo, o arquivo não é enviado e um erro pede para tentar novamente em alguns minutos; quando isso acontece durante um depósito, o conjunto de dados e os arquivos já enviados são mantidos, e um novo depósito continua a partir do arquivo que não foi enviado.
 
 No OJS, avaliadores podem receber acesso aos arquivos de dados de pesquisa durante o processo de avaliação. O acesso dos avaliadores à esses arquivos pode ser restringido nas Configurações do Fluxo de Trabalho, para que eles visualizem os arquivos apenas quando aceitarem avaliar a submissão.
+
+#### Depósitos interrompidos
+O plugin registra cada etapa do depósito antes de chamar o Dataverse. Se um depósito for interrompido depois que o conjunto de dados foi criado, uma nova tentativa reutiliza o mesmo conjunto de dados: envia os metadados de novo, para que alterações feitas nesse meio-tempo sejam mantidas, e envia apenas os arquivos que ainda não foram confirmados. Se os arquivos de dados de pesquisa foram alterados nesse meio-tempo, o conjunto de dados parcial é excluído e o depósito recomeça com a nova seleção. Quando o Dataverse recusa uma etapa (uma licença inválida ou um token expirado, por exemplo), nada foi alterado lá, o erro é exibido e o depósito pode ser tentado novamente depois de corrigida a causa. Quando o resultado de uma etapa é desconhecido — a requisição atingiu o limite de tempo ou o processo parou durante a criação do conjunto de dados ou o envio de um arquivo —, novas tentativas para aquela submissão são recusadas com uma mensagem pedindo para entrar em contato com a equipe editorial, para que o plugin nunca crie um conjunto de dados duplicado nem envie um arquivo duas vezes.
+
+Esses depósitos devem ser conciliados por um administrador, diretamente no banco de dados, apenas para a submissão afetada:
+
+1. Garanta que nenhuma requisição da submissão ainda esteja em execução e faça backup das suas linhas em `dataverse_deposits`, `dataverse_studies` e `draft_dataset_files`.
+2. No estado `creating`, verifique no Dataverse se o conjunto de dados foi criado. Se foi, salve o seu identificador persistente em `persistent_id` e siga para o passo 4. Se o Dataverse comprovar que nada foi criado, mude o estado para `retired` e incremente `revision`, restrito ao `submission_id`, ao `state` e à `revision` inspecionados: o próximo depósito começa do início.
+3. No estado `uploading`, verifique quais arquivos do manifesto chegaram ao conjunto de dados e registre os seus ids do Dataverse em `receipts`; um arquivo que não chegou ao Dataverse fica sem recibo.
+4. Com `persistent_id` preenchido, em uma única transação restrita ao `submission_id`, ao `state` e à `revision` inspecionados, mude o estado para `ready` e incremente `revision`; depois, tente o depósito novamente pelo painel "Dados de pesquisa".
+5. Se a URL do Dataverse mudou depois que o conjunto de dados foi criado, o depósito não pode continuar na nova coleção: mantenha ou exclua o conjunto de dados na anterior conforme o caso e, depois, mude o estado para `retired` e incremente `revision`.
 
 ## Instruções para Desenvolvimento:
 

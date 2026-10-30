@@ -82,9 +82,20 @@ Los autores, moderadores, editores o gerentes también pueden editar el conjunto
 
 La cita del conjunto de datos y sus indicadores de estado aparecen en el encabezado de Datos de investigación, con el mismo estilo de estado usado en Publicación. Los archivos se muestran encima del formulario de metadatos, sin pestañas.
 
-Antes de cargar cada archivo, el plugin espera hasta 30 segundos a que Dataverse termine de procesar (ingest) los archivos que ya están en el conjunto de datos. Si Dataverse todavía los está procesando después de ese tiempo, el archivo no se carga y un error pide intentarlo de nuevo en unos minutos; cuando esto ocurre durante el depósito hecho en el envío, el conjunto de datos incompleto se elimina cuando termina el procesamiento.
+Antes de cargar cada archivo, el plugin espera hasta 30 segundos a que Dataverse termine de procesar (ingest) los archivos que ya están en el conjunto de datos. Si Dataverse todavía los está procesando después de ese tiempo, el archivo no se carga y un error pide intentarlo de nuevo en unos minutos; cuando esto ocurre durante un depósito, el conjunto de datos y los archivos ya enviados se conservan, y un nuevo depósito continúa desde el archivo que no se envió.
 
 En OJS, los evaluadores pueden recibir acceso a los archivos de datos de investigación durante el proceso de evaluación. El acceso de los evaluadores a estos archivos puede ser restringido en la Configuración del Flujo de Trabajo, para que solo visualicen los archivos cuando acepten evaluar la presentación.
+
+#### Depósitos interrumpidos
+El plugin registra cada etapa del depósito antes de llamar a Dataverse. Si un depósito se interrumpe después de que el conjunto de datos fue creado, un nuevo intento reutiliza el mismo conjunto de datos: envía de nuevo los metadatos, de modo que se conservan los cambios hechos entre tanto, y envía solo los archivos que aún no fueron confirmados. Si los archivos de datos de investigación cambiaron entre tanto, el conjunto de datos parcial se elimina y el depósito empieza de nuevo con la nueva selección. Cuando Dataverse rechaza una etapa (una licencia inválida o un token vencido, por ejemplo), no se cambió nada allí, se muestra el error y el depósito puede intentarse de nuevo una vez corregida la causa. Cuando el resultado de una etapa es desconocido — la solicitud alcanzó el límite de tiempo o el proceso se detuvo durante la creación del conjunto de datos o el envío de un archivo —, los nuevos intentos para ese envío se rechazan con un mensaje que pide contactar con el equipo editorial, para que el plugin nunca cree un conjunto de datos duplicado ni envíe un archivo dos veces.
+
+Estos depósitos deben ser conciliados por un administrador, directamente en la base de datos, solo para el envío afectado:
+
+1. Asegúrese de que ninguna solicitud del envío siga en ejecución y haga una copia de seguridad de sus filas en `dataverse_deposits`, `dataverse_studies` y `draft_dataset_files`.
+2. En el estado `creating`, verifique en Dataverse si el conjunto de datos fue creado. Si lo fue, guarde su identificador persistente en `persistent_id` y siga al paso 4. Si Dataverse demuestra que no se creó nada, cambie el estado a `retired` e incremente `revision`, restringido al `submission_id`, al `state` y a la `revision` inspeccionados: el próximo depósito empieza desde el principio.
+3. En el estado `uploading`, verifique qué archivos del manifiesto llegaron al conjunto de datos y registre sus ids de Dataverse en `receipts`; un archivo que no llegó a Dataverse queda sin recibo.
+4. Con `persistent_id` completado, en una única transacción restringida al `submission_id`, al `state` y a la `revision` inspeccionados, cambie el estado a `ready` e incremente `revision`; después, intente el depósito de nuevo desde el panel "Datos de investigación".
+5. Si la URL de Dataverse cambió después de crear el conjunto de datos, el depósito no puede continuar en la nueva colección: conserve o elimine el conjunto de datos en la anterior según sea necesario, y después cambie el estado a `retired` e incremente `revision`.
 
 ## Instrucciones para desarrollo:
 1. Clona el repositorio del plugin Dataverse.

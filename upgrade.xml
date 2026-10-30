@@ -5,4 +5,7 @@
     <upgrade maxversion="3.4.5.2">
         <migration class="APP\plugins\generic\dataverse\classes\migrations\LaravelEncryptionMigration" />
     </upgrade>
+    <upgrade maxversion="4.0.0.0">
+        <migration class="APP\plugins\generic\dataverse\classes\migrations\DepositMigration" />
+    </upgrade>
 </install>

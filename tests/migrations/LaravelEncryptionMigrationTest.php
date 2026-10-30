@@ -3,6 +3,7 @@
 use APP\plugins\generic\dataverse\classes\DataEncryption;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
 use APP\plugins\generic\dataverse\classes\migrations\DataverseMigration;
+use APP\plugins\generic\dataverse\classes\migrations\DepositMigration;
 use APP\plugins\generic\dataverse\classes\migrations\LaravelEncryptionMigration;
 use APP\plugins\generic\dataverse\DataversePlugin;
 use APP\plugins\generic\dataverse\DataverseSettingsForm;
@@ -198,13 +199,23 @@ class LaravelEncryptionMigrationTest extends PKPTestCase
 
     public function testInstallerSelectsMigrationOnlyForVersionsBeforeConversion(): void
     {
+        $encryptionMigration = LaravelEncryptionMigration::class;
+        $depositMigration = DepositMigration::class;
+        $expectedMigrations = [
+            '3.4.5.1' => [$encryptionMigration, $depositMigration],
+            '3.4.5.2' => [$encryptionMigration, $depositMigration],
+            '3.4.5.3' => [$depositMigration],
+            '4.0.0.0' => [$depositMigration],
+            '4.0.0.1' => [],
+        ];
+
         $tree = (new PKPXMLParser())->parse(dirname(__DIR__, 2) . '/upgrade.xml');
-        foreach (['3.4.5.1' => 1, '3.4.5.2' => 1, '3.4.5.3' => 0] as $version => $count) {
+        foreach ($expectedMigrations as $version => $migrations) {
             $installer = (new ReflectionClass(Installer::class))->newInstanceWithoutConstructor();
             $installer->currentVersion = Version::fromString($version);
             $installer->actions = [];
             $installer->parseInstallNodes($tree);
-            $this->assertCount($count, $installer->actions, $version);
+            $this->assertSame($migrations, array_map(fn (array $action) => $action['attr']['class'], $installer->actions), $version);
         }
     }
 }
