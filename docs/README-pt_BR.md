@@ -66,6 +66,8 @@ Uma seção chamada "Dados de pesquisa" é adicionada ao passo "Arquivos" durant
 
 Autores, moderadores, editores ou gerentes também podem editar o conjunto de dados, antes de sua publicação, no item "Dados de pesquisa" adicionado à seção Dataverse do menu do fluxo de trabalho da submissão. Ao lado dele é adicionado um item "Declaração de dados", para que a declaração de disponibilidade de dados possa ser consultada e alterada durante o fluxo de trabalho editorial.
 
+O "Relatório do Dataverse", em Estatísticas > Gerador de Relatórios, gera um CSV para um período de datas de submissão ou de datas de decisão final. A decisão final é uma aceitação ou rejeição que nenhuma decisão posterior desfez, como devolver a submissão à avaliação ou reverter a rejeição (enviá-la à produção mantém a aceitação); no OPS, é a primeira publicação do preprint ou a sua rejeição; e uma submissão aceita e rejeitada depois é contada apenas como rejeitada. O CSV traz as submissões aceitas (OJS) ou publicadas (OPS), rejeitadas e no total, quantas delas têm dados de pesquisa, os tipos de declaração de dados de cada grupo, os conjuntos de dados com erros de depósito ou de publicação e o número de arquivos nos conjuntos de dados depositados.
+
 A citação do conjunto de dados e seus indicadores de status aparecem no cabeçalho de Dados de pesquisa, com o mesmo estilo de status usado em Publicação. Os arquivos são exibidos acima do formulário de metadados, sem abas.
 
 No OJS, avaliadores podem receber acesso aos arquivos de dados de pesquisa durante o processo de avaliação. O acesso dos avaliadores à esses arquivos pode ser restringido nas Configurações do Fluxo de Trabalho, para que eles visualizem os arquivos apenas quando aceitarem avaliar a submissão.

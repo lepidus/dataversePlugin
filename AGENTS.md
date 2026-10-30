@@ -273,10 +273,14 @@ Two things bite when writing templates that the application compiles as Vue mark
 `report/DataverseReportPlugin` is a `ReportPlugin` registered from the main plugin's `register()`. Its page is a
 legacy `Form` (`DataverseReportForm`, `templates/dataverseReport.tpl`) where the user picks a submitted-date or
 final-decision-date range; submitting it streams the CSV built by `DataverseStatsReportBuilder` from the counts of
-`DataverseReportService`, which filters submissions through `DataverseReportQueryBuilder`. In OJS the final decision is
-the latest accept or decline; in OPS, where there is no accept decision, it is the posting date or the latest decline.
+`DataverseReportService`, which filters submissions through `DataverseReportQueryBuilder`. The final decision is the
+latest decision of the submission, ignoring the ones that keep it (sending to production and back, recommendations),
+when that decision is an accept or a decline; in OPS, where there is no accept decision, it is the first posting date
+(`MIN(date_published)`, so a new version does not move it) or that decline. Accepted counts exclude submissions whose
+status is declined, so a submission declined after acceptance counts only as declined.
 
-The deposit, deposit-error and publish-error counts look for the plugin's entries in the submission event log. Those
+The deposit, deposit-error and publish-error counts look for the plugin's entries in the submission event log, only
+those with `assoc_type` = submission. Those
 entries are stored already translated in the user's locale, so the service matches the text that precedes the first
 parameter of the message in every installed locale, and the bare locale key for entries written by older versions.
 

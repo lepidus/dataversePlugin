@@ -10,12 +10,13 @@ use APP\plugins\generic\dataverse\report\classes\DataverseStatsReport;
 
 class DataverseReportQueryBuilder
 {
-    private const FINAL_DECISION_CHANGES = [
-        Decision::ACCEPT,
-        Decision::DECLINE,
-        Decision::INITIAL_DECLINE,
-        Decision::REVERT_DECLINE,
-        Decision::REVERT_INITIAL_DECLINE,
+    private const DECISIONS_KEEPING_THE_FINAL_DECISION = [
+        Decision::SEND_TO_PRODUCTION,
+        Decision::BACK_FROM_PRODUCTION,
+        Decision::RECOMMEND_ACCEPT,
+        Decision::RECOMMEND_PENDING_REVISIONS,
+        Decision::RECOMMEND_RESUBMIT,
+        Decision::RECOMMEND_DECLINE,
     ];
 
     protected $contextIds = [];
@@ -216,7 +217,7 @@ class DataverseReportQueryBuilder
                 ->where('last_ed.edit_decision_id', function (Builder $query) {
                     $query->from('edit_decisions as ed2')
                         ->whereColumn('ed2.submission_id', 's.submission_id')
-                        ->whereIn('ed2.decision', self::FINAL_DECISION_CHANGES)
+                        ->whereNotIn('ed2.decision', self::DECISIONS_KEEPING_THE_FINAL_DECISION)
                         ->orderBy('ed2.date_decided', 'DESC')
                         ->orderBy('ed2.edit_decision_id', 'DESC')
                         ->limit(1)

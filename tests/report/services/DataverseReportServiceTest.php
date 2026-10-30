@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\dataverseAPI\search\DataverseSearchBuilder;
 use APP\publication\Publication;
+use APP\core\Application;
+use APP\log\event\SubmissionEventLogEntry;
 
 class DataverseReportServiceTest extends DatabaseTestCase
 {
@@ -392,5 +394,92 @@ class DataverseReportServiceTest extends DatabaseTestCase
         $reportService->expects($this->never())->method('getDataverseSearchBuilder');
 
         $this->assertSame(0, $reportService->countDatasetFiles());
+    }
+
+    public function testAcceptedSubmissionSentToProductionKeepsItsFinalDecision(): void
+    {
+        $submission = $this->createTestSubmission(Submission::STATUS_QUEUED);
+        $this->addDecision(Decision::ACCEPT, $submission->getId(), '2026-03-01 10:00:00');
+        $this->addDecision(Decision::SEND_TO_PRODUCTION, $submission->getId(), '2026-03-02 10:00:00');
+
+        $reportService = $this->getReportService();
+        $reportService->setFinalDecisionDateInterval('2026-01-01 00:00:00', '2026-12-31 23:59:59');
+
+        $this->assertSame(1, $reportService->getAcceptedSubmissionsCount());
+        $this->assertSame(1, $reportService->getTotalSubmissionsCount());
+    }
+
+    public function testRevertedDeclineIsNotAFinalDecision(): void
+    {
+        $submission = $this->createTestSubmission(Submission::STATUS_QUEUED);
+        $this->addDecision(Decision::DECLINE, $submission->getId(), '2026-03-01 10:00:00');
+        $this->addDecision(Decision::REVERT_DECLINE, $submission->getId(), '2026-03-02 10:00:00');
+
+        $reportService = $this->getReportService();
+        $reportService->setFinalDecisionDateInterval('2026-01-01 00:00:00', '2026-12-31 23:59:59');
+
+        $this->assertSame(0, $reportService->getTotalSubmissionsCount());
+    }
+
+    public function testSubmissionDeclinedAfterAcceptanceIsCountedOnlyAsDeclined(): void
+    {
+        $submission = $this->createTestSubmission(Submission::STATUS_DECLINED, withDataset: true);
+        $this->addDecision(Decision::ACCEPT, $submission->getId(), '2026-03-01 10:00:00');
+        $this->addDecision(Decision::DECLINE, $submission->getId(), '2026-03-05 10:00:00');
+        $this->addDataStatementTypesToSubmission($submission, [DataStatementService::DATA_STATEMENT_TYPE_IN_MANUSCRIPT]);
+
+        $reportService = $this->getReportService();
+
+        $this->assertSame(0, $reportService->getAcceptedSubmissionsCount());
+        $this->assertSame(0, $reportService->getAcceptedSubmissionsWithDatasetCount());
+        $this->assertSame([0, 0, 0, 0], $reportService->getAcceptedStatementStatistics()->getStats());
+        $this->assertSame(1, $reportService->getDeclinedSubmissionsCount());
+    }
+
+    public function testPreprintIsCountedInThePeriodItWasFirstPosted(): void
+    {
+        $submission = $this->createTestSubmission(Submission::STATUS_PUBLISHED);
+        $this->setPublicationDate($submission->getId(), '2025-03-01');
+        Repo::publication()->dao->insert(Repo::publication()->newDataObject([
+            'submissionId' => $submission->getId(),
+            'status' => Submission::STATUS_PUBLISHED,
+            'version' => 2,
+            'datePublished' => '2026-02-01',
+        ]));
+
+        $reportService = $this->getOpsReportService();
+        $reportService->setFinalDecisionDateInterval('2026-01-01 00:00:00', '2026-12-31 23:59:59');
+        $this->assertSame(0, $reportService->getPublishedSubmissionsCount());
+
+        $reportService->setFinalDecisionDateInterval('2025-01-01 00:00:00', '2025-12-31 23:59:59');
+        $this->assertSame(1, $reportService->getPublishedSubmissionsCount());
+    }
+
+    public function testDepositErrorsOnlyCountEventsLoggedForSubmissions(): void
+    {
+        $submission = $this->createTestSubmission(Submission::STATUS_QUEUED);
+        Repo::eventLog()->add(Repo::eventLog()->newDataObject([
+            'assocType' => Application::ASSOC_TYPE_SUBMISSION_FILE,
+            'assocId' => $submission->getId(),
+            'eventType' => SubmissionEventLogEntry::SUBMISSION_LOG_SUBMISSION_SUBMIT,
+            'message' => 'plugins.generic.dataverse.error.datasetDeposit',
+            'isTranslated' => false,
+            'dateLogged' => '2026-03-01 10:00:00',
+        ]));
+
+        $this->assertSame(0, $this->getReportService()->getDatasetsWithDepositErrorCount());
+    }
+
+    public function testEmptyDataStatementTypesDoNotBreakTheStatistics(): void
+    {
+        $submission = $this->createTestSubmission(Submission::STATUS_QUEUED);
+        DB::table('publication_settings')->insert([
+            'publication_id' => $submission->getData('currentPublicationId'),
+            'locale' => '',
+            'setting_name' => 'dataStatementTypes',
+            'setting_value' => null,
+        ]);
+
+        $this->assertSame([0, 0, 0, 0], $this->getReportService()->getTotalStatementStatistics()->getStats());
     }
 }

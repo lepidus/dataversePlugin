@@ -64,6 +64,8 @@ A "Research Data" deposit dialog is shown in the "Files" step of the Submission 
 
 Authors, moderators, editors or managers can also edit the dataset, before publication, on the "Research data" item added to the Dataverse section of the submission's workflow menu. A "Data statement" item is added right next to it, so the data availability statement can be reviewed and changed during the editorial workflow.
 
+The "Dataverse Report" in Statistics > Reports generates a CSV for a period of submission dates or of final decision dates. A final decision is an acceptance or decline that no later decision undid, such as sending the submission back to review or reverting the decline (sending it to production keeps the acceptance); in OPS, it is the first posting of the preprint or its decline; and an accepted submission that was declined afterwards is counted only as declined. The CSV has the accepted (OJS) or posted (OPS), declined and total submissions, how many of them have research data, the data statement types of each group, the datasets with deposit or publication errors and the number of files in the deposited datasets.
+
 The dataset citation and its status indicators appear in the Research data header, using the same status style as Publication. The files are displayed above the metadata form, without tabs.
 
 In OJS, reviewers can have access to research data files during the review process. Reviewers access to these files can be restricted on Workflow Settings, so they can only see research data when they agree to review the submission.
