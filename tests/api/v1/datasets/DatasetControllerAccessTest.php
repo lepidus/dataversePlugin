@@ -21,6 +21,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\LazyCollection;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use APP\facades\Repo;
+use PKP\core\Core;
+use PKP\db\DAORegistry;
 use PKP\core\Dispatcher;
 use PKP\core\Registry;
 use PKP\facades\Locale;
@@ -170,19 +173,74 @@ class DatasetControllerAccessTest extends PKPTestCase
         $this->assertSame(404, $this->createController()->downloadFile($request)->getStatusCode());
     }
 
-    public function testAddFileRejectsTemporaryFilesTheUserDoesNotOwn(): void
+    private function createUser(): User
     {
-        $user = new User();
-        $user->setId(PHP_INT_MAX);
-        $this->mockContextRequest(false, $user);
-        $service = Mockery::mock('overload:' . DatasetFileService::class);
-        $service->shouldNotReceive('add');
+        $userName = 'dataverseaccess' . uniqid();
+        $user = Repo::user()->newDataObject([
+            'userName' => $userName,
+            'email' => $userName . '@example.org',
+            'password' => 'not-used',
+            'givenName' => ['en' => 'Dataverse'],
+            'familyName' => ['en' => 'Tester'],
+            'dateRegistered' => Core::getCurrentDate(),
+        ]);
+        $user->setId(Repo::user()->add($user));
 
+        return $user;
+    }
+
+    private function createTemporaryFileOwnedBy(User $user): int
+    {
+        $temporaryFileDao = DAORegistry::getDAO('TemporaryFileDAO');
+        $temporaryFile = $temporaryFileDao->newDataObject();
+        $temporaryFile->setUserId($user->getId());
+        $temporaryFile->setServerFileName('dataverseaccess.json');
+        $temporaryFile->setFileType('application/json');
+        $temporaryFile->setFileSize(2);
+        $temporaryFile->setOriginalFileName('Data.json');
+        $temporaryFile->setDateUploaded(Core::getCurrentDate());
+
+        return $temporaryFileDao->insertObject($temporaryFile);
+    }
+
+    private function addFileAs(User $requestUser, int $temporaryFileId): int
+    {
+        $this->mockContextRequest(false, $requestUser);
         $request = $this->createRequest('POST', '/datasets/' . self::STUDY_ID . '/file', [
-            'datasetFile' => ['temporaryFileId' => PHP_INT_MAX],
+            'datasetFile' => ['temporaryFileId' => $temporaryFileId],
         ]);
 
-        $this->assertSame(404, $this->createController()->addFile($request)->getStatusCode());
+        return $this->createController()->addFile($request)->getStatusCode();
+    }
+
+    public function testAddFileAcceptsATemporaryFileOfTheUser(): void
+    {
+        $owner = $this->createUser();
+        try {
+            $temporaryFileId = $this->createTemporaryFileOwnedBy($owner);
+            $service = Mockery::mock('overload:' . DatasetFileService::class);
+            $service->shouldReceive('add')->once()->with($this->study, $temporaryFileId);
+
+            $this->assertSame(200, $this->addFileAs($owner, $temporaryFileId));
+        } finally {
+            Repo::user()->delete($owner);
+        }
+    }
+
+    public function testAddFileRejectsATemporaryFileOfAnotherUser(): void
+    {
+        $owner = $this->createUser();
+        $otherUser = $this->createUser();
+        try {
+            $temporaryFileId = $this->createTemporaryFileOwnedBy($owner);
+            $service = Mockery::mock('overload:' . DatasetFileService::class);
+            $service->shouldNotReceive('add');
+
+            $this->assertSame(404, $this->addFileAs($otherUser, $temporaryFileId));
+        } finally {
+            Repo::user()->delete($owner);
+            Repo::user()->delete($otherUser);
+        }
     }
 
     public function testDeleteFileRejectsFilesOutsideTheStudyDataset(): void
