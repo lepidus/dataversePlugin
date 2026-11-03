@@ -424,6 +424,44 @@ class DataverseActionsTest extends PKPTestCase
         $this->assertStringContainsString('"operation":"read","category":"connection","status":null', $log);
     }
 
+    public function testNativeApiRequestIsNotRedirectedWithTheApiTokenToAnotherOrigin(): void
+    {
+        $redirectedRequests = [];
+        $handler = HandlerStack::create(new MockHandler([
+            new Response(302, ['Location' => 'https://attacker.example.org/collect']),
+            function ($request) use (&$redirectedRequests) {
+                $redirectedRequests[] = $request;
+                return new Response(200, [], '{}');
+            },
+        ]));
+        $actions = new ConcreteDataverseActions($this->configuration, new Client(['handler' => $handler]));
+
+        try {
+            $actions->nativeAPIRequest('GET', 'https://test.dataverse.org/api/datasets/1');
+            $this->fail('The redirect to another origin was followed');
+        } catch (DataverseException $exception) {
+            $this->assertSame([], $redirectedRequests);
+        }
+    }
+
+    public function testNativeApiRequestFollowsRedirectsWithinTheSameOrigin(): void
+    {
+        $redirectedRequests = [];
+        $handler = HandlerStack::create(new MockHandler([
+            new Response(302, ['Location' => '/api/datasets/2']),
+            function ($request) use (&$redirectedRequests) {
+                $redirectedRequests[] = $request;
+                return new Response(200, [], '{"status":"OK"}');
+            },
+        ]));
+        $actions = new ConcreteDataverseActions($this->configuration, new Client(['handler' => $handler]));
+
+        $response = $actions->nativeAPIRequest('GET', 'https://test.dataverse.org/api/datasets/1');
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('apiToken', $redirectedRequests[0]->getHeaderLine('X-Dataverse-key'));
+    }
+
     private function createTimeoutObservingClient(array &$observedTimeouts): Client
     {
         return new Client(['handler' => function ($request, array $options) use (&$observedTimeouts) {

@@ -171,7 +171,11 @@ Every request goes through `DataverseActions::sendRequest()`, which sets a 5-sec
 limit by operation (read 15 s, file download 60 s, dataset creation 30 s, file upload 60 s, other writes 30 s), overridable
 through `[dataverse] <operation>_timeout` in `config.inc.php` (an integer from 1 to 300; `ConfigParser` has already turned
 `on` into a boolean and `060` into octal 48, so only real integers are accepted) or by an explicit `timeout` option from
-the caller. `nativeAPIRequest(..., false)` never reads the body, because downloads stream it into a write-only `sink`.
+the caller. `nativeAPIRequest(..., false)` never reads the body. The API token (`X-Dataverse-key`) only goes to the
+configured server's origin: an authenticated Native API request that Dataverse redirects elsewhere fails, because Guzzle
+keeps custom headers across origins, and `nativeAPIDownload()` follows the redirects of a file download itself, streaming
+into a write-only `sink` and sending the token only to that origin, since Dataverse sends downloads to the storage
+(e.g. S3) with a 303.
 
 Failures throw `DataverseException`, logged as a JSON line with the operation and
 `getFailureCategory()` (`timeout`, `connection`, `authentication` or `http`) and the HTTP status Dataverse returned, if any. A timeout means the outcome is unknown,
