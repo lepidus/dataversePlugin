@@ -31,14 +31,44 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
             ['datasets', ':persistentId'],
             ['persistentId' => $persistentId, 'returnOwners' => 'true']
         );
-        $response = $this->nativeAPIRequest('GET', $uri);
+        $dataset = json_decode($this->nativeAPIRequest('GET', $uri)->getBody(), true)['data'] ?? [];
 
-        $owner = json_decode($response->getBody(), true)['data']['isPartOf'] ?? null;
+        if (!array_key_exists('isPartOf', $dataset)) {
+            return $this->collectionTreeContainsDataset($this->dataverseAlias, (int) ($dataset['id'] ?? 0));
+        }
+
+        $owner = $dataset['isPartOf'];
         while (is_array($owner)) {
             if (($owner['type'] ?? null) === 'DATAVERSE' && strcasecmp($owner['identifier'] ?? '', $this->dataverseAlias) === 0) {
                 return true;
             }
             $owner = $owner['isPartOf'] ?? null;
+        }
+
+        return false;
+    }
+
+    private function collectionTreeContainsDataset(string $collection, int $datasetId): bool
+    {
+        $pendingCollections = [$collection];
+        $visitedCollections = [];
+
+        while ($pendingCollections) {
+            $currentCollection = array_shift($pendingCollections);
+            $visitedCollections[] = $currentCollection;
+
+            $uri = $this->createNativeAPIURI(['dataverses', $currentCollection, 'contents']);
+            $contents = json_decode($this->nativeAPIRequest('GET', $uri)->getBody(), true)['data'] ?? [];
+
+            foreach ($contents as $item) {
+                if (($item['type'] ?? null) === 'dataset' && (int) ($item['id'] ?? 0) === $datasetId) {
+                    return true;
+                }
+                $childCollection = (string) ($item['id'] ?? '');
+                if (($item['type'] ?? null) === 'dataverse' && !in_array($childCollection, $visitedCollections, true)) {
+                    $pendingCollections[] = $childCollection;
+                }
+            }
         }
 
         return false;

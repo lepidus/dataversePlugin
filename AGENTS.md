@@ -80,7 +80,8 @@ What the plugin actually does, in workflow order:
 4. **Workflow "Research data" panel**: a Publication menu item that lets you view/edit dataset metadata, add and
    delete files, publish, disassociate or delete the dataset, or associate the submission with a dataset that
    already exists in the configured collection or one of its subcollections (checked through the `isPartOf` chain of
-   `returnOwners`, because the token usually reaches other collections too) — and, when nothing has been deposited yet,
+   `returnOwners`, because the token usually reaches other collections too; servers older than Dataverse 6.2 ignore
+   that parameter, so the collection tree is walked through `/api/dataverses/{id}/contents` instead) — and, when nothing has been deposited yet,
    upload research data and deposit it from the workflow.
 5. **Data availability statement panel**: a Publication menu item holding a publication-level statement whose
    type is one of the

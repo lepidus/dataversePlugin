@@ -343,9 +343,7 @@ class DatasetService extends DataverseService
         }
 
         try {
-            $datasetActions = (new DataverseClient())->getDatasetActions();
-            $datasetActions->get($persistentId);
-            $isInCurrentCollection = $datasetActions->isInCurrentCollection($persistentId);
+            $isInCurrentCollection = (new DataverseClient())->getDatasetActions()->isInCurrentCollection($persistentId);
         } catch (DataverseException $e) {
             return ['status' => DataverseService::STATUS_NOT_FOUND, 'message' => 'plugins.generic.dataverse.error.associate.notFound'];
         }
