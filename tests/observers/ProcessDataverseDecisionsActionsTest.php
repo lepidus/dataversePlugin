@@ -1,5 +1,6 @@
 <?php
 
+use APP\API\v1\submissions\SubmissionController;
 use APP\decision\Decision;
 use APP\facades\Repo;
 use APP\plugins\generic\dataverse\classes\observers\listeners\ProcessDataverseDecisionsActions;
@@ -7,6 +8,7 @@ use APP\plugins\generic\dataverse\tests\helpers\DataverseIntegrationFixture;
 use APP\submission\Submission;
 use PKP\decision\types\SendExternalReview;
 use PKP\observers\events\DecisionAdded;
+use PKP\services\PKPSchemaService;
 use PKP\tests\DatabaseTestCase;
 
 class ProcessDataverseDecisionsActionsTest extends DatabaseTestCase
@@ -54,5 +56,19 @@ class ProcessDataverseDecisionsActionsTest extends DatabaseTestCase
         $submission = $this->sendToExternalReview($submission, []);
 
         $this->assertEmpty($submission->getData('selectedDataFilesForReview'));
+    }
+
+    public function testFilesSelectedForReviewCannotBeWrittenThroughTheSubmissionsApi(): void
+    {
+        $controller = (new ReflectionClass(SubmissionController::class))->newInstanceWithoutConstructor();
+        $getWriteDisabledErrors = new ReflectionMethod($controller, 'getWriteDisabledErrors');
+
+        $errors = $getWriteDisabledErrors->invoke(
+            $controller,
+            PKPSchemaService::SCHEMA_SUBMISSION,
+            ['selectedDataFilesForReview' => [41]]
+        );
+
+        $this->assertArrayHasKey('selectedDataFilesForReview', $errors);
     }
 }
