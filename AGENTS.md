@@ -356,7 +356,9 @@ The API token is stored encrypted in the application database with the applicati
 through `Crypt::encryptString()`. `DataverseConfigurationDAO` is the only place that encrypts (`insert()`) and
 decrypts (`get()`); a token it cannot decrypt — rotated `app_key`, restored database — comes back as an empty
 string, so the plugin degrades and the administrator can enter it again. The settings form writes through
-`Plugin::updateSetting()` and therefore encrypts the token itself. Without `app_key` the settings form renders
+`Plugin::updateSetting()` and therefore encrypts the token itself. It never renders the saved token: the field stays empty, and a blank
+field keeps the saved token only while the Dataverse server is the same, so a changed URL cannot receive the old token
+during validation. Without `app_key` the settings form renders
 `missingAppKey.tpl`. Never log, echo, or write a decrypted token to a template.
 
 Tokens from earlier versions (plaintext, or `base64:`-prefixed and encrypted with `security.api_key_secret` by

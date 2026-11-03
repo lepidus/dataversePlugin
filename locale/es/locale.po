@@ -39,6 +39,11 @@ msgstr "Token de API para integración con Dataverse.<br>"
 "Para más información sobre cómo obtener el token de API, consulta lo "
 "<a href=\"https://guides.dataverse.org/en/5.13/user/account.html#api-token\" target=\"_new\">Guía del usuario de Dataverse</a>."
 
+msgid "plugins.generic.dataverse.settings.tokenKeepCurrent"
+msgstr "Token de API para integración con Dataverse.<br>"
+"Ya hay un token guardado, que no se muestra. Deja este campo en blanco para mantenerlo o introduce un nuevo token para reemplazarlo. "
+"Cambiar el servidor de Dataverse requiere introducir el token de nuevo."
+
 msgid "plugins.generic.dataverse.settings.termsOfUse"
 msgstr "Términos de uso"
 

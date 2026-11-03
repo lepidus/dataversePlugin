@@ -113,18 +113,65 @@ class DataverseSettingsFormTest extends DatabaseTestCase
         $this->assertNotEquals($credentials['apiToken'], $storedToken);
     }
 
-    public function testSubmissionWithoutCsrfTokenIsRejected(): void
+    private function validCredentialsData(): array
     {
         $credentials = $this->dataverseCredentials();
 
-        $form = $this->submitForm([
+        return [
             'dataverseUrl' => $credentials['dataverseUrl'],
             'apiToken' => $credentials['apiToken'],
             'termsOfUse' => ['en' => $credentials['termsOfUse']],
             'datasetPublish' => 2,
-        ], false);
+        ];
+    }
+
+    private function storedApiToken(): string
+    {
+        return (new DataverseConfigurationDAO())->get($this->context->getId())->getAPIToken();
+    }
+
+    public function testSubmissionWithoutCsrfTokenIsRejected(): void
+    {
+        $form = $this->submitForm($this->validCredentialsData(), false);
 
         $this->assertFalse($form->isValid());
         $this->assertContains(__('form.csrfInvalid'), $form->getErrorsArray());
+    }
+
+    public function testStoredApiTokenIsNotSentBackToTheForm(): void
+    {
+        $this->submitForm($this->validCredentialsData())->execute();
+
+        $form = new DataverseSettingsForm($this->plugin, $this->context->getId());
+        $form->initData();
+
+        $this->assertEmpty($form->getData('apiToken'));
+        $this->assertNotEmpty($form->getData('dataverseUrl'));
+    }
+
+    public function testBlankApiTokenKeepsTheStoredToken(): void
+    {
+        $data = $this->validCredentialsData();
+        $this->submitForm($data)->execute();
+
+        $form = $this->submitForm(array_merge($data, ['apiToken' => '']));
+        $this->assertTrue($form->isValid());
+        $form->execute();
+
+        $this->assertSame($data['apiToken'], $this->storedApiToken());
+    }
+
+    public function testBlankApiTokenIsRejectedWhenTheServerChanges(): void
+    {
+        $data = $this->validCredentialsData();
+        $this->submitForm($data)->execute();
+
+        $errors = $this->submitForm(array_merge($data, [
+            'dataverseUrl' => 'https://dataverse.invalid/dataverse/collection',
+            'apiToken' => '',
+        ]))->getErrorsArray();
+
+        $this->assertEquals(__('plugins.generic.dataverse.settings.tokenRequired'), $errors['apiToken']);
+        $this->assertSame($data['apiToken'], $this->storedApiToken());
     }
 }
