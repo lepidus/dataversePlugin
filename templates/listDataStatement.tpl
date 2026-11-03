@@ -16,7 +16,7 @@
 								<ul>
 									{foreach from=$publication->getData('dataStatementUrls') item=url}
 										<li>
-											<a href="{$url|escape}" target="_new">{$url|escape}</a>
+											<a href="{$url|escape}" target="_blank" rel="noopener noreferrer">{$url|escape}</a>
 										</li>
 									{/foreach}
 								</ul>
