@@ -25,6 +25,25 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         return $datasetFactory->getDataset();
     }
 
+    public function isInCurrentCollection(string $persistentId): bool
+    {
+        $uri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId'],
+            ['persistentId' => $persistentId, 'returnOwners' => 'true']
+        );
+        $response = $this->nativeAPIRequest('GET', $uri);
+
+        $owner = json_decode($response->getBody(), true)['data']['isPartOf'] ?? null;
+        while (is_array($owner)) {
+            if (($owner['type'] ?? null) === 'DATAVERSE' && strcasecmp($owner['identifier'] ?? '', $this->dataverseAlias) === 0) {
+                return true;
+            }
+            $owner = $owner['isPartOf'] ?? null;
+        }
+
+        return false;
+    }
+
     public function getCitation(string $persistentId, ?bool $datasetIsPublished): array
     {
         if (is_null($datasetIsPublished)) {

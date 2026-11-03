@@ -220,6 +220,9 @@ msgstr "El conjunto de datos proporcionado ya está asociado a un envío en este
 msgid "plugins.generic.dataverse.error.associate.notFound"
 msgstr "El conjunto de datos especificado no está presente en el repositorio de Dataverse"
 
+msgid "plugins.generic.dataverse.error.associate.outsideCollection"
+msgstr "El conjunto de datos especificado no pertenece a la colección de Dataverse registrada en la configuración del plugin ni a una de sus subcolecciones"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar archivo de datos de investigación"
 
@@ -290,7 +293,7 @@ msgstr "Vincular conjunto de datos"
 msgid "plugins.generic.dataverse.researchData.associate.disclaimer"
 msgstr "Proporcione el ID persistente del conjunto de datos depositado en Dataverse que desea asociar a este envío. "
 "Esta información se puede encontrar en la sección de metadatos de la página del conjunto de datos.<br><br>"
-"El conjunto de datos debe estar almacenado en el mismo repositorio registrado en la configuración del plugin. "
+"El conjunto de datos debe estar almacenado en la colección de Dataverse registrada en la configuración del plugin o en una de sus subcolecciones. "
 "Asegúrese también de que no esté ya asociado a otro envío."
 
 msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"

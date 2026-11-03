@@ -343,10 +343,15 @@ class DatasetService extends DataverseService
         }
 
         try {
-            $dataverseClient = new DataverseClient();
-            $dataset = $dataverseClient->getDatasetActions()->get($persistentId);
+            $datasetActions = (new DataverseClient())->getDatasetActions();
+            $datasetActions->get($persistentId);
+            $isInCurrentCollection = $datasetActions->isInCurrentCollection($persistentId);
         } catch (DataverseException $e) {
             return ['status' => DataverseService::STATUS_NOT_FOUND, 'message' => 'plugins.generic.dataverse.error.associate.notFound'];
+        }
+
+        if (!$isInCurrentCollection) {
+            return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.outsideCollection'];
         }
 
         return DB::transaction(function () use ($submission, $submissionId, $persistentId): array {
