@@ -31,7 +31,7 @@ class ProcessDataverseDecisionsActionsTest extends DatabaseTestCase
         $this->restoreCoreSchemas();
     }
 
-    private function sendToExternalReview(Submission $submission, array $selectedDataFiles): Submission
+    private function sendToExternalReview(Submission $submission, mixed $selectedDataFiles): Submission
     {
         $decision = Repo::decision()->newDataObject(['decision' => Decision::EXTERNAL_REVIEW]);
         $actions = [['id' => 'selectDataFiles', 'selectedDataFilesForReview' => $selectedDataFiles]];
@@ -47,6 +47,13 @@ class ProcessDataverseDecisionsActionsTest extends DatabaseTestCase
         $submission = $this->sendToExternalReview($this->createSubmission(), [41, 42]);
 
         $this->assertEquals([41, 42], $submission->getData('selectedDataFilesForReview'));
+    }
+
+    public function testSingleFileSentWithoutAListIsSaved(): void
+    {
+        $submission = $this->sendToExternalReview($this->createSubmission(), '41');
+
+        $this->assertEquals([41], $submission->getData('selectedDataFilesForReview'));
     }
 
     public function testEmptySelectionRevokesTheFilesSelectedBefore(): void

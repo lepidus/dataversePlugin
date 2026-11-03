@@ -25,7 +25,7 @@ class ProcessDataverseDecisionsActions
 
         foreach ($event->actions as $action) {
             if ($decision == Decision::EXTERNAL_REVIEW && $action['id'] == 'selectDataFiles') {
-                $this->saveSelectedDataFilesForReview($submission, $action['selectedDataFilesForReview'] ?? []);
+                $this->saveSelectedDataFilesForReview($submission, (array) ($action['selectedDataFilesForReview'] ?? []));
                 break;
             }
             if ($decision == Decision::ACCEPT && $action['id'] == 'researchDataPublishNotice') {
