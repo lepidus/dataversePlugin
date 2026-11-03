@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE install SYSTEM "../../../lib/pkp/dtd/install.dtd">
 
-<install version="3.4.5.2">
-    <upgrade maxversion="3.4.5.2">
+<install>
+    <upgrade>
         <migration class="APP\plugins\generic\dataverse\classes\migrations\LaravelEncryptionMigration" />
     </upgrade>
-    <upgrade maxversion="4.0.0.0">
+    <upgrade>
         <migration class="APP\plugins\generic\dataverse\classes\migrations\DepositMigration" />
     </upgrade>
 </install>
