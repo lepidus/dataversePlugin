@@ -197,20 +197,12 @@ class LaravelEncryptionMigrationTest extends PKPTestCase
         $this->assertSame($encrypted, $this->storedToken());
     }
 
-    public function testInstallerSelectsMigrationOnlyForVersionsBeforeConversion(): void
+    public function testInstallerRunsAllMigrationsForEveryInstalledVersion(): void
     {
-        $encryptionMigration = LaravelEncryptionMigration::class;
-        $depositMigration = DepositMigration::class;
-        $expectedMigrations = [
-            '3.4.5.1' => [$encryptionMigration, $depositMigration],
-            '3.4.5.2' => [$encryptionMigration, $depositMigration],
-            '3.4.5.3' => [$depositMigration],
-            '4.0.0.0' => [$depositMigration],
-            '4.0.0.1' => [],
-        ];
+        $migrations = [LaravelEncryptionMigration::class, DepositMigration::class];
 
         $tree = (new PKPXMLParser())->parse(dirname(__DIR__, 2) . '/upgrade.xml');
-        foreach ($expectedMigrations as $version => $migrations) {
+        foreach (['3.4.5.1', '3.4.5.2', '3.4.5.3', '4.0.0.0', '4.0.0.1'] as $version) {
             $installer = (new ReflectionClass(Installer::class))->newInstanceWithoutConstructor();
             $installer->currentVersion = Version::fromString($version);
             $installer->actions = [];
