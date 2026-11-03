@@ -25,10 +25,12 @@ class DataverseSettingsFormTest extends DatabaseTestCase
         $this->restoreCoreSchemas();
     }
 
-    private function submitForm(array $data): DataverseSettingsForm
+    private function submitForm(array $data, bool $withCsrfToken = true): DataverseSettingsForm
     {
-        $_POST = array_merge(['additionalInstructions' => ['en' => '']], $data);
-        $this->mockRequest($this->context->getPath() . '/management/settings', $this->user->getId());
+        $request = $this->mockRequest($this->context->getPath() . '/management/settings', $this->user->getId());
+        $request->getSession()->regenerateToken();
+        $csrfToken = $withCsrfToken ? ['csrfToken' => $request->getSession()->token()] : [];
+        $_POST = array_merge(['additionalInstructions' => ['en' => '']], $csrfToken, $data);
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $form = new DataverseSettingsForm($this->plugin, $this->context->getId());
         $form->readInputData();
@@ -109,5 +111,20 @@ class DataverseSettingsFormTest extends DatabaseTestCase
             ->where('setting_name', 'apiToken')
             ->value('setting_value');
         $this->assertNotEquals($credentials['apiToken'], $storedToken);
+    }
+
+    public function testSubmissionWithoutCsrfTokenIsRejected(): void
+    {
+        $credentials = $this->dataverseCredentials();
+
+        $form = $this->submitForm([
+            'dataverseUrl' => $credentials['dataverseUrl'],
+            'apiToken' => $credentials['apiToken'],
+            'termsOfUse' => ['en' => $credentials['termsOfUse']],
+            'datasetPublish' => 2,
+        ], false);
+
+        $this->assertFalse($form->isValid());
+        $this->assertContains(__('form.csrfInvalid'), $form->getErrorsArray());
     }
 }

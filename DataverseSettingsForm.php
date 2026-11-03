@@ -14,6 +14,7 @@ use PKP\core\PKPAppKey;
 use PKP\db\DAORegistry;
 use PKP\form\Form;
 use PKP\form\validation\FormValidator;
+use PKP\form\validation\FormValidatorCSRF;
 use PKP\form\validation\FormValidatorCustom;
 use PKP\form\validation\FormValidatorPost;
 use PKP\form\validation\FormValidatorUrl;
@@ -65,6 +66,7 @@ class DataverseSettingsForm extends Form
             'plugins.generic.dataverse.settings.termsOfUseRequired'
         ));
         $this->addCheck(new FormValidatorPost($this));
+        $this->addCheck(new FormValidatorCSRF($this));
 
         if (Application::get()->getName() == 'ojs2') {
             $this->addCheck(new FormValidator(
