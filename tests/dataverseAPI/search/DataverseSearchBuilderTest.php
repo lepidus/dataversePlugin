@@ -6,6 +6,8 @@ use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Request;
 
 class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
@@ -145,6 +147,26 @@ class DataverseSearchBuilderTest extends PHPUnit\Framework\TestCase
             $this->assertSame(503, $exception->getCode());
             $this->assertSame('plugins.generic.dataverse.error.unavailable', $exception->getUserMessageKey());
             $this->assertStringNotContainsString('infrastructure details', $exception->getMessage());
+        }
+    }
+
+    public function testSearchIsNotRedirectedWithTheApiTokenToAnotherOrigin(): void
+    {
+        $redirectedRequests = [];
+        $mockHandler = new MockHandler([
+            new Response(302, ['Location' => 'https://attacker.example.org/collect']),
+            function ($request) use (&$redirectedRequests) {
+                $redirectedRequests[] = $request;
+                return new Response(200, [], '{"data":{"total_count":1}}');
+            },
+        ]);
+        $searchBuilder = $this->getDataverseSearchBuilder(new Client(['handler' => HandlerStack::create($mockHandler)]));
+
+        try {
+            $searchBuilder->search();
+            $this->fail('The redirect to another origin was followed');
+        } catch (DataverseException $exception) {
+            $this->assertSame([], $redirectedRequests);
         }
     }
 }

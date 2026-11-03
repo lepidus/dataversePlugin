@@ -14,6 +14,7 @@ use PKP\core\PKPAppKey;
 use PKP\db\DAORegistry;
 use PKP\form\Form;
 use PKP\form\validation\FormValidator;
+use PKP\form\validation\FormValidatorCSRF;
 use PKP\form\validation\FormValidatorCustom;
 use PKP\form\validation\FormValidatorPost;
 use PKP\form\validation\FormValidatorUrl;
@@ -65,6 +66,7 @@ class DataverseSettingsForm extends Form
             'plugins.generic.dataverse.settings.termsOfUseRequired'
         ));
         $this->addCheck(new FormValidatorPost($this));
+        $this->addCheck(new FormValidatorCSRF($this));
 
         if (Application::get()->getName() == 'ojs2') {
             $this->addCheck(new FormValidator(
@@ -78,9 +80,9 @@ class DataverseSettingsForm extends Form
 
     public function initData(): void
     {
-        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
-        $configuration = $configurationDAO->get($this->contextId);
+        $configuration = $this->getStoredConfiguration();
         $data = $configuration->getAllData();
+        unset($data['apiToken']);
         foreach ($data as $name => $value) {
             $this->setData($name, $value);
         }
@@ -92,6 +94,39 @@ class DataverseSettingsForm extends Form
     {
         $this->readUserVars(array_keys(self::CONFIG_VARS));
         $this->setData('dataverseUrl', $this->normalizeURI($this->getData('dataverseUrl')));
+
+        if (empty($this->getData('apiToken'))) {
+            $this->setData('apiToken', $this->getStoredApiTokenForSameServer());
+        }
+    }
+
+    private function getStoredApiTokenForSameServer(): string
+    {
+        $storedConfiguration = $this->getStoredConfiguration();
+        if (empty($storedConfiguration->getData('dataverseUrl')) || empty($storedConfiguration->getData('apiToken'))) {
+            return '';
+        }
+
+        $submittedConfiguration = new DataverseConfiguration();
+        $submittedConfiguration->setDataverseUrl((string) $this->getData('dataverseUrl'));
+        if (
+            !$this->hasHttpsServer($submittedConfiguration)
+            || $submittedConfiguration->getDataverseServerUrl() !== $storedConfiguration->getDataverseServerUrl()
+        ) {
+            return '';
+        }
+
+        return $storedConfiguration->getAPIToken();
+    }
+
+    private function hasHttpsServer(DataverseConfiguration $configuration): bool
+    {
+        return preg_match('/^https:\/\/[^\/]+\//', $configuration->getDataverseUrl()) === 1;
+    }
+
+    private function getStoredConfiguration(): DataverseConfiguration
+    {
+        return DAORegistry::getDAO('DataverseConfigurationDAO')->get($this->contextId);
     }
 
     private function normalizeURI(string $uri): string
@@ -106,6 +141,11 @@ class DataverseSettingsForm extends Form
         $templateMgr->assign('pluginName', $this->plugin->getName());
         $templateMgr->assign('application', Application::get()->getName());
         $templateMgr->assign('datasetPublishOptions', $configuration->getDatasetPublishOptions());
+        $hasStoredApiToken = !empty($this->getStoredConfiguration()->getData('apiToken'));
+        $templateMgr->assign('hasStoredApiToken', $hasStoredApiToken);
+        if ($hasStoredApiToken) {
+            $this->cssValidation['apiToken'] = [];
+        }
         return parent::fetch($request);
     }
 

@@ -25,10 +25,12 @@ class DataverseSettingsFormTest extends DatabaseTestCase
         $this->restoreCoreSchemas();
     }
 
-    private function submitForm(array $data): DataverseSettingsForm
+    private function submitForm(array $data, bool $withCsrfToken = true): DataverseSettingsForm
     {
-        $_POST = array_merge(['additionalInstructions' => ['en' => '']], $data);
-        $this->mockRequest($this->context->getPath() . '/management/settings', $this->user->getId());
+        $request = $this->mockRequest($this->context->getPath() . '/management/settings', $this->user->getId());
+        $request->getSession()->regenerateToken();
+        $csrfToken = $withCsrfToken ? ['csrfToken' => $request->getSession()->token()] : [];
+        $_POST = array_merge(['additionalInstructions' => ['en' => '']], $csrfToken, $data);
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $form = new DataverseSettingsForm($this->plugin, $this->context->getId());
         $form->readInputData();
@@ -109,5 +111,67 @@ class DataverseSettingsFormTest extends DatabaseTestCase
             ->where('setting_name', 'apiToken')
             ->value('setting_value');
         $this->assertNotEquals($credentials['apiToken'], $storedToken);
+    }
+
+    private function validCredentialsData(): array
+    {
+        $credentials = $this->dataverseCredentials();
+
+        return [
+            'dataverseUrl' => $credentials['dataverseUrl'],
+            'apiToken' => $credentials['apiToken'],
+            'termsOfUse' => ['en' => $credentials['termsOfUse']],
+            'datasetPublish' => 2,
+        ];
+    }
+
+    private function storedApiToken(): string
+    {
+        return (new DataverseConfigurationDAO())->get($this->context->getId())->getAPIToken();
+    }
+
+    public function testSubmissionWithoutCsrfTokenIsRejected(): void
+    {
+        $form = $this->submitForm($this->validCredentialsData(), false);
+
+        $this->assertFalse($form->isValid());
+        $this->assertContains(__('form.csrfInvalid'), $form->getErrorsArray());
+    }
+
+    public function testStoredApiTokenIsNotSentBackToTheForm(): void
+    {
+        $this->submitForm($this->validCredentialsData())->execute();
+
+        $form = new DataverseSettingsForm($this->plugin, $this->context->getId());
+        $form->initData();
+
+        $this->assertEmpty($form->getData('apiToken'));
+        $this->assertNotEmpty($form->getData('dataverseUrl'));
+    }
+
+    public function testBlankApiTokenKeepsTheStoredToken(): void
+    {
+        $data = $this->validCredentialsData();
+        $this->submitForm($data)->execute();
+
+        $form = $this->submitForm(array_merge($data, ['apiToken' => '']));
+        $this->assertTrue($form->isValid());
+        $form->execute();
+
+        $this->assertSame($data['apiToken'], $this->storedApiToken());
+    }
+
+    public function testBlankApiTokenIsRejectedWhenTheServerChanges(): void
+    {
+        $data = $this->validCredentialsData();
+        $this->submitForm($data)->execute();
+
+        $errors = $this->submitForm(array_merge($data, [
+            'dataverseUrl' => 'https://dataverse.invalid/dataverse/collection',
+            'apiToken' => '',
+        ]))->getErrorsArray();
+
+        $this->assertEquals(__('plugins.generic.dataverse.settings.tokenRequired'), $errors['apiToken']);
+        $this->assertSame($data['apiToken'], $this->storedApiToken());
     }
 }

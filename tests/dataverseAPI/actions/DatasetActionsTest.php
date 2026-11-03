@@ -124,4 +124,80 @@ class DatasetActionsTest extends PKPTestCase
 
         $this->assertEquals(0, $this->mockHandler->count());
     }
+
+    private function ownersResponse(?array $isPartOf): Response
+    {
+        return new Response(200, [], json_encode(['status' => 'OK', 'data' => ['id' => 1, 'isPartOf' => $isPartOf]]));
+    }
+
+    public function testDatasetOwnedByTheConfiguredCollectionIsInTheCollection(): void
+    {
+        $actions = $this->createActions([
+            $this->ownersResponse(['type' => 'DATAVERSE', 'identifier' => 'testDataverse', 'isPartOf' => ['type' => 'DATAVERSE', 'identifier' => 'root']]),
+        ]);
+
+        $this->assertTrue($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+    }
+
+    public function testDatasetOfASubcollectionIsInTheCollection(): void
+    {
+        $actions = $this->createActions([
+            $this->ownersResponse([
+                'type' => 'DATAVERSE',
+                'identifier' => 'subcollection',
+                'isPartOf' => ['type' => 'DATAVERSE', 'identifier' => 'testDataverse', 'isPartOf' => ['type' => 'DATAVERSE', 'identifier' => 'root']],
+            ]),
+        ]);
+
+        $this->assertTrue($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+    }
+
+    public function testDatasetOfAnotherCollectionIsNotInTheCollection(): void
+    {
+        $actions = $this->createActions([
+            $this->ownersResponse(['type' => 'DATAVERSE', 'identifier' => 'otherDataverse', 'isPartOf' => ['type' => 'DATAVERSE', 'identifier' => 'root']]),
+        ]);
+
+        $this->assertFalse($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+    }
+
+    public function testDatasetWithoutOwnersIsNotInTheCollection(): void
+    {
+        $actions = $this->createActions([$this->ownersResponse(null)]);
+
+        $this->assertFalse($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+    }
+
+    private function datasetResponseWithoutOwners(int $datasetId): Response
+    {
+        return new Response(200, [], json_encode(['status' => 'OK', 'data' => ['id' => $datasetId]]));
+    }
+
+    private function contentsResponse(array $items): Response
+    {
+        return new Response(200, [], json_encode(['status' => 'OK', 'data' => $items]));
+    }
+
+    public function testDatasetInASubcollectionIsFoundThroughTheCollectionContentsWhenOwnersAreNotReturned(): void
+    {
+        $actions = $this->createActions([
+            $this->datasetResponseWithoutOwners(77),
+            $this->contentsResponse([['type' => 'dataset', 'id' => 1], ['type' => 'dataverse', 'id' => 5]]),
+            $this->contentsResponse([['type' => 'dataset', 'id' => 77]]),
+        ]);
+
+        $this->assertTrue($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+        $this->assertSame('https://test.dataverse.org/api/dataverses/5/contents', (string) $this->mockHandler->getLastRequest()->getUri());
+    }
+
+    public function testDatasetMissingFromTheCollectionContentsIsNotInTheCollection(): void
+    {
+        $actions = $this->createActions([
+            $this->datasetResponseWithoutOwners(77),
+            $this->contentsResponse([['type' => 'dataset', 'id' => 1], ['type' => 'dataverse', 'id' => 5]]),
+            $this->contentsResponse([['type' => 'dataset', 'id' => 2]]),
+        ]);
+
+        $this->assertFalse($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+    }
 }

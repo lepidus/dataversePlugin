@@ -79,8 +79,10 @@ What the plugin actually does, in workflow order:
    and every draft record is kept, so the file can be replaced and deposited from the workflow.
 4. **Workflow "Research data" panel**: a Publication menu item that lets you view/edit dataset metadata, add and
    delete files, publish, disassociate or delete the dataset, or associate the submission with a dataset that
-   already exists in the repository — and, when nothing has been deposited yet, upload research data and
-   deposit it from the workflow.
+   already exists in the configured collection or one of its subcollections (checked through the `isPartOf` chain of
+   `returnOwners`, because the token usually reaches other collections too; servers older than Dataverse 6.2 ignore
+   that parameter, so the collection tree is walked through `/api/dataverses/{id}/contents` instead) — and, when nothing has been deposited yet,
+   upload research data and deposit it from the workflow.
 5. **Data availability statement panel**: a Publication menu item holding a publication-level statement whose
    type is one of the
    `DataStatementService::DATA_STATEMENT_TYPE_*` constants (in manuscript / available in a repository /
@@ -171,7 +173,11 @@ Every request goes through `DataverseActions::sendRequest()`, which sets a 5-sec
 limit by operation (read 15 s, file download 60 s, dataset creation 30 s, file upload 60 s, other writes 30 s), overridable
 through `[dataverse] <operation>_timeout` in `config.inc.php` (an integer from 1 to 300; `ConfigParser` has already turned
 `on` into a boolean and `060` into octal 48, so only real integers are accepted) or by an explicit `timeout` option from
-the caller. `nativeAPIRequest(..., false)` never reads the body, because downloads stream it into a write-only `sink`.
+the caller. `nativeAPIRequest(..., false)` never reads the body. The API token (`X-Dataverse-key`) only goes to the
+configured server's origin: an authenticated Native API request that Dataverse redirects elsewhere fails, because Guzzle
+keeps custom headers across origins, and `nativeAPIDownload()` follows the redirects of a file download itself, streaming
+into a write-only `sink` and sending the token only to that origin, since Dataverse sends downloads to the storage
+(e.g. S3) with a 303.
 
 Failures throw `DataverseException`, logged as a JSON line with the operation and
 `getFailureCategory()` (`timeout`, `connection`, `authentication` or `http`) and the HTTP status Dataverse returned, if any. A timeout means the outcome is unknown,
@@ -352,7 +358,9 @@ The API token is stored encrypted in the application database with the applicati
 through `Crypt::encryptString()`. `DataverseConfigurationDAO` is the only place that encrypts (`insert()`) and
 decrypts (`get()`); a token it cannot decrypt — rotated `app_key`, restored database — comes back as an empty
 string, so the plugin degrades and the administrator can enter it again. The settings form writes through
-`Plugin::updateSetting()` and therefore encrypts the token itself. Without `app_key` the settings form renders
+`Plugin::updateSetting()` and therefore encrypts the token itself. It never renders the saved token: the field stays empty, and a blank
+field keeps the saved token only while the Dataverse server is the same, so a changed URL cannot receive the old token
+during validation. Without `app_key` the settings form renders
 `missingAppKey.tpl`. Never log, echo, or write a decrypted token to a template.
 
 Tokens from earlier versions (plaintext, or `base64:`-prefixed and encrypted with `security.api_key_secret` by

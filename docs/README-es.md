@@ -50,7 +50,7 @@ Debe introducir la URL completa del repositorio Dataverse donde se depositarán 
 
 Las condiciones de uso pueden definirse para cada idioma configurado en su aplicación. Si tiene dudas sobre cuáles son los términos, consulte al responsable de su repositorio.
 
-**Importante**: El `Token de API` pertenece a una cuenta de usuario de Dataverse. Para más información sobre cómo obtener el token de API, consulte la [Guía del usuario de Dataverse](https://guides.dataverse.org/en/5.13/user/account.html#api-token).
+**Importante**: El `Token de API` pertenece a una cuenta de usuario de Dataverse. Para más información sobre cómo obtener el token de API, consulte la [Guía del usuario de Dataverse](https://guides.dataverse.org/en/5.13/user/account.html#api-token). Una vez guardado, el token ya no se muestra en la configuración: deje el campo en blanco para mantenerlo o introduzca un nuevo token para reemplazarlo. Cambiar el servidor de Dataverse requiere introducir el token de nuevo.
 
 Es importante mencionar que la cuenta de usuario de Dataverse se incluirá en la lista de contribuyentes de los conjuntos de datos depositados a través del plugin (para más información, consulta [esta discusión](https://groups.google.com/g/dataverse-community/c/Oo4AUZJf4hE/m/DyVsQq9mAQAJ)).
 

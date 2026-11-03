@@ -22,12 +22,10 @@ class ProcessDataverseDecisionsActions
     {
         $submission = $event->submission;
         $decision = $event->decision->getData('decision');
-        $selectedDataFiles = [];
 
         foreach ($event->actions as $action) {
             if ($decision == Decision::EXTERNAL_REVIEW && $action['id'] == 'selectDataFiles') {
-                $selectedDataFiles = $action['selectedDataFilesForReview'];
-                $this->saveSelectedDataFilesForReview($submission, $selectedDataFiles);
+                $this->saveSelectedDataFilesForReview($submission, (array) ($action['selectedDataFilesForReview'] ?? []));
                 break;
             }
             if ($decision == Decision::ACCEPT && $action['id'] == 'researchDataPublishNotice') {
@@ -48,13 +46,11 @@ class ProcessDataverseDecisionsActions
         }
     }
 
-    private function saveSelectedDataFilesForReview($submission, $selectedDataFiles)
+    private function saveSelectedDataFilesForReview($submission, array $selectedDataFiles)
     {
-        if (!empty($selectedDataFiles)) {
-            Repo::submission()->edit($submission, [
-                'selectedDataFilesForReview' => $selectedDataFiles
-            ]);
-        }
+        Repo::submission()->edit($submission, [
+            'selectedDataFilesForReview' => array_values(array_map('intval', $selectedDataFiles))
+        ]);
     }
 
     private function publishResearchData($submission)

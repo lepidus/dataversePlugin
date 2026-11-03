@@ -153,6 +153,18 @@ class DatasetServiceTest extends DatabaseTestCase
         $this->assertEquals('https://doi.org/' . str_replace('doi:', '', $this->persistentId), $this->getStudy()->getPersistentUri());
     }
 
+    public function testAssociateRejectsADatasetOutsideTheConfiguredCollection(): void
+    {
+        (new DatasetService())->disassociate($this->getStudy());
+        $this->configureWithRealDataverse($this->collectionWithRequiredMetadataUrl());
+
+        $result = (new DatasetService())->associate($this->submission->getId(), $this->persistentId);
+
+        $this->assertEquals(DataverseService::STATUS_ERROR, $result['status']);
+        $this->assertEquals('plugins.generic.dataverse.error.associate.outsideCollection', $result['message']);
+        $this->assertNull($this->getStudy());
+    }
+
     public function testAssociateRejectsADatasetAlreadyAssociatedWithAnotherSubmission(): void
     {
         $submission = $this->createSubmission();

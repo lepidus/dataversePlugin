@@ -3,9 +3,8 @@
 namespace APP\plugins\generic\dataverse\dataverseAPI\search;
 
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
-use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
-use GuzzleHttp\Exception\TransferException;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 
 class DataverseSearchBuilder
 {
@@ -91,23 +90,7 @@ class DataverseSearchBuilder
 
     private function executeRequest(string $url): DataverseResponse
     {
-        try {
-            $response = $this->httpClient->request('GET', $url, [
-                'headers' => [
-                    'X-Dataverse-key' => $this->configuration->getAPIToken()
-                ],
-                'connect_timeout' => 5,
-                'timeout' => 15,
-            ]);
-        } catch (TransferException $e) {
-            throw DataverseException::fromTransferException($e);
-        }
-
-        return new DataverseResponse(
-            $response->getStatusCode(),
-            $response->getReasonPhrase(),
-            $response->getBody()
-        );
+        return (new DataverseCollectionActions($this->configuration, $this->httpClient))->nativeAPIRequest('GET', $url);
     }
 
     public function search(): array

@@ -14,7 +14,7 @@ async function openSettingsForm(page) {
 	return page.locator('form#dataverseConfigurationForm');
 }
 
-test('checks required fields and URLs in the browser before saving the configuration', async ({page}) => {
+test('checks required fields and URLs in the browser and keeps the saved API token when its field is blank', async ({page}) => {
 	const credentials = dataverseCredentials();
 	const form = await openSettingsForm(page);
 	const dataverseUrl = form.locator('input[name=dataverseUrl]');
@@ -22,13 +22,13 @@ test('checks required fields and URLs in the browser before saving the configura
 	const termsOfUse = form.locator('input[name="termsOfUse[en]"]');
 	const save = form.getByRole('button', {name: 'OK'});
 
+	await expect(apiToken).toHaveValue('');
 	await dataverseUrl.fill('');
-	await apiToken.fill('');
 	await termsOfUse.fill('');
 	await save.click();
 	await expect(form.locator('label[for^=dataverseUrl].error')).toHaveText('This field is required.');
-	await expect(form.locator('label[for^=apiToken].error')).toHaveText('This field is required.');
 	await expect(form.locator('label[for^=termsOfUse].error')).toHaveText('This field is required.');
+	await expect(form.locator('label[for^=apiToken].error')).toHaveCount(0);
 
 	await dataverseUrl.fill('dataverseUrl');
 	await termsOfUse.fill('invalidTermsOfUse');
@@ -37,7 +37,6 @@ test('checks required fields and URLs in the browser before saving the configura
 	await expect(form.locator('label[for^=termsOfUse].error')).toHaveText('Please enter a valid URL.');
 
 	await dataverseUrl.fill(credentials.url);
-	await apiToken.fill(credentials.apiToken);
 	await termsOfUse.fill(credentials.termsOfUse);
 	await save.click();
 	await expect(page.getByText('Your changes have been saved.')).toBeVisible();

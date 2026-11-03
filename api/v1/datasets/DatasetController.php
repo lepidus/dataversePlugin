@@ -25,6 +25,7 @@ use PKP\core\Core;
 use PKP\core\PKPBaseController;
 use PKP\core\PKPRequest;
 use PKP\facades\Locale;
+use PKP\file\TemporaryFileManager;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\internal\PublicationCanBeEditedPolicy;
 use PKP\security\authorization\StageRolePolicy;
@@ -413,6 +414,11 @@ class DatasetController extends PKPBaseController
 
         if (!$temporaryFileId) {
             return $this->error('api.400.paramNotSupported', [], Response::HTTP_BAD_REQUEST);
+        }
+
+        $userId = $this->getRequest()->getUser()->getId();
+        if (!(new TemporaryFileManager())->getFile((int) $temporaryFileId, $userId)) {
+            return $this->notFound();
         }
 
         (new DatasetFileService())->add($study, (int) $temporaryFileId);

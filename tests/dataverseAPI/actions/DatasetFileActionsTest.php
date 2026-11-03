@@ -20,6 +20,7 @@ class DatasetFileActionsTest extends PKPTestCase
     private ?string $downloadedFilePath = null;
     private ?string $downloadedFileName = null;
     private ?string $downloadedMediaType = null;
+    private ?string $downloadedContents = null;
 
     protected function getMockedRegistryKeys(): array
     {
@@ -33,6 +34,7 @@ class DatasetFileActionsTest extends PKPTestCase
         Hook::add('FileManager::downloadFile', function ($hookName, $params) {
             $this->downloadedFilePath = realpath($params[0]);
             $this->downloadedFileName = $params[4];
+            $this->downloadedContents = file_get_contents($params[0]);
             $this->downloadedMediaType = $params[1] ?? PKPString::mime_content_type($params[0]);
             $this->assertFileExists($params[0]);
             $params[3] = true;
@@ -237,6 +239,29 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->createActions()->download(2025434, "Data \"final\".csv");
 
         $this->assertSame('Data final.csv', $this->downloadedFileName);
+    }
+
+    public function testDownloadRedirectedToStorageDoesNotSendTheApiToken(): void
+    {
+        $requests = [];
+        $recordRequest = function (Response $response) use (&$requests) {
+            return function ($request) use ($response, &$requests) {
+                $requests[] = $request;
+                return $response;
+            };
+        };
+        $actions = $this->createActionsRespondingWith([
+            $recordRequest(new Response(303, ['Location' => 'https://storage.example.org/datafile?signature=1'])),
+            $recordRequest(new Response(200, [], "year,value\n2026,1\n")),
+        ]);
+
+        $actions->download(2025434, 'Data.csv');
+
+        $this->assertCount(2, $requests);
+        $this->assertSame('apiToken', $requests[0]->getHeaderLine('X-Dataverse-key'));
+        $this->assertSame('https://storage.example.org/datafile?signature=1', (string) $requests[1]->getUri());
+        $this->assertFalse($requests[1]->hasHeader('X-Dataverse-key'));
+        $this->assertSame("year,value\n2026,1\n", $this->downloadedContents);
     }
 
     public function testFailedDownloadRemovesItsTemporaryDirectory(): void

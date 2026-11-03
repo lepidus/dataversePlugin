@@ -5,8 +5,17 @@ namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 use APP\core\Application;
 use PKP\config\Config;
 use PKP\db\DAORegistry;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TooManyRedirectsException;
 use GuzzleHttp\Exception\TransferException;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\UriComparator;
+use GuzzleHttp\Psr7\UriResolver;
+use GuzzleHttp\Psr7\Utils;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
 use Illuminate\Support\Facades\Cache;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
@@ -23,6 +32,7 @@ abstract class DataverseActions
     protected $client;
 
     protected const ONE_DAY_SECONDS = 24 * 60 * 60;
+    private const MAX_DOWNLOAD_REDIRECTS = 5;
     private const DEFAULT_REQUEST_TIMEOUTS = [
         'read' => 15,
         'download' => 60,
@@ -110,6 +120,7 @@ abstract class DataverseActions
     public function nativeAPIRequest(string $method, string $uri, array $options = [], bool $returnResponse = true): ?DataverseResponse
     {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
+        $options['allow_redirects'] = ['strict' => true, 'on_redirect' => $this->refuseRedirectOutsideServer(...)];
         $response = $this->sendRequest($method, $uri, $options);
 
         if (!$returnResponse) {
@@ -117,6 +128,50 @@ abstract class DataverseActions
         }
 
         return $this->createDataverseResponse($response);
+    }
+
+    public function nativeAPIDownload(string $uri, string $filePath): void
+    {
+        for ($redirects = 0; $redirects <= self::MAX_DOWNLOAD_REDIRECTS; $redirects++) {
+            $options = [
+                'allow_redirects' => false,
+                'sink' => Utils::tryFopen($filePath, 'w'),
+                'timeout' => $this->getRequestTimeout('download'),
+            ];
+            if ($this->isServerOrigin(new Uri($uri))) {
+                $options['headers']['X-Dataverse-key'] = $this->apiToken;
+            }
+
+            $response = $this->sendRequest('GET', $uri, $options);
+            if (!$this->isRedirect($response)) {
+                return;
+            }
+
+            $uri = (string) UriResolver::resolve(new Uri($uri), new Uri($response->getHeaderLine('Location')));
+        }
+
+        throw DataverseException::fromTransferException(
+            new TooManyRedirectsException('Too many redirects downloading a Dataverse file', new Request('GET', $uri), $response)
+        );
+    }
+
+    private function refuseRedirectOutsideServer(RequestInterface $request, ResponseInterface $response, UriInterface $redirectUri): void
+    {
+        if (!$this->isServerOrigin($redirectUri)) {
+            throw new RequestException('Dataverse redirected an authenticated request to another origin', $request, $response);
+        }
+    }
+
+    private function isServerOrigin(UriInterface $uri): bool
+    {
+        return !UriComparator::isCrossOrigin(new Uri($this->serverURL), $uri);
+    }
+
+    private function isRedirect(ResponseInterface $response): bool
+    {
+        $statusCode = $response->getStatusCode();
+
+        return $statusCode >= 300 && $statusCode < 400 && $response->hasHeader('Location');
     }
 
     public function swordAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
