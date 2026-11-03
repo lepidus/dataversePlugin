@@ -27,6 +27,7 @@ use PKP\facades\Locale;
 use PKP\security\Role;
 use PKP\submission\reviewAssignment\ReviewAssignment;
 use PKP\tests\PKPTestCase;
+use PKP\user\User;
 
 #[RunTestsInSeparateProcesses]
 #[PreserveGlobalState(false)]
@@ -69,7 +70,7 @@ class DatasetControllerAccessTest extends PKPTestCase
         $this->mockContextRequest(false);
     }
 
-    private function mockContextRequest(bool $restrictReviewerFileAccess): void
+    private function mockContextRequest(bool $restrictReviewerFileAccess, ?User $user = null): void
     {
         $context = Application::getContextDAO()->newDataObject();
         $context->setId(1);
@@ -81,6 +82,7 @@ class DatasetControllerAccessTest extends PKPTestCase
         $pkpRequest = $this->createMock(PKPRequest::class);
         $pkpRequest->method('getContext')->willReturn($context);
         $pkpRequest->method('getDispatcher')->willReturn($dispatcher);
+        $pkpRequest->method('getUser')->willReturn($user);
         Registry::set('request', $pkpRequest);
     }
 
@@ -166,6 +168,21 @@ class DatasetControllerAccessTest extends PKPTestCase
         ]);
 
         $this->assertSame(404, $this->createController()->downloadFile($request)->getStatusCode());
+    }
+
+    public function testAddFileRejectsTemporaryFilesTheUserDoesNotOwn(): void
+    {
+        $user = new User();
+        $user->setId(PHP_INT_MAX);
+        $this->mockContextRequest(false, $user);
+        $service = Mockery::mock('overload:' . DatasetFileService::class);
+        $service->shouldNotReceive('add');
+
+        $request = $this->createRequest('POST', '/datasets/' . self::STUDY_ID . '/file', [
+            'datasetFile' => ['temporaryFileId' => PHP_INT_MAX],
+        ]);
+
+        $this->assertSame(404, $this->createController()->addFile($request)->getStatusCode());
     }
 
     public function testDeleteFileRejectsFilesOutsideTheStudyDataset(): void
