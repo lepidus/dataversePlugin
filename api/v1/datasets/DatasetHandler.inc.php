@@ -39,7 +39,7 @@ class DatasetHandler extends APIHandler
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/file',
                     'handler' => array($this, 'downloadDatasetFile'),
-                    'roles' => [...$roles, ROLE_ID_REVIEWER]
+                    'roles' => array_merge($roles, [ROLE_ID_REVIEWER])
                 ),
                 array(
                     'pattern' => $this->getEndpointPattern() . '/{studyId}/citation',
