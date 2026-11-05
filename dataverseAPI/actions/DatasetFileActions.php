@@ -3,6 +3,8 @@
 namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
 use GuzzleHttp\Psr7\Uri;
+use InvalidArgumentException;
+use PKP\core\PKPString;
 use GuzzleHttp\Psr7\UriResolver;
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\ResponseInterface;
@@ -143,8 +145,12 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         $fileManager = new FileManager();
 
         try {
+            touch($filePath);
             $this->transferFile($uri, $filePath);
-            $fileManager->downloadByPath($filePath, null, false, $filename);
+
+            $mediaType = PKPString::mime_content_type($filePath, pathinfo($filename, PATHINFO_EXTENSION));
+            $downloadName = preg_replace('/["\\\\[:cntrl:]]/', '', $filename);
+            $fileManager->downloadByPath($filePath, $mediaType, false, $downloadName);
         } finally {
             $fileManager->rmtree($datasetFileDir);
         }
@@ -166,12 +172,15 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         ];
 
         $currentUri = new Uri($uri);
+        $leftServer = false;
 
         for ($transfer = 0; $transfer <= self::MAX_DOWNLOAD_REDIRECTS; $transfer++) {
-            if ($this->isServerOrigin($currentUri)) {
-                $this->nativeAPIRequest('GET', (string) $currentUri, $options, false);
+            $leftServer = $leftServer || !$this->isServerOrigin($currentUri);
+
+            if ($leftServer) {
+                $this->sendStorageRequest((string) $currentUri, $options);
             } else {
-                $this->sendRequest('GET', (string) $currentUri, $options, 'download');
+                $this->nativeAPIRequest('GET', (string) $currentUri, $options, false);
             }
 
             if (!$isRedirect) {
@@ -182,9 +191,26 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
                 break;
             }
 
-            $currentUri = UriResolver::resolve($currentUri, new Uri($redirectUri));
+            try {
+                $currentUri = UriResolver::resolve($currentUri, new Uri($redirectUri));
+            } catch (InvalidArgumentException $e) {
+                break;
+            }
         }
 
-        throw new DataverseException(__('plugins.generic.dataverse.error.unavailable'), 503);
+        throw new DataverseException(__(self::UNAVAILABLE_MESSAGE), self::UNAVAILABLE_STATUS_CODE);
+    }
+
+    private function sendStorageRequest(string $uri, array $options): void
+    {
+        try {
+            $this->sendRequest('GET', $uri, $options, 'download');
+        } catch (DataverseException $e) {
+            if ($e->getCode() === DataverseException::AUTH_ERROR_STATUS_CODE) {
+                throw new DataverseException(__(self::UNAVAILABLE_MESSAGE), self::UNAVAILABLE_STATUS_CODE, $e);
+            }
+
+            throw $e;
+        }
     }
 }

@@ -6,7 +6,6 @@ use APP\core\Application;
 use PKP\config\Config;
 use PKP\db\DAORegistry;
 use PKP\cache\CacheManager;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\RequestInterface;
@@ -26,6 +25,9 @@ abstract class DataverseActions
     protected $cacheManager;
 
     protected const ONE_DAY_SECONDS = 24 * 60 * 60;
+    protected const UNAVAILABLE_MESSAGE = 'plugins.generic.dataverse.error.unavailable';
+    protected const UNAVAILABLE_STATUS_CODE = 503;
+
     public function __construct(
         ?DataverseConfiguration $configuration = null,
         ?\GuzzleHttp\Client $client = null
@@ -75,11 +77,7 @@ abstract class DataverseActions
     {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
         $operation = $this->getRequestOperation($method, $uri);
-        $options += [
-            'connect_timeout' => 5,
-            'timeout' => $this->getRequestTimeout($operation),
-            'allow_redirects' => ['on_redirect' => $this->refuseRedirectOutsideServer()],
-        ];
+        $options += ['connect_timeout' => 5, 'timeout' => $this->getRequestTimeout($operation)];
 
         $response = $this->sendRequest($method, $uri, $options, $operation);
 
@@ -97,9 +95,17 @@ abstract class DataverseActions
     private function refuseRedirectOutsideServer(): callable
     {
         return function (RequestInterface $request, ResponseInterface $response, UriInterface $redirectUri): void {
-            if (!$this->isServerOrigin($redirectUri)) {
-                throw new RequestException('Dataverse redirected an authenticated request to another origin', $request);
+            if ($this->isServerOrigin($redirectUri)) {
+                return;
             }
+
+            error_log(json_encode([
+                'component' => 'dataverse',
+                'category' => 'redirect_refused',
+                'redirectHost' => $redirectUri->getHost(),
+            ]));
+
+            throw new DataverseException(__(self::UNAVAILABLE_MESSAGE), self::UNAVAILABLE_STATUS_CODE);
         };
     }
 
@@ -113,6 +119,8 @@ abstract class DataverseActions
 
     protected function sendRequest(string $method, string $uri, array $options, string $operation): ResponseInterface
     {
+        $options += ['allow_redirects' => ['strict' => true, 'on_redirect' => $this->refuseRedirectOutsideServer()]];
+
         try {
             return $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
@@ -133,18 +141,7 @@ abstract class DataverseActions
         $operation = $this->getRequestOperation($method, $uri);
         $options += ['connect_timeout' => 5, 'timeout' => $this->getRequestTimeout($operation)];
 
-        try {
-            $response = $this->client->request($method, $uri, $options);
-        } catch (TransferException $e) {
-            $exception = DataverseException::fromTransferException($e);
-            error_log(json_encode([
-                'component' => 'dataverse',
-                'operation' => $operation,
-                'category' => $exception->getFailureCategory(),
-                'status' => $exception->getCode(),
-            ]));
-            throw $exception;
-        }
+        $response = $this->sendRequest($method, $uri, $options, $operation);
 
         return new DataverseResponse(
             $response->getStatusCode(),
@@ -162,6 +159,10 @@ abstract class DataverseActions
         if ($method === 'POST' && substr($path, -9) === '/datasets') {
             return 'create';
         }
+        if ($method === 'GET' && strpos($path, '/access/datafile/') !== false) {
+            return 'download';
+        }
+
         return $method === 'GET' ? 'read' : 'write';
     }
 

@@ -234,52 +234,58 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->assertSame($longName, $downloadArguments[4]);
     }
 
-    /**
-     * @dataProvider otherServers
-     */
-    public function testAuthenticatedRequestIsNotRedirectedToAnotherServer(string $location): void
+    public function testTokenIsNotReattachedAfterLeavingTheServer(): void
     {
-        $requests = [];
-        $stack = HandlerStack::create(new MockHandler([
-            new Response(302, ['Location' => $location]),
-            new Response(200, [], '{}'),
-        ]));
-        $stack->push(Middleware::history($requests));
-        $actions = $this->createActions(new Client(['handler' => $stack]));
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://storage.example.org/file']),
+            new Response(302, ['Location' => 'https://test.dataverse.org/api/admin/settings']),
+            new Response(200, [], 'content'),
+        ]);
 
-        try {
-            $actions->nativeAPIRequest('GET', 'https://test.dataverse.org/api/datasets/1');
-            $this->fail('The redirect to another server was followed');
-        } catch (DataverseException $e) {
-            $this->assertSame(503, $e->getCode());
-        }
-
-        $this->assertCount(1, $requests);
+        $this->assertSame('test.dataverse.org', $requests[2]['request']->getUri()->getHost());
+        $this->assertFalse($requests[2]['request']->hasHeader('X-Dataverse-key'));
     }
 
-    public static function otherServers(): array
+    public function testMalformedRedirectIsReportedAsUnavailable(): void
+    {
+        $this->expectException(DataverseException::class);
+        $this->expectExceptionCode(503);
+        $this->downloadWith([new Response(302, ['Location' => 'http://:'])]);
+    }
+
+    public function testExpiredStorageLinkIsNotReportedAsInvalidToken(): void
+    {
+        $this->expectExceptionCode(503);
+        $this->downloadWith([
+            new Response(303, ['Location' => 'https://storage.example.org/file']),
+            new Response(401, [], '{"message":"expired"}'),
+        ]);
+    }
+
+    /**
+     * @dataProvider fileNamesWithHeaderCharacters
+     */
+    public function testDownloadNameCannotBreakTheContentDispositionHeader(string $name, string $expected): void
+    {
+        [, $downloadArguments] = $this->downloadWith([new Response(200, [], 'content')], $name);
+
+        $this->assertSame($expected, $downloadArguments[4]);
+    }
+
+    public static function fileNamesWithHeaderCharacters(): array
     {
         return [
-            'another host' => ['https://storage.example.org/file'],
-            'another scheme' => ['http://test.dataverse.org/api/datasets/1'],
-            'another port' => ['https://test.dataverse.org:8443/api/datasets/1'],
+            'line break' => ["data\r\n.html", 'data.html'],
+            'double quote' => ['da"ta.csv', 'data.csv'],
+            'backslash' => ['da\\ta.csv', 'data.csv'],
         ];
     }
 
-    public function testAuthenticatedRequestKeepsFollowingRedirectsWithinTheServer(): void
+    public function testDownloadKeepsTheMediaTypeGivenByTheFileExtension(): void
     {
-        $requests = [];
-        $stack = HandlerStack::create(new MockHandler([
-            new Response(302, ['Location' => '/api/datasets/2']),
-            new Response(200, [], '{}'),
-        ]));
-        $stack->push(Middleware::history($requests));
-        $actions = $this->createActions(new Client(['handler' => $stack]));
+        [, $downloadArguments] = $this->downloadWith([new Response(200, [], "year,value\n2026,1\n")], 'data.csv');
 
-        $actions->nativeAPIRequest('GET', 'https://test.dataverse.org/api/datasets/1');
-
-        $this->assertCount(2, $requests);
-        $this->assertTrue($requests[1]['request']->hasHeader('X-Dataverse-key'));
+        $this->assertSame('text/csv', $downloadArguments[1]);
     }
 
     public function testFailedDownloadRemovesItsTemporaryDirectory(): void
