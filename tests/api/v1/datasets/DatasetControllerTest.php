@@ -111,7 +111,7 @@ class DatasetControllerTest extends PKPTestCase
         $route->bind($request);
         $request->setRouteResolver(fn () => $route);
         $controller = $this->getMockBuilder(DatasetController::class)
-            ->onlyMethods(['getAuthorizedContextObject', 'get'])
+            ->onlyMethods(['getAuthorizedContextObject', 'get', 'isDatasetPublished'])
             ->getMock();
         $controller->method('getAuthorizedContextObject')
             ->with(Application::ASSOC_TYPE_SUBMISSION)->willReturn($submission);

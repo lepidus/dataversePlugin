@@ -13,6 +13,7 @@ use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
+use APP\plugins\generic\dataverse\classes\security\authorization\PublicationNotPublishedPolicy;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\classes\services\DataverseService;
@@ -40,6 +41,8 @@ class DatasetController extends PKPBaseController
     private const PUBLICATION_WRITE_ACTIONS = ['add', 'associate', 'edit', 'addFile', 'deleteFile', 'delete'];
 
     private const EDITORIAL_DECISION_ACTIONS = ['publish', 'disassociate'];
+
+    private const UNPUBLISHED_PUBLICATION_ACTIONS = ['add', 'associate'];
 
     private const BASE_METADATA_FIELDS = [
         'datasetTitle',
@@ -159,6 +162,10 @@ class DatasetController extends PKPBaseController
             $this->addPolicy(new StageRolePolicy([Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR], null, false));
         }
 
+        if (in_array($actionName, self::UNPUBLISHED_PUBLICATION_ACTIONS)) {
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.submissions.403.userCantEdit'));
+        }
+
         return parent::authorize($request, $args, $roleAssignments);
     }
 
@@ -191,6 +198,14 @@ class DatasetController extends PKPBaseController
 
         if (!$study) {
             return $this->notFound();
+        }
+
+        try {
+            if ($this->isDatasetPublished($study)) {
+                return $this->publishedDatasetError();
+            }
+        } catch (DataverseException $e) {
+            return $this->dataverseError($e);
         }
 
         $params = $illuminateRequest->input();
@@ -304,6 +319,10 @@ class DatasetController extends PKPBaseController
         $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
         $persistentId = $illuminateRequest->input('datasetPersistentId');
 
+        if (!is_string($persistentId)) {
+            $persistentId = '';
+        }
+
         $result = (new DatasetService())->associate($submission->getId(), $persistentId);
 
         if ($result['status'] !== DataverseService::STATUS_SUCCESS) {
@@ -365,6 +384,14 @@ class DatasetController extends PKPBaseController
             return $this->notFound();
         }
 
+        try {
+            if ($this->isDatasetPublished($study)) {
+                return $this->publishedDatasetError();
+            }
+        } catch (DataverseException $e) {
+            return $this->dataverseError($e);
+        }
+
         $deleteMessage = null;
         if ((int) $illuminateRequest->input('sendDeleteEmail') === 1) {
             $deleteMessage = $illuminateRequest->input('deleteMessage');
@@ -421,6 +448,14 @@ class DatasetController extends PKPBaseController
             return $this->notFound();
         }
 
+        try {
+            if ($this->isDatasetPublished($study)) {
+                return $this->publishedDatasetError();
+            }
+        } catch (DataverseException $e) {
+            return $this->dataverseError($e);
+        }
+
         (new DatasetFileService())->add($study, (int) $temporaryFileId);
 
         return response()->json(['message' => 'ok'], Response::HTTP_OK);
@@ -435,6 +470,10 @@ class DatasetController extends PKPBaseController
         }
 
         try {
+            if ($this->isDatasetPublished($study)) {
+                return $this->publishedDatasetError();
+            }
+
             $datasetFile = $this->getStudyDatasetFile($study, (int) $illuminateRequest->query('fileId'));
         } catch (DataverseException $e) {
             return $this->dataverseError($e);
@@ -654,6 +693,19 @@ class DatasetController extends PKPBaseController
         error_log($logPrefix . $e->getMessage());
 
         return response()->json(['error' => $e->getUserMessage()], $this->errorStatus($e));
+    }
+
+    protected function isDatasetPublished(DataverseStudy $study): bool
+    {
+        return (new DataverseClient())
+            ->getDatasetActions()
+            ->get($study->getPersistentId())
+            ->isPublished();
+    }
+
+    private function publishedDatasetError(): JsonResponse
+    {
+        return $this->error('api.submissions.403.userCantEdit', [], Response::HTTP_FORBIDDEN);
     }
 
     private function errorStatus(DataverseException $e): int

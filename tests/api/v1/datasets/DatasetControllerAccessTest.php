@@ -29,6 +29,7 @@ use PKP\core\Registry;
 use PKP\facades\Locale;
 use PKP\security\Role;
 use PKP\submission\reviewAssignment\ReviewAssignment;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PKP\tests\PKPTestCase;
 use PKP\user\User;
 
@@ -42,6 +43,7 @@ class DatasetControllerAccessTest extends PKPTestCase
 
     private Submission $submission;
     private DataverseStudy $study;
+    private bool $datasetIsPublished = false;
 
     protected function getMockedRegistryKeys(): array
     {
@@ -132,11 +134,12 @@ class DatasetControllerAccessTest extends PKPTestCase
             Application::ASSOC_TYPE_USER_ROLES => $userRoles,
         ];
         $controller = $this->getMockBuilder(DatasetController::class)
-            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission'])
+            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission', 'isDatasetPublished'])
             ->getMock();
         $controller->method('getAuthorizedContextObject')
             ->willReturnCallback(fn (int $assocType) => $authorizedObjects[$assocType] ?? null);
         $controller->method('isAssignedToSubmission')->willReturn($isAssignedToSubmission);
+        $controller->method('isDatasetPublished')->willReturn($this->datasetIsPublished);
 
         return $controller;
     }
@@ -241,6 +244,40 @@ class DatasetControllerAccessTest extends PKPTestCase
             Repo::user()->delete($owner);
             Repo::user()->delete($otherUser);
         }
+    }
+
+    #[DataProvider('publishedDatasetActions')]
+    public function testPublishedDatasetCannotBeChanged(string $action, string $method): void
+    {
+        $this->datasetIsPublished = true;
+        $request = $this->createRequest($method, '/datasets/' . self::STUDY_ID . '/file?fileId=' . self::DATASET_FILE_ID);
+
+        $this->assertSame(403, $this->createController()->$action($request)->getStatusCode());
+    }
+
+    public static function publishedDatasetActions(): array
+    {
+        return [['edit', 'PUT'], ['deleteFile', 'DELETE'], ['delete', 'DELETE']];
+    }
+
+    #[DataProvider('invalidPersistentIds')]
+    public function testInvalidPersistentIdIsNotAServerError(array $params): void
+    {
+        $studyRepository = Mockery::mock(DataverseStudyRepository::class);
+        $studyRepository->shouldReceive('getBySubmissionId')->andReturn(null);
+        app()->instance(DataverseStudyRepository::class, $studyRepository);
+
+        $request = $this->createRequest('POST', '/datasets/associate', $params);
+
+        $this->assertLessThan(500, $this->createController()->associate($request)->getStatusCode());
+    }
+
+    public static function invalidPersistentIds(): array
+    {
+        return [
+            [[]],
+            [['datasetPersistentId' => ['doi:10.5072/FK2/TEST']]],
+        ];
     }
 
     public function testDeleteFileRejectsFilesOutsideTheStudyDataset(): void
