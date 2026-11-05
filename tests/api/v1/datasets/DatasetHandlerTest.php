@@ -128,7 +128,8 @@ class DatasetHandlerTest extends PKPTestCase
         $response->method('getStatusCode')->willReturn(200);
         $args = ['studyId' => 7];
         $handler = $this->getMockBuilder(DatasetHandler::class)
-            ->disableOriginalConstructor()->onlyMethods(['get', 'getAuthorizedContextObject'])->getMock();
+            ->disableOriginalConstructor()->onlyMethods(['get', 'getAuthorizedContextObject', 'isDatasetPublished'])->getMock();
+        $handler->method('isDatasetPublished')->willReturn(false);
         $handler->method('get')->with($request, $response, $args)->willReturn($response);
         $handler->method('getAuthorizedContextObject')
             ->with(Application::ASSOC_TYPE_SUBMISSION)->willReturn($submission);

@@ -41,6 +41,7 @@ class DatasetHandlerAccessTest extends PKPTestCase
 
     private Submission $submission;
     private DataverseStudy $study;
+    private bool $datasetIsPublished = false;
 
     protected function getMockedRegistryKeys(): array
     {
@@ -134,13 +135,14 @@ class DatasetHandlerAccessTest extends PKPTestCase
         ];
         $handler = $this->getMockBuilder(DatasetHandler::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission'])
+            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission', 'isDatasetPublished'])
             ->getMock();
         $handler->method('getAuthorizedContextObject')
             ->willReturnCallback(function (int $assocType) use ($authorizedObjects) {
                 return $authorizedObjects[$assocType] ?? null;
             });
         $handler->method('isAssignedToSubmission')->willReturn($isAssignedToSubmission);
+        $handler->method('isDatasetPublished')->willReturn($this->datasetIsPublished);
 
         return $handler;
     }
@@ -160,6 +162,50 @@ class DatasetHandlerAccessTest extends PKPTestCase
         $response = $this->createHandler()->get($this->createRequest(), new APIResponse(), ['studyId' => self::STUDY_ID]);
 
         $this->assertSame(404, $response->getStatusCode());
+    }
+
+    /**
+     * @dataProvider publishedDatasetOperations
+     */
+    public function testPublishedDatasetCannotBeChanged(string $operation): void
+    {
+        $this->datasetIsPublished = true;
+
+        $response = $this->createHandler()->$operation(
+            $this->createRequest(['fileId' => self::DATASET_FILE_ID]),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public static function publishedDatasetOperations(): array
+    {
+        return [['edit'], ['deleteFile'], ['deleteDataset']];
+    }
+
+    /**
+     * @dataProvider invalidPersistentIds
+     */
+    public function testInvalidPersistentIdIsNotAServerError(array $body): void
+    {
+        $response = $this->createHandler()->associateDataset(
+            $this->createRequest([], $body),
+            new APIResponse(),
+            []
+        );
+
+        $this->assertLessThan(500, $response->getStatusCode());
+    }
+
+    public static function invalidPersistentIds(): array
+    {
+        return [
+            [[]],
+            [['datasetPersistentId' => null]],
+            [['datasetPersistentId' => ['doi:10.5072/FK2/TEST']]],
+        ];
     }
 
     public function testDownloadRejectsFilesOutsideTheStudyDataset(): void
