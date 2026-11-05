@@ -19,6 +19,8 @@ class DatasetHandler extends APIHandler
 
     private const EDITORIAL_DECISION_OPERATIONS = ['associateDataset', 'disassociateDataset', 'publishDataset'];
 
+    private const UNPUBLISHED_PUBLICATION_OPERATIONS = ['addDataset', 'associateDataset'];
+
     public function __construct()
     {
         $this->_handlerPath = 'datasets';
@@ -124,6 +126,11 @@ class DatasetHandler extends APIHandler
             $this->addPolicy(new StageRolePolicy(self::MANAGER_ROLES, null, false));
         }
 
+        if (in_array($operation, self::UNPUBLISHED_PUBLICATION_OPERATIONS)) {
+            import('plugins.generic.dataverse.classes.security.authorization.PublicationNotPublishedPolicy');
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.submissions.403.userCantEdit'));
+        }
+
         return parent::authorize($request, $args, $roleAssignments);
     }
 
@@ -156,6 +163,19 @@ class DatasetHandler extends APIHandler
         }
 
         return null;
+    }
+
+    protected function isDatasetPublished(DataverseStudy $study): bool
+    {
+        return (new DataverseClient())
+            ->getDatasetActions()
+            ->get($study->getPersistentId())
+            ->isPublished();
+    }
+
+    private function publishedDatasetError($response)
+    {
+        return $response->withStatus(403)->withJsonError('api.submissions.403.userCantEdit');
     }
 
     private function dataverseError($response, DataverseException $e)
@@ -227,11 +247,7 @@ class DatasetHandler extends APIHandler
                 return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
             }
 
-            error_log('Dataverse API error: ' . $e->getMessage());
-
-            return $response
-                ->withStatus($e->getCode())
-                ->withJsonError($e->getUserMessageKey());
+            return $this->dataverseError($response, $e);
         }
 
         return $response->withJson($dataset->getAllData(), 200);
@@ -265,7 +281,11 @@ class DatasetHandler extends APIHandler
     public function associateDataset($slimRequest, $response, $args)
     {
         $requestParams = $slimRequest->getParsedBody();
-        $persistentId = $requestParams['datasetPersistentId'];
+        $persistentId = $requestParams['datasetPersistentId'] ?? '';
+
+        if (!is_string($persistentId)) {
+            $persistentId = '';
+        }
 
         $datasetService = new DatasetService();
         $associationResult = $datasetService->associate($this->getAuthorizedSubmission()->getId(), $persistentId);
@@ -406,12 +426,21 @@ class DatasetHandler extends APIHandler
 
         $user = Application::get()->getRequest()->getUser();
         import('lib.pkp.classes.file.TemporaryFileManager');
-        if (!(new TemporaryFileManager())->getFile($fileId, $user->getId())) {
+        $temporaryFile = (new TemporaryFileManager())->getFile($fileId, $user->getId());
+        if (!$temporaryFile) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
+        try {
+            if ($this->isDatasetPublished($study)) {
+                return $this->publishedDatasetError($response);
+            }
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
+        }
+
         $datasetFileService = new DatasetFileService();
-        $datasetFileService->add($study, $fileId);
+        $datasetFileService->add($study, $temporaryFile);
 
         return $response->withJson(['message' => 'ok'], 200);
     }
@@ -427,10 +456,7 @@ class DatasetHandler extends APIHandler
             $dataverseClient = new DataverseClient();
             $datasetFiles = $dataverseClient->getDatasetFileActions()->getByDatasetId($study->getPersistentId());
         } catch (DataverseException $e) {
-            error_log('Error getting dataset files: ' . $e->getMessage());
-            return $response
-                ->withStatus($e->getCode())
-                ->withJsonError($e->getUserMessageKey());
+            return $this->dataverseError($response, $e);
         }
 
         $items = array_map(function (DatasetFile $file) {
@@ -474,10 +500,7 @@ class DatasetHandler extends APIHandler
             $dataverseClient = new DataverseClient();
             $datasetLocks = $dataverseClient->getDatasetActions()->getDatasetLocks($study->getPersistentId());
         } catch (DataverseException $e) {
-            error_log('Error getting dataset locks: ' . $e->getMessage());
-            return $response
-                ->withStatus($e->getCode())
-                ->withJsonError($e->getUserMessageKey());
+            return $this->dataverseError($response, $e);
         }
 
         foreach ($datasetLocks as $lock) {
@@ -500,6 +523,10 @@ class DatasetHandler extends APIHandler
         }
 
         try {
+            if ($this->isDatasetPublished($study)) {
+                return $this->publishedDatasetError($response);
+            }
+
             $datasetFile = $this->getStudyDatasetFile($study, (int) ($queryParams['fileId'] ?? 0));
         } catch (DataverseException $e) {
             return $this->dataverseError($response, $e);
@@ -521,6 +548,14 @@ class DatasetHandler extends APIHandler
 
         if (!$study) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        try {
+            if ($this->isDatasetPublished($study)) {
+                return $this->publishedDatasetError($response);
+            }
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
         }
 
         $deleteMessage = null;
@@ -560,7 +595,11 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        (new DataverseClient())->getDatasetFileActions()->download($datasetFile->getId(), $datasetFile->getFileName());
+        try {
+            (new DataverseClient())->getDatasetFileActions()->download($datasetFile->getId(), $datasetFile->getFileName());
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
+        }
 
         return $response->withStatus(200);
     }

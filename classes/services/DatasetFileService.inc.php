@@ -7,15 +7,9 @@ import('plugins.generic.dataverse.classes.services.DataverseService');
 
 class DatasetFileService extends DataverseService
 {
-    public function add(DataverseStudy $study, int $fileId): void
+    public function add(DataverseStudy $study, TemporaryFile $file): void
     {
-        $request = Application::get()->getRequest();
-        $user = $request->getUser();
         $submission = Services::get('submission')->get($study->getSubmissionId());
-
-        import('lib.pkp.classes.file.TemporaryFileManager');
-        $temporaryFileManager = new TemporaryFileManager();
-        $file = $temporaryFileManager->getFile($fileId, $user->getId());
 
         try {
             $dataverseClient = new DataverseClient();

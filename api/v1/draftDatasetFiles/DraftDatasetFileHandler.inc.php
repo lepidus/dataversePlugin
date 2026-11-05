@@ -11,7 +11,7 @@ class DraftDatasetFileHandler extends APIHandler
     public function __construct()
     {
         $this->_handlerPath = 'draftDatasetFiles';
-        $roles = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT, ROLE_ID_AUTHOR];
+        $roles = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
         $this->_endpoints = array(
             'GET' => array(
                 array(
@@ -50,6 +50,9 @@ class DraftDatasetFileHandler extends APIHandler
         if (in_array($operation, self::PUBLICATION_WRITE_OPERATIONS)) {
             import('lib.pkp.classes.security.authorization.internal.PublicationCanBeEditedPolicy');
             $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
+
+            import('plugins.generic.dataverse.classes.security.authorization.PublicationNotPublishedPolicy');
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.submissions.403.userCantEdit'));
         }
 
         return parent::authorize($request, $args, $roleAssignments);

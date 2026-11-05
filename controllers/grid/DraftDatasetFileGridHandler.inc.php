@@ -4,6 +4,8 @@ import('lib.pkp.classes.controllers.grid.GridHandler');
 
 class DraftDatasetFileGridHandler extends GridHandler
 {
+    private const WRITE_OPERATIONS = ['addFile', 'uploadFile', 'saveFile', 'deleteFile'];
+
     public function __construct()
     {
         parent::__construct();
@@ -38,6 +40,14 @@ class DraftDatasetFileGridHandler extends GridHandler
 
         import('lib.pkp.classes.security.authorization.PublicationAccessPolicy');
         $this->addPolicy(new PublicationAccessPolicy($request, $args, $roleAssignments));
+
+        if (in_array($request->getRequestedOp(), self::WRITE_OPERATIONS)) {
+            import('plugins.generic.dataverse.classes.security.authorization.DraftDatasetFileEditPolicy');
+            $this->addPolicy(new DraftDatasetFileEditPolicy($request, 'api.submissions.403.userCantEdit'));
+
+            import('plugins.generic.dataverse.classes.security.authorization.PublicationNotPublishedPolicy');
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.submissions.403.userCantEdit'));
+        }
 
         return parent::authorize($request, $args, $roleAssignments);
     }

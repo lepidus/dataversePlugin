@@ -216,5 +216,6 @@ class DraftDatasetFileHandlerAccessTest extends PKPTestCase
         $this->assertContains('ContextAccessPolicy', $policies);
         $this->assertContains('SubmissionAccessPolicy', $policies);
         $this->assertSame($requiresPublicationWrite, in_array('PublicationCanBeEditedPolicy', $policies));
+        $this->assertSame($requiresPublicationWrite, in_array('PublicationNotPublishedPolicy', $policies));
     }
 }

@@ -6,6 +6,8 @@ import('lib.pkp.tests.PKPTestCase');
 import('lib.pkp.classes.core.APIResponse');
 import('lib.pkp.classes.security.Role');
 import('lib.pkp.classes.submission.reviewAssignment.ReviewAssignment');
+import('lib.pkp.classes.file.TemporaryFile');
+import('lib.pkp.classes.file.TemporaryFileDAO');
 import('classes.submission.Submission');
 import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudy');
 import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudyDAO');
@@ -24,6 +26,11 @@ class DatasetHandlerAccessTest extends PKPTestCase
     private $studyDAO;
     private $study;
     private $context;
+
+    protected function getMockedDAOs()
+    {
+        return ['TemporaryFileDAO'];
+    }
 
     protected function getMockedRegistryKeys()
     {
@@ -44,8 +51,11 @@ class DatasetHandlerAccessTest extends PKPTestCase
         DAORegistry::registerDAO('DataverseStudyDAO', $this->studyDAO);
 
         $this->context = new Journal();
-        $request = $this->getMockBuilder(Request::class)->onlyMethods(['getContext'])->getMock();
+        $user = new User();
+        $user->setId(5);
+        $request = $this->getMockBuilder(Request::class)->onlyMethods(['getContext', 'getUser'])->getMock();
         $request->method('getContext')->willReturn($this->context);
+        $request->method('getUser')->willReturn($user);
         Registry::set('request', $request);
     }
 
@@ -66,7 +76,7 @@ class DatasetHandlerAccessTest extends PKPTestCase
 
         $handler = $this->getMockBuilder(DatasetHandler::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission'])
+            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission', 'isDatasetPublished'])
             ->getMock();
         $handler->method('getAuthorizedContextObject')->willReturnMap([
             [ASSOC_TYPE_SUBMISSION, $submission],
@@ -74,15 +84,25 @@ class DatasetHandlerAccessTest extends PKPTestCase
             [ASSOC_TYPE_USER_ROLES, $userRoles],
         ]);
         $handler->method('isAssignedToSubmission')->willReturn($isAssigned);
+        $handler->method('isDatasetPublished')->willReturn(true);
 
         return $handler;
     }
 
-    private function createSlimRequest()
+    private function mockTemporaryFileLookup(?TemporaryFile $temporaryFile): void
+    {
+        $temporaryFileDAO = $this->getMockBuilder(TemporaryFileDAO::class)
+            ->onlyMethods(['getTemporaryFile'])
+            ->getMock();
+        $temporaryFileDAO->method('getTemporaryFile')->willReturn($temporaryFile);
+        DAORegistry::registerDAO('TemporaryFileDAO', $temporaryFileDAO);
+    }
+
+    private function createSlimRequest(array $body = [])
     {
         $slimRequest = $this->createMock(\Psr\Http\Message\ServerRequestInterface::class);
         $slimRequest->method('getQueryParams')->willReturn(['fileId' => self::SELECTED_FILE_ID]);
-        $slimRequest->method('getParsedBody')->willReturn([]);
+        $slimRequest->method('getParsedBody')->willReturn($body);
 
         return $slimRequest;
     }
@@ -136,6 +156,79 @@ class DatasetHandlerAccessTest extends PKPTestCase
         $this->assertSame(404, $response->getStatusCode());
     }
 
+    public function publishedDatasetOperations(): array
+    {
+        return [
+            ['deleteFile'],
+            ['deleteDataset'],
+        ];
+    }
+
+    /**
+     * @dataProvider publishedDatasetOperations
+     */
+    public function testPublishedDatasetCannotBeChanged(string $operation): void
+    {
+        $response = $this->createHandler()->$operation(
+            $this->createSlimRequest(),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testFileCannotBeAddedToPublishedDataset(): void
+    {
+        $temporaryFile = new TemporaryFile();
+        $temporaryFile->setId(31);
+        $this->mockTemporaryFileLookup($temporaryFile);
+
+        $response = $this->createHandler()->addFile(
+            $this->createSlimRequest(['datasetFile' => ['temporaryFileId' => 31]]),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testFileOfAnotherUserIsNotAddedToDataset(): void
+    {
+        $this->mockTemporaryFileLookup(null);
+
+        $response = $this->createHandler()->addFile(
+            $this->createSlimRequest(['datasetFile' => ['temporaryFileId' => 31]]),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function invalidPersistentIds(): array
+    {
+        return [
+            [[]],
+            [['datasetPersistentId' => null]],
+            [['datasetPersistentId' => ['doi:10.5072/FK2/TEST']]],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidPersistentIds
+     */
+    public function testInvalidPersistentIdIsNotAServerError(array $body): void
+    {
+        $response = $this->createHandler()->associateDataset(
+            $this->createSlimRequest($body),
+            new APIResponse(),
+            []
+        );
+
+        $this->assertLessThan(500, $response->getStatusCode());
+    }
+
     public function testUsersWithoutReviewAssignmentReachAllDatasetFiles(): void
     {
         $this->assertTrue($this->isFileAvailable($this->createHandler(), self::UNSELECTED_FILE_ID));
@@ -181,6 +274,7 @@ class DatasetHandlerAccessTest extends PKPTestCase
     {
         $write = 'PublicationCanBeEditedPolicy';
         $decision = 'StageRolePolicy';
+        $notPublished = 'PublicationNotPublishedPolicy';
 
         return [
             ['get', []],
@@ -188,12 +282,12 @@ class DatasetHandlerAccessTest extends PKPTestCase
             ['getCitation', []],
             ['getInReview', []],
             ['downloadDatasetFile', []],
-            ['addDataset', [$write]],
+            ['addDataset', [$write, $notPublished]],
             ['addFile', [$write]],
             ['edit', [$write]],
             ['deleteFile', [$write]],
             ['deleteDataset', [$write]],
-            ['associateDataset', [$decision]],
+            ['associateDataset', [$decision, $notPublished]],
             ['disassociateDataset', [$decision]],
             ['publishDataset', [$decision]],
         ];
@@ -210,7 +304,7 @@ class DatasetHandlerAccessTest extends PKPTestCase
         $this->assertContains('SubmissionAccessPolicy', $policies);
         $this->assertSame(
             $operationPolicies,
-            array_values(array_intersect($policies, ['PublicationCanBeEditedPolicy', 'StageRolePolicy']))
+            array_values(array_intersect($policies, ['PublicationCanBeEditedPolicy', 'StageRolePolicy', 'PublicationNotPublishedPolicy']))
         );
     }
 }
