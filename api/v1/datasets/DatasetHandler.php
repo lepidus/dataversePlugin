@@ -11,6 +11,7 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\security\authorization\PublicationNotPublishedPolicy;
@@ -155,7 +156,7 @@ class DatasetHandler extends APIHandler
         }
 
         if (in_array($operation, self::UNPUBLISHED_PUBLICATION_OPERATIONS)) {
-            $this->addPolicy(new PublicationNotPublishedPolicy('api.submissions.403.userCantEdit'));
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.publication.403.cantEditPublished'));
         }
 
         return parent::authorize($request, $args, $roleAssignments);
@@ -244,17 +245,9 @@ class DatasetHandler extends APIHandler
         return $additionalMetadata;
     }
 
-    protected function isDatasetPublished(DataverseStudy $study): bool
-    {
-        return (new DataverseClient())
-            ->getDatasetActions()
-            ->get($study->getPersistentId())
-            ->isPublished();
-    }
-
     private function publishedDatasetError($response)
     {
-        return $response->withStatus(403)->withJsonError('api.submissions.403.userCantEdit');
+        return $response->withStatus(403)->withJsonError('api.dataset.403.cantEditPublished');
     }
 
     private function dataverseError($response, DataverseException $e)
@@ -316,14 +309,6 @@ class DatasetHandler extends APIHandler
         }
 
         try {
-            if ($this->isDatasetPublished($study)) {
-                return $this->publishedDatasetError($response);
-            }
-        } catch (DataverseException $e) {
-            return $this->dataverseError($response, $e);
-        }
-
-        try {
             $metadataForm = $this->createMetadataForm();
         } catch (DataverseException $e) {
             return $this->dataverseError($response, $e);
@@ -339,8 +324,11 @@ class DatasetHandler extends APIHandler
         $data['license'] = $requestParams['datasetLicense'];
         $data['relationType'] = $requestParams['datasetRelationType'];
 
-        $datasetService = new DatasetService();
-        $datasetService->update(array_merge($data, $this->getAdditionalMetadata($requestParams, $metadataForm)));
+        try {
+            (new DatasetService())->update(array_merge($data, $this->getAdditionalMetadata($requestParams, $metadataForm)));
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError($response);
+        }
 
         return $this->get($slimRequest, $response, $args);
     }
@@ -493,20 +481,16 @@ class DatasetHandler extends APIHandler
         }
 
         $user = Application::get()->getRequest()->getUser();
-        if (!(new TemporaryFileManager())->getFile($fileId, $user->getId())) {
+        $temporaryFile = (new TemporaryFileManager())->getFile($fileId, $user->getId());
+        if (!$temporaryFile) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
         try {
-            if ($this->isDatasetPublished($study)) {
-                return $this->publishedDatasetError($response);
-            }
-        } catch (DataverseException $e) {
-            return $this->dataverseError($response, $e);
+            (new DatasetFileService())->add($study, $temporaryFile);
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError($response);
         }
-
-        $datasetFileService = new DatasetFileService();
-        $datasetFileService->add($study, $fileId);
 
         return $response->withJson(['message' => 'ok'], 200);
     }
@@ -609,10 +593,6 @@ class DatasetHandler extends APIHandler
         }
 
         try {
-            if ($this->isDatasetPublished($study)) {
-                return $this->publishedDatasetError($response);
-            }
-
             $datasetFile = $this->getStudyDatasetFile($study, (int) ($queryParams['fileId'] ?? 0));
         } catch (DataverseException $e) {
             return $this->dataverseError($response, $e);
@@ -622,8 +602,11 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $datasetFileService = new DatasetFileService();
-        $datasetFileService->delete($study, (string) $datasetFile->getId(), $datasetFile->getFileName());
+        try {
+            (new DatasetFileService())->delete($study, (string) $datasetFile->getId(), $datasetFile->getFileName());
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError($response);
+        }
 
         return $response->withJson(['message' => 'ok'], 200);
     }
@@ -637,14 +620,6 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        try {
-            if ($this->isDatasetPublished($study)) {
-                return $this->publishedDatasetError($response);
-            }
-        } catch (DataverseException $e) {
-            return $this->dataverseError($response, $e);
-        }
-
         $requestParams = $slimRequest->getParsedBody();
         if (isset($requestParams['sendDeleteEmail'])) {
             $sendDeleteEmail = (int) $requestParams['sendDeleteEmail'];
@@ -653,8 +628,11 @@ class DatasetHandler extends APIHandler
             }
         }
 
-        $datasetService = new DatasetService();
-        $datasetService->delete($study, $deleteMessage);
+        try {
+            (new DatasetService())->delete($study, $deleteMessage);
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError($response);
+        }
 
         return $response->withJson(['message' => 'ok'], 200);
     }

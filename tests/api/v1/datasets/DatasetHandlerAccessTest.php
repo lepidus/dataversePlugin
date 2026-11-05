@@ -12,7 +12,11 @@ use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
+use PKP\db\DAORegistry;
+use PKP\file\TemporaryFile;
+use PKP\file\TemporaryFileDAO;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
@@ -41,7 +45,6 @@ class DatasetHandlerAccessTest extends PKPTestCase
 
     private Submission $submission;
     private DataverseStudy $study;
-    private bool $datasetIsPublished = false;
 
     protected function getMockedRegistryKeys(): array
     {
@@ -135,14 +138,13 @@ class DatasetHandlerAccessTest extends PKPTestCase
         ];
         $handler = $this->getMockBuilder(DatasetHandler::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission', 'isDatasetPublished'])
+            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission'])
             ->getMock();
         $handler->method('getAuthorizedContextObject')
             ->willReturnCallback(function (int $assocType) use ($authorizedObjects) {
                 return $authorizedObjects[$assocType] ?? null;
             });
         $handler->method('isAssignedToSubmission')->willReturn($isAssignedToSubmission);
-        $handler->method('isDatasetPublished')->willReturn($this->datasetIsPublished);
 
         return $handler;
     }
@@ -164,14 +166,13 @@ class DatasetHandlerAccessTest extends PKPTestCase
         $this->assertSame(404, $response->getStatusCode());
     }
 
-    /**
-     * @dataProvider publishedDatasetOperations
-     */
-    public function testPublishedDatasetCannotBeChanged(string $operation): void
+    public function testPublishedDatasetFileCannotBeDeleted(): void
     {
-        $this->datasetIsPublished = true;
+        $this->mockDatasetFileActions();
+        Mockery::mock('overload:' . DatasetFileService::class)
+            ->shouldReceive('delete')->andThrow(new PublishedDatasetException());
 
-        $response = $this->createHandler()->$operation(
+        $response = $this->createHandler()->deleteFile(
             $this->createRequest(['fileId' => self::DATASET_FILE_ID]),
             new APIResponse(),
             ['studyId' => self::STUDY_ID]
@@ -180,9 +181,37 @@ class DatasetHandlerAccessTest extends PKPTestCase
         $this->assertSame(403, $response->getStatusCode());
     }
 
-    public static function publishedDatasetOperations(): array
+    public function testPublishedDatasetCannotBeDeleted(): void
     {
-        return [['edit'], ['deleteFile'], ['deleteDataset']];
+        Mockery::mock('overload:' . DatasetService::class)
+            ->shouldReceive('delete')->andThrow(new PublishedDatasetException());
+
+        $response = $this->createHandler()->deleteDataset(
+            $this->createRequest(),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testFileCannotBeAddedToPublishedDataset(): void
+    {
+        $temporaryFile = new TemporaryFile();
+        $temporaryFile->setId(31);
+        $temporaryFileDao = Mockery::mock(TemporaryFileDAO::class);
+        $temporaryFileDao->shouldReceive('getTemporaryFile')->andReturn($temporaryFile);
+        DAORegistry::registerDAO('TemporaryFileDAO', $temporaryFileDao);
+        Mockery::mock('overload:' . DatasetFileService::class)
+            ->shouldReceive('add')->andThrow(new PublishedDatasetException());
+
+        $response = $this->createHandler()->addFile(
+            $this->createRequest([], ['datasetFile' => ['temporaryFileId' => 31]]),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
     }
 
     /**

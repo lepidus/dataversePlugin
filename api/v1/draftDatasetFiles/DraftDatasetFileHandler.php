@@ -72,7 +72,7 @@ class DraftDatasetFileHandler extends APIHandler
         $operation = $this->getSlimRequest()->getAttribute('route')->getName();
         if (in_array($operation, self::PUBLICATION_WRITE_OPERATIONS)) {
             $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
-            $this->addPolicy(new PublicationNotPublishedPolicy('api.submissions.403.userCantEdit'));
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.publication.403.cantEditPublished'));
         }
 
         return parent::authorize($request, $args, $roleAssignments);
