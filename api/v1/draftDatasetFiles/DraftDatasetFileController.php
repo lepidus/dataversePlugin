@@ -75,7 +75,7 @@ class DraftDatasetFileController extends PKPBaseController
 
         if (in_array(static::getRouteActionName($args[0]), self::PUBLICATION_WRITE_ACTIONS)) {
             $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
-            $this->addPolicy(new PublicationNotPublishedPolicy('api.submissions.403.userCantEdit'));
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.publication.403.cantEditPublished'));
         }
 
         return parent::authorize($request, $args, $roleAssignments);

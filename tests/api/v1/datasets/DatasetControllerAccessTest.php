@@ -11,6 +11,7 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
@@ -43,7 +44,6 @@ class DatasetControllerAccessTest extends PKPTestCase
 
     private Submission $submission;
     private DataverseStudy $study;
-    private bool $datasetIsPublished = false;
 
     protected function getMockedRegistryKeys(): array
     {
@@ -134,12 +134,11 @@ class DatasetControllerAccessTest extends PKPTestCase
             Application::ASSOC_TYPE_USER_ROLES => $userRoles,
         ];
         $controller = $this->getMockBuilder(DatasetController::class)
-            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission', 'isDatasetPublished'])
+            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission'])
             ->getMock();
         $controller->method('getAuthorizedContextObject')
             ->willReturnCallback(fn (int $assocType) => $authorizedObjects[$assocType] ?? null);
         $controller->method('isAssignedToSubmission')->willReturn($isAssignedToSubmission);
-        $controller->method('isDatasetPublished')->willReturn($this->datasetIsPublished);
 
         return $controller;
     }
@@ -246,18 +245,39 @@ class DatasetControllerAccessTest extends PKPTestCase
         }
     }
 
-    #[DataProvider('publishedDatasetActions')]
-    public function testPublishedDatasetCannotBeChanged(string $action, string $method): void
+    public function testPublishedDatasetFileCannotBeDeleted(): void
     {
-        $this->datasetIsPublished = true;
-        $request = $this->createRequest($method, '/datasets/' . self::STUDY_ID . '/file?fileId=' . self::DATASET_FILE_ID);
+        $this->mockDatasetFileActions();
+        Mockery::mock('overload:' . DatasetFileService::class)
+            ->shouldReceive('delete')->andThrow(new PublishedDatasetException());
 
-        $this->assertSame(403, $this->createController()->$action($request)->getStatusCode());
+        $request = $this->createRequest('DELETE', '/datasets/' . self::STUDY_ID . '/file?fileId=' . self::DATASET_FILE_ID);
+
+        $this->assertSame(403, $this->createController()->deleteFile($request)->getStatusCode());
     }
 
-    public static function publishedDatasetActions(): array
+    public function testPublishedDatasetCannotBeDeleted(): void
     {
-        return [['edit', 'PUT'], ['deleteFile', 'DELETE'], ['delete', 'DELETE']];
+        Mockery::mock('overload:' . DatasetService::class)
+            ->shouldReceive('delete')->andThrow(new PublishedDatasetException());
+
+        $request = $this->createRequest('DELETE', '/datasets/' . self::STUDY_ID . '/x');
+
+        $this->assertSame(403, $this->createController()->delete($request)->getStatusCode());
+    }
+
+    public function testFileCannotBeAddedToPublishedDataset(): void
+    {
+        $owner = $this->createUser();
+        try {
+            $temporaryFileId = $this->createTemporaryFileOwnedBy($owner);
+            Mockery::mock('overload:' . DatasetFileService::class)
+                ->shouldReceive('add')->andThrow(new PublishedDatasetException());
+
+            $this->assertSame(403, $this->addFileAs($owner, $temporaryFileId));
+        } finally {
+            Repo::user()->delete($owner);
+        }
     }
 
     #[DataProvider('invalidPersistentIds')]
@@ -269,7 +289,10 @@ class DatasetControllerAccessTest extends PKPTestCase
 
         $request = $this->createRequest('POST', '/datasets/associate', $params);
 
-        $this->assertLessThan(500, $this->createController()->associate($request)->getStatusCode());
+        $response = $this->createController()->associate($request);
+
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame(__('plugins.generic.dataverse.error.invalidPersistentId'), $response->getData(true)['error']);
     }
 
     public static function invalidPersistentIds(): array

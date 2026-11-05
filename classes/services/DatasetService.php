@@ -21,6 +21,7 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
@@ -188,7 +189,7 @@ class DatasetService extends DataverseService
 
     private function completeDeposit(Submission $submission, string $persistentId): void
     {
-        $publication = $submission->getCurrentPublication();
+        $publication = $submission->getLatestPublication();
         $dataStatementTypes = $publication->getData('dataStatementTypes');
         if (empty($dataStatementTypes)) {
             $dataStatementTypes = [DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED];
@@ -209,7 +210,7 @@ class DatasetService extends DataverseService
     public function update(array $data): void
     {
         try {
-            $dataverseClient = new DataverseClient();
+            $dataverseClient = $this->getDataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($data['persistentId']);
         } catch (DataverseException $e) {
             error_log('Dataverse error while getting dataset on dataset update: ' . $e->getMessage());
@@ -217,7 +218,7 @@ class DatasetService extends DataverseService
         }
 
         if ($dataset->isPublished()) {
-            return;
+            throw new PublishedDatasetException();
         }
 
         $study = Repo::dataverseStudy()->getByPersistentId($dataset->getPersistentId());
@@ -268,8 +269,12 @@ class DatasetService extends DataverseService
         $submission = Repo::submission()->get($study->getSubmissionId());
 
         try {
-            $dataverseClient = new DataverseClient();
+            $dataverseClient = $this->getDataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+            if ($dataset->isPublished()) {
+                throw new PublishedDatasetException();
+            }
+
             $dataverseClient->getDatasetActions()->delete($dataset->getPersistentId());
         } catch (DataverseException $e) {
             $this->registerAndNotifyError(
@@ -388,7 +393,7 @@ class DatasetService extends DataverseService
 
             Repo::dataverseStudy()->delete($study);
 
-            $publication = Repo::publication()->get($submission->getCurrentPublication()->getId());
+            $publication = Repo::publication()->get($submission->getLatestPublication()->getId());
             $dataStatementTypes = $publication->getData('dataStatementTypes') ?? [];
             if (($key = array_search(DataStatementService::DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) !== false) {
                 unset($dataStatementTypes[$key]);

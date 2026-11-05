@@ -16,6 +16,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PKP\core\Dispatcher;
 use PKP\core\Registry;
 use PKP\facades\Locale;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PKP\tests\PKPTestCase;
 
 #[RunTestsInSeparateProcesses]
@@ -32,7 +34,8 @@ class DatasetControllerTest extends PKPTestCase
         return [Repository::class];
     }
 
-    public function testEditForwardsAdditionalRequiredMetadataToTheUpdateService(): void
+    #[DataProvider('editResults')]
+    public function testEditForwardsAdditionalRequiredMetadataToTheUpdateService(bool $published, int $status): void
     {
         $submission = new Submission();
         $submission->setId(23);
@@ -104,19 +107,28 @@ class DatasetControllerTest extends PKPTestCase
             'license' => 'CC0 1.0',
             'relationType' => 'IsSupplementTo',
             ...$additionalMetadata,
-        ]);
+        ])->andReturnUsing(function () use ($published) {
+            if ($published) {
+                throw new PublishedDatasetException();
+            }
+        });
 
         $request = Request::create('/datasets/7', 'PUT', $params);
         $route = new Illuminate\Routing\Route('PUT', 'datasets/{studyId}', []);
         $route->bind($request);
         $request->setRouteResolver(fn () => $route);
         $controller = $this->getMockBuilder(DatasetController::class)
-            ->onlyMethods(['getAuthorizedContextObject', 'get', 'isDatasetPublished'])
+            ->onlyMethods(['getAuthorizedContextObject', 'get'])
             ->getMock();
         $controller->method('getAuthorizedContextObject')
             ->with(Application::ASSOC_TYPE_SUBMISSION)->willReturn($submission);
         $controller->method('get')->with($request)->willReturn(new JsonResponse(['updated' => true]));
 
-        $this->assertSame(200, $controller->edit($request)->getStatusCode());
+        $this->assertSame($status, $controller->edit($request)->getStatusCode());
+    }
+
+    public static function editResults(): array
+    {
+        return [[false, 200], [true, 403]];
     }
 }

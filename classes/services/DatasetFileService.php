@@ -6,7 +6,6 @@ use APP\core\Application;
 use PKP\file\TemporaryFileManager;
 use PKP\log\event\SubmissionFileEventLogEntry;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
-use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\services\DataverseService;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
@@ -23,7 +22,8 @@ class DatasetFileService extends DataverseService
         $file = $temporaryFileManager->getFile($fileId, $user->getId());
 
         try {
-            $dataverseClient = new DataverseClient();
+            $dataverseClient = $this->getDataverseClient();
+            $this->assertDatasetIsNotPublished($dataverseClient, $study->getPersistentId());
             $dataverseClient->getDatasetFileActions()->add(
                 $study->getPersistentId(),
                 $file->getOriginalFileName(),
@@ -54,7 +54,8 @@ class DatasetFileService extends DataverseService
         $submission = Repo::submission()->get($study->getSubmissionId());
 
         try {
-            $dataverseClient = new DataverseClient();
+            $dataverseClient = $this->getDataverseClient();
+            $this->assertDatasetIsNotPublished($dataverseClient, $study->getPersistentId());
             $dataverseClient->getDatasetFileActions()->delete($fileId);
         } catch (DataverseException $e) {
             $this->registerAndNotifyError(

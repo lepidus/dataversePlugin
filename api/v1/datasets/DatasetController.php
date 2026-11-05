@@ -10,6 +10,7 @@ use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
@@ -163,7 +164,7 @@ class DatasetController extends PKPBaseController
         }
 
         if (in_array($actionName, self::UNPUBLISHED_PUBLICATION_ACTIONS)) {
-            $this->addPolicy(new PublicationNotPublishedPolicy('api.submissions.403.userCantEdit'));
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.publication.403.cantEditPublished'));
         }
 
         return parent::authorize($request, $args, $roleAssignments);
@@ -200,14 +201,6 @@ class DatasetController extends PKPBaseController
             return $this->notFound();
         }
 
-        try {
-            if ($this->isDatasetPublished($study)) {
-                return $this->publishedDatasetError();
-            }
-        } catch (DataverseException $e) {
-            return $this->dataverseError($e);
-        }
-
         $params = $illuminateRequest->input();
 
         try {
@@ -232,7 +225,11 @@ class DatasetController extends PKPBaseController
             'relationType' => $params['datasetRelationType'],
         ];
 
-        (new DatasetService())->update(array_merge($data, $this->getAdditionalMetadata($params, $metadataForm)));
+        try {
+            (new DatasetService())->update(array_merge($data, $this->getAdditionalMetadata($params, $metadataForm)));
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError();
+        }
 
         return $this->get($illuminateRequest);
     }
@@ -384,20 +381,16 @@ class DatasetController extends PKPBaseController
             return $this->notFound();
         }
 
-        try {
-            if ($this->isDatasetPublished($study)) {
-                return $this->publishedDatasetError();
-            }
-        } catch (DataverseException $e) {
-            return $this->dataverseError($e);
-        }
-
         $deleteMessage = null;
         if ((int) $illuminateRequest->input('sendDeleteEmail') === 1) {
             $deleteMessage = $illuminateRequest->input('deleteMessage');
         }
 
-        (new DatasetService())->delete($study, $deleteMessage);
+        try {
+            (new DatasetService())->delete($study, $deleteMessage);
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError();
+        }
 
         return response()->json(['message' => 'ok'], Response::HTTP_OK);
     }
@@ -449,14 +442,10 @@ class DatasetController extends PKPBaseController
         }
 
         try {
-            if ($this->isDatasetPublished($study)) {
-                return $this->publishedDatasetError();
-            }
-        } catch (DataverseException $e) {
-            return $this->dataverseError($e);
+            (new DatasetFileService())->add($study, (int) $temporaryFileId);
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError();
         }
-
-        (new DatasetFileService())->add($study, (int) $temporaryFileId);
 
         return response()->json(['message' => 'ok'], Response::HTTP_OK);
     }
@@ -470,10 +459,6 @@ class DatasetController extends PKPBaseController
         }
 
         try {
-            if ($this->isDatasetPublished($study)) {
-                return $this->publishedDatasetError();
-            }
-
             $datasetFile = $this->getStudyDatasetFile($study, (int) $illuminateRequest->query('fileId'));
         } catch (DataverseException $e) {
             return $this->dataverseError($e);
@@ -483,7 +468,11 @@ class DatasetController extends PKPBaseController
             return $this->notFound();
         }
 
-        (new DatasetFileService())->delete($study, (string) $datasetFile->getId(), $datasetFile->getFileName());
+        try {
+            (new DatasetFileService())->delete($study, (string) $datasetFile->getId(), $datasetFile->getFileName());
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError();
+        }
 
         return response()->json(['message' => 'ok'], Response::HTTP_OK);
     }
@@ -695,17 +684,9 @@ class DatasetController extends PKPBaseController
         return response()->json(['error' => $e->getUserMessage()], $this->errorStatus($e));
     }
 
-    protected function isDatasetPublished(DataverseStudy $study): bool
-    {
-        return (new DataverseClient())
-            ->getDatasetActions()
-            ->get($study->getPersistentId())
-            ->isPublished();
-    }
-
     private function publishedDatasetError(): JsonResponse
     {
-        return $this->error('api.submissions.403.userCantEdit', [], Response::HTTP_FORBIDDEN);
+        return $this->error('api.dataset.403.cantEditPublished', [], Response::HTTP_FORBIDDEN);
     }
 
     private function errorStatus(DataverseException $e): int
