@@ -6,7 +6,12 @@ use APP\core\Application;
 use PKP\config\Config;
 use PKP\db\DAORegistry;
 use PKP\cache\CacheManager;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\TransferException;
+use GuzzleHttp\Psr7\Uri;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
@@ -70,20 +75,13 @@ abstract class DataverseActions
     {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
         $operation = $this->getRequestOperation($method, $uri);
-        $options += ['connect_timeout' => 5, 'timeout' => $this->getRequestTimeout($operation)];
+        $options += [
+            'connect_timeout' => 5,
+            'timeout' => $this->getRequestTimeout($operation),
+            'allow_redirects' => ['on_redirect' => $this->refuseRedirectOutsideServer()],
+        ];
 
-        try {
-            $response = $this->client->request($method, $uri, $options);
-        } catch (TransferException $e) {
-            $exception = DataverseException::fromTransferException($e);
-            error_log(json_encode([
-                'component' => 'dataverse',
-                'operation' => $operation,
-                'category' => $exception->getFailureCategory(),
-                'status' => $exception->getCode(),
-            ]));
-            throw $exception;
-        }
+        $response = $this->sendRequest($method, $uri, $options, $operation);
 
         if (!$returnResponse) {
             return null;
@@ -94,6 +92,39 @@ abstract class DataverseActions
             $response->getReasonPhrase(),
             $response->getBody()
         );
+    }
+
+    private function refuseRedirectOutsideServer(): callable
+    {
+        return function (RequestInterface $request, ResponseInterface $response, UriInterface $redirectUri): void {
+            if (!$this->isServerOrigin($redirectUri)) {
+                throw new RequestException('Dataverse redirected an authenticated request to another origin', $request);
+            }
+        };
+    }
+
+    protected function isServerOrigin(UriInterface $uri): bool
+    {
+        $serverUri = new Uri($this->serverURL);
+
+        return $serverUri->getScheme() === $uri->getScheme()
+            && $serverUri->getAuthority() === $uri->getAuthority();
+    }
+
+    protected function sendRequest(string $method, string $uri, array $options, string $operation): ResponseInterface
+    {
+        try {
+            return $this->client->request($method, $uri, $options);
+        } catch (TransferException $e) {
+            $exception = DataverseException::fromTransferException($e);
+            error_log(json_encode([
+                'component' => 'dataverse',
+                'operation' => $operation,
+                'category' => $exception->getFailureCategory(),
+                'status' => $exception->getCode(),
+            ]));
+            throw $exception;
+        }
     }
 
     public function swordAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
@@ -134,9 +165,9 @@ abstract class DataverseActions
         return $method === 'GET' ? 'read' : 'write';
     }
 
-    private function getRequestTimeout(string $operation): int
+    protected function getRequestTimeout(string $operation): int
     {
-        $defaults = ['read' => 15, 'create' => 30, 'upload' => 60, 'write' => 30];
+        $defaults = ['read' => 15, 'create' => 30, 'upload' => 60, 'write' => 30, 'download' => 300];
         $configured = Config::getVar('dataverse', $operation . '_timeout');
         $timeout = filter_var($configured, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 300]]);
         if ($timeout !== false) {

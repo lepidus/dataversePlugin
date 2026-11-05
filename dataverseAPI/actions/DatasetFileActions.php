@@ -2,7 +2,10 @@
 
 namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
+use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\UriResolver;
 use GuzzleHttp\Psr7\Utils;
+use Psr\Http\Message\ResponseInterface;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use PKP\config\Config;
 use PKP\file\FileManager;
@@ -13,6 +16,8 @@ use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
 class DatasetFileActions extends DataverseActions implements DatasetFileActionsInterface
 {
     protected const INGEST_WAIT_TIMEOUT_SECONDS = 30;
+
+    private const MAX_DOWNLOAD_REDIRECTS = 5;
 
     public function getByDatasetId(string $persistentId): array
     {
@@ -133,17 +138,53 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         unlink($datasetFileDir);
         mkdir($datasetFileDir);
 
-        $filePath = $datasetFileDir . DIRECTORY_SEPARATOR . $filename;
+        $filePath = $datasetFileDir . DIRECTORY_SEPARATOR . 'datasetFile';
         $uri = $this->createNativeAPIURI(['access', 'datafile', $datasetFileId]);
-
-        $options = ['sink' => Utils::tryFopen($filePath, 'w')];
         $fileManager = new FileManager();
 
         try {
-            $this->nativeAPIRequest('GET', $uri, $options, false);
-            $fileManager->downloadByPath($filePath);
+            $this->transferFile($uri, $filePath);
+            $fileManager->downloadByPath($filePath, null, false, $filename);
         } finally {
             $fileManager->rmtree($datasetFileDir);
         }
+    }
+
+    private function transferFile(string $uri, string $filePath): void
+    {
+        $isRedirect = false;
+        $redirectUri = '';
+        $options = [
+            'sink' => $filePath,
+            'allow_redirects' => false,
+            'connect_timeout' => 5,
+            'timeout' => $this->getRequestTimeout('download'),
+            'on_headers' => function (ResponseInterface $response) use (&$isRedirect, &$redirectUri): void {
+                $isRedirect = $response->getStatusCode() >= 300 && $response->getStatusCode() < 400;
+                $redirectUri = $response->getHeaderLine('Location');
+            },
+        ];
+
+        $currentUri = new Uri($uri);
+
+        for ($transfer = 0; $transfer <= self::MAX_DOWNLOAD_REDIRECTS; $transfer++) {
+            if ($this->isServerOrigin($currentUri)) {
+                $this->nativeAPIRequest('GET', (string) $currentUri, $options, false);
+            } else {
+                $this->sendRequest('GET', (string) $currentUri, $options, 'download');
+            }
+
+            if (!$isRedirect) {
+                return;
+            }
+
+            if ($redirectUri === '') {
+                break;
+            }
+
+            $currentUri = UriResolver::resolve($currentUri, new Uri($redirectUri));
+        }
+
+        throw new DataverseException(__('plugins.generic.dataverse.error.unavailable'), 503);
     }
 }
