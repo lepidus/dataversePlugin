@@ -1,6 +1,8 @@
 <?php
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Handler\MockHandler;
 
@@ -29,6 +31,34 @@ class DatasetFileActionsTest extends PKPTestCase
         $actions = $this->actions(['data' => ['files' => []]]);
         $this->expectException(DataverseException::class);
         $actions->add('doi:10.1234/ABC', 'source.zip', __FILE__);
+    }
+
+    public function testFailedDownloadRemovesTemporaryDirectory(): void
+    {
+        $filesDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('datasetFileTest');
+        mkdir($filesDir);
+        $config = &Config::getData();
+        $originalFilesDir = $config['files']['files_dir'];
+        $config['files']['files_dir'] = $filesDir;
+
+        $configuration = new DataverseConfiguration();
+        $configuration->setDataverseUrl('https://test.dataverse.org/dataverse/test');
+        $configuration->setAPIToken('test-token');
+        $actions = new DatasetFileActions($configuration, new Client([
+            'handler' => new MockHandler([
+                new ConnectException('Transfer failed', new Request('GET', 'https://test.dataverse.org')),
+            ]),
+        ]));
+
+        try {
+            $actions->download(41, 'data.csv');
+            $this->fail('A failed transfer must raise a DataverseException.');
+        } catch (DataverseException $e) {
+            $this->assertSame(['.', '..'], scandir($filesDir));
+        } finally {
+            $config['files']['files_dir'] = $originalFilesDir;
+            rmdir($filesDir);
+        }
     }
 
     private function actions(array $response): DatasetFileActions
