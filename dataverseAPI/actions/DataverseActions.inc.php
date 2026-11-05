@@ -60,8 +60,12 @@ abstract class DataverseActions
         return $this->createNativeAPIURI(['dataverses', ':root']);
     }
 
-    public function nativeAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
-    {
+    public function nativeAPIRequest(
+        string $method,
+        string $uri,
+        array $options = [],
+        bool $returnResponse = true
+    ): ?DataverseResponse {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
         $operation = $this->getRequestOperation($method, $uri);
         $options += ['connect_timeout' => 5, 'timeout' => $this->getRequestTimeout($operation)];
@@ -77,6 +81,10 @@ abstract class DataverseActions
                 'status' => $exception->getCode(),
             ]));
             throw $exception;
+        }
+
+        if (!$returnResponse) {
+            return null;
         }
 
         return new DataverseResponse(

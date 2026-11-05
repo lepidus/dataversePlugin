@@ -100,7 +100,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         $fileManager = new FileManager();
 
         try {
-            $this->nativeAPIRequest('GET', $uri, $options);
+            $this->nativeAPIRequest('GET', $uri, $options, false);
             $fileManager->downloadByPath($filePath);
         } finally {
             $fileManager->rmtree($datasetFileDir);

@@ -4,6 +4,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Handler\MockHandler;
 
 import('lib.pkp.tests.PKPTestCase');
@@ -57,6 +58,41 @@ class DatasetFileActionsTest extends PKPTestCase
             $this->assertSame(['.', '..'], scandir($filesDir));
         } finally {
             $config['files']['files_dir'] = $originalFilesDir;
+            rmdir($filesDir);
+        }
+    }
+
+    public function testDownloadDoesNotReadTheBodyOfTheTransferredFile(): void
+    {
+        $filesDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('datasetFileTest');
+        mkdir($filesDir);
+        $config = &Config::getData();
+        $originalFilesDir = $config['files']['files_dir'];
+        $config['files']['files_dir'] = $filesDir;
+
+        $resource = fopen('php://memory', 'r+');
+        $closedBody = Utils::streamFor($resource);
+        fclose($resource);
+
+        $client = $this->createMock(Client::class);
+        $client->method('request')->willReturn(new Response(200, [], $closedBody));
+
+        $configuration = new DataverseConfiguration();
+        $configuration->setDataverseUrl('https://test.dataverse.org/dataverse/test');
+        $configuration->setAPIToken('test-token');
+        $actions = new DatasetFileActions($configuration, $client);
+
+        HookRegistry::register('FileManager::downloadFile', function () {
+            return true;
+        });
+
+        try {
+            $actions->download(41, 'data.csv');
+            $this->assertSame(['.', '..'], scandir($filesDir));
+        } finally {
+            HookRegistry::clear('FileManager::downloadFile');
+            $config['files']['files_dir'] = $originalFilesDir;
+            array_map('rmdir', glob($filesDir . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR));
             rmdir($filesDir);
         }
     }
