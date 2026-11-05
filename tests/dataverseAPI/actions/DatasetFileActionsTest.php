@@ -188,6 +188,60 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->downloadWith([new Response($status, [], '<html>redirect</html>')]);
     }
 
+    public function testTokenIsNotReattachedAfterLeavingTheServer(): void
+    {
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://storage.example.org/file']),
+            new Response(302, ['Location' => 'https://test.dataverse.org/api/admin/settings']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertSame('test.dataverse.org', $requests[2]['request']->getUri()->getHost());
+        $this->assertFalse($requests[2]['request']->hasHeader('X-Dataverse-key'));
+    }
+
+    public function testMalformedRedirectIsReportedAsUnavailable(): void
+    {
+        $this->expectException(DataverseException::class);
+        $this->expectExceptionCode(503);
+        $this->downloadWith([new Response(302, ['Location' => 'http://:'])]);
+    }
+
+    public function testExpiredStorageLinkIsNotReportedAsInvalidToken(): void
+    {
+        $this->expectExceptionCode(503);
+        $this->downloadWith([
+            new Response(303, ['Location' => 'https://storage.example.org/file']),
+            new Response(401, [], '{"message":"expired"}'),
+        ]);
+    }
+
+    public function fileNamesWithHeaderCharacters(): array
+    {
+        return [
+            'line break' => ["data\r\n.html", 'data.html'],
+            'double quote' => ['da"ta.csv', 'data.csv'],
+            'backslash' => ['da\\ta.csv', 'data.csv'],
+        ];
+    }
+
+    /**
+     * @dataProvider fileNamesWithHeaderCharacters
+     */
+    public function testDownloadNameCannotBreakTheContentDispositionHeader(string $name, string $expected): void
+    {
+        [, $downloadArguments] = $this->downloadWith([new Response(200, [], 'content')], $name);
+
+        $this->assertSame($expected, $downloadArguments[4]);
+    }
+
+    public function testDownloadKeepsTheMediaTypeGivenByTheFileExtension(): void
+    {
+        [, $downloadArguments] = $this->downloadWith([new Response(200, [], "year,value\n2026,1\n")], 'data.csv');
+
+        $this->assertSame('text/csv', $downloadArguments[1]);
+    }
+
     public function testDownloadUsesItsOwnTimeoutOnEveryTransfer(): void
     {
         [$requests] = $this->downloadWith([

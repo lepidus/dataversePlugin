@@ -3,12 +3,26 @@
 import('lib.pkp.classes.log.SubmissionLog');
 import('classes.log.SubmissionEventLogEntry');
 import('lib.pkp.classes.log.SubmissionFileEventLogEntry');
+import('plugins.generic.dataverse.classes.exception.PublishedDatasetException');
+import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 
 abstract class DataverseService
 {
     public const STATUS_SUCCESS = 'success';
     public const STATUS_NOT_FOUND = 'notFound';
     public const STATUS_ERROR = 'error';
+
+    protected function getDataverseClient(): DataverseClient
+    {
+        return new DataverseClient();
+    }
+
+    protected function assertDatasetIsNotPublished(DataverseClient $dataverseClient, string $persistentId): void
+    {
+        if ($dataverseClient->getDatasetActions()->get($persistentId)->isPublished()) {
+            throw new PublishedDatasetException();
+        }
+    }
 
     protected function registerEventLog(
         Submission $submission,

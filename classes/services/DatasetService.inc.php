@@ -130,7 +130,7 @@ class DatasetService extends DataverseService
     private function completeDeposit(Submission $submission, string $persistentId): void
     {
         $request = Application::get()->getRequest();
-        $publication = $submission->getCurrentPublication();
+        $publication = $submission->getLatestPublication();
         $dataStatementTypes = $publication->getData('dataStatementTypes');
         if (empty($dataStatementTypes)) {
             $dataStatementTypes = [DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED];
@@ -157,7 +157,7 @@ class DatasetService extends DataverseService
     public function update(array $data): void
     {
         try {
-            $dataverseClient = new DataverseClient();
+            $dataverseClient = $this->getDataverseClient();
             $dataset = $dataverseClient->getDatasetActions()->get($data['persistentId']);
         } catch (DataverseException $e) {
             error_log('Dataverse error while getting dataset on dataset update: ' . $e->getMessage());
@@ -165,7 +165,7 @@ class DatasetService extends DataverseService
         }
 
         if ($dataset->isPublished()) {
-            return;
+            throw new PublishedDatasetException();
         }
 
         foreach ($data as $name => $value) {
@@ -202,9 +202,13 @@ class DatasetService extends DataverseService
         $submission = Services::get('submission')->get($study->getSubmissionId());
 
         try {
-            $dataverseClient = new DataverseClient();
+            $dataverseClient = $this->getDataverseClient();
 
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
+            if ($dataset->isPublished()) {
+                throw new PublishedDatasetException();
+            }
+
             $dataverseName = $dataverseClient->getDataverseCollectionActions()->get()->getName();
 
             $dataverseClient->getDatasetActions()->delete($dataset->getPersistentId());
@@ -225,7 +229,7 @@ class DatasetService extends DataverseService
             }
             DAORegistry::getDAO('DataverseStudyDAO')->deleteStudy($study);
 
-            $publication = $submission->getCurrentPublication();
+            $publication = $submission->getLatestPublication();
             $dataStatementTypes = $publication->getData('dataStatementTypes');
 
             if (($key = array_search(DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED, $dataStatementTypes)) !== false) {
@@ -253,7 +257,7 @@ class DatasetService extends DataverseService
     public function disassociate(DataverseStudy $study): void
     {
         $submission = Services::get('submission')->get($study->getSubmissionId());
-        $publication = $submission->getCurrentPublication();
+        $publication = $submission->getLatestPublication();
         $dataStatementTypes = $publication->getData('dataStatementTypes');
 
         $request = \Application::get()->getRequest();

@@ -12,7 +12,8 @@ class DatasetFileService extends DataverseService
         $submission = Services::get('submission')->get($study->getSubmissionId());
 
         try {
-            $dataverseClient = new DataverseClient();
+            $dataverseClient = $this->getDataverseClient();
+            $this->assertDatasetIsNotPublished($dataverseClient, $study->getPersistentId());
             $dataverseClient->getDatasetFileActions()->add(
                 $study->getPersistentId(),
                 $file->getOriginalFileName(),
@@ -43,7 +44,8 @@ class DatasetFileService extends DataverseService
         $submission = Services::get('submission')->get($study->getSubmissionId());
 
         try {
-            $dataverseClient = new DataverseClient();
+            $dataverseClient = $this->getDataverseClient();
+            $this->assertDatasetIsNotPublished($dataverseClient, $study->getPersistentId());
             $dataverseClient->getDatasetFileActions()->delete($fileId);
         } catch (DataverseException $e) {
             $this->registerAndNotifyError(

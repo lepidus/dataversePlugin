@@ -52,7 +52,7 @@ class DraftDatasetFileHandler extends APIHandler
             $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
 
             import('plugins.generic.dataverse.classes.security.authorization.PublicationNotPublishedPolicy');
-            $this->addPolicy(new PublicationNotPublishedPolicy('api.submissions.403.userCantEdit'));
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.publication.403.cantEditPublished'));
         }
 
         return parent::authorize($request, $args, $roleAssignments);
