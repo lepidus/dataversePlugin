@@ -1,7 +1,11 @@
 <?php
 
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\TransferException;
+use GuzzleHttp\Psr7\Uri;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
 
 import('plugins.generic.dataverse.classes.entities.DataverseResponse');
 import('plugins.generic.dataverse.classes.exception.DataverseException');
@@ -69,7 +73,11 @@ abstract class DataverseActions
     ): ?DataverseResponse {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
         $operation = $this->getRequestOperation($method, $uri);
-        $options += ['connect_timeout' => 5, 'timeout' => $this->getRequestTimeout($operation)];
+        $options += [
+            'connect_timeout' => 5,
+            'timeout' => $this->getRequestTimeout($operation),
+            'allow_redirects' => ['on_redirect' => $this->refuseRedirectOutsideServer()],
+        ];
 
         $response = $this->sendRequest($method, $uri, $options, $operation);
 
@@ -82,6 +90,23 @@ abstract class DataverseActions
             $response->getReasonPhrase(),
             $response->getBody()
         );
+    }
+
+    private function refuseRedirectOutsideServer(): callable
+    {
+        return function (RequestInterface $request, ResponseInterface $response, UriInterface $redirectUri): void {
+            if (!$this->isServerOrigin($redirectUri)) {
+                throw new RequestException('Dataverse redirected an authenticated request to another origin', $request);
+            }
+        };
+    }
+
+    protected function isServerOrigin(UriInterface $uri): bool
+    {
+        $serverUri = new Uri($this->serverURL);
+
+        return $serverUri->getScheme() === $uri->getScheme()
+            && $serverUri->getAuthority() === $uri->getAuthority();
     }
 
     protected function sendRequest(string $method, string $uri, array $options, string $operation): ResponseInterface

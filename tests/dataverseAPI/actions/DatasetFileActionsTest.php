@@ -188,6 +188,62 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->downloadWith([new Response($status, [], '<html>redirect</html>')]);
     }
 
+    private function nativeRequestWith(array $responses): array
+    {
+        $requests = [];
+        $stack = HandlerStack::create(new MockHandler($responses));
+        $stack->push(Middleware::history($requests));
+
+        $configuration = new DataverseConfiguration();
+        $configuration->setDataverseUrl('https://test.dataverse.org/dataverse/test');
+        $configuration->setAPIToken('test-token');
+        $actions = new DatasetFileActions($configuration, new Client(['handler' => $stack]));
+
+        try {
+            $actions->nativeAPIRequest('GET', 'https://test.dataverse.org/api/datasets/1');
+        } catch (DataverseException $e) {
+            return [$requests, $e];
+        }
+
+        return [$requests, null];
+    }
+
+    public function otherServers(): array
+    {
+        return [
+            'another host' => ['https://storage.example.org/file'],
+            'another scheme' => ['http://test.dataverse.org/api/datasets/1'],
+            'another port' => ['https://test.dataverse.org:8443/api/datasets/1'],
+        ];
+    }
+
+    /**
+     * @dataProvider otherServers
+     */
+    public function testAuthenticatedRequestIsNotRedirectedToAnotherServer(string $location): void
+    {
+        [$requests, $exception] = $this->nativeRequestWith([
+            new Response(302, ['Location' => $location]),
+            new Response(200, [], '{}'),
+        ]);
+
+        $this->assertCount(1, $requests);
+        $this->assertInstanceOf(DataverseException::class, $exception);
+        $this->assertSame(503, $exception->getCode());
+    }
+
+    public function testAuthenticatedRequestKeepsFollowingRedirectsWithinTheServer(): void
+    {
+        [$requests, $exception] = $this->nativeRequestWith([
+            new Response(302, ['Location' => '/api/datasets/2']),
+            new Response(200, [], '{}'),
+        ]);
+
+        $this->assertNull($exception);
+        $this->assertCount(2, $requests);
+        $this->assertTrue($requests[1]['request']->hasHeader('X-Dataverse-key'));
+    }
+
     public function testDownloadUsesItsOwnTimeoutOnEveryTransfer(): void
     {
         [$requests] = $this->downloadWith([

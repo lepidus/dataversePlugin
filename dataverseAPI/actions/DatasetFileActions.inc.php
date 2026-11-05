@@ -125,11 +125,10 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             },
         ];
 
-        $serverUri = new Uri($uri);
-        $currentUri = $serverUri;
+        $currentUri = new Uri($uri);
 
         for ($transfer = 0; $transfer <= self::MAX_DOWNLOAD_REDIRECTS; $transfer++) {
-            if ($this->isSameServer($serverUri, $currentUri)) {
+            if ($this->isServerOrigin($currentUri)) {
                 $this->nativeAPIRequest('GET', (string) $currentUri, $options, false);
             } else {
                 $this->sendRequest('GET', (string) $currentUri, $options, 'download');
@@ -147,11 +146,5 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         }
 
         throw new DataverseException(__('plugins.generic.dataverse.error.unavailable'), 503);
-    }
-
-    private function isSameServer(Uri $serverUri, Uri $uri): bool
-    {
-        return $serverUri->getScheme() === $uri->getScheme()
-            && $serverUri->getAuthority() === $uri->getAuthority();
     }
 }
