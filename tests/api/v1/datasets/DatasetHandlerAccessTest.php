@@ -12,7 +12,11 @@ use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
+use PKP\db\DAORegistry;
+use PKP\file\TemporaryFile;
+use PKP\file\TemporaryFileDAO;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
@@ -160,6 +164,77 @@ class DatasetHandlerAccessTest extends PKPTestCase
         $response = $this->createHandler()->get($this->createRequest(), new APIResponse(), ['studyId' => self::STUDY_ID]);
 
         $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function testPublishedDatasetFileCannotBeDeleted(): void
+    {
+        $this->mockDatasetFileActions();
+        Mockery::mock('overload:' . DatasetFileService::class)
+            ->shouldReceive('delete')->andThrow(new PublishedDatasetException());
+
+        $response = $this->createHandler()->deleteFile(
+            $this->createRequest(['fileId' => self::DATASET_FILE_ID]),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testPublishedDatasetCannotBeDeleted(): void
+    {
+        Mockery::mock('overload:' . DatasetService::class)
+            ->shouldReceive('delete')->andThrow(new PublishedDatasetException());
+
+        $response = $this->createHandler()->deleteDataset(
+            $this->createRequest(),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    public function testFileCannotBeAddedToPublishedDataset(): void
+    {
+        $temporaryFile = new TemporaryFile();
+        $temporaryFile->setId(31);
+        $temporaryFileDao = Mockery::mock(TemporaryFileDAO::class);
+        $temporaryFileDao->shouldReceive('getTemporaryFile')->andReturn($temporaryFile);
+        DAORegistry::registerDAO('TemporaryFileDAO', $temporaryFileDao);
+        Mockery::mock('overload:' . DatasetFileService::class)
+            ->shouldReceive('add')->andThrow(new PublishedDatasetException());
+
+        $response = $this->createHandler()->addFile(
+            $this->createRequest([], ['datasetFile' => ['temporaryFileId' => 31]]),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
+    /**
+     * @dataProvider invalidPersistentIds
+     */
+    public function testInvalidPersistentIdIsNotAServerError(array $body): void
+    {
+        $response = $this->createHandler()->associateDataset(
+            $this->createRequest([], $body),
+            new APIResponse(),
+            []
+        );
+
+        $this->assertLessThan(500, $response->getStatusCode());
+    }
+
+    public static function invalidPersistentIds(): array
+    {
+        return [
+            [[]],
+            [['datasetPersistentId' => null]],
+            [['datasetPersistentId' => ['doi:10.5072/FK2/TEST']]],
+        ];
     }
 
     public function testDownloadRejectsFilesOutsideTheStudyDataset(): void

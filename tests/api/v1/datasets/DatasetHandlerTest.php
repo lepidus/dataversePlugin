@@ -1,5 +1,7 @@
 <?php
 
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
+use PKP\core\APIResponse;
 use APP\core\Application;
 use APP\core\Request as PKPRequest;
 use APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler;
@@ -36,13 +38,22 @@ class DatasetHandlerTest extends PKPTestCase
         return ['request'];
     }
 
+    public static function editResults(): array
+    {
+        return [[false, 200], [true, 403]];
+    }
+
     protected function getMockedContainerKeys(): array
     {
         return [Repository::class];
     }
 
-    public function testEditForwardsAdditionalRequiredMetadataToTheUpdateService(): void
+    /**
+     * @dataProvider editResults
+     */
+    public function testEditForwardsAdditionalRequiredMetadataToTheUpdateService(bool $published, int $status): void
     {
+        ini_set('error_log', '/dev/null');
         Locale::registerPath(dirname(__DIR__, 4) . '/locale');
         $submission = new Submission();
         $submission->setId(23);
@@ -120,12 +131,15 @@ class DatasetHandlerTest extends PKPTestCase
             'subject' => 'Other',
             'license' => 'CC0 1.0',
             'relationType' => 'IsSupplementTo',
-        ] + $additionalMetadata);
+        ] + $additionalMetadata)->andReturnUsing(function () use ($published) {
+            if ($published) {
+                throw new PublishedDatasetException();
+            }
+        });
 
         $request = $this->createMock(ServerRequestInterface::class);
         $request->expects($this->once())->method('getParsedBody')->willReturn($params);
-        $response = $this->createMock(ResponseInterface::class);
-        $response->method('getStatusCode')->willReturn(200);
+        $response = new APIResponse();
         $args = ['studyId' => 7];
         $handler = $this->getMockBuilder(DatasetHandler::class)
             ->disableOriginalConstructor()->onlyMethods(['get', 'getAuthorizedContextObject'])->getMock();
@@ -133,6 +147,6 @@ class DatasetHandlerTest extends PKPTestCase
         $handler->method('getAuthorizedContextObject')
             ->with(Application::ASSOC_TYPE_SUBMISSION)->willReturn($submission);
 
-        $this->assertSame(200, $handler->edit($request, $response, $args)->getStatusCode());
+        $this->assertSame($status, $handler->edit($request, $response, $args)->getStatusCode());
     }
 }

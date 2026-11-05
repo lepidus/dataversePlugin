@@ -10,6 +10,7 @@ use APP\core\Services;
 use PKP\file\TemporaryFileManager;
 use PKP\log\event\SubmissionFileEventLogEntry;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\classes\security\authorization\PublicationNotPublishedPolicy;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\internal\PublicationCanBeEditedPolicy;
 use PKP\security\authorization\SubmissionAccessPolicy;
@@ -71,6 +72,7 @@ class DraftDatasetFileHandler extends APIHandler
         $operation = $this->getSlimRequest()->getAttribute('route')->getName();
         if (in_array($operation, self::PUBLICATION_WRITE_OPERATIONS)) {
             $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.publication.403.cantEditPublished'));
         }
 
         return parent::authorize($request, $args, $roleAssignments);

@@ -20,6 +20,8 @@ use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DatasetTabDispatcher extends DataverseDispatcher
 {
+    private const RESEARCH_DATA_ROLES = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_AUTHOR];
+
     protected function registerHooks(): void
     {
         Hook::add('Template::Workflow::Publication', [$this, 'addResearchDataTab']);
@@ -31,10 +33,26 @@ class DatasetTabDispatcher extends DataverseDispatcher
         return Repo::dataverseStudy()->getBySubmissionId($submissionId);
     }
 
+    protected function getUserRoles(): array
+    {
+        $handler = Application::get()->getRequest()->getRouter()->getHandler();
+
+        return (array) $handler->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES);
+    }
+
+    public function canAccessResearchData(): bool
+    {
+        return !empty(array_intersect($this->getUserRoles(), self::RESEARCH_DATA_ROLES));
+    }
+
     public function addResearchDataTab(string $hookName, array $params): bool
     {
         $templateMgr = &$params[1];
         $output = &$params[2];
+
+        if (!$this->canAccessResearchData()) {
+            return false;
+        }
 
         $submission = $templateMgr->getTemplateVars('submission');
 
@@ -95,6 +113,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'pageComponent' => 'DataverseWorkflowPage',
         ]);
 
+        $templateMgr->setState(['canAccessResearchData' => $this->canAccessResearchData()]);
+
         $submission = $templateMgr->getTemplateVars('submission');
         $study = $this->getSubmissionStudy($submission->getId());
 
@@ -121,7 +141,9 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $factory = new SubmissionDatasetFactory($submission, false);
         $dataset = $factory->getDataset();
-        $draftDatasetFiles = Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray();
+        $draftDatasetFiles = $this->canAccessResearchData()
+            ? Repo::draftDatasetFile()->getBySubmissionId($submission->getId())->toArray()
+            : [];
 
         $datasetFiles = array_map(function ($draftDatasetFile) use ($submission) {
             $fileVars = $draftDatasetFile->getAllData();

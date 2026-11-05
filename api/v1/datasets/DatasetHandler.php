@@ -11,8 +11,10 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
+use APP\plugins\generic\dataverse\classes\security\authorization\PublicationNotPublishedPolicy;
 use APP\plugins\generic\dataverse\classes\services\{
     DatasetFileService,
     DatasetService,
@@ -39,6 +41,8 @@ class DatasetHandler extends APIHandler
     private const PUBLICATION_WRITE_OPERATIONS = ['addDataset', 'addFile', 'edit', 'deleteFile', 'deleteDataset'];
 
     private const EDITORIAL_DECISION_OPERATIONS = ['associateDataset', 'disassociateDataset', 'publishDataset'];
+
+    private const UNPUBLISHED_PUBLICATION_OPERATIONS = ['addDataset', 'associateDataset'];
 
     private const BASE_METADATA_FIELDS = [
         'datasetTitle',
@@ -151,6 +155,10 @@ class DatasetHandler extends APIHandler
             $this->addPolicy(new StageRolePolicy(self::MANAGER_ROLES, null, false));
         }
 
+        if (in_array($operation, self::UNPUBLISHED_PUBLICATION_OPERATIONS)) {
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.publication.403.cantEditPublished'));
+        }
+
         return parent::authorize($request, $args, $roleAssignments);
     }
 
@@ -237,6 +245,11 @@ class DatasetHandler extends APIHandler
         return $additionalMetadata;
     }
 
+    private function publishedDatasetError($response)
+    {
+        return $response->withStatus(403)->withJsonError('api.dataset.403.cantEditPublished');
+    }
+
     private function dataverseError($response, DataverseException $e)
     {
         error_log('Dataverse API error: ' . $e->getMessage());
@@ -311,8 +324,11 @@ class DatasetHandler extends APIHandler
         $data['license'] = $requestParams['datasetLicense'];
         $data['relationType'] = $requestParams['datasetRelationType'];
 
-        $datasetService = new DatasetService();
-        $datasetService->update(array_merge($data, $this->getAdditionalMetadata($requestParams, $metadataForm)));
+        try {
+            (new DatasetService())->update(array_merge($data, $this->getAdditionalMetadata($requestParams, $metadataForm)));
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError($response);
+        }
 
         return $this->get($slimRequest, $response, $args);
     }
@@ -321,7 +337,11 @@ class DatasetHandler extends APIHandler
     {
         $requestParams = $slimRequest->getParsedBody();
         $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
-        $persistentId = $requestParams['datasetPersistentId'];
+        $persistentId = $requestParams['datasetPersistentId'] ?? '';
+
+        if (!is_string($persistentId)) {
+            $persistentId = '';
+        }
 
         $datasetService = new DatasetService();
         $associationResult = $datasetService->associate($submission->getId(), $persistentId);
@@ -461,12 +481,16 @@ class DatasetHandler extends APIHandler
         }
 
         $user = Application::get()->getRequest()->getUser();
-        if (!(new TemporaryFileManager())->getFile($fileId, $user->getId())) {
+        $temporaryFile = (new TemporaryFileManager())->getFile($fileId, $user->getId());
+        if (!$temporaryFile) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $datasetFileService = new DatasetFileService();
-        $datasetFileService->add($study, $fileId);
+        try {
+            (new DatasetFileService())->add($study, $temporaryFile);
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError($response);
+        }
 
         return $response->withJson(['message' => 'ok'], 200);
     }
@@ -578,8 +602,11 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $datasetFileService = new DatasetFileService();
-        $datasetFileService->delete($study, (string) $datasetFile->getId(), $datasetFile->getFileName());
+        try {
+            (new DatasetFileService())->delete($study, (string) $datasetFile->getId(), $datasetFile->getFileName());
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError($response);
+        }
 
         return $response->withJson(['message' => 'ok'], 200);
     }
@@ -601,8 +628,11 @@ class DatasetHandler extends APIHandler
             }
         }
 
-        $datasetService = new DatasetService();
-        $datasetService->delete($study, $deleteMessage);
+        try {
+            (new DatasetService())->delete($study, $deleteMessage);
+        } catch (PublishedDatasetException $e) {
+            return $this->publishedDatasetError($response);
+        }
 
         return $response->withJson(['message' => 'ok'], 200);
     }

@@ -16,6 +16,7 @@ use APP\plugins\generic\dataverse\classes\components\forms\SelectDataFilesForRev
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\observers\listeners\DatasetDepositOnSubmission;
@@ -395,10 +396,14 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         }
 
         $datasetService = new DatasetService();
-        $datasetService->update([
-            'persistentId' => $study->getPersistentId(),
-            'relatedPublication' => $relatedPublication
-        ]);
+        try {
+            $datasetService->update([
+                'persistentId' => $study->getPersistentId(),
+                'relatedPublication' => $relatedPublication
+            ]);
+        } catch (PublishedDatasetException $e) {
+            return false;
+        }
 
         return false;
     }

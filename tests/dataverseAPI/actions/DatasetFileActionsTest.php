@@ -6,6 +6,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use PKP\config\Config;
+use PKP\plugins\Hook;
 use PKP\tests\PKPTestCase;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetFileActions;
@@ -137,6 +138,154 @@ class DatasetFileActionsTest extends PKPTestCase
         $configuration->setDataverseUrl('https://test.dataverse.org/dataverse/test');
         $configuration->setAPIToken('test-token');
         return new $actionsClass($configuration, $client);
+    }
+
+    private function downloadWith(array $responses, string $filename = 'data.csv'): array
+    {
+        $filesDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('datasetFileTest');
+        mkdir($filesDir);
+        $config = &Config::getData();
+        $originalFilesDir = $config['files']['files_dir'];
+        $config['files']['files_dir'] = $filesDir;
+
+        $requests = [];
+        $stack = HandlerStack::create(new MockHandler($responses));
+        $stack->push(Middleware::history($requests));
+        $actions = $this->createActions(new Client(['handler' => $stack]));
+
+        $downloadArguments = null;
+        Hook::add('FileManager::downloadFile', function ($hookName, $args) use (&$downloadArguments) {
+            $downloadArguments = $args;
+            return Hook::ABORT;
+        });
+
+        try {
+            $actions->download(41, $filename);
+            $this->assertSame(['.', '..'], scandir($filesDir));
+        } finally {
+            Hook::clear('FileManager::downloadFile');
+            $config['files']['files_dir'] = $originalFilesDir;
+            exec('rm -rf ' . escapeshellarg($filesDir));
+        }
+
+        return [$requests, $downloadArguments];
+    }
+
+    public function testTokenIsNotSentToExternalStorage(): void
+    {
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://storage.example.org/bucket/file?signature=abc']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertTrue($requests[0]['request']->hasHeader('X-Dataverse-key'));
+        $this->assertSame('storage.example.org', $requests[1]['request']->getUri()->getHost());
+        $this->assertFalse($requests[1]['request']->hasHeader('X-Dataverse-key'));
+    }
+
+    public function testTokenIsKeptOnDownloadRedirectsWithinTheDataverseServer(): void
+    {
+        [$requests] = $this->downloadWith([
+            new Response(302, ['Location' => '/api/access/datafile/41/redirected']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertTrue($requests[1]['request']->hasHeader('X-Dataverse-key'));
+    }
+
+    public function testEndlessDownloadRedirectsAreNotFollowed(): void
+    {
+        $this->expectException(DataverseException::class);
+        $this->downloadWith(array_fill(0, 10, new Response(302, ['Location' => '/again'])));
+    }
+
+    /**
+     * @dataProvider redirectsWithoutDestination
+     */
+    public function testRedirectWithoutDestinationIsNotServedAsTheFile(int $status): void
+    {
+        $this->expectException(DataverseException::class);
+        $this->downloadWith([new Response($status, [], '<html>redirect</html>')]);
+    }
+
+    public static function redirectsWithoutDestination(): array
+    {
+        return [[302], [303], [304]];
+    }
+
+    public function testDownloadUsesItsOwnTimeoutOnEveryTransfer(): void
+    {
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://storage.example.org/file']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertSame(300, $requests[0]['options']['timeout']);
+        $this->assertSame(300, $requests[1]['options']['timeout']);
+    }
+
+    public function testFileNameFromDataverseIsNotUsedOnDisk(): void
+    {
+        $longName = str_repeat('a', 300) . '.csv';
+
+        [, $downloadArguments] = $this->downloadWith([new Response(200, [], 'content')], $longName);
+
+        $this->assertSame('datasetFile', basename($downloadArguments[0]));
+        $this->assertSame($longName, $downloadArguments[4]);
+    }
+
+    public function testTokenIsNotReattachedAfterLeavingTheServer(): void
+    {
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://storage.example.org/file']),
+            new Response(302, ['Location' => 'https://test.dataverse.org/api/admin/settings']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertSame('test.dataverse.org', $requests[2]['request']->getUri()->getHost());
+        $this->assertFalse($requests[2]['request']->hasHeader('X-Dataverse-key'));
+    }
+
+    public function testMalformedRedirectIsReportedAsUnavailable(): void
+    {
+        $this->expectException(DataverseException::class);
+        $this->expectExceptionCode(503);
+        $this->downloadWith([new Response(302, ['Location' => 'http://:'])]);
+    }
+
+    public function testExpiredStorageLinkIsNotReportedAsInvalidToken(): void
+    {
+        $this->expectExceptionCode(503);
+        $this->downloadWith([
+            new Response(303, ['Location' => 'https://storage.example.org/file']),
+            new Response(401, [], '{"message":"expired"}'),
+        ]);
+    }
+
+    /**
+     * @dataProvider fileNamesWithHeaderCharacters
+     */
+    public function testDownloadNameCannotBreakTheContentDispositionHeader(string $name, string $expected): void
+    {
+        [, $downloadArguments] = $this->downloadWith([new Response(200, [], 'content')], $name);
+
+        $this->assertSame($expected, $downloadArguments[4]);
+    }
+
+    public static function fileNamesWithHeaderCharacters(): array
+    {
+        return [
+            'line break' => ["data\r\n.html", 'data.html'],
+            'double quote' => ['da"ta.csv', 'data.csv'],
+            'backslash' => ['da\\ta.csv', 'data.csv'],
+        ];
+    }
+
+    public function testDownloadKeepsTheMediaTypeGivenByTheFileExtension(): void
+    {
+        [, $downloadArguments] = $this->downloadWith([new Response(200, [], "year,value\n2026,1\n")], 'data.csv');
+
+        $this->assertSame('text/csv', $downloadArguments[1]);
     }
 
     public function testFailedDownloadRemovesItsTemporaryDirectory(): void

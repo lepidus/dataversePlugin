@@ -7,6 +7,7 @@ import {
     depositDatasetFixture,
     publishSubmissionFixture,
     publishDatasetFixture,
+    waitForDatasetRelease,
 } from '../support/fixtures.js';
 
 function assertAdditionalInstructionsDisplay() {
@@ -381,6 +382,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.intercept('POST', /\/api\/v1\/datasets\/\d+\/publish(?:\?|$)/).as('publishResearchData');
         cy.get('div[data-modal="publishDataset"] button:contains("Yes")').click();
         cy.wait('@publishResearchData').its('response.statusCode').should('eq', 200);
+        cy.then(() => waitForDatasetRelease(fixture));
         cy.reload();
 
 		cy.contains('Demo Dataverse, V1');
