@@ -6,6 +6,7 @@ use Illuminate\Events\Dispatcher;
 use APP\decision\Decision;
 use PKP\observers\events\DecisionAdded;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class ProcessDataverseDecisionsActions
@@ -65,7 +66,10 @@ class ProcessDataverseDecisionsActions
     {
         $study = Repo::dataverseStudy()->getBySubmissionId($submission->getId());
 
-        $datasetService = new DatasetService();
-        $datasetService->delete($study, null);
+        try {
+            (new DatasetService())->delete($study, null);
+        } catch (PublishedDatasetException $e) {
+            return;
+        }
     }
 }

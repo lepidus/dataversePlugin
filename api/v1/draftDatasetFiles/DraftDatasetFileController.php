@@ -14,6 +14,7 @@ use PKP\core\PKPRequest;
 use PKP\file\TemporaryFileManager;
 use PKP\log\event\SubmissionFileEventLogEntry;
 use PKP\security\authorization\ContextAccessPolicy;
+use APP\plugins\generic\dataverse\classes\security\authorization\PublicationNotPublishedPolicy;
 use PKP\security\authorization\internal\PublicationCanBeEditedPolicy;
 use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\authorization\UserRolesRequiredPolicy;
@@ -74,6 +75,7 @@ class DraftDatasetFileController extends PKPBaseController
 
         if (in_array(static::getRouteActionName($args[0]), self::PUBLICATION_WRITE_ACTIONS)) {
             $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.publication.403.cantEditPublished'));
         }
 
         return parent::authorize($request, $args, $roleAssignments);

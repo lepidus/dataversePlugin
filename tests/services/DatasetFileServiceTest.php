@@ -5,6 +5,7 @@ use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\plugins\generic\dataverse\tests\helpers\DataverseIntegrationFixture;
 use APP\submission\Submission;
+use PKP\file\TemporaryFileManager;
 use PKP\tests\DatabaseTestCase;
 
 class DatasetFileServiceTest extends DatabaseTestCase
@@ -52,7 +53,9 @@ class DatasetFileServiceTest extends DatabaseTestCase
     {
         $temporaryFileId = $this->createTemporaryFile('example.json', 'application/json', '{"example": true}');
 
-        (new DatasetFileService())->add($this->getStudy(), $temporaryFileId);
+        $temporaryFile = (new TemporaryFileManager())->getFile($temporaryFileId, $this->user->getId());
+
+        (new DatasetFileService())->add($this->getStudy(), $temporaryFile);
 
         $this->assertEqualsCanonicalizing(
             ['LEIAME.pdf', 'Planilha_de_dados.json', 'example.json'],

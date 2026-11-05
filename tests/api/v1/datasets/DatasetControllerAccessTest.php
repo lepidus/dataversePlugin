@@ -11,11 +11,13 @@ use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\submission\Repository as SubmissionRepository;
 use APP\submission\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Support\LazyCollection;
@@ -29,6 +31,8 @@ use PKP\core\Registry;
 use PKP\facades\Locale;
 use PKP\security\Role;
 use PKP\submission\reviewAssignment\ReviewAssignment;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PKP\file\TemporaryFile;
 use PKP\tests\PKPTestCase;
 use PKP\user\User;
 
@@ -50,7 +54,7 @@ class DatasetControllerAccessTest extends PKPTestCase
 
     protected function getMockedContainerKeys(): array
     {
-        return [DataverseStudyRepository::class, DraftDatasetFileRepository::class];
+        return [DataverseStudyRepository::class, DraftDatasetFileRepository::class, SubmissionRepository::class];
     }
 
     protected function setUp(): void
@@ -219,7 +223,7 @@ class DatasetControllerAccessTest extends PKPTestCase
         try {
             $temporaryFileId = $this->createTemporaryFileOwnedBy($owner);
             $service = Mockery::mock('overload:' . DatasetFileService::class);
-            $service->shouldReceive('add')->once()->with($this->study, $temporaryFileId);
+            $service->shouldReceive('add')->once()->with($this->study, Mockery::type(TemporaryFile::class));
 
             $this->assertSame(200, $this->addFileAs($owner, $temporaryFileId));
         } finally {
@@ -241,6 +245,68 @@ class DatasetControllerAccessTest extends PKPTestCase
             Repo::user()->delete($owner);
             Repo::user()->delete($otherUser);
         }
+    }
+
+    public function testPublishedDatasetFileCannotBeDeleted(): void
+    {
+        $this->mockDatasetFileActions();
+        Mockery::mock('overload:' . DatasetFileService::class)
+            ->shouldReceive('delete')->andThrow(new PublishedDatasetException());
+
+        $request = $this->createRequest('DELETE', '/datasets/' . self::STUDY_ID . '/file?fileId=' . self::DATASET_FILE_ID);
+
+        $this->assertSame(403, $this->createController()->deleteFile($request)->getStatusCode());
+    }
+
+    public function testPublishedDatasetCannotBeDeleted(): void
+    {
+        Mockery::mock('overload:' . DatasetService::class)
+            ->shouldReceive('delete')->andThrow(new PublishedDatasetException());
+
+        $request = $this->createRequest('DELETE', '/datasets/' . self::STUDY_ID . '/x');
+
+        $this->assertSame(403, $this->createController()->delete($request)->getStatusCode());
+    }
+
+    public function testFileCannotBeAddedToPublishedDataset(): void
+    {
+        $owner = $this->createUser();
+        try {
+            $temporaryFileId = $this->createTemporaryFileOwnedBy($owner);
+            Mockery::mock('overload:' . DatasetFileService::class)
+                ->shouldReceive('add')->andThrow(new PublishedDatasetException());
+
+            $this->assertSame(403, $this->addFileAs($owner, $temporaryFileId));
+        } finally {
+            Repo::user()->delete($owner);
+        }
+    }
+
+    #[DataProvider('invalidPersistentIds')]
+    public function testInvalidPersistentIdIsNotAServerError(array $params): void
+    {
+        $studyRepository = Mockery::mock(DataverseStudyRepository::class);
+        $studyRepository->shouldReceive('getBySubmissionId')->andReturn(null);
+        app()->instance(DataverseStudyRepository::class, $studyRepository);
+
+        $submissionRepository = Mockery::mock(SubmissionRepository::class);
+        $submissionRepository->shouldReceive('get')->with($this->submission->getId())->andReturn($this->submission);
+        app()->instance(SubmissionRepository::class, $submissionRepository);
+
+        $request = $this->createRequest('POST', '/datasets/associate', $params);
+
+        $response = $this->createController()->associate($request);
+
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame(__('plugins.generic.dataverse.error.invalidPersistentId'), $response->getData(true)['error']);
+    }
+
+    public static function invalidPersistentIds(): array
+    {
+        return [
+            [[]],
+            [['datasetPersistentId' => ['doi:10.5072/FK2/TEST']]],
+        ];
     }
 
     public function testDeleteFileRejectsFilesOutsideTheStudyDataset(): void

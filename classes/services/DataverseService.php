@@ -9,13 +9,27 @@ use PKP\core\Core;
 use PKP\security\Validation;
 use PKP\notification\Notification;
 use APP\notification\NotificationManager;
+use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 
 abstract class DataverseService
 {
     public const STATUS_SUCCESS = 'success';
     public const STATUS_NOT_FOUND = 'notFound';
     public const STATUS_ERROR = 'error';
+
+    protected function getDataverseClient(): DataverseClient
+    {
+        return new DataverseClient();
+    }
+
+    protected function assertDatasetIsNotPublished(DataverseClient $dataverseClient, string $persistentId): void
+    {
+        if ($dataverseClient->getDatasetActions()->get($persistentId)->isPublished()) {
+            throw new PublishedDatasetException();
+        }
+    }
 
     protected function registerEventLog(
         Submission $submission,
