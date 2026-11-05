@@ -93,23 +93,10 @@ class DataverseSearchBuilder
 
     private function executeRequest(string $url): DataverseResponse
     {
-        try {
-            $response = $this->httpClient->request('GET', $url, [
-                'headers' => [
-                    'X-Dataverse-key' => $this->configuration->getAPIToken()
-                ],
-                'connect_timeout' => 5,
-                'timeout' => 15,
-            ]);
-        } catch (TransferException $e) {
-            throw DataverseException::fromTransferException($e);
-        }
+        import('plugins.generic.dataverse.dataverseAPI.actions.DataverseCollectionActions');
+        $actions = new DataverseCollectionActions($this->configuration, $this->httpClient);
 
-        return new DataverseResponse(
-            $response->getStatusCode(),
-            $response->getReasonPhrase(),
-            $response->getBody()
-        );
+        return $actions->nativeAPIRequest('GET', $url);
     }
 
     public function search(): array

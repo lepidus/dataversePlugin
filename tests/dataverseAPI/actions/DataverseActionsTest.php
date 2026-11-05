@@ -4,6 +4,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 
@@ -11,6 +13,7 @@ import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.dataverseAPI.actions.DataverseActions');
 import('plugins.generic.dataverse.classes.entities.DataverseResponse');
 import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfiguration');
+import('plugins.generic.dataverse.classes.exception.DataverseException');
 
 class DataverseActionsTest extends PKPTestCase
 {
@@ -367,4 +370,94 @@ class DataverseActionsTest extends PKPTestCase
             $this->assertSame(__('plugins.generic.dataverse.error.exception.unavailable'), $exception->getMessage());
         }
     }
+
+    private function createProductionLikeActions(array $responses, array &$requests): DatasetCollectionActionsForTest
+    {
+        $stack = HandlerStack::create(new MockHandler($responses));
+        $stack->push(Middleware::history($requests));
+
+        return new DatasetCollectionActionsForTest($this->configuration, new Client([
+            'handler' => $stack,
+            'allow_redirects' => ['strict' => true],
+        ]));
+    }
+
+    public function otherServers(): array
+    {
+        return [
+            'another host' => ['https://storage.example.org/file'],
+            'another scheme' => ['http://test.dataverse.org/api/datasets/1'],
+            'another port' => ['https://test.dataverse.org:8443/api/datasets/1'],
+        ];
+    }
+
+    /**
+     * @dataProvider otherServers
+     */
+    public function testNativeRequestIsNotRedirectedToAnotherServer(string $location): void
+    {
+        $requests = [];
+        $actions = $this->createProductionLikeActions([
+            new Response(302, ['Location' => $location]),
+            new Response(200, [], '{}'),
+        ], $requests);
+
+        try {
+            $actions->nativeAPIRequest('GET', 'https://test.dataverse.org/api/datasets/1');
+            $this->fail('The redirect to another server was followed');
+        } catch (DataverseException $e) {
+            $this->assertSame(503, $e->getCode());
+        }
+
+        $this->assertCount(1, $requests);
+    }
+
+    /**
+     * @dataProvider otherServers
+     */
+    public function testSwordRequestIsNotRedirectedToAnotherServer(string $location): void
+    {
+        $requests = [];
+        $actions = $this->createProductionLikeActions([
+            new Response(302, ['Location' => $location]),
+            new Response(200, [], '{}'),
+        ], $requests);
+
+        try {
+            $actions->swordAPIRequest('DELETE', 'https://test.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/x');
+            $this->fail('The redirect to another server was followed');
+        } catch (DataverseException $e) {
+            $this->assertSame(503, $e->getCode());
+        }
+
+        $this->assertCount(1, $requests);
+    }
+
+    public function mutatingMethods(): array
+    {
+        return [['POST'], ['PUT'], ['DELETE']];
+    }
+
+    /**
+     * @dataProvider mutatingMethods
+     */
+    public function testRedirectWithinTheServerKeepsTheMethodAndTheBody(string $method): void
+    {
+        $requests = [];
+        $actions = $this->createProductionLikeActions([
+            new Response(302, ['Location' => '/api/datasets/2']),
+            new Response(200, [], '{}'),
+        ], $requests);
+
+        $actions->nativeAPIRequest($method, 'https://test.dataverse.org/api/datasets/1', ['body' => 'payload']);
+
+        $this->assertCount(2, $requests);
+        $this->assertSame($method, $requests[1]['request']->getMethod());
+        $this->assertSame('payload', (string) $requests[1]['request']->getBody());
+        $this->assertTrue($requests[1]['request']->hasHeader('X-Dataverse-key'));
+    }
+}
+
+class DatasetCollectionActionsForTest extends DataverseActions
+{
 }
