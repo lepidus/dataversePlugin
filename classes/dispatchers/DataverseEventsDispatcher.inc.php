@@ -175,7 +175,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         }
 
         $datasetService = new DatasetService();
-        $datasetService->delete($study, null);
+        try {
+            $datasetService->delete($study, null);
+        } catch (PublishedDatasetException $e) {
+            return;
+        }
     }
 
     public function addDatasetPublishNoticeInPost(string $hookName, \PKP\components\forms\FormComponent $form): void
@@ -448,10 +452,14 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $relatedPublication->setData('RelationType', $actualRelationType);
 
         $datasetService = new DatasetService();
-        $datasetService->update([
-            'persistentId' => $study->getPersistentId(),
-            'relatedPublication' => $relatedPublication
-        ]);
+        try {
+            $datasetService->update([
+                'persistentId' => $study->getPersistentId(),
+                'relatedPublication' => $relatedPublication
+            ]);
+        } catch (PublishedDatasetException $e) {
+            return false;
+        }
 
         return false;
     }

@@ -12,6 +12,9 @@ import('classes.submission.Submission');
 import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudy');
 import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudyDAO');
 import('plugins.generic.dataverse.api.v1.datasets.DatasetHandler');
+import('plugins.generic.dataverse.classes.services.DatasetService');
+import('plugins.generic.dataverse.classes.services.DatasetFileService');
+import('plugins.generic.dataverse.classes.exception.PublishedDatasetException');
 
 class DatasetHandlerAccessTest extends PKPTestCase
 {
@@ -76,7 +79,7 @@ class DatasetHandlerAccessTest extends PKPTestCase
 
         $handler = $this->getMockBuilder(DatasetHandler::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission', 'isDatasetPublished'])
+            ->onlyMethods(['getAuthorizedContextObject', 'isAssignedToSubmission', 'getDatasetService', 'getDatasetFileService'])
             ->getMock();
         $handler->method('getAuthorizedContextObject')->willReturnMap([
             [ASSOC_TYPE_SUBMISSION, $submission],
@@ -84,9 +87,20 @@ class DatasetHandlerAccessTest extends PKPTestCase
             [ASSOC_TYPE_USER_ROLES, $userRoles],
         ]);
         $handler->method('isAssignedToSubmission')->willReturn($isAssigned);
-        $handler->method('isDatasetPublished')->willReturn(true);
+        $handler->method('getDatasetService')->willReturn($this->createPublishedDatasetService(DatasetService::class));
+        $handler->method('getDatasetFileService')->willReturn($this->createPublishedDatasetService(DatasetFileService::class));
 
         return $handler;
+    }
+
+    private function createPublishedDatasetService(string $serviceClass)
+    {
+        $service = $this->createMock($serviceClass);
+        foreach (array_intersect(['update', 'add', 'delete'], get_class_methods($serviceClass)) as $method) {
+            $service->method($method)->willThrowException(new PublishedDatasetException());
+        }
+
+        return $service;
     }
 
     private function mockTemporaryFileLookup(?TemporaryFile $temporaryFile): void
@@ -156,22 +170,29 @@ class DatasetHandlerAccessTest extends PKPTestCase
         $this->assertSame(404, $response->getStatusCode());
     }
 
-    public function publishedDatasetOperations(): array
+    public function testPublishedDatasetCannotBeEdited(): void
     {
-        return [
-            ['edit'],
-            ['deleteFile'],
-            ['deleteDataset'],
-        ];
+        $response = $this->createHandler()->edit(
+            $this->createSlimRequest([
+                'datasetTitle' => 'Title',
+                'datasetDescription' => 'Description',
+                'datasetKeywords' => [],
+                'datasetLanguage' => 'English',
+                'datasetSubject' => 'Other',
+                'datasetLicense' => 'CC0',
+                'datasetRelationType' => 'IsSupplementTo',
+            ]),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
     }
 
-    /**
-     * @dataProvider publishedDatasetOperations
-     */
-    public function testPublishedDatasetCannotBeChanged(string $operation): void
+    public function testPublishedDatasetCannotBeDeleted(): void
     {
-        $response = $this->createHandler()->$operation(
-            $this->createSlimRequest(),
+        $response = $this->createHandler()->deleteDataset(
+            $this->createSlimRequest(['sendDeleteEmail' => 0]),
             new APIResponse(),
             ['studyId' => self::STUDY_ID]
         );
