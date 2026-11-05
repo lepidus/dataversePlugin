@@ -159,6 +159,7 @@ class DatasetHandlerAccessTest extends PKPTestCase
     public function publishedDatasetOperations(): array
     {
         return [
+            ['edit'],
             ['deleteFile'],
             ['deleteDataset'],
         ];

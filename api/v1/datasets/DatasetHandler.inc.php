@@ -262,6 +262,14 @@ class DatasetHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
+        try {
+            if ($this->isDatasetPublished($study)) {
+                return $this->publishedDatasetError($response);
+            }
+        } catch (DataverseException $e) {
+            return $this->dataverseError($response, $e);
+        }
+
         $data = [];
         $data['persistentId'] = $study->getPersistentId();
         $data['title'] = $requestParams['datasetTitle'];
