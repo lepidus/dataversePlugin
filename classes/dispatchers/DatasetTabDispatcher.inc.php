@@ -23,10 +23,28 @@ class DatasetTabDispatcher extends DataverseDispatcher
         return $study;
     }
 
+    protected function getAccessibleWorkflowStages(): array
+    {
+        $handler = Application::get()->getRequest()->getRouter()->getHandler();
+
+        return (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_ACCESSIBLE_WORKFLOW_STAGES);
+    }
+
+    public function canAccessResearchData(): bool
+    {
+        $submissionRoles = array_merge([], ...array_values($this->getAccessibleWorkflowStages()));
+
+        return empty($submissionRoles) || !empty(array_diff($submissionRoles, [ROLE_ID_ASSISTANT]));
+    }
+
     public function addResearchDataTab(string $hookName, array $params): bool
     {
         $templateMgr = &$params[1];
         $output = &$params[2];
+
+        if (!$this->canAccessResearchData()) {
+            return false;
+        }
 
         $submission = $templateMgr->getTemplateVars('submission');
         $study = $this->getSubmissionStudy($submission->getId());
@@ -80,6 +98,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $templateMgr->assign([
             'pageComponent' => 'DataverseWorkflowPage',
         ]);
+
+        $templateMgr->setState(['canAccessResearchData' => $this->canAccessResearchData()]);
 
         $submission = $templateMgr->getTemplateVars('submission');
         $study = $this->getSubmissionStudy($submission->getId());

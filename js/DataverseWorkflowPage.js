@@ -2,6 +2,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
     name: 'DataverseWorkflowPage',
     data() {
         return {
+            canAccessResearchData: false,
             dataversePluginApiUrl: null,
             datasetPluginApiUrl: null,
             datasetCitationUrl: null,
@@ -88,9 +89,11 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }
         },
 
-        retryDataverseRequests() {
-            this.dataverseIsUnavailable = false;
-            this.dataverseErrorMessage = '';
+        loadDataverseData() {
+            if (!this.canAccessResearchData) {
+                return;
+            }
+
             this.getDataverseName();
             this.getDataverseLicenses();
 
@@ -99,6 +102,12 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 this.refreshDataset();
                 this.refreshDatasetFiles();
             }
+        },
+
+        retryDataverseRequests() {
+            this.dataverseIsUnavailable = false;
+            this.dataverseErrorMessage = '';
+            this.loadDataverseData();
         },
 
         /**
@@ -625,14 +634,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             this.getDatasetInReview(newVal);
         },
         flagMounted(newVal, oldVal) {
-            this.getDataverseName();
-            this.getDataverseLicenses();
-
-            if (this.hasDepositedDataset) {
-                this.getRootDataverseName();
-                this.refreshDataset();
-                this.refreshDatasetFiles();
-            }
+            this.loadDataverseData();
         }
     },
 });
