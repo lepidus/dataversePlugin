@@ -154,12 +154,16 @@ class DraftDatasetFileGridHandler extends GridHandler
 
     public function deleteFile($args, $request)
     {
-        $fileId = isset($args['fileId']) ? $args['fileId'] : null;
-        $context = $request->getContext();
+        $fileId = isset($args['fileId']) ? (int) $args['fileId'] : null;
 
         if ($request->checkCSRF() && $fileId) {
-            import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
-            $draftDatasetFileDAO = new DraftDatasetFileDAO();
+            $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+            $draftDatasetFile = $draftDatasetFileDAO->getById($fileId);
+
+            if (!$draftDatasetFile || $draftDatasetFile->getSubmissionId() != $this->getSubmission()->getId()) {
+                return new JSONMessage(false);
+            }
+
             $draftDatasetFileDAO->deleteById($fileId);
 
             import('lib.pkp.classes.log.SubmissionLog');
@@ -169,7 +173,7 @@ class DraftDatasetFileGridHandler extends GridHandler
                 $this->getSubmission(),
                 SUBMISSION_LOG_FILE_UPLOAD,
                 'plugins.generic.dataverse.log.researchDataFileDeleted',
-                ['filename' => $args['fileName']]
+                ['filename' => $draftDatasetFile->getData('fileName')]
             );
 
             return DAO::getDataChangedEvent();
