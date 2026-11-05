@@ -17,6 +17,7 @@ use APP\plugins\generic\dataverse\classes\services\DatasetFileService;
 use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\submission\Repository as SubmissionRepository;
 use APP\submission\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Support\LazyCollection;
@@ -53,7 +54,7 @@ class DatasetControllerAccessTest extends PKPTestCase
 
     protected function getMockedContainerKeys(): array
     {
-        return [DataverseStudyRepository::class, DraftDatasetFileRepository::class];
+        return [DataverseStudyRepository::class, DraftDatasetFileRepository::class, SubmissionRepository::class];
     }
 
     protected function setUp(): void
@@ -287,6 +288,10 @@ class DatasetControllerAccessTest extends PKPTestCase
         $studyRepository = Mockery::mock(DataverseStudyRepository::class);
         $studyRepository->shouldReceive('getBySubmissionId')->andReturn(null);
         app()->instance(DataverseStudyRepository::class, $studyRepository);
+
+        $submissionRepository = Mockery::mock(SubmissionRepository::class);
+        $submissionRepository->shouldReceive('get')->with($this->submission->getId())->andReturn($this->submission);
+        app()->instance(SubmissionRepository::class, $submissionRepository);
 
         $request = $this->createRequest('POST', '/datasets/associate', $params);
 
