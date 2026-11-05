@@ -4,6 +4,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use PHPUnit\Framework\Attributes\DataProvider;
 use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Handler\MockHandler;
@@ -12,6 +14,7 @@ use GuzzleHttp\Exception\ConnectException;
 use PKP\config\Config;
 use PKP\tests\PKPTestCase;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseCollectionActions;
 use APP\plugins\generic\dataverse\classes\entities\DataverseResponse;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
@@ -473,4 +476,34 @@ class DataverseActionsTest extends PKPTestCase
 
 class ConcreteDataverseActions extends DataverseActions
 {
+
+    #[DataProvider('otherServers')]
+    public function testSwordRequestIsNotRedirectedToAnotherServer(string $location): void
+    {
+        $history = [];
+        $stack = HandlerStack::create(new MockHandler([
+            new Response(302, ['Location' => $location]),
+            new Response(200, [], '{}'),
+        ]));
+        $stack->push(Middleware::history($history));
+        $actions = new DataverseCollectionActions($this->configuration, new Client(['handler' => $stack]));
+
+        try {
+            $actions->swordAPIRequest('DELETE', 'https://test.dataverse.org/dvn/api/data-deposit/v1.1/swordv2/x');
+            $this->fail('The redirect to another server was followed');
+        } catch (DataverseException $e) {
+            $this->assertSame(503, $e->getCode());
+        }
+
+        $this->assertCount(1, $history);
+    }
+
+    public static function otherServers(): array
+    {
+        return [
+            'another host' => ['https://storage.example.org/file'],
+            'another scheme' => ['http://test.dataverse.org/api/datasets/1'],
+            'another port' => ['https://test.dataverse.org:8443/api/datasets/1'],
+        ];
+    }
 }

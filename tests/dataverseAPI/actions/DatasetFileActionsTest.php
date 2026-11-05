@@ -264,11 +264,54 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->assertSame("year,value\n2026,1\n", $this->downloadedContents);
     }
 
-    public function testRedirectWithoutDestinationIsNotServedAsTheFile(): void
+    #[DataProvider('redirectsWithoutValidDestination')]
+    public function testRedirectWithoutValidDestinationIsNotServedAsTheFile(array $headers): void
     {
-        $actions = $this->createActionsRespondingWith([new Response(302, [], '<html>redirect</html>')]);
+        $history = [];
+        $actions = $this->createActionsRespondingWith([new Response(302, $headers, '<html>redirect</html>')], $history);
 
-        $this->expectException(DataverseException::class);
+        try {
+            $actions->download(2025434, 'Data.csv');
+            $this->fail('The redirect was served as the file');
+        } catch (DataverseException $e) {
+            $this->assertSame(503, $e->getCode());
+        }
+
+        $this->assertCount(1, $history);
+    }
+
+    public static function redirectsWithoutValidDestination(): array
+    {
+        return [
+            'no location' => [[]],
+            'empty location' => [['Location' => '']],
+            'malformed location' => [['Location' => 'http://:']],
+        ];
+    }
+
+    public function testTokenIsNotReattachedAfterLeavingTheServer(): void
+    {
+        $history = [];
+        $actions = $this->createActionsRespondingWith([
+            new Response(303, ['Location' => 'https://storage.example.org/file']),
+            new Response(302, ['Location' => 'https://test.dataverse.org/api/admin/settings']),
+            new Response(200, [], 'content'),
+        ], $history);
+
+        $actions->download(2025434, 'Data.csv');
+
+        $this->assertSame('test.dataverse.org', $history[2]['request']->getUri()->getHost());
+        $this->assertFalse($history[2]['request']->hasHeader('X-Dataverse-key'));
+    }
+
+    public function testExpiredStorageLinkIsNotReportedAsInvalidToken(): void
+    {
+        $actions = $this->createActionsRespondingWith([
+            new Response(303, ['Location' => 'https://storage.example.org/file']),
+            new Response(401, [], '{"message":"expired"}'),
+        ]);
+
+        $this->expectExceptionCode(503);
         $actions->download(2025434, 'Data.csv');
     }
 
