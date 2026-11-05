@@ -34,3 +34,17 @@ Cypress.Commands.add('waitDatasetTabLoading', function(tabToLeave, alreadyOnData
 
 	cy.get('#' + tabToLeave + '-button').click();
 });
+Cypress.Commands.add('waitDatasetToBePublished', function(attemptsLeft = 20) {
+	cy.reload();
+	cy.waitDatasetTabLoading('datasetTab');
+	cy.wait(1000);
+
+	cy.get('#deleteDatasetButton').then(($deleteButton) => {
+		if ($deleteButton.is(':disabled') || attemptsLeft === 0) {
+			return;
+		}
+
+		cy.wait(3000);
+		cy.waitDatasetToBePublished(attemptsLeft - 1);
+	});
+});

@@ -494,9 +494,8 @@ describe('Research data deposit', function () {
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
 		cy.wait(5000);
 		cy.get('.pkpPublication__statusPublished');
-		cy.reload();
+		cy.waitDatasetToBePublished();
 
-		cy.waitDatasetTabLoading('datasetTab');
 		cy.get('#deleteDatasetButton').should('be.disabled');
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
 		cy.contains('button', 'Add research data').should('be.disabled');
