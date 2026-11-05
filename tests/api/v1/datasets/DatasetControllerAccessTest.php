@@ -31,6 +31,7 @@ use PKP\facades\Locale;
 use PKP\security\Role;
 use PKP\submission\reviewAssignment\ReviewAssignment;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PKP\file\TemporaryFile;
 use PKP\tests\PKPTestCase;
 use PKP\user\User;
 
@@ -221,7 +222,7 @@ class DatasetControllerAccessTest extends PKPTestCase
         try {
             $temporaryFileId = $this->createTemporaryFileOwnedBy($owner);
             $service = Mockery::mock('overload:' . DatasetFileService::class);
-            $service->shouldReceive('add')->once()->with($this->study, $temporaryFileId);
+            $service->shouldReceive('add')->once()->with($this->study, Mockery::type(TemporaryFile::class));
 
             $this->assertSame(200, $this->addFileAs($owner, $temporaryFileId));
         } finally {

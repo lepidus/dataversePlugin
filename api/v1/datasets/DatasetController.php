@@ -437,12 +437,13 @@ class DatasetController extends PKPBaseController
         }
 
         $userId = $this->getRequest()->getUser()->getId();
-        if (!(new TemporaryFileManager())->getFile((int) $temporaryFileId, $userId)) {
+        $temporaryFile = (new TemporaryFileManager())->getFile((int) $temporaryFileId, $userId);
+        if (!$temporaryFile) {
             return $this->notFound();
         }
 
         try {
-            (new DatasetFileService())->add($study, (int) $temporaryFileId);
+            (new DatasetFileService())->add($study, $temporaryFile);
         } catch (PublishedDatasetException $e) {
             return $this->publishedDatasetError();
         }

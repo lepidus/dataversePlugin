@@ -9,6 +9,7 @@ use APP\plugins\generic\dataverse\classes\services\DatasetService;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetFileActions;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use PKP\file\TemporaryFile;
 use PKP\tests\PKPTestCase;
 
 class PublishedDatasetServicesTest extends PKPTestCase
@@ -66,7 +67,7 @@ class PublishedDatasetServicesTest extends PKPTestCase
         $this->fileActions->expects($this->never())->method('add');
         $this->expectException(PublishedDatasetException::class);
 
-        $this->createService(DatasetFileService::class)->add($this->study, 0);
+        $this->createService(DatasetFileService::class)->add($this->study, new TemporaryFile());
     }
 
     public function testFileCannotBeDeletedFromPublishedDataset(): void

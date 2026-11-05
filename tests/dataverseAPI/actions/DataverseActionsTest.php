@@ -476,7 +476,6 @@ class DataverseActionsTest extends PKPTestCase
 
 class ConcreteDataverseActions extends DataverseActions
 {
-
     #[DataProvider('otherServers')]
     public function testSwordRequestIsNotRedirectedToAnotherServer(string $location): void
     {

@@ -2,8 +2,7 @@
 
 namespace APP\plugins\generic\dataverse\classes\services;
 
-use APP\core\Application;
-use PKP\file\TemporaryFileManager;
+use PKP\file\TemporaryFile;
 use PKP\log\event\SubmissionFileEventLogEntry;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
@@ -12,14 +11,9 @@ use APP\plugins\generic\dataverse\classes\facades\Repo;
 
 class DatasetFileService extends DataverseService
 {
-    public function add(DataverseStudy $study, int $fileId): void
+    public function add(DataverseStudy $study, TemporaryFile $file): void
     {
-        $request = Application::get()->getRequest();
-        $user = $request->getUser();
         $submission = Repo::submission()->get($study->getSubmissionId());
-
-        $temporaryFileManager = new TemporaryFileManager();
-        $file = $temporaryFileManager->getFile($fileId, $user->getId());
 
         try {
             $dataverseClient = $this->getDataverseClient();
