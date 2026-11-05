@@ -4,6 +4,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         return {
             dataversePluginApiUrl: null,
             datasetPluginApiUrl: null,
+            datasetCitationUrl: null,
+            datasetInReviewUrl: null,
+            publishDatasetUrl: null,
+            disassociateDatasetUrl: null,
             rootDataverseName: '',
             dataverseName: '',
             dataverseLicenses: [],
@@ -134,7 +138,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         getFileDownloadUrl(item) {
             return (
                 this.components.datasetFileForm.action +
-                `?fileId=${item.id}&filename=${item.fileName}`
+                `&fileId=${item.id}`
             );
         },
 
@@ -204,9 +208,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                         url:
                             this.components.datasetFiles.apiUrl +
                             '&fileId=' +
-                            id +
-                            '&filename=' +
-                            datasetFile.fileName,
+                            id,
                         type: 'POST',
                         headers: {
                             'X-Csrf-Token': pkp.currentUser.csrfToken,
@@ -232,7 +234,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 confirmLabel: this.disassociateDatasetLabel,
                 callback: () => {
                     $.ajax({
-                        url: this.components.datasetMetadata.action + '/disassociate',
+                        url: this.disassociateDatasetUrl,
                         type: 'POST',
                         headers: {
                             'X-Csrf-Token': pkp.currentUser.csrfToken,
@@ -257,7 +259,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                 message: this.confirmPublishDatasetMessage,
                 callback: () => {
                     $.ajax({
-                        url: this.components.datasetMetadata.action + '/publish',
+                        url: this.publishDatasetUrl,
                         type: 'POST',
                         headers: {
                             'X-Csrf-Token': pkp.currentUser.csrfToken,
@@ -436,7 +438,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }
             var self = this;
             $.ajax({
-                url: self.datasetPluginApiUrl+'/citation',
+                url: self.datasetCitationUrl,
                 type: 'GET',
 				error: function (xhr) {
 					self.markDataverseUnavailable(xhr);
@@ -453,7 +455,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }
             var self = this;
             $.ajax({
-                url: self.datasetPluginApiUrl+'/inReview?datasetId='+this.dataset.datasetId,
+                url: self.datasetInReviewUrl,
                 type: 'GET',
                 error: function (xhr) {
                     self.markDataverseUnavailable(xhr);

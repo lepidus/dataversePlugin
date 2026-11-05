@@ -99,7 +99,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $request = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
-        $user = $request->getUser();
 
         $metadataFormAction = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
         $associateFormAction = $this->getApiUrl('datasets/associate', ['submissionId' => $submission->getId()]);
@@ -118,7 +117,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         ksort($items);
 
-        $fileFormAction = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId(), 'userId' => $user->getId()]);
+        $fileFormAction = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
 
         $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
@@ -145,9 +144,10 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($context->getId());
 
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
-        $datasetApiUrl = $this->getApiUrl('datasets/' . $study->getId());
-        $fileListApiUrl = $this->getApiUrl('datasets/' . $study->getId() . '/files', ['persistentId' => $study->getPersistentId()]);
-        $fileFormAction = $this->getApiUrl('datasets/' . $study->getId() . '/file');
+        $submissionParams = ['submissionId' => $submission->getId()];
+        $datasetApiUrl = $this->getApiUrl('datasets/' . $study->getId(), $submissionParams);
+        $fileListApiUrl = $this->getApiUrl('datasets/' . $study->getId() . '/files', $submissionParams);
+        $fileFormAction = $this->getApiUrl('datasets/' . $study->getId() . '/file', $submissionParams);
         $dataStatementUrl = $dispatcher->url(
             $request,
             ROUTE_PAGE,
@@ -187,7 +187,11 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'loadingCitationMsg' => __('plugins.generic.dataverse.metadataForm.loadingDatasetCitation'),
             'errorInvalidToken' => __('plugins.generic.dataverse.error.invalidToken'),
             'errorUnavailable' => __('plugins.generic.dataverse.error.unavailable'),
-            'datasetPluginApiUrl' => $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId()),
+            'datasetPluginApiUrl' => $datasetApiUrl,
+            'datasetCitationUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/citation', $submissionParams),
+            'datasetInReviewUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/inReview', $submissionParams),
+            'publishDatasetUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/publish', $submissionParams),
+            'disassociateDatasetUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/disassociate', $submissionParams),
             'canSendEmail' => in_array(ROLE_ID_MANAGER, $userRoles),
             'hasDepositedDataset' => true
         ]);
