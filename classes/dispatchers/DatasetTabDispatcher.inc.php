@@ -10,6 +10,8 @@ import('lib.pkp.classes.submission.SubmissionFile');
 
 class DatasetTabDispatcher extends DataverseDispatcher
 {
+    private const RESEARCH_DATA_ROLES = [ROLE_ID_SITE_ADMIN, ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
+
     protected function registerHooks(): void
     {
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addResearchDataTab'));
@@ -23,18 +25,18 @@ class DatasetTabDispatcher extends DataverseDispatcher
         return $study;
     }
 
-    protected function getAccessibleWorkflowStages(): array
+    protected function getUserRoles(): array
     {
         $handler = Application::get()->getRequest()->getRouter()->getHandler();
 
-        return (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_ACCESSIBLE_WORKFLOW_STAGES);
+        return (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
     }
 
     public function canAccessResearchData(): bool
     {
-        $submissionRoles = array_merge([], ...array_values($this->getAccessibleWorkflowStages()));
+        $userRoles = $this->getUserRoles();
 
-        return empty($submissionRoles) || !empty(array_diff($submissionRoles, [ROLE_ID_ASSISTANT]));
+        return empty($userRoles) || !empty(array_intersect($userRoles, self::RESEARCH_DATA_ROLES));
     }
 
     public function addResearchDataTab(string $hookName, array $params): bool

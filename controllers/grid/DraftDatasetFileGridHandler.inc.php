@@ -10,9 +10,10 @@ class DraftDatasetFileGridHandler extends GridHandler
     {
         parent::__construct();
         $this->addRoleAssignment(
-            [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT, ROLE_ID_AUTHOR],
-            ['fetchGrid', 'fetchRow', 'addFile', 'uploadFile', 'saveFile', 'deleteFile']
+            [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR],
+            array_merge(['fetchGrid', 'fetchRow'], self::WRITE_OPERATIONS)
         );
+        $this->addRoleAssignment([ROLE_ID_ASSISTANT], ['fetchGrid', 'fetchRow']);
     }
 
     public function getSubmission(): Submission

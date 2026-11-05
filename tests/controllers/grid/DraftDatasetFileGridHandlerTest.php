@@ -2,6 +2,7 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('lib.pkp.classes.core.JSONMessage');
+import('lib.pkp.classes.security.Role');
 import('classes.core.Request');
 import('lib.pkp.classes.core.PKPComponentRouter');
 import('lib.pkp.classes.security.authorization.AuthorizationDecisionManager');
@@ -76,5 +77,13 @@ class DraftDatasetFileGridHandlerTest extends PKPTestCase
 
         $this->assertSame($isWrite, in_array('DraftDatasetFileEditPolicy', $policies));
         $this->assertSame($isWrite, in_array('PublicationNotPublishedPolicy', $policies));
+    }
+
+    public function testAssistantsOnlyReadTheGrid(): void
+    {
+        $handler = new DraftDatasetFileGridHandler();
+        $assistantOperations = $handler->getRoleAssignments()[ROLE_ID_ASSISTANT];
+
+        $this->assertEqualsCanonicalizing(['fetchGrid', 'fetchRow'], $assistantOperations);
     }
 }

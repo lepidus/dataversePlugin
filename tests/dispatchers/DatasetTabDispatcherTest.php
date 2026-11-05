@@ -6,51 +6,44 @@ import('plugins.generic.dataverse.classes.dispatchers.DatasetTabDispatcher');
 
 class DatasetTabDispatcherTest extends PKPTestCase
 {
-    private function createDispatcher(array $accessibleStages): DatasetTabDispatcher
+    private function createDispatcher(array $userRoles): DatasetTabDispatcher
     {
         $dispatcher = $this->getMockBuilder(DatasetTabDispatcher::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getAccessibleWorkflowStages'])
+            ->onlyMethods(['getUserRoles'])
             ->getMock();
-        $dispatcher->method('getAccessibleWorkflowStages')->willReturn($accessibleStages);
+        $dispatcher->method('getUserRoles')->willReturn($userRoles);
 
         return $dispatcher;
     }
 
-    public function accessibleStages(): array
+    public function userRoles(): array
     {
         return [
-            'assistant' => [[WORKFLOW_STAGE_ID_EDITING => [ROLE_ID_ASSISTANT]], false],
-            'assistant on two stages' => [
-                [WORKFLOW_STAGE_ID_EDITING => [ROLE_ID_ASSISTANT], WORKFLOW_STAGE_ID_PRODUCTION => [ROLE_ID_ASSISTANT]],
-                false,
-            ],
-            'assistant who is also author' => [
-                [WORKFLOW_STAGE_ID_EDITING => [ROLE_ID_ASSISTANT], WORKFLOW_STAGE_ID_PRODUCTION => [ROLE_ID_AUTHOR]],
-                true,
-            ],
-            'assistant who is also section editor' => [
-                [WORKFLOW_STAGE_ID_EDITING => [ROLE_ID_ASSISTANT, ROLE_ID_SUB_EDITOR]],
-                true,
-            ],
-            'manager' => [[WORKFLOW_STAGE_ID_EDITING => [ROLE_ID_MANAGER]], true],
-            'author' => [[WORKFLOW_STAGE_ID_SUBMISSION => [ROLE_ID_AUTHOR]], true],
-            'site admin' => [[WORKFLOW_STAGE_ID_SUBMISSION => [ROLE_ID_SITE_ADMIN]], true],
-            'no stages' => [[], true],
+            'assistant' => [[ROLE_ID_ASSISTANT], false],
+            'assistant who is also manager' => [[ROLE_ID_ASSISTANT, ROLE_ID_MANAGER], true],
+            'assistant who is also section editor' => [[ROLE_ID_ASSISTANT, ROLE_ID_SUB_EDITOR], true],
+            'assistant who is also author' => [[ROLE_ID_ASSISTANT, ROLE_ID_AUTHOR], true],
+            'assistant who is also site admin' => [[ROLE_ID_ASSISTANT, ROLE_ID_SITE_ADMIN], true],
+            'manager' => [[ROLE_ID_MANAGER], true],
+            'section editor' => [[ROLE_ID_SUB_EDITOR], true],
+            'author' => [[ROLE_ID_AUTHOR], true],
+            'site admin' => [[ROLE_ID_SITE_ADMIN], true],
+            'no roles' => [[], true],
         ];
     }
 
     /**
-     * @dataProvider accessibleStages
+     * @dataProvider userRoles
      */
-    public function testResearchDataIsHiddenOnlyFromUsersWhoAreOnlyAssistants(array $stages, bool $canAccess): void
+    public function testResearchDataIsHiddenOnlyFromUsersWhoAreOnlyAssistants(array $roles, bool $canAccess): void
     {
-        $this->assertSame($canAccess, $this->createDispatcher($stages)->canAccessResearchData());
+        $this->assertSame($canAccess, $this->createDispatcher($roles)->canAccessResearchData());
     }
 
     public function testResearchDataTabIsNotAddedForAssistants(): void
     {
-        $dispatcher = $this->createDispatcher([WORKFLOW_STAGE_ID_EDITING => [ROLE_ID_ASSISTANT]]);
+        $dispatcher = $this->createDispatcher([ROLE_ID_ASSISTANT]);
         $output = 'original';
         $templateManager = $this->getMockBuilder(PKPTemplateManager::class)
             ->disableOriginalConstructor()
