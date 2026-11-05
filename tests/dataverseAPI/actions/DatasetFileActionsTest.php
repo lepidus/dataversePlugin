@@ -264,6 +264,14 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->assertSame("year,value\n2026,1\n", $this->downloadedContents);
     }
 
+    public function testRedirectWithoutDestinationIsNotServedAsTheFile(): void
+    {
+        $actions = $this->createActionsRespondingWith([new Response(302, [], '<html>redirect</html>')]);
+
+        $this->expectException(DataverseException::class);
+        $actions->download(2025434, 'Data.csv');
+    }
+
     public function testFailedDownloadRemovesItsTemporaryDirectory(): void
     {
         $filesDir = realpath(Config::getVar('files', 'files_dir'));

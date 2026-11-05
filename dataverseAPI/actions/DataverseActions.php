@@ -147,6 +147,12 @@ abstract class DataverseActions
                 return;
             }
 
+            if (!$response->hasHeader('Location')) {
+                throw DataverseException::fromTransferException(
+                    new TransferException('Dataverse redirected a file download without a destination')
+                );
+            }
+
             $uri = (string) UriResolver::resolve(new Uri($uri), new Uri($response->getHeaderLine('Location')));
         }
 
@@ -171,7 +177,7 @@ abstract class DataverseActions
     {
         $statusCode = $response->getStatusCode();
 
-        return $statusCode >= 300 && $statusCode < 400 && $response->hasHeader('Location');
+        return $statusCode >= 300 && $statusCode < 400;
     }
 
     public function swordAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
