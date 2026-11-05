@@ -180,7 +180,7 @@ describe('Research data deposit', function () {
 		cy.get('div[aria-labelledby="dataset_metadata-button"] > form button[label="Save"]').should('be.disabled');
 
 		cy.get('button[aria-controls="dataset_files"]').click();
-		cy.contains('Add research data').should('be.enabled');
+		cy.contains('Add research data').should('be.disabled');
 
 		cy.get('#datasetFiles .listPanel__item button:contains(Delete)').should('be.disabled');
 	});
