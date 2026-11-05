@@ -10,7 +10,7 @@ import('lib.pkp.classes.submission.SubmissionFile');
 
 class DatasetTabDispatcher extends DataverseDispatcher
 {
-    private const RESEARCH_DATA_ROLES = [ROLE_ID_SITE_ADMIN, ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
+    private const RESEARCH_DATA_ROLES = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
 
     protected function registerHooks(): void
     {
@@ -34,9 +34,24 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
     public function canAccessResearchData(): bool
     {
-        $userRoles = $this->getUserRoles();
+        return !empty(array_intersect($this->getUserRoles(), self::RESEARCH_DATA_ROLES));
+    }
 
-        return empty($userRoles) || !empty(array_intersect($userRoles, self::RESEARCH_DATA_ROLES));
+    public function getDraftDatasetFileItems(Submission $submission): array
+    {
+        if (!$this->canAccessResearchData()) {
+            return [];
+        }
+
+        $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
+
+        $items = array_map(function ($draftDatasetFile) {
+            return $draftDatasetFile->getAllData();
+        }, $draftDatasetFiles);
+
+        ksort($items);
+
+        return $items;
     }
 
     public function addResearchDataTab(string $hookName, array $params): bool
@@ -131,13 +146,7 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
 
-        $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
-
-        $items = array_map(function ($draftDatasetFile) {
-            return $draftDatasetFile->getAllData();
-        }, $draftDatasetFiles);
-
-        ksort($items);
+        $items = $this->getDraftDatasetFileItems($submission);
 
         $fileFormAction = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
