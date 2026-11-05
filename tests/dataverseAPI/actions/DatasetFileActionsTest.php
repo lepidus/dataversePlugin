@@ -174,6 +174,20 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->downloadWith(array_fill(0, 10, new Response(302, ['Location' => '/again'])));
     }
 
+    public function redirectsWithoutDestination(): array
+    {
+        return [[302], [303], [304]];
+    }
+
+    /**
+     * @dataProvider redirectsWithoutDestination
+     */
+    public function testRedirectWithoutDestinationIsNotServedAsTheFile(int $status): void
+    {
+        $this->expectException(DataverseException::class);
+        $this->downloadWith([new Response($status, [], '<html>redirect</html>')]);
+    }
+
     public function testDownloadUsesItsOwnTimeoutOnEveryTransfer(): void
     {
         [$requests] = $this->downloadWith([

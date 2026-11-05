@@ -112,15 +112,16 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
     private function transferFile(string $uri, string $filePath): void
     {
+        $isRedirect = false;
         $redirectUri = '';
         $options = [
             'sink' => $filePath,
             'allow_redirects' => false,
             'connect_timeout' => 5,
             'timeout' => $this->getRequestTimeout('download'),
-            'on_headers' => function (ResponseInterface $response) use (&$redirectUri): void {
+            'on_headers' => function (ResponseInterface $response) use (&$isRedirect, &$redirectUri): void {
                 $isRedirect = $response->getStatusCode() >= 300 && $response->getStatusCode() < 400;
-                $redirectUri = $isRedirect ? $response->getHeaderLine('Location') : '';
+                $redirectUri = $response->getHeaderLine('Location');
             },
         ];
 
@@ -134,8 +135,12 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
                 $this->sendRequest('GET', (string) $currentUri, $options, 'download');
             }
 
-            if ($redirectUri === '') {
+            if (!$isRedirect) {
                 return;
+            }
+
+            if ($redirectUri === '') {
+                break;
             }
 
             $currentUri = UriResolver::resolve($currentUri, new Uri($redirectUri));
