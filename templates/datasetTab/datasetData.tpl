@@ -77,7 +77,7 @@
                             <pkp-button 
                                 ref="fileModalButton"
                                 @click="openAddFileModal"
-                                :disabled="dataverseIsUnavailable || datasetIsPublished"
+                                :disabled="dataverseIsUnavailable || datasetIsPublished || !canEditPublication"
                             >
                                 {{ components.datasetFiles.addFileLabel }}
                             </pkp-button>

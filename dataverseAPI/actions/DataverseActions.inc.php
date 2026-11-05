@@ -1,6 +1,7 @@
 <?php
 
 use GuzzleHttp\Exception\TransferException;
+use Psr\Http\Message\ResponseInterface;
 
 import('plugins.generic.dataverse.classes.entities.DataverseResponse');
 import('plugins.generic.dataverse.classes.exception.DataverseException');
@@ -60,14 +61,33 @@ abstract class DataverseActions
         return $this->createNativeAPIURI(['dataverses', ':root']);
     }
 
-    public function nativeAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
-    {
+    public function nativeAPIRequest(
+        string $method,
+        string $uri,
+        array $options = [],
+        bool $returnResponse = true
+    ): ?DataverseResponse {
         $options['headers']['X-Dataverse-key'] = $this->apiToken;
         $operation = $this->getRequestOperation($method, $uri);
         $options += ['connect_timeout' => 5, 'timeout' => $this->getRequestTimeout($operation)];
 
+        $response = $this->sendRequest($method, $uri, $options, $operation);
+
+        if (!$returnResponse) {
+            return null;
+        }
+
+        return new DataverseResponse(
+            $response->getStatusCode(),
+            $response->getReasonPhrase(),
+            $response->getBody()
+        );
+    }
+
+    protected function sendRequest(string $method, string $uri, array $options, string $operation): ResponseInterface
+    {
         try {
-            $response = $this->client->request($method, $uri, $options);
+            return $this->client->request($method, $uri, $options);
         } catch (TransferException $e) {
             $exception = DataverseException::fromTransferException($e);
             error_log(json_encode([
@@ -78,12 +98,6 @@ abstract class DataverseActions
             ]));
             throw $exception;
         }
-
-        return new DataverseResponse(
-            $response->getStatusCode(),
-            $response->getReasonPhrase(),
-            $response->getBody()
-        );
     }
 
     public function swordAPIRequest(string $method, string $uri, array $options = []): DataverseResponse
@@ -124,9 +138,9 @@ abstract class DataverseActions
         return $method === 'GET' ? 'read' : 'write';
     }
 
-    private function getRequestTimeout(string $operation): int
+    protected function getRequestTimeout(string $operation): int
     {
-        $defaults = ['read' => 15, 'create' => 30, 'upload' => 60, 'write' => 30];
+        $defaults = ['read' => 15, 'create' => 30, 'upload' => 60, 'write' => 30, 'download' => 300];
         $configured = Config::getVar('dataverse', $operation . '_timeout');
         $timeout = filter_var($configured, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 300]]);
         if ($timeout !== false) {

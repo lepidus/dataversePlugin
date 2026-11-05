@@ -6,40 +6,68 @@ class DraftDatasetFileHandler extends APIHandler
 {
     public $schemaName = 'draftDatasetFile';
 
+    private const PUBLICATION_WRITE_OPERATIONS = ['add', 'delete'];
+
     public function __construct()
     {
         $this->_handlerPath = 'draftDatasetFiles';
+        $roles = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
         $this->_endpoints = array(
             'GET' => array(
                 array(
                     'pattern' => $this->getEndpointPattern(),
                     'handler' => array($this, 'getMany'),
+                    'roles' => $roles,
                 ),
             ),
             'POST' => array(
                 array(
                     'pattern' => $this->getEndpointPattern(),
                     'handler' => array($this, 'add'),
+                    'roles' => $roles,
                 )
             ),
             'DELETE' => array(
                 array(
                     'pattern' => $this->getEndpointPattern(),
                     'handler' => array($this, 'delete'),
+                    'roles' => $roles,
                 ),
             )
         );
         parent::__construct();
     }
 
+    public function authorize($request, &$args, $roleAssignments)
+    {
+        import('lib.pkp.classes.security.authorization.ContextAccessPolicy');
+        $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
+
+        import('lib.pkp.classes.security.authorization.SubmissionAccessPolicy');
+        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+
+        $operation = $this->getSlimRequest()->getAttribute('route')->getName();
+        if (in_array($operation, self::PUBLICATION_WRITE_OPERATIONS)) {
+            import('lib.pkp.classes.security.authorization.internal.PublicationCanBeEditedPolicy');
+            $this->addPolicy(new PublicationCanBeEditedPolicy($request, 'api.submissions.403.userCantEdit'));
+
+            import('plugins.generic.dataverse.classes.security.authorization.PublicationNotPublishedPolicy');
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.submissions.403.userCantEdit'));
+        }
+
+        return parent::authorize($request, $args, $roleAssignments);
+    }
+
+    private function getAuthorizedSubmission(): Submission
+    {
+        return $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
+    }
+
     public function getMany($slimRequest, $response, $args)
     {
-        $requestParams = $slimRequest->getQueryParams();
-        $submissionId = $requestParams['submissionId'] ?? null;
-
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
 
-        $result = is_null($submissionId) ? $draftDatasetFileDAO->getAll() : $draftDatasetFileDAO->getBySubmissionId($submissionId);
+        $result = $draftDatasetFileDAO->getBySubmissionId($this->getAuthorizedSubmission()->getId());
 
         $items = [];
         foreach ($result as $draftDatasetFile) {
@@ -55,16 +83,20 @@ class DraftDatasetFileHandler extends APIHandler
 
     public function add($slimRequest, $response, $args)
     {
-        $queryParams = $slimRequest->getQueryParams();
         $requestParams = $slimRequest->getParsedBody();
+        $user = Application::get()->getRequest()->getUser();
 
-        $fileId = $requestParams['datasetFile']['temporaryFileId'];
+        $fileId = (int) ($requestParams['datasetFile']['temporaryFileId'] ?? 0);
 
         import('lib.pkp.classes.file.TemporaryFileManager');
         $temporaryFileManager = new TemporaryFileManager();
-        $file = $temporaryFileManager->getFile($fileId, $queryParams['userId']);
+        $file = $temporaryFileManager->getFile($fileId, $user->getId());
 
-        $params['submissionId'] = $queryParams['submissionId'];
+        if (!$file) {
+            return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
+        }
+
+        $params['submissionId'] = $this->getAuthorizedSubmission()->getId();
         $params['userId'] = $file->getUserId();
         $params['fileId'] = $file->getId();
         $params['fileName'] = $file->getOriginalFileName();
@@ -85,9 +117,9 @@ class DraftDatasetFileHandler extends APIHandler
         $requestParams = $slimRequest->getQueryParams();
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
 
-        $draftDatasetFile = $draftDatasetFileDAO->getById((int) $requestParams['fileId']);
+        $draftDatasetFile = $draftDatasetFileDAO->getById((int) ($requestParams['fileId'] ?? 0));
 
-        if (!$draftDatasetFile) {
+        if (!$draftDatasetFile || $draftDatasetFile->getSubmissionId() != $this->getAuthorizedSubmission()->getId()) {
             return $response->withStatus(404)->withJsonError('api.draftDatasetFile.404.drafDatasetFileNotFound');
         }
 

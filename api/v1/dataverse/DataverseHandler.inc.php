@@ -16,7 +16,7 @@ class DataverseHandler extends APIHandler
                 array(
                     'pattern' => $this->getEndpointPattern() . '/dataverseName',
                     'handler' => array($this, 'getDataverseName'),
-                    'roles' => $roles
+                    'roles' => array_merge($roles, [ROLE_ID_ASSISTANT])
                 ),
                 array(
                     'pattern' => $this->getEndpointPattern() . '/rootDataverseName',

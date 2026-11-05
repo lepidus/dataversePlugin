@@ -24,12 +24,6 @@ class DraftDatasetFileDAO extends SchemaDAO
         return new DraftDatasetFile();
     }
 
-    public function getAll()
-    {
-        $queryResults = new DAOResultFactory($this->retrieve('SELECT * FROM draft_dataset_files'), $this, '_fromRow');
-        return $this->retrieveFiles($queryResults);
-    }
-
     public function getBySubmissionId($submissionId)
     {
         $queryResults = new DAOResultFactory(

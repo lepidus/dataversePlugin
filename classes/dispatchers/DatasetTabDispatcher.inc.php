@@ -10,6 +10,8 @@ import('lib.pkp.classes.submission.SubmissionFile');
 
 class DatasetTabDispatcher extends DataverseDispatcher
 {
+    private const RESEARCH_DATA_ROLES = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
+
     protected function registerHooks(): void
     {
         HookRegistry::register('Template::Workflow::Publication', array($this, 'addResearchDataTab'));
@@ -23,10 +25,43 @@ class DatasetTabDispatcher extends DataverseDispatcher
         return $study;
     }
 
+    protected function getUserRoles(): array
+    {
+        $handler = Application::get()->getRequest()->getRouter()->getHandler();
+
+        return (array) $handler->getAuthorizedContextObject(ASSOC_TYPE_USER_ROLES);
+    }
+
+    public function canAccessResearchData(): bool
+    {
+        return !empty(array_intersect($this->getUserRoles(), self::RESEARCH_DATA_ROLES));
+    }
+
+    public function getDraftDatasetFileItems(Submission $submission): array
+    {
+        if (!$this->canAccessResearchData()) {
+            return [];
+        }
+
+        $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
+
+        $items = array_map(function ($draftDatasetFile) {
+            return $draftDatasetFile->getAllData();
+        }, $draftDatasetFiles);
+
+        ksort($items);
+
+        return $items;
+    }
+
     public function addResearchDataTab(string $hookName, array $params): bool
     {
         $templateMgr = &$params[1];
         $output = &$params[2];
+
+        if (!$this->canAccessResearchData()) {
+            return false;
+        }
 
         $submission = $templateMgr->getTemplateVars('submission');
         $study = $this->getSubmissionStudy($submission->getId());
@@ -81,6 +116,8 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'pageComponent' => 'DataverseWorkflowPage',
         ]);
 
+        $templateMgr->setState(['canAccessResearchData' => $this->canAccessResearchData()]);
+
         $submission = $templateMgr->getTemplateVars('submission');
         $study = $this->getSubmissionStudy($submission->getId());
 
@@ -99,7 +136,6 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $request = Application::get()->getRequest();
         $templateMgr = TemplateManager::getManager($request);
         $context = $request->getContext();
-        $user = $request->getUser();
 
         $metadataFormAction = $this->getApiUrl('datasets', ['submissionId' => $submission->getId()]);
         $associateFormAction = $this->getApiUrl('datasets/associate', ['submissionId' => $submission->getId()]);
@@ -110,15 +146,9 @@ class DatasetTabDispatcher extends DataverseDispatcher
 
         $fileListApiUrl = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
 
-        $draftDatasetFiles = DAORegistry::getDAO('DraftDatasetFileDAO')->getBySubmissionId($submission->getId());
+        $items = $this->getDraftDatasetFileItems($submission);
 
-        $items = array_map(function ($draftDatasetFile) {
-            return $draftDatasetFile->getAllData();
-        }, $draftDatasetFiles);
-
-        ksort($items);
-
-        $fileFormAction = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId(), 'userId' => $user->getId()]);
+        $fileFormAction = $this->getApiUrl('draftDatasetFiles', ['submissionId' => $submission->getId()]);
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
 
         $this->initDatasetMetadataForm($templateMgr, $metadataFormAction, 'POST', $dataset);
@@ -145,9 +175,10 @@ class DatasetTabDispatcher extends DataverseDispatcher
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($context->getId());
 
         $dataversePluginApiUrl = $this->getApiUrl('dataverse');
-        $datasetApiUrl = $this->getApiUrl('datasets/' . $study->getId());
-        $fileListApiUrl = $this->getApiUrl('datasets/' . $study->getId() . '/files', ['persistentId' => $study->getPersistentId()]);
-        $fileFormAction = $this->getApiUrl('datasets/' . $study->getId() . '/file');
+        $submissionParams = ['submissionId' => $submission->getId()];
+        $datasetApiUrl = $this->getApiUrl('datasets/' . $study->getId(), $submissionParams);
+        $fileListApiUrl = $this->getApiUrl('datasets/' . $study->getId() . '/files', $submissionParams);
+        $fileFormAction = $this->getApiUrl('datasets/' . $study->getId() . '/file', $submissionParams);
         $dataStatementUrl = $dispatcher->url(
             $request,
             ROUTE_PAGE,
@@ -187,7 +218,11 @@ class DatasetTabDispatcher extends DataverseDispatcher
             'loadingCitationMsg' => __('plugins.generic.dataverse.metadataForm.loadingDatasetCitation'),
             'errorInvalidToken' => __('plugins.generic.dataverse.error.invalidToken'),
             'errorUnavailable' => __('plugins.generic.dataverse.error.unavailable'),
-            'datasetPluginApiUrl' => $dispatcher->url($request, ROUTE_API, $context->getPath(), 'datasets/' . $study->getId()),
+            'datasetPluginApiUrl' => $datasetApiUrl,
+            'datasetCitationUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/citation', $submissionParams),
+            'datasetInReviewUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/inReview', $submissionParams),
+            'publishDatasetUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/publish', $submissionParams),
+            'disassociateDatasetUrl' => $this->getApiUrl('datasets/' . $study->getId() . '/disassociate', $submissionParams),
             'canSendEmail' => in_array(ROLE_ID_MANAGER, $userRoles),
             'hasDepositedDataset' => true
         ]);

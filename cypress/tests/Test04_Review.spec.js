@@ -1,4 +1,5 @@
 function addResearchDataFile(filePath, fileName) {
+	cy.contains('Add research data').should('not.have.attr', 'disabled');
 	cy.contains('Add research data').click();
 	cy.wait(1000);
 	cy.fixture(filePath, { encoding: 'base64' }).then((fileContent) => {

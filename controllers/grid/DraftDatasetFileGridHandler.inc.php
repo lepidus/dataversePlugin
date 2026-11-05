@@ -4,13 +4,16 @@ import('lib.pkp.classes.controllers.grid.GridHandler');
 
 class DraftDatasetFileGridHandler extends GridHandler
 {
+    private const WRITE_OPERATIONS = ['addFile', 'uploadFile', 'saveFile', 'deleteFile'];
+
     public function __construct()
     {
         parent::__construct();
         $this->addRoleAssignment(
-            [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT, ROLE_ID_AUTHOR],
-            ['fetchGrid', 'fetchRow', 'addFile', 'uploadFile', 'saveFile', 'deleteFile']
+            [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR],
+            array_merge(['fetchGrid', 'fetchRow'], self::WRITE_OPERATIONS)
         );
+        $this->addRoleAssignment([ROLE_ID_ASSISTANT], ['fetchGrid', 'fetchRow']);
     }
 
     public function getSubmission(): Submission
@@ -38,6 +41,14 @@ class DraftDatasetFileGridHandler extends GridHandler
 
         import('lib.pkp.classes.security.authorization.PublicationAccessPolicy');
         $this->addPolicy(new PublicationAccessPolicy($request, $args, $roleAssignments));
+
+        if (in_array($request->getRequestedOp(), self::WRITE_OPERATIONS)) {
+            import('plugins.generic.dataverse.classes.security.authorization.DraftDatasetFileEditPolicy');
+            $this->addPolicy(new DraftDatasetFileEditPolicy($request, 'api.submissions.403.userCantEdit'));
+
+            import('plugins.generic.dataverse.classes.security.authorization.PublicationNotPublishedPolicy');
+            $this->addPolicy(new PublicationNotPublishedPolicy('api.submissions.403.userCantEdit'));
+        }
 
         return parent::authorize($request, $args, $roleAssignments);
     }
@@ -154,12 +165,16 @@ class DraftDatasetFileGridHandler extends GridHandler
 
     public function deleteFile($args, $request)
     {
-        $fileId = isset($args['fileId']) ? $args['fileId'] : null;
-        $context = $request->getContext();
+        $fileId = isset($args['fileId']) ? (int) $args['fileId'] : null;
 
         if ($request->checkCSRF() && $fileId) {
-            import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
-            $draftDatasetFileDAO = new DraftDatasetFileDAO();
+            $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
+            $draftDatasetFile = $draftDatasetFileDAO->getById($fileId);
+
+            if (!$draftDatasetFile || $draftDatasetFile->getSubmissionId() != $this->getSubmission()->getId()) {
+                return new JSONMessage(false);
+            }
+
             $draftDatasetFileDAO->deleteById($fileId);
 
             import('lib.pkp.classes.log.SubmissionLog');
@@ -169,7 +184,7 @@ class DraftDatasetFileGridHandler extends GridHandler
                 $this->getSubmission(),
                 SUBMISSION_LOG_FILE_UPLOAD,
                 'plugins.generic.dataverse.log.researchDataFileDeleted',
-                ['filename' => $args['fileName']]
+                ['filename' => $draftDatasetFile->getData('fileName')]
             );
 
             return DAO::getDataChangedEvent();
