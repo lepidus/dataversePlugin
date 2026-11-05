@@ -6,6 +6,7 @@ import {
     trackWizardSubmission,
     depositDatasetFixture,
     sendFixtureForReview,
+    waitForDatasetRelease,
 } from '../support/fixtures.js';
 
 describe('Dataverse Plugin - Features around review stage', function () {
@@ -232,6 +233,7 @@ describe('Dataverse Plugin - Features around review stage', function () {
 
         cy.contains('button', 'Record Decision').click();
         cy.contains('has been accepted for publication and sent to the copyediting stage');
+        cy.then(() => waitForDatasetRelease(fixture));
         cy.get('a.pkpButton').contains('View All Submissions').click();
         cy.findSubmission('myQueue', submissionData.title);
 

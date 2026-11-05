@@ -291,6 +291,24 @@ export function publishSubmissionFixture(fixture, {publishDataset = false} = {})
     cy.get('.pkpPublication__statusPublished').should('have.text', 'Published');
 }
 
+function pollDatasetRelease(studyId, submissionId, attemptsLeft) {
+    return requestFixture({url: `${api}/datasets/${studyId}?submissionId=${submissionId}`}).then(({body}) => {
+        if (body.versionState === 'RELEASED') {
+            return;
+        }
+
+        expect(attemptsLeft, 'Dataset release attempts left').to.be.greaterThan(0);
+        cy.wait(3000);
+        pollDatasetRelease(studyId, submissionId, attemptsLeft - 1);
+    });
+}
+
+export function waitForDatasetRelease(fixture, attemptsLeft = 40) {
+    return cy.getDataverseStudyForTest(fixture.id).then((studyId) => {
+        pollDatasetRelease(studyId, fixture.id, attemptsLeft);
+    });
+}
+
 export function publishDatasetFixture(fixture) {
     cy.loginDataverseUser('dbarnes', 'publicknowledge', {destination: 'user/profile'});
     cy.getDataverseStudyForTest(fixture.id).then((studyId) => {
@@ -302,6 +320,7 @@ export function publishDatasetFixture(fixture) {
             }).then(({body}) => {
                 expect(body.versionState, 'Published fixture state').to.equal('RELEASED');
                 fixture.datasetReleased = true;
+                waitForDatasetRelease(fixture);
             });
         });
     });
