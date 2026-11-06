@@ -69,9 +69,9 @@ class DataverseSettingsForm extends Form
 
     public function initData(): void
     {
-        $configurationDAO = DAORegistry::getDAO('DataverseConfigurationDAO');
-        $configuration = $configurationDAO->get($this->contextId);
+        $configuration = $this->getStoredConfiguration();
         $configurationData = $configuration->getAllData();
+        unset($configurationData['apiToken']);
 
         foreach ($configurationData as $name => $value) {
             $this->setData($name, $value);
@@ -84,6 +84,40 @@ class DataverseSettingsForm extends Form
     {
         $this->readUserVars(array_keys(self::CONFIG_VARS));
         $this->setData('dataverseUrl', $this->normalizeURI($this->getData('dataverseUrl')));
+
+        if (empty($this->getData('apiToken'))) {
+            $this->setData('apiToken', $this->getStoredApiTokenForSameServer());
+        }
+    }
+
+    private function getStoredApiTokenForSameServer(): string
+    {
+        $storedConfiguration = $this->getStoredConfiguration();
+        if (empty($storedConfiguration->getData('dataverseUrl')) || empty($storedConfiguration->getData('apiToken'))) {
+            return '';
+        }
+
+        $submittedConfiguration = new DataverseConfiguration();
+        $submittedConfiguration->setDataverseUrl((string) $this->getData('dataverseUrl'));
+        if (
+            !$this->hasHttpsServer($submittedConfiguration)
+            || !$this->hasHttpsServer($storedConfiguration)
+            || $submittedConfiguration->getDataverseServerUrl() !== $storedConfiguration->getDataverseServerUrl()
+        ) {
+            return '';
+        }
+
+        return $storedConfiguration->getAPIToken();
+    }
+
+    private function hasHttpsServer(DataverseConfiguration $configuration): bool
+    {
+        return preg_match('/^https:\/\/[^\/]+\//', $configuration->getDataverseUrl()) === 1;
+    }
+
+    private function getStoredConfiguration(): DataverseConfiguration
+    {
+        return DAORegistry::getDAO('DataverseConfigurationDAO')->get($this->contextId);
     }
 
     private function normalizeURI(string $uri): string
@@ -98,6 +132,11 @@ class DataverseSettingsForm extends Form
         $templateMgr->assign('pluginName', $this->plugin->getName());
         $templateMgr->assign('application', Application::get()->getName());
         $templateMgr->assign('datasetPublishOptions', $configuration->getDatasetPublishOptions());
+        $hasStoredApiToken = !empty($this->getStoredConfiguration()->getData('apiToken'));
+        $templateMgr->assign('hasStoredApiToken', $hasStoredApiToken);
+        if ($hasStoredApiToken) {
+            $this->cssValidation['apiToken'] = [];
+        }
         return parent::fetch($request);
     }
 
