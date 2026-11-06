@@ -13,6 +13,7 @@ use PKP\form\validation\FormValidatorUrl;
 use PKP\form\validation\FormValidator;
 use PKP\form\validation\FormValidatorCustom;
 use PKP\form\validation\FormValidatorPost;
+use PKP\form\validation\FormValidatorCSRF;
 use APP\plugins\generic\dataverse\classes\DataEncryption;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
@@ -67,6 +68,7 @@ class DataverseSettingsForm extends Form
             'plugins.generic.dataverse.settings.termsOfUseRequired'
         ));
         $this->addCheck(new FormValidatorPost($this));
+        $this->addCheck(new FormValidatorCSRF($this));
 
         if (Application::get()->getName() == 'ojs2') {
             $this->addCheck(new FormValidator(
