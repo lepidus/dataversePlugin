@@ -14,7 +14,7 @@ class DatasetActionsTest extends PKPTestCase
 {
     private const PERSISTENT_ID = 'doi:10.12345/FK2/ABCDEFG';
 
-    private array $requests = [];
+    private $requests = [];
 
     private function createActions(array $responses): DatasetActions
     {

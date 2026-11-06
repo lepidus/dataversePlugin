@@ -14,9 +14,9 @@ class DataverseSettingsFormTest extends DatabaseTestCase
     private const STORED_URL = 'https://demo.dataverse.org/dataverse/example';
     private const STORED_TOKEN = 'storedToken';
 
-    private array $getBackup;
-    private array $postBackup;
-    private array $serverBackup;
+    private $getBackup;
+    private $postBackup;
+    private $serverBackup;
     private $previousConfigurationDAO;
 
     protected function getMockedRegistryKeys(): array

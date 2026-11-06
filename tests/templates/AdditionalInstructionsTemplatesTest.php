@@ -5,7 +5,7 @@ import('lib.pkp.classes.core.PKPString');
 
 class AdditionalInstructionsTemplatesTest extends PKPTestCase
 {
-    private string $compileDir;
+    private $compileDir;
 
     protected function setUp(): void
     {

