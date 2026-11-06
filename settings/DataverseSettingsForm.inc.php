@@ -55,6 +55,7 @@ class DataverseSettingsForm extends Form
             'plugins.generic.dataverse.settings.termsOfUseRequired'
         ));
         $this->addCheck(new FormValidatorPost($this));
+        $this->addCheck(new FormValidatorCSRF($this));
 
         if (Application::get()->getName() === 'ojs2') {
             $this->addCheck(new FormValidator(
