@@ -205,6 +205,9 @@ msgstr "O conjunto de dados informado já está associado a uma submissão neste
 msgid "plugins.generic.dataverse.error.associate.notFound"
 msgstr "O conjunto de dados informado não está presente no repositório Dataverse"
 
+msgid "plugins.generic.dataverse.error.associate.outsideCollection"
+msgstr "O conjunto de dados informado não pertence à coleção Dataverse cadastrada nas configurações do plugin nem a uma de suas subcoleções"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar arquivo de dados de pesquisa"
 
@@ -275,7 +278,7 @@ msgstr "Associar conjunto de dados"
 msgid "plugins.generic.dataverse.researchData.associate.disclaimer"
 msgstr "Por favor, informe o ID Persistente do conjunto de dados depositado no Dataverse que deseja associar com esta submissão. "
 "Essa informação pode ser encontrada na seção de metadados na página do conjunto de dados<br><br>"
-"O conjunto de dados deve estar depositado no mesmo repositório cadastrado nas configurações do plugin. "
+"O conjunto de dados deve estar depositado na coleção Dataverse cadastrada nas configurações do plugin ou em uma de suas subcoleções. "
 "Certifique-se também que este não esteja já associado a outra submissão."
 
 msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"

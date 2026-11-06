@@ -4,6 +4,8 @@ interface DatasetActionsInterface
 {
     public function get(string $persistendId): Dataset;
 
+    public function isInCurrentCollection(string $persistentId): bool;
+
     public function create(Dataset $dataset): DatasetIdentifier;
 
     public function update(Dataset $dataset): void;

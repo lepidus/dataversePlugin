@@ -20,6 +20,55 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         return $datasetFactory->getDataset();
     }
 
+    public function isInCurrentCollection(string $persistentId): bool
+    {
+        $uri = $this->createNativeAPIURI(
+            ['datasets', ':persistentId'],
+            ['persistentId' => $persistentId, 'returnOwners' => 'true']
+        );
+        $dataset = json_decode($this->nativeAPIRequest('GET', $uri)->getBody(), true)['data'] ?? [];
+
+        if (!array_key_exists('isPartOf', $dataset)) {
+            return $this->collectionTreeContainsDataset($this->dataverseAlias, (int) ($dataset['id'] ?? 0));
+        }
+
+        $owner = $dataset['isPartOf'];
+        while (is_array($owner)) {
+            if (($owner['type'] ?? null) === 'DATAVERSE' && strcasecmp($owner['identifier'] ?? '', $this->dataverseAlias) === 0) {
+                return true;
+            }
+            $owner = $owner['isPartOf'] ?? null;
+        }
+
+        return false;
+    }
+
+    private function collectionTreeContainsDataset(string $collection, int $datasetId): bool
+    {
+        $pendingCollections = [$collection];
+        $visitedCollections = [];
+
+        while ($pendingCollections) {
+            $currentCollection = array_shift($pendingCollections);
+            $visitedCollections[] = $currentCollection;
+
+            $uri = $this->createNativeAPIURI(['dataverses', $currentCollection, 'contents']);
+            $contents = json_decode($this->nativeAPIRequest('GET', $uri)->getBody(), true)['data'] ?? [];
+
+            foreach ($contents as $item) {
+                if (($item['type'] ?? null) === 'dataset' && (int) ($item['id'] ?? 0) === $datasetId) {
+                    return true;
+                }
+                $childCollection = (string) ($item['id'] ?? '');
+                if (($item['type'] ?? null) === 'dataverse' && !in_array($childCollection, $visitedCollections, true)) {
+                    $pendingCollections[] = $childCollection;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public function getCitation(string $persistentId): array
     {
         $dataset = $this->get($persistentId);
