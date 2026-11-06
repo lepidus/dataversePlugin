@@ -61,7 +61,7 @@
 			v-if="canEditPublication && workingPublication.status !== getConstant('STATUS_PUBLISHED')"
 			id="dataverseAdditionalInstructions"
 		>
-			{$dataverseAdditionalInstructions}
+			<div v-pre>{$dataverseAdditionalInstructions|strip_unsafe_html}</div>
 		</div>
 	{/if}
 </section>
