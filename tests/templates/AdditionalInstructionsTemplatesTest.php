@@ -36,6 +36,8 @@ class AdditionalInstructionsTemplatesTest extends PKPTestCase
         $smarty->registerPlugin('function', 'load_url_in_div', function () {
             return '';
         });
+        $smarty->assign('canPublish', true);
+        $smarty->assign('requestArgs', []);
         $smarty->assign('dataverseAdditionalInstructions', $additionalInstructions);
 
         return $smarty->fetch(dirname(__DIR__, 2) . '/templates/' . $template);
