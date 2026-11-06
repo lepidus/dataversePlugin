@@ -27,6 +27,7 @@ class AdditionalInstructionsTemplatesTest extends PKPTestCase
         $smarty->setCompileDir($this->compileDir);
         $smarty->registerPlugin('modifier', 'strip_unsafe_html', [PKPString::class, 'stripUnsafeHtml']);
         $smarty->registerPlugin('function', 'translate', fn (array $params) => $params['key']);
+        $smarty->assign('canPublish', true);
         $smarty->assign('dataverseAdditionalInstructions', $additionalInstructions);
 
         return $smarty->fetch(dirname(__DIR__, 2) . '/templates/' . $template);
