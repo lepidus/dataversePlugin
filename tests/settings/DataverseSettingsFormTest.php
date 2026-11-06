@@ -1,9 +1,11 @@
 <?php
 
 use APP\core\Request;
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfigurationDAO;
 use APP\plugins\generic\dataverse\DataversePlugin;
 use APP\plugins\generic\dataverse\DataverseSettingsForm;
 use PKP\core\Registry;
+use PKP\db\DAORegistry;
 use PKP\session\Session;
 use PKP\tests\DatabaseTestCase;
 
@@ -11,10 +13,13 @@ class DataverseSettingsFormTest extends DatabaseTestCase
 {
     private const CONTEXT_ID = 9091;
     private const CSRF_TOKEN = 'expectedCsrfToken';
+    private const STORED_URL = 'https://demo.dataverse.org/dataverse/example';
+    private const STORED_TOKEN = 'storedToken';
 
     private array $getBackup;
     private array $postBackup;
     private array $serverBackup;
+    private $previousConfigurationDAO;
 
     protected function getMockedRegistryKeys(): array
     {
@@ -32,6 +37,7 @@ class DataverseSettingsFormTest extends DatabaseTestCase
         $this->getBackup = $_GET;
         $this->postBackup = $_POST;
         $this->serverBackup = $_SERVER;
+        $this->previousConfigurationDAO = DAORegistry::registerDAO('DataverseConfigurationDAO', new DataverseConfigurationDAO());
     }
 
     protected function tearDown(): void
@@ -39,6 +45,7 @@ class DataverseSettingsFormTest extends DatabaseTestCase
         $_GET = $this->getBackup;
         $_POST = $this->postBackup;
         $_SERVER = $this->serverBackup;
+        DAORegistry::registerDAO('DataverseConfigurationDAO', $this->previousConfigurationDAO);
         parent::tearDown();
     }
 
@@ -114,5 +121,69 @@ class DataverseSettingsFormTest extends DatabaseTestCase
 
         $this->assertNotContains(__('form.csrfInvalid'), $form->getErrorsArray());
         $this->assertTrue($form->isValid());
+    }
+
+    private function storeConfiguration(): void
+    {
+        $configurationDAO = new DataverseConfigurationDAO();
+        $configuration = $configurationDAO->newDataObject();
+        $configuration->setDataverseUrl(self::STORED_URL);
+        $configuration->setAPIToken(self::STORED_TOKEN);
+        $configuration->setTermsOfUse(['en' => 'https://demo.dataverse.org/terms']);
+        $configurationDAO->insert(self::CONTEXT_ID, $configuration);
+    }
+
+    private function submitWithBlankToken(string $dataverseUrl): DataverseSettingsForm
+    {
+        return $this->submitForm(array_merge($this->validSettings(), [
+            'dataverseUrl' => $dataverseUrl,
+            'apiToken' => '',
+            'csrfToken' => self::CSRF_TOKEN,
+        ]));
+    }
+
+    public function testStoredApiTokenIsNotSentBackToTheForm(): void
+    {
+        $this->storeConfiguration();
+        $this->mockPostRequest([]);
+
+        $form = $this->createForm();
+        $form->initData();
+
+        $this->assertEmpty($form->getData('apiToken'));
+        $this->assertSame(self::STORED_URL, $form->getData('dataverseUrl'));
+    }
+
+    public function testBlankApiTokenKeepsTheStoredTokenForTheSameServer(): void
+    {
+        $this->storeConfiguration();
+
+        $form = $this->submitWithBlankToken('https://demo.dataverse.org/dataverse/otherCollection');
+
+        $this->assertTrue($form->isValid());
+        $this->assertSame(self::STORED_TOKEN, $form->getData('apiToken'));
+    }
+
+    public function serversThatDoNotReceiveTheStoredToken(): array
+    {
+        return [
+            'another server' => ['https://dataverse.invalid/dataverse/example'],
+            'same host without https' => ['http://demo.dataverse.org/dataverse/example'],
+            'server whose host starts like the stored one' => ['https://demo.dataverse.org.invalid/dataverse/example'],
+        ];
+    }
+
+    /**
+     * @dataProvider serversThatDoNotReceiveTheStoredToken
+     */
+    public function testBlankApiTokenIsRejectedWhenTheServerChanges(string $dataverseUrl): void
+    {
+        $this->storeConfiguration();
+
+        $form = $this->submitWithBlankToken($dataverseUrl);
+
+        $this->assertFalse($form->isValid());
+        $this->assertSame('', $form->getData('apiToken'));
+        $this->assertContains(__('plugins.generic.dataverse.settings.tokenRequired'), $form->getErrorsArray());
     }
 }
