@@ -8,7 +8,12 @@
                             <ul>
                                 {foreach from=$publication->getData('dataStatementUrls') item=url}
                                     <li>
-                                        <a href="{$url|escape}" target="_blank" rel="noopener noreferrer">{$url|escape}</a>
+                                        {* Only http(s) URLs become links: URLs saved before validation may use schemes such as javascript: *}
+                                        {if $url|regex_replace:'/^https?:\/\//i':'' !== $url}
+                                            <a href="{$url|escape}" target="_blank" rel="noopener noreferrer">{$url|escape}</a>
+                                        {else}
+                                            {$url|escape}
+                                        {/if}
                                     </li>
                                 {/foreach}
                             </ul>
