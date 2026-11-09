@@ -5,6 +5,8 @@ use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfig
 use APP\plugins\generic\dataverse\DataverseSettingsForm;
 use APP\plugins\generic\dataverse\tests\helpers\DataverseIntegrationFixture;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\Rule\InvocationOrder;
 use PKP\tests\DatabaseTestCase;
 
 class DataverseSettingsFormTest extends DatabaseTestCase
@@ -136,6 +138,63 @@ class DataverseSettingsFormTest extends DatabaseTestCase
 
         $this->assertFalse($form->isValid());
         $this->assertContains(__('form.csrfInvalid'), $form->getErrorsArray());
+    }
+
+    private function submitWithStubbedServerCheck(string $method, string $csrfToken, InvocationOrder $serverChecks): DataverseSettingsForm
+    {
+        $request = $this->mockRequest($this->context->getPath() . '/management/settings', $this->user->getId());
+        $request->getSession()->regenerateToken();
+        $data = [
+            'dataverseUrl' => 'https://dataverse.invalid/dataverse/collection',
+            'apiToken' => 'submittedToken',
+            'termsOfUse' => ['en' => 'https://dataverse.invalid/terms'],
+            'additionalInstructions' => ['en' => ''],
+            'datasetPublish' => 2,
+        ];
+        $data += match ($csrfToken) {
+            'none' => [],
+            'session' => ['csrfToken' => $request->getSession()->token()],
+            default => ['csrfToken' => $csrfToken],
+        };
+        $_POST = $method === 'POST' ? $data : [];
+        $_GET = $method === 'POST' ? [] : $data;
+        $_SERVER['REQUEST_METHOD'] = $method;
+
+        $form = $this->getMockBuilder(DataverseSettingsForm::class)
+            ->setConstructorArgs([$this->plugin, $this->context->getId()])
+            ->onlyMethods(['validateConfiguration'])
+            ->getMock();
+        $form->expects($serverChecks)->method('validateConfiguration')->willReturn(true);
+        $form->readInputData();
+        $form->validate();
+        $_GET = [];
+
+        return $form;
+    }
+
+    public static function requestsThatMustNotReachTheDataverseServer(): array
+    {
+        return [
+            'POST without CSRF token' => ['POST', 'none', 'form.csrfInvalid'],
+            'POST with a forged CSRF token' => ['POST', 'forgedToken', 'form.csrfInvalid'],
+            'GET with the session CSRF token' => ['GET', 'session', 'form.postRequired'],
+        ];
+    }
+
+    #[DataProvider('requestsThatMustNotReachTheDataverseServer')]
+    public function testRejectedRequestDoesNotContactTheDataverseServer(string $method, string $csrfToken, string $errorKey): void
+    {
+        $form = $this->submitWithStubbedServerCheck($method, $csrfToken, $this->never());
+
+        $this->assertFalse($form->isValid());
+        $this->assertContains(__($errorKey), $form->getErrorsArray());
+    }
+
+    public function testAcceptedRequestValidatesTheConfigurationWithTheDataverseServer(): void
+    {
+        $form = $this->submitWithStubbedServerCheck('POST', 'session', $this->once());
+
+        $this->assertTrue($form->isValid());
     }
 
     public function testStoredApiTokenIsNotSentBackToTheForm(): void

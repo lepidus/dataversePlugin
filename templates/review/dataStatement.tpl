@@ -41,7 +41,8 @@
                 </notification>
                 <ul v-else>
                     <li v-for="url in publication.dataStatementUrls" :key="url">
-                        <a :href="url" target="_blank" rel="noopener noreferrer">{{ url }}</a>
+                        <a v-if="/^https?:\/\//i.test(url)" :href="url" target="_blank" rel="noopener noreferrer">{{ url }}</a>
+                        <span v-else>{{ url }}</span>
                     </li>
                 </ul>
             </div>
