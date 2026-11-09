@@ -11,6 +11,6 @@
 {capture assign=addGalleyLabel}{translate key="submission.layout.galleys"}{/capture}
 {if $dataverseAdditionalInstructions}
     <div id="dataverseAdditionalInstructions" style="margin-top: 1.5rem;line-height: 1.5rem;font-size: 0.875rem;">
-        {$dataverseAdditionalInstructions}
+        <div v-pre>{$dataverseAdditionalInstructions|strip_unsafe_html}</div>
     </div>
 {/if}

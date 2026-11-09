@@ -29,8 +29,12 @@
 		{fbvFormSection label="plugins.generic.dataverse.settings.dataverseUrl" required=true}
 			{fbvElement type="url" id="dataverseUrl" label="plugins.generic.dataverse.settings.dataverseUrlDescription" value=$dataverseUrl|escape size=$fbvStyles.size.MEDIUM}
 		{/fbvFormSection}
-		{fbvFormSection label="plugins.generic.dataverse.settings.token" required=true}			
-			{fbvElement type="text" password="true" id="apiToken" label="plugins.generic.dataverse.settings.tokenDescription" value=$apiToken|escape size=$fbvStyles.size.MEDIUM}
+		{fbvFormSection label="plugins.generic.dataverse.settings.token" required=!$hasStoredApiToken}
+			{if $hasStoredApiToken}
+				{fbvElement type="text" password="true" id="apiToken" label="plugins.generic.dataverse.settings.tokenKeepCurrent" value="" size=$fbvStyles.size.MEDIUM}
+			{else}
+				{fbvElement type="text" password="true" id="apiToken" label="plugins.generic.dataverse.settings.tokenDescription" value="" size=$fbvStyles.size.MEDIUM}
+			{/if}
 		{/fbvFormSection}
 		{fbvFormSection label="plugins.generic.dataverse.settings.termsOfUse" required=true}
 			{fbvElement type="url" id="termsOfUse" label="plugins.generic.dataverse.settings.termsOfUseDescription" multilingual=true value=$termsOfUse size=$fbvStyles.size.MEDIUM}

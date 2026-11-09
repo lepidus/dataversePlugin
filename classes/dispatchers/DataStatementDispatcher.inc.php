@@ -212,9 +212,10 @@ class DataStatementDispatcher extends DataverseDispatcher
     public function validateDataStatementProps(string $hookName, array $args): bool
     {
         $errors = &$args[0];
+        $action = $args[1];
         $props = $args[2];
 
-        if (!isset($props['dataStatementTypes'])) {
+        if (!array_intersect(['dataStatementTypes', 'dataStatementUrls'], array_keys($props))) {
             return false;
         }
 
@@ -222,18 +223,48 @@ class DataStatementDispatcher extends DataverseDispatcher
             $errors = [];
         }
 
-        if (empty($props['dataStatementTypes'])) {
+        if (array_key_exists('dataStatementTypes', $props) && empty($props['dataStatementTypes'])) {
             $errors['dataStatementTypes'] = [__('plugins.generic.dataverse.dataStatement.required')];
+            return false;
         }
 
-        if (
-            in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $props['dataStatementTypes'])
-            && empty($props['dataStatementUrls'])
-        ) {
+        $publication = $this->getEditedPublication($action, $props);
+        $dataStatementTypes = $props['dataStatementTypes'] ?? ($publication ? $publication->getData('dataStatementTypes') : null);
+        if (!in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, (array) $dataStatementTypes)) {
+            return false;
+        }
+
+        $dataStatementUrls = (array) (array_key_exists('dataStatementUrls', $props)
+            ? $props['dataStatementUrls']
+            : ($publication ? $publication->getData('dataStatementUrls') : null));
+
+        if (empty($dataStatementUrls)) {
             $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')];
+        } elseif (!$this->allAreURLs($dataStatementUrls)) {
+            $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')];
         }
 
         return false;
+    }
+
+    private function getEditedPublication(string $action, array $props): ?Publication
+    {
+        if ($action !== VALIDATE_ACTION_EDIT || empty($props['id'])) {
+            return null;
+        }
+
+        return Services::get('publication')->get((int) $props['id']);
+    }
+
+    private function allAreURLs(array $inputs): bool
+    {
+        foreach ($inputs as $input) {
+            if (!is_string($input) || !$this->inputIsURL($input)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function viewDataStatement(string $hookName, array $params): bool

@@ -48,7 +48,8 @@ const template = pkp.Vue.compile(`
                     {{ __('common.none') }}
                 </span>
                 <pkp-badge v-else v-for="item in currentSelected" :key="item.value">
-                    <a :href="item.label" target="_new">{{ item.label }}</a>
+                    <a v-if="isValidUrl(item.label)" :href="item.label" target="_new">{{ item.label }}</a>
+                    <span v-else>{{ item.label }}</span>
                     <button
                         class="pkpFormField--autosuggest__valueButton"
                         @click.stop.prevent="deselect(item)"
@@ -116,8 +117,8 @@ pkp.Vue.component('field-controlled-vocab-url', {
     methods: {
         isValidUrl: function (string) {
             try {
-                new URL(string);
-                return true;
+                const url = new URL(string);
+                return url.protocol === 'http:' || url.protocol === 'https:';
             } catch (err) {
                 return false;
             }

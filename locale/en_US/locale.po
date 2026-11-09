@@ -43,6 +43,11 @@ msgstr "API token for integration with Dataverse.<br>"
 "For more information on how to obtain the API token, please refer to:"
 "<a href=\"https://guides.dataverse.org/en/5.13/user/account.html#api-token\" target=\"_new\">Dataverse User Guide</a>."
 
+msgid "plugins.generic.dataverse.settings.tokenKeepCurrent"
+msgstr "API token for integration with Dataverse.<br>"
+"A token is already saved and is not displayed. Leave this field blank to keep it, or enter a new token to replace it. "
+"Changing the Dataverse server requires entering the token again."
+
 msgid "plugins.generic.dataverse.settings.termsOfUse"
 msgstr "Terms of Use"
 
@@ -197,6 +202,9 @@ msgstr "The dataset entered is already associated with a submission in this cont
 msgid "plugins.generic.dataverse.error.associate.notFound"
 msgstr "The dataset entered is not present at the Dataverse repository"
 
+msgid "plugins.generic.dataverse.error.associate.outsideCollection"
+msgstr "The dataset entered does not belong to the Dataverse collection configured in the plugin settings or to one of its subcollections"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Upload research data file"
 
@@ -267,7 +275,7 @@ msgstr "Associate dataset"
 msgid "plugins.generic.dataverse.researchData.associate.disclaimer"
 msgstr "Please provide the Persistent ID of the dataset deposited in Dataverse you wish to associate with this submission. "
 "This information can be found in the metadata section on the dataset page.<br><br>"
-"The dataset must be deposited in the same repository configured in the plugin settings. "
+"The dataset must be deposited in the Dataverse collection configured in the plugin settings or in one of its subcollections. "
 "Also, ensure that it is not already associated with another submission."
 
 msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"

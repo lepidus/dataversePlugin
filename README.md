@@ -47,7 +47,7 @@ You have to indicate the full Dataverse URL repository where the research data w
 
 The Terms of Use can be defined for each language configurated in your application. If you have questions about what they are, consult those responsible for the repository.
 
-**Important:** The _API Token_ belongs to a Dataverse user account. For more information on how to obtain the API token, see the [Dataverse User Guide](https://guides.dataverse.org/en/5.13/user/account.html#api-token).
+**Important:** The _API Token_ belongs to a Dataverse user account. For more information on how to obtain the API token, see the [Dataverse User Guide](https://guides.dataverse.org/en/5.13/user/account.html#api-token). Once saved, the token is no longer shown in the settings: leave the field blank to keep it, or enter a new token to replace it. Changing the Dataverse server requires entering the token again.
 
 It is important to mention that the Dataverse user account will be included in the list of contributors of the datasets deposited by the plugin (for more [information, see this discussion](https://groups.google.com/g/dataverse-community/c/Oo4AUZJf4hE/m/DyVsQq9mAQAJ)).
 
