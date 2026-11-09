@@ -179,8 +179,8 @@ pkp.Vue.component('field-controlled-vocab-url', {
 		},
         isValidUrl(string) {
             try {
-                new URL(string);
-                return true;
+                const url = new URL(string);
+                return url.protocol === 'http:' || url.protocol === 'https:';
             } catch (err) {
                 return false;
             }

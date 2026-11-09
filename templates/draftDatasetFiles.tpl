@@ -8,6 +8,6 @@
         id="dataverseAdditionalInstructions"
         v-if="section.type === 'datasetFiles'"
     >
-        {$dataverseAdditionalInstructions}
+        <div v-pre>{$dataverseAdditionalInstructions|strip_unsafe_html}</div>
     </div>
 {/if}

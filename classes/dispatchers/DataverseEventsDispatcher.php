@@ -73,6 +73,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         }
         $schema->properties->{'selectedDataFilesForReview'} = (object) [
             'type' => 'array',
+            'writeDisabledInApi' => true,
             'items' => (object) [
                 'type' => 'integer',
             ]

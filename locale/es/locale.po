@@ -46,6 +46,11 @@ msgstr "Token de API para integración con Dataverse.<br>"
 "Para más información sobre cómo obtener el token de API, consulta lo "
 "<a href=\"https://guides.dataverse.org/en/5.13/user/account.html#api-token\" target=\"_new\">Guía del usuario de Dataverse</a>."
 
+msgid "plugins.generic.dataverse.settings.tokenKeepCurrent"
+msgstr "Token de API para integración con Dataverse.<br>"
+"Ya hay un token guardado, que no se muestra. Deja este campo en blanco para mantenerlo o introduce un nuevo token para reemplazarlo. "
+"Cambiar el servidor de Dataverse requiere introducir el token de nuevo."
+
 msgid "plugins.generic.dataverse.settings.termsOfUse"
 msgstr "Términos de uso"
 
@@ -205,6 +210,9 @@ msgstr "El conjunto de datos proporcionado ya está asociado a un envío en este
 msgid "plugins.generic.dataverse.error.associate.notFound"
 msgstr "El conjunto de datos especificado no está presente en el repositorio de Dataverse"
 
+msgid "plugins.generic.dataverse.error.associate.outsideCollection"
+msgstr "El conjunto de datos especificado no pertenece a la colección de Dataverse registrada en la configuración del plugin ni a una de sus subcolecciones"
+
 msgid "plugins.generic.dataverse.modal.addFile.title"
 msgstr "Enviar archivo de datos de investigación"
 
@@ -278,7 +286,7 @@ msgstr "Vincular conjunto de datos"
 msgid "plugins.generic.dataverse.researchData.associate.disclaimer"
 msgstr "Proporcione el ID persistente del conjunto de datos depositado en Dataverse que desea asociar a este envío. "
 "Esta información se puede encontrar en la sección de metadatos de la página del conjunto de datos.<br><br>"
-"El conjunto de datos debe estar almacenado en el mismo repositorio registrado en la configuración del plugin. "
+"El conjunto de datos debe estar almacenado en la colección de Dataverse registrada en la configuración del plugin o en una de sus subcolecciones. "
 "Asegúrese también de que no esté ya asociado a otro envío."
 
 msgid "plugins.generic.dataverse.associateDatasetForm.persistentId.label"

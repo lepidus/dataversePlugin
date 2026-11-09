@@ -83,7 +83,7 @@
     </modal>
     {if $dataverseAdditionalInstructions}
         <div v-if="!dataverseIsUnavailable" id="dataverseAdditionalInstructions">
-            {$dataverseAdditionalInstructions}
+            <div v-pre>{$dataverseAdditionalInstructions|strip_unsafe_html}</div>
         </div>
     {/if}
 </section>
