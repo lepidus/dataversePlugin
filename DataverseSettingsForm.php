@@ -163,6 +163,23 @@ class DataverseSettingsForm extends Form
         parent::execute(...$functionArgs);
     }
 
+    /**
+     * Form::validate() runs every check, so validateConfiguration() would contact the
+     * submitted server even when the POST or CSRF check fails. Reject those requests first.
+     */
+    public function validate($callHooks = true)
+    {
+        foreach ([new FormValidatorPost($this), new FormValidatorCSRF($this)] as $requestCheck) {
+            if (!$requestCheck->isValid()) {
+                $this->addError($requestCheck->getField(), $requestCheck->getMessage());
+                $this->addErrorField($requestCheck->getField());
+                return false;
+            }
+        }
+
+        return parent::validate($callHooks);
+    }
+
     public function validateConfiguration(): bool
     {
         $configuration = new DataverseConfiguration();
