@@ -49,9 +49,14 @@ class DataverseSettingsFormTest extends DatabaseTestCase
 
     private function mockPostRequest(array $postData): void
     {
-        $_POST = $postData;
-        $_GET = [];
-        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $this->simulateRequest('POST', $postData);
+    }
+
+    private function simulateRequest(string $method, array $data): void
+    {
+        $_POST = $method === 'POST' ? $data : [];
+        $_GET = $method === 'POST' ? [] : $data;
+        $_SERVER['REQUEST_METHOD'] = $method;
 
         $session = $this->createMock(Session::class);
         $session->method('getCSRFToken')->willReturn(self::CSRF_TOKEN);
@@ -119,6 +124,48 @@ class DataverseSettingsFormTest extends DatabaseTestCase
 
         $this->assertNotContains(__('form.csrfInvalid'), $form->getErrorsArray());
         $this->assertTrue($form->isValid());
+    }
+
+    private function createFormThatExpectsConfigurationValidation($expectedCalls): DataverseSettingsForm
+    {
+        $form = $this->getMockBuilder(DataverseSettingsForm::class)
+            ->setConstructorArgs([$this->createMock(DataversePlugin::class), self::CONTEXT_ID])
+            ->onlyMethods(['validateConfiguration'])
+            ->getMock();
+        $form->expects($expectedCalls)->method('validateConfiguration')->willReturn(true);
+
+        return $form;
+    }
+
+    public function requestsThatMustNotReachTheDataverseServer(): array
+    {
+        return [
+            'POST without CSRF token' => ['POST', [], 'form.csrfInvalid'],
+            'POST with wrong CSRF token' => ['POST', ['csrfToken' => 'forgedToken'], 'form.csrfInvalid'],
+            'GET with the session CSRF token' => ['GET', ['csrfToken' => self::CSRF_TOKEN], 'form.postRequired'],
+        ];
+    }
+
+    /**
+     * @dataProvider requestsThatMustNotReachTheDataverseServer
+     */
+    public function testRejectedRequestDoesNotContactTheDataverseServer(string $method, array $csrfData, string $errorKey): void
+    {
+        $this->simulateRequest($method, array_merge($this->validSettings(), $csrfData));
+        $form = $this->createFormThatExpectsConfigurationValidation($this->never());
+        $form->readInputData();
+
+        $this->assertFalse($form->validate(false));
+        $this->assertContains(__($errorKey), $form->getErrorsArray());
+    }
+
+    public function testAcceptedRequestValidatesTheConfigurationWithTheDataverseServer(): void
+    {
+        $this->mockPostRequest(array_merge($this->validSettings(), ['csrfToken' => self::CSRF_TOKEN]));
+        $form = $this->createFormThatExpectsConfigurationValidation($this->once());
+        $form->readInputData();
+
+        $this->assertTrue($form->validate(false));
     }
 
     private function storeConfiguration(): void
