@@ -40,7 +40,7 @@ trait ReportTestsHelperTrait
         $study = Repo::dataverseStudy()->newDataObject();
         $study->setAllData([
             'submissionId' => $submissionId,
-            'persistentId' => 'testId',
+            'persistentId' => 'testId' . $submissionId,
             'persistentUri' => 'testUri',
             'editUri' => 'testEditUri',
             'editMediaUri' => 'testEditMediaUri',

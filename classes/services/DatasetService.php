@@ -18,6 +18,7 @@ use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
 use APP\submission\Submission;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use PKP\db\DAORegistry;
@@ -52,7 +53,7 @@ class DatasetService extends DataverseService
                 ->where('state', 'complete')->first();
             if ($completed) {
                 $study = Repo::dataverseStudy()->getBySubmissionId($submission->getId());
-                if (!$study || $study->getPersistentId() !== $completed->persistent_id) {
+                if (!$study || $study->getPersistentId() !== DataverseStudy::normalizePersistentId((string) $completed->persistent_id)) {
                     throw new \RuntimeException('The completed deposit association changed.');
                 }
                 if (empty($files)) {
@@ -312,6 +313,8 @@ class DatasetService extends DataverseService
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.invalidPersistentId'];
         }
 
+        $persistentId = DataverseStudy::normalizePersistentId($persistentId);
+
         $existingStudyWithPersistentId = Repo::dataverseStudy()->getByPersistentId($persistentId);
         if ($existingStudyWithPersistentId) {
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
@@ -326,6 +329,20 @@ class DatasetService extends DataverseService
         if (!$isInCurrentCollection) {
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.outsideCollection'];
         }
+
+        try {
+            return $this->createAssociation($submission, $persistentId);
+        } catch (QueryException $e) {
+            if (Repo::dataverseStudy()->getByPersistentId($persistentId)) {
+                return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
+            }
+            throw $e;
+        }
+    }
+
+    private function createAssociation(Submission $submission, string $persistentId): array
+    {
+        $submissionId = $submission->getId();
 
         return DB::transaction(function () use ($submission, $submissionId, $persistentId): array {
             (new DepositRepository())->lockSubmission($submissionId);

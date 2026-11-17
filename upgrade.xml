@@ -5,4 +5,5 @@
     <migration class="APP\plugins\generic\dataverse\classes\migrations\RepairDataverseCoreVersion" />
     <migration class="APP\plugins\generic\dataverse\classes\migrations\APITokenEncryptionMigration" />
     <migration class="APP\plugins\generic\dataverse\classes\migrations\DepositMigration" />
+    <migration class="APP\plugins\generic\dataverse\classes\migrations\UniquePersistentIdMigration" />
 </install>
