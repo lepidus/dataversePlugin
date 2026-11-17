@@ -46,8 +46,6 @@ class DataverseException extends Exception
 
     private static function serviceUnavailable(TransferException $exception): self
     {
-        error_log('Dataverse service unavailable: ' . $exception->getMessage());
-
         return new self(
             __(self::SERVICE_UNAVAILABLE_MESSAGE),
             self::UNAVAILABLE_STATUS_CODE,
