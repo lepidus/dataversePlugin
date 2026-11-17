@@ -5,8 +5,9 @@ namespace APP\plugins\generic\dataverse\api\v1\datasets;
 use APP\core\Application;
 use APP\log\event\SubmissionEventLogEntry;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
-use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
+use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
+use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
@@ -283,7 +284,17 @@ class DatasetHandler extends APIHandler
             $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
         } catch (DataverseException $e) {
             if ($e->getCode() === 404) {
-                Repo::dataverseStudy()->delete($study);
+                try {
+                    (new DepositRepository())->retire($study->getSubmissionId(), function () use ($study): void {
+                        $currentStudy = Repo::dataverseStudy()->getBySubmissionId($study->getSubmissionId());
+                        if ($currentStudy && $currentStudy->getId() !== $study->getId()) {
+                            throw new \RuntimeException('The dataset association changed during the request.');
+                        }
+                        Repo::dataverseStudy()->delete($study);
+                    });
+                } catch (\RuntimeException $conflict) {
+                    return $response->withStatus(409)->withJsonError('plugins.generic.dataverse.error.depositPending');
+                }
 
                 return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
             }

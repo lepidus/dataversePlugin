@@ -49,6 +49,34 @@ root. This is especially important if OJS/OPS was upgraded after the corruption:
 recorded version allows the core upgrade steps that were skipped to run. The repair does not mark
 those steps as completed or create a version record for the current files.
 
+## Deposit recovery and request timeouts
+
+The `dataverse_deposits` table tracks one deposit operation per submission, including its state,
+revision, source-file manifest and confirmed upload receipts. If the ingest wait fails before an
+upload is sent, the operation returns to `ready`; retrying with the same files reuses the dataset
+and skips uploads already confirmed. When a deposited dataset is missing from Dataverse, its local
+association is removed and the completed operation is retired, allowing another deposit or association.
+
+A lost response after creation or upload leaves the result unknown (`creating` or `uploading`).
+These operations are not automatically reset or repeated. An administrator must reconcile the
+operation with the configured Dataverse collection: check its persistent identifier, source manifest,
+remote files and receipts (ZIP uploads can produce several remote files). Back up the database and
+stop active deposit requests before any manual correction; preserve confirmed receipts and advance
+the revision when changing state. Do not reset a record merely because a request timed out.
+
+The following optional settings in `config.inc.php` show the default total request limits in seconds.
+Use integer values from 1 to 300. The connection limit is 5 seconds; the separate ingest wait is
+30 seconds and is not changed by these settings.
+
+```ini
+[dataverse]
+read_timeout = 15
+create_timeout = 30
+upload_timeout = 60
+write_timeout = 30
+download_timeout = 300
+```
+
 ## Instructions for use
 
 ### Configuration

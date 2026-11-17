@@ -50,6 +50,35 @@ se actualizó después de la corrupción: restaurar la versión registrada permi
 de actualización del núcleo que se omitieron. La reparación no marca esos pasos como completados
 ni crea un registro de versión para los archivos actuales.
 
+## Recuperación de depósitos y tiempos de espera
+
+La tabla `dataverse_deposits` registra una operación de depósito por envío, con su estado, revisión,
+manifiesto de archivos y recibos de las cargas confirmadas. Si falla la espera del ingest antes de
+enviar una carga, la operación vuelve a `ready`; un nuevo intento con los mismos archivos reutiliza
+el dataset y omite las cargas ya confirmadas. Cuando un dataset depositado ya no existe en Dataverse,
+se elimina su asociación local y se retira la operación completada, permitiendo otro depósito o asociación.
+
+Una respuesta perdida después de crear el dataset o cargar un archivo deja un resultado desconocido
+(`creating` o `uploading`). Estas operaciones no se reinician ni se repiten automáticamente. Un
+administrador debe reconciliar la operación con la colección Dataverse configurada: comprobar el
+identificador persistente, el manifiesto, los archivos remotos y los recibos (un ZIP puede generar
+varios archivos). Antes de corregir registros manualmente, haga una copia de seguridad y detenga los
+depósitos activos; conserve los recibos confirmados e incremente la revisión al cambiar el estado.
+No reinicie una operación solamente porque se agotó el tiempo de espera.
+
+Estas opciones de `config.inc.php` muestran los límites totales predeterminados de las peticiones,
+en segundos. Utilice enteros de 1 a 300. El límite de conexión es de 5 segundos; la espera separada
+del ingest es de 30 segundos y no cambia con estas opciones.
+
+```ini
+[dataverse]
+read_timeout = 15
+create_timeout = 30
+upload_timeout = 60
+write_timeout = 30
+download_timeout = 300
+```
+
 ## Instrucciones de uso
 
 ### Configuración

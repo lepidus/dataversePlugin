@@ -2,16 +2,16 @@
 
 namespace APP\plugins\generic\dataverse\classes\services;
 
-use APP\submission\Submission;
 use APP\core\Application;
 use APP\log\event\SubmissionEventLogEntry;
-use PKP\core\Core;
-use PKP\security\Validation;
 use APP\notification\Notification;
 use APP\notification\NotificationManager;
 use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\submission\Submission;
+use PKP\core\Core;
+use PKP\security\Validation;
 
 abstract class DataverseService
 {
@@ -39,7 +39,7 @@ abstract class DataverseService
     ): void {
         $user = Application::get()->getRequest()->getUser();
 
-        $eventLog = Repo::eventLog()->newDataObject([
+        $eventLog = Repo::eventLog()->newDataObject(array_merge([
             'assocType' => Application::ASSOC_TYPE_SUBMISSION,
             'assocId' => $submission->getId(),
             'userId' => Validation::loggedInAs() ?? $user->getId(),
@@ -47,8 +47,7 @@ abstract class DataverseService
             'message' => $message,
             'isTranslated' => false,
             'dateLogged' => Core::getCurrentDate(),
-            ...$params
-        ]);
+        ], $params));
         Repo::eventLog()->add($eventLog);
     }
 

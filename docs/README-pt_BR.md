@@ -52,6 +52,35 @@ da corrupção: restaurar a versão registrada permite executar as etapas do upg
 ignoradas. O reparo não marca essas etapas como concluídas nem cria um registro de versão para os
 arquivos atuais.
 
+## Recuperação de depósitos e tempos limite
+
+A tabela `dataverse_deposits` acompanha uma operação de depósito por submissão, incluindo estado,
+revisão, manifesto dos arquivos de origem e recibos dos uploads confirmados. Se a espera pelo ingest
+falhar antes do envio, a operação volta a `ready`; uma nova tentativa com os mesmos arquivos reutiliza
+o dataset e ignora os uploads já confirmados. Quando um dataset depositado não existe mais no
+Dataverse, a associação local é removida e a operação concluída é aposentada, permitindo novo
+depósito ou associação.
+
+Uma resposta perdida após a criação ou o upload deixa o resultado desconhecido (`creating` ou
+`uploading`). Essas operações não são reiniciadas nem repetidas automaticamente. Um administrador
+deve reconciliar a operação com a coleção Dataverse configurada: conferir identificador persistente,
+manifesto, arquivos remotos e recibos (um ZIP pode gerar vários arquivos remotos). Antes de corrigir
+registros manualmente, faça backup do banco e interrompa os depósitos ativos; preserve os recibos
+confirmados e incremente a revisão ao mudar o estado. Não reinicie uma operação apenas por timeout.
+
+As configurações opcionais abaixo, em `config.inc.php`, mostram os limites totais padrão das
+requisições, em segundos. Use inteiros de 1 a 300. O limite de conexão é de 5 segundos; a espera
+separada pelo ingest é de 30 segundos e não é alterada por essas configurações.
+
+```ini
+[dataverse]
+read_timeout = 15
+create_timeout = 30
+upload_timeout = 60
+write_timeout = 30
+download_timeout = 300
+```
+
 ## Instruções para uso
 
 ### Configuração

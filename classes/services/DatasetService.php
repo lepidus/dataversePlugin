@@ -2,30 +2,28 @@
 
 namespace APP\plugins\generic\dataverse\classes\services;
 
-use APP\submission\Submission;
-use Illuminate\Support\Facades\DB;
-use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
-use APP\plugins\generic\dataverse\classes\deposit\DepositWorkflow;
 use APP\core\Application;
-use PKP\core\Core;
 use APP\core\Request;
-use PKP\db\DAORegistry;
-use PKP\security\Role;
-use PKP\mail\Mailable;
-use Illuminate\Support\Facades\Mail;
+use APP\log\event\SubmissionEventLogEntry;
 use APP\notification\Notification;
 use APP\notification\NotificationManager;
-use APP\log\event\SubmissionEventLogEntry;
-use PKP\log\SubmissionEmailLogEntry;
-use APP\plugins\generic\dataverse\classes\services\DataverseService;
-use APP\plugins\generic\dataverse\classes\services\DataStatementService;
-use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
-use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
+use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
+use APP\plugins\generic\dataverse\classes\deposit\DepositWorkflow;
+use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\classes\exception\PublishedDatasetException;
+use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\factories\SubmissionDatasetFactory;
+use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
+use APP\submission\Submission;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use PKP\db\DAORegistry;
+use PKP\log\SubmissionEmailLogEntry;
+use PKP\mail\Mailable;
+use PKP\security\Role;
 
 class DatasetService extends DataverseService
 {
@@ -102,6 +100,19 @@ class DatasetService extends DataverseService
                     $this->completeDeposit($submission, $persistentId);
                 }
             );
+        } catch (UploadNotSentException $e) {
+            $params = ['error' => $e->getMessage(), 'fileName' => $e->getFileName()];
+            try {
+                $this->registerAndNotifyError($submission, 'plugins.generic.dataverse.error.datasetFileDeposit', $params);
+            } catch (\Throwable $reportingError) {
+                error_log('Dataverse deposit reporting failed: submission=' . $submission->getId()
+                    . ' exception=' . get_class($reportingError));
+            }
+            return [
+                'status' => 'Error',
+                'message' => 'plugins.generic.dataverse.error.datasetFileDeposit',
+                'messageParams' => $params,
+            ];
         } catch (\Throwable $e) {
             $operation = null;
             try {

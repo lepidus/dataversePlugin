@@ -2,18 +2,18 @@
 
 namespace APP\plugins\generic\dataverse\dataverseAPI\actions;
 
+use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetFileActionsInterface;
 use GuzzleHttp\Psr7\Uri;
-use InvalidArgumentException;
-use PKP\core\PKPString;
 use GuzzleHttp\Psr7\UriResolver;
 use GuzzleHttp\Psr7\Utils;
-use Psr\Http\Message\ResponseInterface;
-use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use InvalidArgumentException;
 use PKP\config\Config;
+use PKP\core\PKPString;
 use PKP\file\FileManager;
-use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
-use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetFileActionsInterface;
-use APP\plugins\generic\dataverse\dataverseAPI\actions\DataverseActions;
+use Psr\Http\Message\ResponseInterface;
 
 class DatasetFileActions extends DataverseActions implements DatasetFileActionsInterface
 {
@@ -50,7 +50,11 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
     public function add(string $persistentId, string $filename, string $filePath): array
     {
-        $this->waitForIngest($persistentId);
+        try {
+            $this->waitForIngest($persistentId);
+        } catch (DataverseException $e) {
+            throw new UploadNotSentException($filename, $e);
+        }
 
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId', 'add'],
@@ -59,7 +63,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         $options = [
             'multipart' => [
                 [
-                    'name'     => 'file',
+                    'name' => 'file',
                     'contents' => Utils::tryFopen($filePath, 'rb'),
                     'filename' => $filename
                 ],
@@ -102,7 +106,8 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
         while (true) {
             $remainingSeconds = $deadline - hrtime(true) / 1_000_000_000;
-            if ($remainingSeconds <= 0) {
+            // cURL receives whole milliseconds: a value below 1 ms becomes an unlimited timeout.
+            if ($remainingSeconds < 0.001) {
                 throw new DataverseException(__('plugins.generic.dataverse.error.ingestTimeout'));
             }
 

@@ -1,7 +1,15 @@
 <?php
 
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
 use APP\plugins\generic\dataverse\classes\deposit\DepositWorkflow;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetFileActions;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
 class MemoryDepositRepository extends DepositRepository
@@ -43,6 +51,44 @@ class MemoryDepositRepository extends DepositRepository
 class DepositWorkflowTest extends TestCase
 {
     private array $manifest = [['sourceId' => 4, 'sha256' => 'abc', 'size' => 12, 'name' => 'data.zip']];
+
+    public function testFailedIngestWaitCanBeRetriedWithoutCreatingAnotherDataset(): void
+    {
+        $configuration = new DataverseConfiguration();
+        $configuration->setDataverseUrl('https://example.test/dataverse/test');
+        $configuration->setAPIToken('test-token');
+        $history = [];
+        $stack = HandlerStack::create(new MockHandler([
+            new Response(401, [], '{"message":"Invalid API token"}'),
+            new Response(200, [], '{"data":[]}'),
+            new Response(200, [], '{"data":{"files":[{"dataFile":{"id":10}}]}}'),
+        ]));
+        $stack->push(Middleware::history($history));
+        $actions = new DatasetFileActions(
+            $configuration,
+            new Client(['handler' => $stack])
+        );
+        $repository = new MemoryDepositRepository();
+        $workflow = new DepositWorkflow($repository);
+        $creates = 0;
+        $create = function () use (&$creates): string {
+            $creates++;
+            return 'doi:10.1234/ABC';
+        };
+        $upload = fn ($doi) => $actions->add($doi, 'data.zip', __FILE__);
+
+        try {
+            $workflow->run(1, $this->manifest, $create, $upload, fn () => $this->fail('Complete'));
+            $this->fail('The ingest lookup must fail');
+        } catch (DataverseException $e) {
+            $this->assertSame('ready', $repository->operation['state']);
+        }
+        $workflow->run(1, $this->manifest, $create, $upload, fn () => null);
+
+        $this->assertSame('complete', $repository->operation['state']);
+        $this->assertSame(1, $creates);
+        $this->assertSame(['GET', 'GET', 'POST'], array_map(fn ($entry) => $entry['request']->getMethod(), $history));
+    }
 
     public function testLostCreateResponseDoesNotCreateAgain(): void
     {
