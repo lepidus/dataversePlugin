@@ -177,7 +177,10 @@ the caller. `nativeAPIRequest(..., false)` never reads the body. The API token (
 configured server's origin: an authenticated Native API request that Dataverse redirects elsewhere fails, because Guzzle
 keeps custom headers across origins, and `nativeAPIDownload()` follows the redirects of a file download itself, streaming
 into a write-only `sink` and sending the token only to that origin, since Dataverse sends downloads to the storage
-(e.g. S3) with a 303.
+(e.g. S3) with a 303. Once a download leaves that origin, every hop must be HTTPS to a host whose addresses are all
+public (`FILTER_FLAG_GLOBAL_RANGE`), and the connection is pinned to the checked address with `CURLOPT_RESOLVE`, so a
+redirect cannot make the server fetch an internal service. Transport errors are logged only through that JSON line,
+never with the Guzzle message, which carries the request URL and therefore the storage signature.
 
 Failures throw `DataverseException`, logged as a JSON line with the operation and
 `getFailureCategory()` (`timeout`, `connection`, `authentication` or `http`) and the HTTP status Dataverse returned, if any. A timeout means the outcome is unknown,
@@ -211,7 +214,11 @@ Dataverse also refuses to delete a dataset while it is locked (403 "Dataset cann
 
 `DataverseStudy` is the local link between a submission and its deposited dataset (`persistentId`,
 `persistentUri`, SWORD edit/statement URIs). `Repo::dataverseStudy()->getBySubmissionId()` returning null is
-the canonical "this submission has no dataset" test, used all over the dispatchers.
+the canonical "this submission has no dataset" test, used all over the dispatchers. A dataset is linked to at most one
+submission: `persistent_id` has a unique index (`UniquePersistentIdMigration`, which leaves it out and logs the
+duplicates when an install already has some), and DOIs are stored as `doi:` plus the rest in upper case
+(`DataverseStudy::normalizePersistentId()`), because Dataverse resolves a DOI in any case and PostgreSQL compares
+text case-sensitively.
 
 `DraftDatasetFile` is a file uploaded during the wizard but not yet deposited; its properties are described by
 `schemas/draftDatasetFile.json`, loaded via the `Schema::get::draftDatasetFile` hook.
@@ -280,9 +287,11 @@ in an otherwise-200 response, which the panel renders as a notice with a retry b
 
 Routes that change the dataset or the draft files also run the core `PublicationCanBeEditedPolicy`, so they follow
 the same rule as editing the publication (`canEditPublication` in the workflow). Publishing or disassociating a
-dataset runs the core `StageRolePolicy` for managers and section editors without recommend-only access: the users
-who can record the accept decision, which publishes the dataset too. That is broader than the panel's `canPublish`,
-which only shows those buttons to managers. A Dataverse file id received by a route is never trusted on its own: it
+dataset, or associating an existing one, runs the core `StageRolePolicy` for managers and section editors without
+recommend-only access: the users who can record the accept decision, which publishes the dataset too. That is broader
+than the panel's `canPublish`, which only shows those buttons to managers. Authors never associate a dataset: the
+plugin reaches Dataverse with the journal's token, so knowing a DOI in the collection would hand them someone else's
+draft. A Dataverse file id received by a route is never trusted on its own: it
 must be one of the files of the study's dataset, and the name used for the download or the event log comes from
 Dataverse, not from the request. Reviewers, unless they are also assigned to the submission, only download the
 files selected for review, and only after accepting the review when the context restricts reviewer file access;
