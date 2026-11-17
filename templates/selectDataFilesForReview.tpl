@@ -1,6 +1,6 @@
 {fbvFormSection id="selectDataFilesForReview" list="true"}
     {if isset($dataverseError)}
-        <p>{$dataverseError}</p>
+        <p>{$dataverseError|escape}</p>
     {else}
         <p>{translate key="plugins.generic.dataverse.review.selectDataFiles"}</p>
         {foreach from=$datasetFiles item=file}

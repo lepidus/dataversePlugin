@@ -216,7 +216,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
             $form->addField(new \PKP\components\forms\FieldHTML('researchDataNotice', [
                 'label' => __('plugins.generic.dataverse.researchData'),
-                'description' => __("plugins.generic.dataverse.researchData.publishNotice", $params),
+                'description' => __("plugins.generic.dataverse.researchData.publishNotice", $this->escapeHtmlParams($params)),
                 'groupId' => 'default'
             ]))
                 ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
@@ -230,15 +230,26 @@ class DataverseEventsDispatcher extends DataverseDispatcher
                     'groupId' => 'default'
                 ]));
         } catch (DataverseException $e) {
-            $warningIconHtml = '<span class="fa fa-exclamation-triangle pkpIcon--inline"></span>';
-            $noticeMsg = __('plugins.generic.dataverse.notice.cannotPublish', ['error' => $e->getMessage()]);
-            $msg = '<div class="pkpNotification pkpNotification--warning">' . $warningIconHtml . $noticeMsg . '</div>';
-
             $form->addField(new \PKP\components\forms\FieldHTML('researchDataNotice', [
-                'description' => $msg,
+                'description' => $this->getCannotPublishNotice($e->getMessage()),
                 'groupId' => 'default',
             ]));
         }
+    }
+
+    private function escapeHtmlParams(array $params): array
+    {
+        return array_map(function ($value) {
+            return htmlspecialchars((string) $value, ENT_QUOTES);
+        }, $params);
+    }
+
+    private function getCannotPublishNotice(string $error): string
+    {
+        $warningIconHtml = '<span class="fa fa-exclamation-triangle pkpIcon--inline"></span>';
+        $noticeMsg = __('plugins.generic.dataverse.notice.cannotPublish', $this->escapeHtmlParams(['error' => $error]));
+
+        return '<div class="pkpNotification pkpNotification--warning">' . $warningIconHtml . $noticeMsg . '</div>';
     }
 
     public function addDatasetPublishNoticeInEditorAction(string $hookName, array $params): ?string
@@ -280,12 +291,12 @@ class DataverseEventsDispatcher extends DataverseDispatcher
                 'serverUrl' => $configuration->getDataverseServerUrl(),
             ];
             $templateMgr->assign([
-                'researchDataNotice' => __('plugins.generic.dataverse.researchData.publishNotice', $params),
+                'researchDataNotice' => __('plugins.generic.dataverse.researchData.publishNotice', $this->escapeHtmlParams($params)),
                 'canPublishResearchData' => true
             ]);
         } catch (DataverseException $e) {
             $templateMgr->assign([
-                'researchDataNotice' => 'Dataverse Error: ' . $e->getMessage(),
+                'researchDataNotice' => 'Dataverse Error: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES),
                 'canPublishResearchData' => false
             ]);
         }
