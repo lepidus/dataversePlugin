@@ -64,7 +64,11 @@
 					<PkpButton data-cy="dataverse-upload-research-data" @click="openDepositModal">
 						{{ t('plugins.generic.dataverse.researchData.uploadResearchData') }}
 					</PkpButton>
-					<PkpButton data-cy="dataverse-associate-dataset" @click="openAssociateModal">
+					<PkpButton
+						v-if="canPublish"
+						data-cy="dataverse-associate-dataset"
+						@click="openAssociateModal"
+					>
 						{{ t('plugins.generic.dataverse.researchData.associate') }}
 					</PkpButton>
 				</PkpButtonRow>
