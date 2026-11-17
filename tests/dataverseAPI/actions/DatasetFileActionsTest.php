@@ -1,16 +1,16 @@
 <?php
 
+use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
+use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetFileActions;
 use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\Response;
 use PKP\config\Config;
 use PKP\plugins\Hook;
 use PKP\tests\PKPTestCase;
-use APP\plugins\generic\dataverse\classes\exception\DataverseException;
-use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetFileActions;
-use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 
 class DatasetFileActionsTest extends PKPTestCase
 {
@@ -52,6 +52,8 @@ class DatasetFileActionsTest extends PKPTestCase
             $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
             $this->fail('An active ingest must prevent uploading after the wait expires.');
         } catch (DataverseException $exception) {
+            $this->assertInstanceOf(\APP\plugins\generic\dataverse\classes\exception\UploadNotSentException::class, $exception);
+            $this->assertSame('data.csv', $exception->getFileName());
             $this->assertSame(__('plugins.generic.dataverse.error.ingestTimeout'), $exception->getMessage());
             $this->assertNotEmpty($history);
             $this->assertSame(['GET'], array_values(array_unique(array_map(
@@ -118,6 +120,48 @@ class DatasetFileActionsTest extends PKPTestCase
         $actions = $this->actions(['data' => ['files' => []]]);
         $this->expectException(\APP\plugins\generic\dataverse\classes\exception\DataverseException::class);
         $actions->add('doi:10.1234/ABC', 'source.zip', __FILE__);
+    }
+
+    public function testIngestWaitDoesNotSendARequestWithLessThanOneMillisecondRemaining(): void
+    {
+        $history = [];
+        $stack = HandlerStack::create(new MockHandler([
+            new Response(200, [], '{"data":[]}'),
+            new Response(200, [], '{"data":{"files":[{"dataFile":{"id":10}}]}}'),
+        ]));
+        $stack->push(Middleware::history($history));
+        $actions = $this->createActions(new Client(['handler' => $stack]), SubMillisecondIngestWaitDatasetFileActions::class);
+        try {
+            $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
+            $this->fail('A sub-millisecond request timeout must never be sent to cURL');
+        } catch (DataverseException $e) {
+            $this->assertSame([], $history);
+        }
+    }
+
+    public function testLostUploadResponseIsNotReportedAsAnUnsentUpload(): void
+    {
+        $actions = $this->createActions(new Client([
+            'handler' => new MockHandler([
+                new Response(200, [], '{"data":[]}'),
+                new \GuzzleHttp\Exception\ConnectException(
+                    'Upload response timed out',
+                    new \GuzzleHttp\Psr7\Request('POST', 'https://test.dataverse.org/api/datasets/:persistentId/add'),
+                    null,
+                    ['errno' => 28]
+                ),
+            ]),
+        ]));
+        try {
+            $actions->add('doi:10.1234/ABC', 'data.csv', __FILE__);
+            $this->fail('The upload must time out');
+        } catch (DataverseException $exception) {
+            $this->assertNotInstanceOf(
+                \APP\plugins\generic\dataverse\classes\exception\UploadNotSentException::class,
+                $exception
+            );
+            $this->assertSame('timeout', $exception->getFailureCategory());
+        }
     }
 
     private function actions(array $response): DatasetFileActions
@@ -311,4 +355,9 @@ class DatasetFileActionsTest extends PKPTestCase
 class ShortIngestWaitDatasetFileActions extends DatasetFileActions
 {
     protected const INGEST_WAIT_TIMEOUT_SECONDS = 1;
+}
+
+class SubMillisecondIngestWaitDatasetFileActions extends DatasetFileActions
+{
+    protected const INGEST_WAIT_TIMEOUT_SECONDS = 0.0009;
 }

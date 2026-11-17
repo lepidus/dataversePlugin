@@ -1,16 +1,80 @@
 <?php
 
-use PKP\tests\DatabaseTestCase;
-use PKP\db\DAORegistry;
-use APP\submission\Submission;
-use APP\publication\Publication;
-use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
+use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\publication\Publication;
+use APP\submission\Submission;
 use Illuminate\Support\Facades\DB;
+use PKP\db\DAORegistry;
+use PKP\tests\DatabaseTestCase;
 
 class DepositRepositoryTest extends DatabaseTestCase
 {
     private int $submissionId;
+
+    /**
+     * @dataProvider remoteDatasetFailures
+     *
+     * @runInSeparateProcess
+     *
+     * @preserveGlobalState disabled
+     */
+    public function testMissingRemoteDatasetRetiresTheCompletedDeposit(
+        int $remoteStatus,
+        bool $pending,
+        int $expectedStatus,
+        string $expectedState
+    ): void {
+        ini_set('error_log', '/dev/null');
+        $repository = new DepositRepository();
+        $repository->reserve($this->submissionId, []);
+        $repository->transition($this->submissionId, 'reserved', 'ready', ['persistent_id' => 'doi:10.1234/ABC']);
+        $study = Repo::dataverseStudy()->newDataObject();
+        $study->setSubmissionId($this->submissionId);
+        $study->setPersistentId('doi:10.1234/ABC');
+        foreach (['EditUri', 'EditMediaUri', 'StatementUri', 'PersistentUri'] as $property) {
+            $study->{'set' . $property}('');
+        }
+        $repository->complete($this->submissionId, function () use ($study): void {
+            $study->setId(Repo::dataverseStudy()->add($study));
+        });
+        $actions = $this->getMockBuilder(\APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions::class)
+            ->disableOriginalConstructor()->onlyMethods(['get'])->getMock();
+        $actions->method('get')->willThrowException(
+            new \APP\plugins\generic\dataverse\classes\exception\DataverseException('Gone', $remoteStatus)
+        );
+        $client = Mockery::mock('overload:APP\\plugins\\generic\\dataverse\\dataverseAPI\\DataverseClient');
+        $client->shouldReceive('getDatasetActions')->andReturn($actions);
+        $handler = $this->getMockBuilder(\APP\plugins\generic\dataverse\api\v1\datasets\DatasetHandler::class)
+            ->disableOriginalConstructor()->onlyMethods(['getAuthorizedContextObject'])->getMock();
+        $handler->method('getAuthorizedContextObject')->willReturn(Repo::submission()->get($this->submissionId));
+
+        if ($pending) {
+            DB::table('dataverse_deposits')->where('submission_id', $this->submissionId)
+                ->update(['state' => 'uploading']);
+        }
+        $response = $handler->get(null, new \PKP\core\APIResponse(), ['studyId' => $study->getId()]);
+
+        $this->assertSame($expectedStatus, $response->getStatusCode());
+        $this->assertSame(
+            $expectedState === 'retired',
+            Repo::dataverseStudy()->getBySubmissionId($this->submissionId) === null
+        );
+        $this->assertSame($expectedState, DB::table('dataverse_deposits')
+            ->where('submission_id', $this->submissionId)->value('state'));
+        if ($expectedState === 'retired') {
+            $this->assertSame('reserved', (new DepositRepository())->reserve($this->submissionId, [])['state']);
+        }
+    }
+
+    public static function remoteDatasetFailures(): array
+    {
+        return [
+            'missing dataset' => [404, false, 404, 'retired'],
+            'unavailable server' => [503, false, 503, 'complete'],
+            'unconfirmed deposit' => [404, true, 409, 'uploading'],
+        ];
+    }
 
     public function setUp(): void
     {

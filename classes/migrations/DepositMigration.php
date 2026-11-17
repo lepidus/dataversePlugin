@@ -5,9 +5,15 @@ namespace APP\plugins\generic\dataverse\classes\migrations;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use PKP\install\DowngradeNotSupportedException;
 
 class DepositMigration extends Migration
 {
+    public function down(): void
+    {
+        throw new DowngradeNotSupportedException();
+    }
+
     public function up(): void
     {
         if (!Schema::hasTable('dataverse_deposits')) {
