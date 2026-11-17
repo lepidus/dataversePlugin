@@ -39,6 +39,19 @@ Este plugin está disponível para instalação através da [Galeria de Plugins 
 
 Seguindo esses passos, o plugin estará instalado em seu OJS/OPS. Após a instalação, quando desejar verificar se há uma nova versão disponível, basta seguir o mesmo caminho e verificar a situação do plugin na listagem.
 
+## Reparo de uma versão incorreta do core (OJS/OPS 3.4)
+
+Versões anteriores do plugin podiam registrar a versão do Dataverse como versão do core da aplicação.
+A atualização do plugin remove esses registros incorretos e restaura a maior versão real do OJS/OPS
+3.4.0 presente no banco, preservando sua data de instalação. Os registros removidos são gravados no
+log de erros do PHP.
+
+Administradores de instalações afetadas devem executar `php tools/upgrade.php upgrade` na raiz da
+aplicação após atualizar o plugin. Isso é especialmente importante se o OJS/OPS foi atualizado depois
+da corrupção: restaurar a versão registrada permite executar as etapas do upgrade do core que foram
+ignoradas. O reparo não marca essas etapas como concluídas nem cria um registro de versão para os
+arquivos atuais.
+
 ## Instruções para uso
 
 ### Configuração

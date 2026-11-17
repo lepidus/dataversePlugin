@@ -37,6 +37,19 @@ Este módulo está disponible para su instalación a través de la [Galería de 
 
 Siguiendo estos pasos, el módulo se instalará en tu OJS/OPS. Después de la instalación, cuando quieras comprobar si hay una nueva versión disponible, sólo tienes que seguir la misma ruta y comprobar el estado del módulo en la lista.
 
+## Reparación de una versión incorrecta del núcleo (OJS/OPS 3.4)
+
+Las versiones anteriores del módulo podían registrar la versión de Dataverse como versión del
+núcleo de la aplicación. La actualización elimina esos registros incorrectos y restaura la mayor
+versión real de OJS/OPS 3.4.0 presente en la base de datos, conservando su fecha de instalación.
+Los registros eliminados se escriben en el registro de errores de PHP.
+
+Los administradores de sitios afectados deben ejecutar `php tools/upgrade.php upgrade` desde la
+raíz de la aplicación después de actualizar el módulo. Esto es especialmente importante si OJS/OPS
+se actualizó después de la corrupción: restaurar la versión registrada permite ejecutar los pasos
+de actualización del núcleo que se omitieron. La reparación no marca esos pasos como completados
+ni crea un registro de versión para los archivos actuales.
+
 ## Instrucciones de uso
 
 ### Configuración

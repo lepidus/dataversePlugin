@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use APP\install\Upgrade;
 use APP\plugins\generic\dataverse\classes\migrations\RepairDataverseCoreVersion;
 use Illuminate\Cache\ArrayStore;
 use Illuminate\Cache\Repository;
@@ -9,6 +10,7 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use PKP\site\Version;
 use PKP\tests\DatabaseTestCase;
 
 require_once dirname(__DIR__, 2) . '/classes/migrations/RepairDataverseCoreVersion.php';
@@ -21,6 +23,7 @@ class RepairDataverseCoreVersionTest extends DatabaseTestCase
     private ?int $initialTransactionLevel = null;
     private ?string $previousDirectory = null;
     private ?string $directory = null;
+    private $previousErrorLog;
 
     protected function setUp(): void
     {
@@ -35,6 +38,7 @@ class RepairDataverseCoreVersionTest extends DatabaseTestCase
         $this->cacheWasReplaced = true;
         $this->directory = sys_get_temp_dir() . '/dataverse-version-' . bin2hex(random_bytes(8));
         mkdir($this->directory . '/dbscripts/xml', 0700, true);
+        $this->previousErrorLog = ini_set('error_log', $this->directory . '/repair.log');
         $this->writeCodeVersion('3.4.0.10');
         chdir($this->directory);
     }
@@ -42,6 +46,9 @@ class RepairDataverseCoreVersionTest extends DatabaseTestCase
     protected function tearDown(): void
     {
         try {
+            if ($this->previousErrorLog !== null) {
+                ini_set('error_log', $this->previousErrorLog);
+            }
             if ($this->cacheWasReplaced) {
                 Cache::swap($this->previousCache);
             }
@@ -54,6 +61,9 @@ class RepairDataverseCoreVersionTest extends DatabaseTestCase
                 chdir($this->previousDirectory);
             }
             if ($this->directory !== null && is_dir($this->directory)) {
+                if (is_file($this->directory . '/repair.log')) {
+                    unlink($this->directory . '/repair.log');
+                }
                 $versionFile = $this->directory . '/dbscripts/xml/version.xml';
                 if (is_file($versionFile)) {
                     unlink($versionFile);
@@ -86,6 +96,10 @@ class RepairDataverseCoreVersionTest extends DatabaseTestCase
         $restored = DB::table('versions')->where('product', $this->product)->first();
         $original->current = 1;
         $this->assertEquals($original, $restored);
+        $this->assertStringNotContainsString(
+            'php tools/upgrade.php upgrade',
+            file_get_contents($this->directory . '/repair.log')
+        );
         $this->assertSame(1, DB::table('versions')->where('product', $this->product)->count());
         $this->assertEquals($otherProducts, DB::table('versions')->where('product', '!=', $this->product)->get()->all());
     }
@@ -125,6 +139,76 @@ class RepairDataverseCoreVersionTest extends DatabaseTestCase
             '3.4.3.0', '3.4.4.0', '3.4.4.1', '3.4.4.3', '3.4.5.1', '3.4.5.2',
             '3.4.6.0', '3.4.6.1', '3.4.6.2', '3.4.8.0',
         ]));
+    }
+
+    /** @dataProvider upgradedSites */
+    public function testRestoresNewestRealVersionWhenCodeHasAdvanced(
+        string $product,
+        string $codeRelease,
+        string $incorrectVersion
+    ): void {
+        $this->useProduct($product);
+        $this->writeCodeVersion($codeRelease);
+        // Deliberately insert the older version last: installation order is not version order.
+        $this->addVersion('3.4.0.10', 0);
+        $this->addVersion('3.4.0.9', 0);
+        $this->addVersion($incorrectVersion, 1);
+        $original = DB::table('versions')->where('revision', 0)->where('build', 10)->first();
+        $removed = DB::table('versions')->where('revision', '>', 0)->get()->all();
+
+        (new RepairDataverseCoreVersion())->up();
+
+        $original->current = 1;
+        $this->assertEquals($original, DB::table('versions')->where('current', 1)->first());
+        $this->assertSame(2, DB::table('versions')->count());
+        $log = file_get_contents($this->directory . '/repair.log');
+        $this->assertStringContainsString('php tools/upgrade.php upgrade', $log);
+        $this->assertStringContainsString($codeRelease, $log);
+        foreach ($removed as $row) {
+            $this->assertStringContainsString(json_encode($row, JSON_THROW_ON_ERROR), $log);
+        }
+        $before = DB::table('versions')->get()->all();
+        (new RepairDataverseCoreVersion())->up();
+        $this->assertEquals($before, DB::table('versions')->get()->all());
+    }
+
+    public function upgradedSites(): array
+    {
+        $cases = [];
+        foreach (['3.4.0.11', '3.4.0.12'] as $codeRelease) {
+            foreach (['3.4.1.0', '3.4.3.0', '3.4.4.0', '3.4.4.1', '3.4.5.2', '3.4.6.2'] as $incorrectVersion) {
+                $cases[$codeRelease . ' after ' . $incorrectVersion] = [$codeRelease, $incorrectVersion];
+            }
+        }
+        return $this->withProducts($cases);
+    }
+
+    /** @dataProvider supportedProducts */
+    public function testReadsCodeVersionWithoutUsingCache(string $product): void
+    {
+        $this->useProduct($product);
+        $this->addVersion('3.4.0.10', 0);
+        $this->addVersion('3.4.6.2', 1);
+        Cache::shouldReceive('remember')->never();
+
+        (new RepairDataverseCoreVersion())->up();
+
+        $this->assertSame(10, (int) DB::table('versions')->where('current', 1)->value('build'));
+    }
+
+    /** @dataProvider supportedProducts */
+    public function testPluginUpgradeDoesNotOverwriteCoreVersion(string $product): void
+    {
+        $this->useProduct($product);
+        $this->addVersion('3.4.0.10', 1);
+        $before = DB::table('versions')->get()->all();
+        $installer = new Upgrade([], dirname(__DIR__, 2) . '/upgrade.xml', true);
+        $installer->setCurrentVersion(Version::fromString('3.4.0.10', 'core', $product));
+
+        $this->assertTrue($installer->parseInstaller());
+        $this->assertTrue($installer->updateVersion());
+
+        $this->assertEquals($before, DB::table('versions')->get()->all());
     }
 
     /** @dataProvider supportedProducts */
@@ -167,7 +251,8 @@ class RepairDataverseCoreVersionTest extends DatabaseTestCase
     public function ambiguousHistories(): array
     {
         return $this->withProducts([
-            'missing historical version' => [[['3.4.0.9', 0], ['3.4.6.2', 1]]],
+            'missing historical version' => [[['3.4.6.2', 1]]],
+            'no real 3.4 version' => [[['3.3.0.10', 0], ['3.4.6.2', 1]]],
             'unknown newer version' => [[['3.4.0.10', 0], ['3.4.99.0', 1], ['3.4.6.2', 0]]],
             'multiple current versions' => [[['3.4.0.10', 1], ['3.4.6.2', 1]]],
             'no current version' => [[['3.4.0.10', 0], ['3.4.6.2', 0]]],
@@ -197,6 +282,7 @@ class RepairDataverseCoreVersionTest extends DatabaseTestCase
             $this->fail('Expected a database failure.');
         } catch (RuntimeException $exception) {
             $this->assertSame('Simulated deletion failure.', $exception->getMessage());
+            $this->assertFileDoesNotExist($this->directory . '/repair.log');
         } finally {
             if ($previousDispatcher) {
                 $connection->setEventDispatcher($previousDispatcher);
