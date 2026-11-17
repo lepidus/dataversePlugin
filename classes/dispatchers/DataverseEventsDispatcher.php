@@ -86,7 +86,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     {
         $form->addField(new \PKP\components\forms\FieldHTML('researchDataNotice', [
             'label' => __('plugins.generic.dataverse.researchData'),
-            'description' => __("plugins.generic.dataverse.researchData.publishNotice", $params),
+            'description' => __("plugins.generic.dataverse.researchData.publishNotice", $this->escapeHtmlParams($params)),
             'groupId' => 'default'
         ]))
             ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
@@ -101,12 +101,25 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             ]));
     }
 
+    private function escapeHtmlParams(array $params): array
+    {
+        return array_map(fn ($value) => htmlspecialchars((string) $value, ENT_QUOTES), $params);
+    }
+
+    private function getCannotPublishNotice(string $error): string
+    {
+        $warningIconHtml = '<span class="fa fa-exclamation-triangle pkpIcon--inline"></span>';
+        $noticeMsg = __('plugins.generic.dataverse.notice.cannotPublish', $this->escapeHtmlParams(['error' => $error]));
+
+        return '<div class="pkpNotification pkpNotification--warning">' . $warningIconHtml . $noticeMsg . '</div>';
+    }
+
     private function getDatasetDeleteNoticeForm($persistentUri)
     {
         $datasetDeleteNoticeForm = new FormComponent('datasetDelete', '', FormComponent::ACTION_EMIT, []);
         $datasetDeleteNoticeForm->addField(new \PKP\components\forms\FieldHTML('researchDataNotice', [
             'label' => __('plugins.generic.dataverse.researchData'),
-            'description' => __("plugins.generic.dataverse.researchData.deleteNotice", ['persistentUri' => $persistentUri]),
+            'description' => __("plugins.generic.dataverse.researchData.deleteNotice", $this->escapeHtmlParams(['persistentUri' => $persistentUri])),
             'groupId' => 'default'
         ]))
             ->addField(new \PKP\components\forms\FieldRadioInput('researchDataRadioInputs', [
@@ -163,12 +176,8 @@ class DataverseEventsDispatcher extends DataverseDispatcher
 
             $this->addDatasetPublishFieldsToForm($form, $params);
         } catch (DataverseException $e) {
-            $warningIconHtml = '<span class="fa fa-exclamation-triangle pkpIcon--inline"></span>';
-            $noticeMsg = __('plugins.generic.dataverse.notice.cannotPublish', ['error' => $e->getMessage()]);
-            $msg = '<div class="pkpNotification pkpNotification--warning">' . $warningIconHtml . $noticeMsg . '</div>';
-
             $form->addField(new \PKP\components\forms\FieldHTML('researchDataNotice', [
-                'description' => $msg,
+                'description' => $this->getCannotPublishNotice($e->getMessage()),
                 'groupId' => 'default',
             ]));
         }
