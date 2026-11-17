@@ -45,6 +45,7 @@ class DataverseMigration extends Migration
         }
 
         (new DepositMigration())->up();
+        (new UniquePersistentIdMigration())->up();
         (new LaravelEncryptionMigration())->up();
     }
 }

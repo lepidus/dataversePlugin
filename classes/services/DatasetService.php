@@ -26,6 +26,7 @@ use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
 use APP\plugins\generic\dataverse\classes\deposit\DepositWorkflow;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Throwable;
@@ -114,7 +115,7 @@ class DatasetService extends DataverseService
         }
 
         $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
-        if (!$study || $study->getPersistentId() !== $completedOperation->persistent_id) {
+        if (!$study || $study->getPersistentId() !== DataverseStudy::normalizePersistentId((string) $completedOperation->persistent_id)) {
             throw new RuntimeException('The completed deposit association changed.');
         }
     }
@@ -342,6 +343,8 @@ class DatasetService extends DataverseService
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.invalidPersistentId'];
         }
 
+        $persistentId = DataverseStudy::normalizePersistentId($persistentId);
+
         $existingStudyWithPersistentId = Repo::dataverseStudy()->getByPersistentId($persistentId);
         if ($existingStudyWithPersistentId) {
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
@@ -356,6 +359,17 @@ class DatasetService extends DataverseService
         if (!$isInCurrentCollection) {
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.outsideCollection'];
         }
+
+        try {
+            return $this->createAssociation($submission, $persistentId);
+        } catch (UniqueConstraintViolationException $e) {
+            return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
+        }
+    }
+
+    private function createAssociation(Submission $submission, string $persistentId): array
+    {
+        $submissionId = $submission->getId();
 
         return DB::transaction(function () use ($submission, $submissionId, $persistentId): array {
             (new DepositRepository())->lockSubmission($submissionId);

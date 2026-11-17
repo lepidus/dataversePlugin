@@ -8,4 +8,7 @@
     <upgrade>
         <migration class="APP\plugins\generic\dataverse\classes\migrations\DepositMigration" />
     </upgrade>
+    <upgrade>
+        <migration class="APP\plugins\generic\dataverse\classes\migrations\UniquePersistentIdMigration" />
+    </upgrade>
 </install>
