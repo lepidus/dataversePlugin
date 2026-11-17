@@ -7,8 +7,10 @@ import('plugins.generic.dataverse.dataverseAPI.DataverseClient');
 import('plugins.generic.dataverse.classes.entities.Dataset');
 import('plugins.generic.dataverse.classes.deposit.DepositRepository');
 import('plugins.generic.dataverse.classes.deposit.DepositWorkflow');
+import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudy');
 
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Database\QueryException;
 
 class DatasetService extends DataverseService
 {
@@ -38,7 +40,7 @@ class DatasetService extends DataverseService
                 ->where('state', 'complete')->first();
             if ($completed) {
                 $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
-                if (!$study || $study->getPersistentId() !== $completed->persistent_id) {
+                if (!$study || $study->getPersistentId() !== DataverseStudy::normalizePersistentId((string) $completed->persistent_id)) {
                     throw new RuntimeException('The completed deposit association changed.');
                 }
                 if (!$files) {
@@ -299,13 +301,15 @@ class DatasetService extends DataverseService
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.invalidPersistentId'];
         }
 
+        $persistentId = DataverseStudy::normalizePersistentId($persistentId);
+
         $existingStudyWithPersistentId = $dataverseStudyDao->getByPersistentId($persistentId);
         if ($existingStudyWithPersistentId) {
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
         }
 
         try {
-            $isInCurrentCollection = (new DataverseClient())->getDatasetActions()->isInCurrentCollection($persistentId);
+            $isInCurrentCollection = $this->getDataverseClient()->getDatasetActions()->isInCurrentCollection($persistentId);
         } catch (DataverseException $e) {
             return ['status' => DataverseService::STATUS_NOT_FOUND, 'message' => 'plugins.generic.dataverse.error.associate.notFound'];
         }
@@ -313,6 +317,20 @@ class DatasetService extends DataverseService
         if (!$isInCurrentCollection) {
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.outsideCollection'];
         }
+
+        try {
+            return $this->createAssociation($submission, $persistentId);
+        } catch (QueryException $e) {
+            if (DAORegistry::getDAO('DataverseStudyDAO')->getByPersistentId($persistentId)) {
+                return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
+            }
+            throw $e;
+        }
+    }
+
+    private function createAssociation(Submission $submission, string $persistentId): array
+    {
+        $submissionId = $submission->getId();
 
         return Capsule::connection()->transaction(function () use ($submission, $submissionId, $persistentId): array {
             (new DepositRepository())->lockSubmission($submissionId);

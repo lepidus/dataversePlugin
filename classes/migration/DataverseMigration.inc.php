@@ -6,6 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 import('plugins.generic.dataverse.classes.migration.DepositMigration');
+import('plugins.generic.dataverse.classes.migration.UniquePersistentIdMigration');
 
 class DataverseMigration extends Migration
 {
@@ -34,5 +35,7 @@ class DataverseMigration extends Migration
                 $table->unique(['file_id'], 'temporary_files_id');
             });
         }
+
+        (new UniquePersistentIdMigration())->up();
     }
 }
