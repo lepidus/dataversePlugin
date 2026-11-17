@@ -144,6 +144,8 @@ abstract class DataverseActions
             ];
             if (!$leftServer) {
                 $options['headers']['X-Dataverse-key'] = $this->apiToken;
+            } else {
+                $options['curl'] = [CURLOPT_RESOLVE => [$this->resolveStorageHost(new Uri($uri))]];
             }
 
             $response = $leftServer
@@ -175,6 +177,52 @@ abstract class DataverseActions
 
             throw $e;
         }
+    }
+
+    private function resolveStorageHost(UriInterface $uri): string
+    {
+        if ($uri->getScheme() !== 'https') {
+            throw $this->refusedStorageRedirect('Dataverse redirected a file download to a storage without HTTPS');
+        }
+
+        $host = trim($uri->getHost(), '[]');
+        $addresses = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : $this->resolveHostAddresses($host);
+        if (empty($addresses)) {
+            throw $this->refusedStorageRedirect('The storage host of a Dataverse file download could not be resolved');
+        }
+
+        foreach ($addresses as $address) {
+            if (!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE)) {
+                throw $this->refusedStorageRedirect('Dataverse redirected a file download to a non-public address');
+            }
+        }
+
+        $address = $addresses[0];
+        $port = $uri->getPort() ?? 443;
+
+        return $host . ':' . $port . ':' . (str_contains($address, ':') ? '[' . $address . ']' : $address);
+    }
+
+    protected function resolveHostAddresses(string $host): array
+    {
+        $records = @dns_get_record($host, DNS_A | DNS_AAAA) ?: [];
+
+        return array_values(array_filter(array_map(
+            fn (array $record): ?string => $record['ip'] ?? $record['ipv6'] ?? null,
+            $records
+        )));
+    }
+
+    private function refusedStorageRedirect(string $reason): DataverseException
+    {
+        error_log(json_encode([
+            'component' => 'dataverse',
+            'operation' => 'download',
+            'category' => 'redirect_refused',
+            'reason' => $reason,
+        ]));
+
+        return DataverseException::fromTransferException(new TransferException($reason));
     }
 
     private function resolveRedirect(string $uri, ResponseInterface $response): string

@@ -50,7 +50,7 @@ class DatasetFileActionsTest extends PKPTestCase
     private function createActionsRespondingWith(
         array $responses,
         array &$history = [],
-        string $actionsClass = DatasetFileActions::class
+        string $actionsClass = ResolvedStorageDatasetFileActions::class
     ): DatasetFileActions {
         $configuration = new DataverseConfiguration();
         $configuration->setDataverseUrl('https://test.dataverse.org/dataverses/testDataverse');
@@ -315,6 +315,56 @@ class DatasetFileActionsTest extends PKPTestCase
         $actions->download(2025434, 'Data.csv');
     }
 
+    public function testDownloadRedirectedToStoragePinsTheResolvedPublicAddress(): void
+    {
+        $history = [];
+        $actions = $this->createActionsRespondingWith([
+            new Response(303, ['Location' => 'https://storage.example.org/datafile']),
+            new Response(200, [], 'content'),
+        ], $history);
+
+        $actions->download(2025434, 'Data.csv');
+
+        $this->assertSame(
+            ['storage.example.org:443:' . ResolvedStorageDatasetFileActions::PUBLIC_ADDRESS],
+            $history[1]['options']['curl'][CURLOPT_RESOLVE]
+        );
+    }
+
+    #[DataProvider('storageRedirectsOutsideThePublicNetwork')]
+    public function testDownloadIsNotRedirectedOutsideThePublicNetwork(string $location): void
+    {
+        ini_set('error_log', '/dev/null');
+        $history = [];
+        $actions = $this->createActionsRespondingWith([
+            new Response(303, ['Location' => $location]),
+            new Response(200, [], 'internal service response'),
+        ], $history);
+
+        try {
+            $actions->download(2025434, 'Data.csv');
+            $this->fail('The download followed the redirect to ' . $location);
+        } catch (DataverseException $e) {
+            $this->assertSame(503, $e->getCode());
+        }
+
+        $this->assertCount(1, $history);
+        $this->assertNull($this->downloadedContents);
+    }
+
+    public static function storageRedirectsOutsideThePublicNetwork(): array
+    {
+        return [
+            'loopback address' => ['https://127.0.0.1:8080/private'],
+            'cloud metadata address' => ['https://169.254.169.254/latest/meta-data/'],
+            'private network address' => ['https://10.0.0.5/file'],
+            'IPv4-mapped loopback address' => ['https://[::ffff:127.0.0.1]/file'],
+            'host resolving to a private address' => ['https://internal.example.org/file'],
+            'host that does not resolve' => ['https://unknown.example.org/file'],
+            'storage without HTTPS' => ['http://storage.example.org/file'],
+        ];
+    }
+
     public function testFailedDownloadRemovesItsTemporaryDirectory(): void
     {
         $filesDir = realpath(Config::getVar('files', 'files_dir'));
@@ -329,12 +379,26 @@ class DatasetFileActionsTest extends PKPTestCase
     }
 }
 
-class ShortIngestWaitDatasetFileActions extends DatasetFileActions
+class ResolvedStorageDatasetFileActions extends DatasetFileActions
+{
+    public const PUBLIC_ADDRESS = '93.184.215.14';
+
+    protected function resolveHostAddresses(string $host): array
+    {
+        return [
+            'storage.example.org' => [self::PUBLIC_ADDRESS],
+            'test.dataverse.org' => [self::PUBLIC_ADDRESS],
+            'internal.example.org' => [self::PUBLIC_ADDRESS, '10.0.0.5'],
+        ][$host] ?? [];
+    }
+}
+
+class ShortIngestWaitDatasetFileActions extends ResolvedStorageDatasetFileActions
 {
     protected const INGEST_WAIT_TIMEOUT_SECONDS = 1;
 }
 
-class ExpiredIngestWaitDatasetFileActions extends DatasetFileActions
+class ExpiredIngestWaitDatasetFileActions extends ResolvedStorageDatasetFileActions
 {
     protected const INGEST_WAIT_TIMEOUT_SECONDS = 0.0005;
 }
