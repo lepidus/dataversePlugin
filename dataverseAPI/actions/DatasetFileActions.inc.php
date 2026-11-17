@@ -4,6 +4,7 @@ use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
 
 import('plugins.generic.dataverse.dataverseAPI.actions.interfaces.DatasetFileActionsInterface');
 import('plugins.generic.dataverse.dataverseAPI.actions.DataverseActions');
@@ -135,7 +136,8 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             $leftServer = $leftServer || !$this->isServerOrigin($currentUri);
 
             if ($leftServer) {
-                $this->sendStorageRequest((string) $currentUri, $options);
+                $storageOptions = $options + ['curl' => [CURLOPT_RESOLVE => [$this->resolveStorageHost($currentUri)]]];
+                $this->sendStorageRequest((string) $currentUri, $storageOptions);
             } else {
                 $this->nativeAPIRequest('GET', (string) $currentUri, $options, false);
             }
@@ -156,6 +158,70 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         }
 
         throw new DataverseException(__(self::UNAVAILABLE_MESSAGE), self::UNAVAILABLE_STATUS_CODE);
+    }
+
+    private function resolveStorageHost(UriInterface $uri): string
+    {
+        if ($uri->getScheme() !== 'https') {
+            throw $this->refusedStorageRedirect('https_required');
+        }
+
+        $host = trim($uri->getHost(), '[]');
+        $addresses = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : $this->resolveHostAddresses($host);
+        if (empty($addresses)) {
+            throw $this->refusedStorageRedirect('unresolved_host');
+        }
+
+        foreach ($addresses as $address) {
+            if (!$this->isPublicAddress($address)) {
+                throw $this->refusedStorageRedirect('non_public_address');
+            }
+        }
+
+        $address = $addresses[0];
+        $port = $uri->getPort() ?? 443;
+
+        return $host . ':' . $port . ':' . (strpos($address, ':') !== false ? '[' . $address . ']' : $address);
+    }
+
+    protected function resolveHostAddresses(string $host): array
+    {
+        $addresses = [];
+        foreach (@dns_get_record($host, DNS_A | DNS_AAAA) ?: [] as $record) {
+            if (isset($record['ip'])) {
+                $addresses[] = $record['ip'];
+            } elseif (isset($record['ipv6'])) {
+                $addresses[] = $record['ipv6'];
+            }
+        }
+
+        return $addresses;
+    }
+
+    private function isPublicAddress(string $address): bool
+    {
+        $packedAddress = inet_pton($address);
+        if ($packedAddress !== false && strlen($packedAddress) === 16 && strpos($packedAddress, str_repeat("\0", 10) . "\xff\xff") === 0) {
+            return $this->isPublicAddress(inet_ntop(substr($packedAddress, 12)));
+        }
+
+        $flags = defined('FILTER_FLAG_GLOBAL_RANGE')
+            ? FILTER_FLAG_GLOBAL_RANGE
+            : FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+
+        return filter_var($address, FILTER_VALIDATE_IP, $flags) !== false;
+    }
+
+    private function refusedStorageRedirect(string $reason): DataverseException
+    {
+        error_log(json_encode([
+            'component' => 'dataverse',
+            'operation' => 'download',
+            'category' => 'redirect_refused',
+            'reason' => $reason,
+        ]));
+
+        return new DataverseException(__(self::UNAVAILABLE_MESSAGE), self::UNAVAILABLE_STATUS_CODE);
     }
 
     private function sendStorageRequest(string $uri, array $options): void

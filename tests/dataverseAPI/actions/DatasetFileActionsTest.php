@@ -114,7 +114,7 @@ class DatasetFileActionsTest extends PKPTestCase
         $configuration = new DataverseConfiguration();
         $configuration->setDataverseUrl('https://test.dataverse.org/dataverse/test');
         $configuration->setAPIToken('test-token');
-        $actions = new DatasetFileActions($configuration, new Client(['handler' => $stack]));
+        $actions = new ResolvedStorageDatasetFileActions($configuration, new Client(['handler' => $stack]));
 
         $downloadArguments = null;
         HookRegistry::register('FileManager::downloadFile', function ($hookName, $args) use (&$downloadArguments) {
@@ -158,14 +158,58 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->assertTrue($requests[1]['request']->hasHeader('X-Dataverse-key'));
     }
 
-    public function testTokenIsNotSentOverAnotherScheme(): void
+    public function testDownloadIsNotRedirectedOverAnotherScheme(): void
     {
-        [$requests] = $this->downloadWith([
+        ini_set('error_log', '/dev/null');
+        $this->expectException(DataverseException::class);
+        $this->downloadWith([
             new Response(302, ['Location' => 'http://test.dataverse.org/api/access/datafile/41']),
             new Response(200, [], 'content'),
         ]);
+    }
 
-        $this->assertFalse($requests[1]['request']->hasHeader('X-Dataverse-key'));
+    public function testDownloadRedirectedToStoragePinsTheResolvedPublicAddress(): void
+    {
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://storage.example.org/file']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertSame(
+            ['storage.example.org:443:' . ResolvedStorageDatasetFileActions::PUBLIC_ADDRESS],
+            $requests[1]['options']['curl'][CURLOPT_RESOLVE]
+        );
+    }
+
+    /**
+     * @dataProvider storageRedirectsOutsideThePublicNetwork
+     */
+    public function testDownloadIsNotRedirectedOutsideThePublicNetwork(string $location): void
+    {
+        ini_set('error_log', '/dev/null');
+
+        try {
+            $this->downloadWith([
+                new Response(303, ['Location' => $location]),
+                new Response(200, [], 'internal service response'),
+            ]);
+            $this->fail('The download followed the redirect to ' . $location);
+        } catch (DataverseException $e) {
+            $this->assertSame(503, $e->getCode());
+        }
+    }
+
+    public function storageRedirectsOutsideThePublicNetwork(): array
+    {
+        return [
+            'loopback address' => ['https://127.0.0.1:8080/private'],
+            'cloud metadata address' => ['https://169.254.169.254/latest/meta-data/'],
+            'private network address' => ['https://10.0.0.5/file'],
+            'IPv4-mapped loopback address' => ['https://[::ffff:127.0.0.1]/file'],
+            'host resolving to a private address' => ['https://internal.example.org/file'],
+            'host that does not resolve' => ['https://unknown.example.org/file'],
+            'storage without HTTPS' => ['http://storage.example.org/file'],
+        ];
     }
 
     public function testEndlessRedirectsAreNotFollowed(): void
@@ -271,5 +315,21 @@ class DatasetFileActionsTest extends PKPTestCase
         return new DatasetFileActions($configuration, new Client([
             'handler' => new MockHandler([new Response(200, [], json_encode($response))]),
         ]));
+    }
+}
+
+class ResolvedStorageDatasetFileActions extends DatasetFileActions
+{
+    public const PUBLIC_ADDRESS = '93.184.215.14';
+
+    protected function resolveHostAddresses(string $host): array
+    {
+        $addresses = [
+            'storage.example.org' => [self::PUBLIC_ADDRESS],
+            'test.dataverse.org' => [self::PUBLIC_ADDRESS],
+            'internal.example.org' => [self::PUBLIC_ADDRESS, '10.0.0.5'],
+        ];
+
+        return $addresses[$host] ?? [];
     }
 }
