@@ -37,6 +37,18 @@ This plugin is available for installation via the [PKP Plugin Gallery](https://d
 
 By following these steps, the plugin will be installed on your OJS/OPS. After installation, whenever you want to check if a new version is available, just follow the same path and check the plugin's status in the list.
 
+## Repairing an incorrect core version (OJS/OPS 3.4)
+
+Earlier plugin releases could record the Dataverse version as the application's core version.
+Updating the plugin removes those incorrect records and restores the latest real OJS/OPS 3.4.0
+version in the database, preserving its original installation date. The removed records are written
+to the PHP error log.
+
+Administrators of affected sites must then run `php tools/upgrade.php upgrade` from the application
+root. This is especially important if OJS/OPS was upgraded after the corruption: restoring the
+recorded version allows the core upgrade steps that were skipped to run. The repair does not mark
+those steps as completed or create a version record for the current files.
+
 ## Instructions for use
 
 ### Configuration
