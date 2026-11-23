@@ -10,10 +10,16 @@ import('plugins.generic.dataverse.classes.migration.UniquePersistentIdMigration'
 class UniquePersistentIdMigrationTest extends PKPTestCase
 {
     private $studyIds = [];
+    private $errorLog;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->errorLog = ini_get('error_log');
+        if (!empty(UniquePersistentIdMigration::getDuplicatedPersistentIds())) {
+            $this->markTestSkipped('The installation already associates a dataset with more than one submission.');
+        }
+
         if (UniquePersistentIdMigration::hasIndex()) {
             Capsule::schema()->table('dataverse_studies', function (Blueprint $table) {
                 $table->dropUnique(UniquePersistentIdMigration::INDEX_NAME);
@@ -25,6 +31,7 @@ class UniquePersistentIdMigrationTest extends PKPTestCase
     {
         Capsule::table('dataverse_studies')->whereIn('study_id', $this->studyIds)->delete();
         (new UniquePersistentIdMigration())->up();
+        ini_set('error_log', $this->errorLog);
         parent::tearDown();
     }
 
@@ -48,16 +55,16 @@ class UniquePersistentIdMigrationTest extends PKPTestCase
         return Capsule::table('dataverse_studies')->where('study_id', $studyId)->value('persistent_id');
     }
 
-    public function testStoredDoisAreNormalizedAndCannotBeAssociatedTwice(): void
+    public function testStoredDoisKeepTheirCaseAndCannotBeAssociatedTwice(): void
     {
-        $studyId = $this->insertStudy('doi:10.5072/fk2/migr01');
+        $studyId = $this->insertStudy('doi:10.5072/fk2.migr01');
 
         (new UniquePersistentIdMigration())->up();
 
-        $this->assertSame('doi:10.5072/FK2/MIGR01', $this->storedPersistentId($studyId));
+        $this->assertSame('doi:10.5072/fk2.migr01', $this->storedPersistentId($studyId));
         $this->assertTrue(UniquePersistentIdMigration::hasIndex());
         $this->expectException(QueryException::class);
-        $this->insertStudy('doi:10.5072/FK2/MIGR01');
+        $this->insertStudy('doi:10.5072/fk2.migr01');
     }
 
     public function testIndexIsNotCreatedWhileADatasetIsAssociatedWithTwoSubmissions(): void
@@ -69,7 +76,7 @@ class UniquePersistentIdMigrationTest extends PKPTestCase
         (new UniquePersistentIdMigration())->up();
 
         $this->assertFalse(UniquePersistentIdMigration::hasIndex());
-        $this->assertSame('doi:10.5072/FK2/MIGR02', $this->storedPersistentId($firstStudyId));
+        $this->assertSame('doi:10.5072/fk2/migr02', $this->storedPersistentId($firstStudyId));
         $this->assertSame('doi:10.5072/FK2/MIGR02', $this->storedPersistentId($secondStudyId));
     }
 }

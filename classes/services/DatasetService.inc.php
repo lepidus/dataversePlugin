@@ -40,7 +40,7 @@ class DatasetService extends DataverseService
                 ->where('state', 'complete')->first();
             if ($completed) {
                 $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($submission->getId());
-                if (!$study || $study->getPersistentId() !== DataverseStudy::normalizePersistentId((string) $completed->persistent_id)) {
+                if (!$study || !DataverseStudy::isSamePersistentId($study->getPersistentId(), (string) $completed->persistent_id)) {
                     throw new RuntimeException('The completed deposit association changed.');
                 }
                 if (!$files) {
@@ -301,20 +301,18 @@ class DatasetService extends DataverseService
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.invalidPersistentId'];
         }
 
-        $persistentId = DataverseStudy::normalizePersistentId($persistentId);
-
         $existingStudyWithPersistentId = $dataverseStudyDao->getByPersistentId($persistentId);
         if ($existingStudyWithPersistentId) {
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
         }
 
         try {
-            $isInCurrentCollection = $this->getDataverseClient()->getDatasetActions()->isInCurrentCollection($persistentId);
+            $persistentId = $this->getDataverseClient()->getDatasetActions()->findInCurrentCollection($persistentId);
         } catch (DataverseException $e) {
             return ['status' => DataverseService::STATUS_NOT_FOUND, 'message' => 'plugins.generic.dataverse.error.associate.notFound'];
         }
 
-        if (!$isInCurrentCollection) {
+        if ($persistentId === null) {
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.outsideCollection'];
         }
 

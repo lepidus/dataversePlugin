@@ -1,7 +1,5 @@
 <?php
 
-import('plugins.generic.dataverse.classes.dataverseStudy.DataverseStudy');
-
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -16,9 +14,7 @@ class UniquePersistentIdMigration extends Migration
             return;
         }
 
-        $this->normalizeStoredPersistentIds();
-
-        $duplicatedPersistentIds = $this->getDuplicatedPersistentIds();
+        $duplicatedPersistentIds = self::getDuplicatedPersistentIds();
         if (!empty($duplicatedPersistentIds)) {
             error_log(
                 'Dataverse: these datasets are associated with more than one submission, so the unique index on '
@@ -39,31 +35,14 @@ class UniquePersistentIdMigration extends Migration
         return array_key_exists(self::INDEX_NAME, $indexes);
     }
 
-    private function normalizeStoredPersistentIds(): void
-    {
-        $studies = Capsule::table('dataverse_studies')
-            ->whereNotNull('persistent_id')
-            ->select(['study_id', 'persistent_id'])
-            ->orderBy('study_id')
-            ->get();
-
-        foreach ($studies as $study) {
-            $normalizedPersistentId = DataverseStudy::normalizePersistentId($study->persistent_id);
-            if ($normalizedPersistentId !== $study->persistent_id) {
-                Capsule::table('dataverse_studies')
-                    ->where('study_id', $study->study_id)
-                    ->update(['persistent_id' => $normalizedPersistentId]);
-            }
-        }
-    }
-
-    private function getDuplicatedPersistentIds(): array
+    public static function getDuplicatedPersistentIds(): array
     {
         return Capsule::table('dataverse_studies')
             ->whereNotNull('persistent_id')
-            ->groupBy('persistent_id')
+            ->selectRaw('UPPER(persistent_id) AS duplicated_persistent_id')
+            ->groupBy(Capsule::raw('UPPER(persistent_id)'))
             ->havingRaw('COUNT(*) > 1')
-            ->pluck('persistent_id')
+            ->pluck('duplicated_persistent_id')
             ->all();
     }
 }

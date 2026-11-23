@@ -73,15 +73,15 @@ class DatasetAssociationTest extends PKPTestCase
         ]);
     }
 
-    private function createService(?callable $duringCollectionCheck = null): DatasetService
+    private function createService(?callable $duringCollectionCheck = null, string $persistentIdInDataverse = self::PERSISTENT_ID): DatasetService
     {
         $datasetActions = $this->createMock(DatasetActions::class);
-        $datasetActions->method('isInCurrentCollection')->willReturnCallback(
-            function () use ($duringCollectionCheck) {
+        $datasetActions->method('findInCurrentCollection')->willReturnCallback(
+            function () use ($duringCollectionCheck, $persistentIdInDataverse) {
                 if ($duringCollectionCheck) {
                     $duringCollectionCheck();
                 }
-                return true;
+                return $persistentIdInDataverse;
             }
         );
         $client = $this->createMock(DataverseClient::class);
@@ -125,13 +125,22 @@ class DatasetAssociationTest extends PKPTestCase
         $this->assertSame(1, $this->countStudiesWithPersistentId());
     }
 
-    public function testAssociatedPersistentIdIsStoredInCanonicalForm(): void
+    public function testAssociatedPersistentIdIsStoredAsDataverseReturnsIt(): void
     {
-        $result = $this->createService()->associate($this->submissionId, 'DOI:10.5072/fk2/race01');
+        $result = $this->createService(null, 'doi:10.5072/fk2.Race01')->associate($this->submissionId, 'DOI:10.5072/FK2.RACE01');
 
         $this->assertSame('success', $result['status']);
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($this->submissionId);
-        $this->assertSame(self::PERSISTENT_ID, $study->getPersistentId());
-        $this->assertSame('https://doi.org/10.5072/FK2/RACE01', $study->getPersistentUri());
+        $this->assertSame('doi:10.5072/fk2.Race01', $study->getPersistentId());
+        $this->assertSame('https://doi.org/10.5072/fk2.Race01', $study->getPersistentUri());
+    }
+
+    public function testStudyIsFoundByItsPersistentIdInAnyCase(): void
+    {
+        $this->insertStudy($this->otherSubmissionId, 'doi:10.5072/fk2.Race02');
+
+        $study = DAORegistry::getDAO('DataverseStudyDAO')->getByPersistentId('DOI:10.5072/FK2.RACE02');
+
+        $this->assertSame($this->otherSubmissionId, (int) $study->getSubmissionId());
     }
 }

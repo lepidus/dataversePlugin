@@ -49,7 +49,7 @@ class DatasetActionsTest extends PKPTestCase
             $this->ownersResponse(['type' => 'DATAVERSE', 'identifier' => 'testDataverse', 'isPartOf' => ['type' => 'DATAVERSE', 'identifier' => 'root']]),
         ]);
 
-        $this->assertTrue($actions->isInCurrentCollection(self::PERSISTENT_ID));
+        $this->assertSame(self::PERSISTENT_ID, $actions->findInCurrentCollection(self::PERSISTENT_ID));
         $this->assertSame(
             'https://test.dataverse.org/api/datasets/:persistentId?persistentId=doi%3A10.12345%2FFK2%2FABCDEFG&returnOwners=true',
             (string) $this->requests[0]['request']->getUri()
@@ -66,7 +66,7 @@ class DatasetActionsTest extends PKPTestCase
             ]),
         ]);
 
-        $this->assertTrue($actions->isInCurrentCollection(self::PERSISTENT_ID));
+        $this->assertSame(self::PERSISTENT_ID, $actions->findInCurrentCollection(self::PERSISTENT_ID));
     }
 
     public function testDatasetOfAnotherCollectionIsNotInTheCollection(): void
@@ -75,14 +75,14 @@ class DatasetActionsTest extends PKPTestCase
             $this->ownersResponse(['type' => 'DATAVERSE', 'identifier' => 'otherDataverse', 'isPartOf' => ['type' => 'DATAVERSE', 'identifier' => 'root']]),
         ]);
 
-        $this->assertFalse($actions->isInCurrentCollection(self::PERSISTENT_ID));
+        $this->assertNull($actions->findInCurrentCollection(self::PERSISTENT_ID));
     }
 
     public function testDatasetWithoutOwnersIsNotInTheCollection(): void
     {
         $actions = $this->createActions([$this->ownersResponse(null)]);
 
-        $this->assertFalse($actions->isInCurrentCollection(self::PERSISTENT_ID));
+        $this->assertNull($actions->findInCurrentCollection(self::PERSISTENT_ID));
     }
 
     public function testDatasetInASubcollectionIsFoundThroughTheCollectionContentsWhenOwnersAreNotReturned(): void
@@ -93,7 +93,7 @@ class DatasetActionsTest extends PKPTestCase
             $this->contentsResponse([['type' => 'dataset', 'id' => 77]]),
         ]);
 
-        $this->assertTrue($actions->isInCurrentCollection(self::PERSISTENT_ID));
+        $this->assertSame(self::PERSISTENT_ID, $actions->findInCurrentCollection(self::PERSISTENT_ID));
         $this->assertSame('https://test.dataverse.org/api/dataverses/5/contents', (string) end($this->requests)['request']->getUri());
     }
 
@@ -105,6 +105,22 @@ class DatasetActionsTest extends PKPTestCase
             $this->contentsResponse([['type' => 'dataset', 'id' => 2]]),
         ]);
 
-        $this->assertFalse($actions->isInCurrentCollection(self::PERSISTENT_ID));
+        $this->assertNull($actions->findInCurrentCollection(self::PERSISTENT_ID));
+    }
+
+    public function testDatasetRequestedInAnotherCaseIsFoundWithThePersistentIdStoredByDataverse(): void
+    {
+        $actions = $this->createActions([
+            new Response(200, [], json_encode(['status' => 'OK', 'data' => [
+                'id' => 1,
+                'protocol' => 'doi',
+                'authority' => '10.12345',
+                'separator' => '/',
+                'identifier' => 'fk2.AbCdEfG',
+                'isPartOf' => ['type' => 'DATAVERSE', 'identifier' => 'testDataverse'],
+            ]])),
+        ]);
+
+        $this->assertSame('doi:10.12345/fk2.AbCdEfG', $actions->findInCurrentCollection('doi:10.12345/FK2.ABCDEFG'));
     }
 }

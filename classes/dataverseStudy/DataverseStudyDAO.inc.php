@@ -43,7 +43,7 @@ class DataverseStudyDAO extends DAO
     public function getByPersistentId(string $persistentId): ?DataverseStudy
     {
         $result = Capsule::table('dataverse_studies')
-            ->where('persistent_id', DataverseStudy::normalizePersistentId($persistentId))
+            ->whereRaw('UPPER(persistent_id) = ?', [strtoupper($persistentId)])
             ->get();
 
         $study = null;

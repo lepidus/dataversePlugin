@@ -20,7 +20,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         return $datasetFactory->getDataset();
     }
 
-    public function isInCurrentCollection(string $persistentId): bool
+    public function findInCurrentCollection(string $persistentId): ?string
     {
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId'],
@@ -28,6 +28,19 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         );
         $dataset = json_decode($this->nativeAPIRequest('GET', $uri)->getBody(), true)['data'] ?? [];
 
+        if (!$this->isInCurrentCollection($dataset)) {
+            return null;
+        }
+
+        if (!isset($dataset['protocol'], $dataset['authority'], $dataset['identifier'])) {
+            return $persistentId;
+        }
+
+        return $dataset['protocol'] . ':' . $dataset['authority'] . ($dataset['separator'] ?? '/') . $dataset['identifier'];
+    }
+
+    private function isInCurrentCollection(array $dataset): bool
+    {
         if (!array_key_exists('isPartOf', $dataset)) {
             return $this->collectionTreeContainsDataset($this->dataverseAlias, (int) ($dataset['id'] ?? 0));
         }
