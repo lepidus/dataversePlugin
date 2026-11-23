@@ -108,6 +108,16 @@ Los autores, moderadores, editores o gerentes también pueden editar el conjunto
 
 En OJS, los evaluadores pueden recibir acceso a los archivos de datos de investigación durante el proceso de evaluación. El acceso de los evaluadores a estos archivos puede ser restringido en la Configuración del Flujo de Trabajo, para que solo visualicen los archivos cuando acepten evaluar la presentación.
 
+### Descarga de archivos de datos de investigación
+
+Cuando Dataverse envía la descarga de un archivo a un almacenamiento externo (por ejemplo, Amazon S3), el plugin solo sigue la redirección hacia una dirección HTTPS cuyas IP sean todas públicas, y se conecta a la dirección que verificó. Los archivos en un almacenamiento servido por HTTP o en una dirección de red privada no pueden descargarse a través del plugin.
+
+Si el servidor accede a internet a través de un proxy (`[proxy] https_proxy` en `config.inc.php` o las variables de entorno `https_proxy`/`HTTPS_PROXY`/`all_proxy`), el propio proxy resuelve el host de almacenamiento, por lo que la conexión no puede fijarse a la dirección que verificó el plugin, y un host que el servidor no puede resolver queda para que el proxy lo resuelva. En ese caso, corresponde al proxy rechazar direcciones internas.
+
+### Actualización
+
+Cada conjunto de datos puede estar asociado a un solo envío. La actualización (`php tools/upgrade.php upgrade`) crea un índice único en el identificador persistente de los conjuntos de datos asociados. Si un conjunto de datos ya está asociado a más de un envío, el índice no se crea y los identificadores persistentes se registran en el log de errores de PHP: desasocie el conjunto de datos de los envíos sobrantes y ejecute la actualización nuevamente.
+
 ## Instrucciones para desarrollo:
 1. Clona el repositorio del plugin Dataverse.
 2. Para utilizar el plugin en una aplicación PKP, copia su directorio en el directorio `/plugins/generic`, asegurándote de que el directorio se llame `dataverse`.

@@ -110,6 +110,16 @@ Autores, moderadores, editores ou gerentes também podem editar o conjunto de da
 
 No OJS, avaliadores podem receber acesso aos arquivos de dados de pesquisa durante o processo de avaliação. O acesso dos avaliadores à esses arquivos pode ser restringido nas Configurações do Fluxo de Trabalho, para que eles visualizem os arquivos apenas quando aceitarem avaliar a submissão.
 
+### Download de arquivos de dados de pesquisa
+
+Quando o Dataverse envia o download de um arquivo para um armazenamento externo (por exemplo, Amazon S3), o plugin só segue o redirecionamento para um endereço HTTPS cujos IPs sejam todos públicos, e se conecta ao endereço que verificou. Arquivos em armazenamento servido por HTTP ou em endereço de rede privada não podem ser baixados pelo plugin.
+
+Se o servidor acessa a internet por um proxy (`[proxy] https_proxy` no `config.inc.php` ou as variáveis de ambiente `https_proxy`/`HTTPS_PROXY`/`all_proxy`), o próprio proxy resolve o host de armazenamento, então a conexão não pode ser fixada ao endereço que o plugin verificou, e um host que o servidor não consegue resolver fica para o proxy resolver. Nesse caso, cabe ao proxy recusar endereços internos.
+
+### Atualização
+
+Cada conjunto de dados pode estar associado a apenas uma submissão. A atualização (`php tools/upgrade.php upgrade`) cria um índice único no identificador persistente dos conjuntos de dados associados. Se um conjunto de dados já estiver associado a mais de uma submissão, o índice não é criado e os identificadores persistentes são registrados no log de erros do PHP: desassocie o conjunto de dados das submissões excedentes e execute a atualização novamente.
+
 ## Instruções para Desenvolvimento:
 
 1. Clone o repositório do plugin Dataverse
