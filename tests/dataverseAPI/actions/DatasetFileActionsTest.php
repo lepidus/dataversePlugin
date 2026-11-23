@@ -304,11 +304,33 @@ class DatasetFileActionsTest extends PKPTestCase
     }
 
     /**
+     * @dataProvider publicAddressLiterals
+     */
+    public function testDownloadRedirectedToAPublicAddressLiteralIsNotPinned(string $location): void
+    {
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => $location]),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertSame($location, (string) $requests[1]['request']->getUri());
+        $this->assertArrayNotHasKey(CURLOPT_RESOLVE, $requests[1]['options']['curl']);
+    }
+
+    public static function publicAddressLiterals(): array
+    {
+        return [
+            'IPv4 address' => ['https://93.184.215.14/file'],
+            'IPv6 address' => ['https://[2600:1f18:4a3:6900::1]/file'],
+        ];
+    }
+
+    /**
      * @dataProvider storageRedirectsOutsideThePublicNetwork
      */
     public function testDownloadIsNotRedirectedOutsideThePublicNetwork(string $location): void
     {
-        ini_set('error_log', '/dev/null');
+        $previousErrorLog = ini_set('error_log', '/dev/null');
 
         try {
             $this->downloadWith([
@@ -318,6 +340,8 @@ class DatasetFileActionsTest extends PKPTestCase
             $this->fail('The download followed the redirect to ' . $location);
         } catch (DataverseException $e) {
             $this->assertSame(503, $e->getCode());
+        } finally {
+            ini_set('error_log', $previousErrorLog);
         }
     }
 

@@ -184,8 +184,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             $leftServer = $leftServer || !$this->isServerOrigin($currentUri);
 
             if ($leftServer) {
-                $storageOptions = $options + ['curl' => [CURLOPT_RESOLVE => [$this->resolveStorageHost($currentUri)]]];
-                $this->sendStorageRequest((string) $currentUri, $storageOptions);
+                $this->sendStorageRequest((string) $currentUri, $options + ['curl' => $this->getStorageCurlOptions($currentUri)]);
             } else {
                 $this->nativeAPIRequest('GET', (string) $currentUri, $options, false);
             }
@@ -208,28 +207,37 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         throw new DataverseException(__(self::UNAVAILABLE_MESSAGE), self::UNAVAILABLE_STATUS_CODE);
     }
 
-    private function resolveStorageHost(UriInterface $uri): string
+    private function getStorageCurlOptions(UriInterface $uri): array
     {
         if ($uri->getScheme() !== 'https') {
             throw $this->refusedStorageRedirect('https_required');
         }
 
         $host = trim($uri->getHost(), '[]');
-        $addresses = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : $this->resolveHostAddresses($host);
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $this->assertPublicAddresses([$host]);
+            return [];
+        }
+
+        $addresses = $this->resolveHostAddresses($host);
         if (empty($addresses)) {
             throw $this->refusedStorageRedirect('unresolved_host');
         }
 
+        $this->assertPublicAddresses($addresses);
+        $address = $addresses[0];
+        $port = $uri->getPort() ?? 443;
+
+        return [CURLOPT_RESOLVE => [$host . ':' . $port . ':' . (str_contains($address, ':') ? '[' . $address . ']' : $address)]];
+    }
+
+    private function assertPublicAddresses(array $addresses): void
+    {
         foreach ($addresses as $address) {
             if (!$this->isPublicAddress($address)) {
                 throw $this->refusedStorageRedirect('non_public_address');
             }
         }
-
-        $address = $addresses[0];
-        $port = $uri->getPort() ?? 443;
-
-        return $host . ':' . $port . ':' . (str_contains($address, ':') ? '[' . $address . ']' : $address);
     }
 
     protected function resolveHostAddresses(string $host): array
