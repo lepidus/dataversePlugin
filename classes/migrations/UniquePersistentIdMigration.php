@@ -2,7 +2,6 @@
 
 namespace APP\plugins\generic\dataverse\classes\migrations;
 
-use APP\plugins\generic\dataverse\classes\dataverseStudy\DataverseStudy;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -17,8 +16,6 @@ class UniquePersistentIdMigration extends Migration
         if (!Schema::hasTable('dataverse_studies') || self::hasIndex()) {
             return;
         }
-
-        $this->normalizeStoredPersistentIds();
 
         $duplicatedPersistentIds = $this->getDuplicatedPersistentIds();
         if (!empty($duplicatedPersistentIds)) {
@@ -41,30 +38,14 @@ class UniquePersistentIdMigration extends Migration
         return array_key_exists(self::INDEX_NAME, $indexes);
     }
 
-    private function normalizeStoredPersistentIds(): void
-    {
-        DB::table('dataverse_studies')
-            ->whereNotNull('persistent_id')
-            ->select(['study_id', 'persistent_id'])
-            ->orderBy('study_id')
-            ->get()
-            ->each(function (object $study): void {
-                $normalizedPersistentId = DataverseStudy::normalizePersistentId($study->persistent_id);
-                if ($normalizedPersistentId !== $study->persistent_id) {
-                    DB::table('dataverse_studies')
-                        ->where('study_id', $study->study_id)
-                        ->update(['persistent_id' => $normalizedPersistentId]);
-                }
-            });
-    }
-
     private function getDuplicatedPersistentIds(): array
     {
         return DB::table('dataverse_studies')
             ->whereNotNull('persistent_id')
-            ->groupBy('persistent_id')
+            ->selectRaw('UPPER(persistent_id) AS normalized_persistent_id')
+            ->groupByRaw('UPPER(persistent_id)')
             ->havingRaw('COUNT(*) > 1')
-            ->pluck('persistent_id')
+            ->pluck('normalized_persistent_id')
             ->all();
     }
 }

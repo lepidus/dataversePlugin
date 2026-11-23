@@ -25,7 +25,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         return $datasetFactory->getDataset();
     }
 
-    public function isInCurrentCollection(string $persistentId): bool
+    public function findInCurrentCollection(string $persistentId): ?string
     {
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId'],
@@ -33,6 +33,11 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         );
         $dataset = json_decode($this->nativeAPIRequest('GET', $uri)->getBody(), true)['data'] ?? [];
 
+        return $this->datasetIsInCurrentCollection($dataset) ? $this->getCanonicalPersistentId($dataset, $persistentId) : null;
+    }
+
+    private function datasetIsInCurrentCollection(array $dataset): bool
+    {
         if (!array_key_exists('isPartOf', $dataset)) {
             return $this->collectionTreeContainsDataset($this->dataverseAlias, (int) ($dataset['id'] ?? 0));
         }
@@ -46,6 +51,15 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         }
 
         return false;
+    }
+
+    private function getCanonicalPersistentId(array $dataset, string $requestedPersistentId): string
+    {
+        if (empty($dataset['protocol']) || empty($dataset['authority']) || empty($dataset['identifier'])) {
+            return $requestedPersistentId;
+        }
+
+        return $dataset['protocol'] . ':' . $dataset['authority'] . '/' . $dataset['identifier'];
     }
 
     private function collectionTreeContainsDataset(string $collection, int $datasetId): bool

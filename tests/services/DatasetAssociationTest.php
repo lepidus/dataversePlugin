@@ -72,14 +72,14 @@ class DatasetAssociationTest extends PKPTestCase
         ]);
     }
 
-    private function mockCollectionCheck(?callable $duringCheck = null): void
+    private function mockCollectionCheck(?callable $duringCheck = null, string $canonicalPersistentId = self::PERSISTENT_ID): void
     {
         $datasetActions = Mockery::mock();
-        $datasetActions->shouldReceive('isInCurrentCollection')->andReturnUsing(function () use ($duringCheck) {
+        $datasetActions->shouldReceive('findInCurrentCollection')->andReturnUsing(function () use ($duringCheck, $canonicalPersistentId) {
             if ($duringCheck) {
                 $duringCheck();
             }
-            return true;
+            return $canonicalPersistentId;
         });
 
         $client = Mockery::mock('overload:' . DataverseClient::class);
@@ -126,5 +126,16 @@ class DatasetAssociationTest extends PKPTestCase
         $study = Repo::dataverseStudy()->getBySubmissionId($this->submissionId);
         $this->assertSame(self::PERSISTENT_ID, $study->getPersistentId());
         $this->assertSame('https://doi.org/10.5072/FK2/RACE01', $study->getPersistentUri());
+    }
+
+    public function testPersistentIdIsStoredAsDataverseReturnsIt(): void
+    {
+        $lowerCasePersistentId = 'doi:10.5072/fk2/race01';
+        $this->mockCollectionCheck(null, $lowerCasePersistentId);
+
+        $result = (new DatasetService())->associate($this->submissionId, $lowerCasePersistentId);
+
+        $this->assertSame('success', $result['status']);
+        $this->assertSame($lowerCasePersistentId, Repo::dataverseStudy()->getBySubmissionId($this->submissionId)->getPersistentId());
     }
 }
