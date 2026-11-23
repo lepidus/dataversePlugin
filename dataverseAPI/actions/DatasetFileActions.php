@@ -22,6 +22,17 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
     private const MAX_DOWNLOAD_REDIRECTS = 5;
 
+    private const IPV4_EMBEDDING_PREFIXES = ['::ffff:0:0/96', '64:ff9b::/96'];
+
+    private const NON_GLOBAL_RANGES = [
+        '100.64.0.0/10',
+        '192.0.0.0/24',
+        '198.18.0.0/15',
+        '64:ff9b:1::/48',
+        'fec0::/10',
+        'ff00::/8',
+    ];
+
     public function getByDatasetId(string $persistentId): array
     {
         $uri = $this->createNativeAPIURI(
@@ -255,8 +266,20 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
     private function isPublicAddress(string $address): bool
     {
         $packedAddress = inet_pton($address);
-        if ($packedAddress !== false && strlen($packedAddress) === 16 && strpos($packedAddress, str_repeat("\0", 10) . "\xff\xff") === 0) {
-            return $this->isPublicAddress(inet_ntop(substr($packedAddress, 12)));
+        if ($packedAddress === false) {
+            return false;
+        }
+
+        foreach (self::IPV4_EMBEDDING_PREFIXES as $prefix) {
+            if (strlen($packedAddress) === 16 && $this->isInRange($packedAddress, $prefix)) {
+                return $this->isPublicAddress(inet_ntop(substr($packedAddress, 12)));
+            }
+        }
+
+        foreach (self::NON_GLOBAL_RANGES as $range) {
+            if ($this->isInRange($packedAddress, $range)) {
+                return false;
+            }
         }
 
         $flags = defined('FILTER_FLAG_GLOBAL_RANGE')
@@ -264,6 +287,28 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             : FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
 
         return filter_var($address, FILTER_VALIDATE_IP, $flags) !== false;
+    }
+
+    private function isInRange(string $packedAddress, string $range): bool
+    {
+        [$network, $prefixLength] = explode('/', $range);
+        $packedNetwork = inet_pton($network);
+        if (strlen($packedNetwork) !== strlen($packedAddress)) {
+            return false;
+        }
+
+        $fullBytes = intdiv((int) $prefixLength, 8);
+        $remainingBits = (int) $prefixLength % 8;
+        if (substr($packedAddress, 0, $fullBytes) !== substr($packedNetwork, 0, $fullBytes)) {
+            return false;
+        }
+        if ($remainingBits === 0) {
+            return true;
+        }
+
+        $mask = (0xff << (8 - $remainingBits)) & 0xff;
+
+        return (ord($packedAddress[$fullBytes]) & $mask) === (ord($packedNetwork[$fullBytes]) & $mask);
     }
 
     private function refusedStorageRedirect(string $reason): DataverseException

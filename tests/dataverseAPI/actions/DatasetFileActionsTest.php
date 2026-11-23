@@ -335,6 +335,7 @@ class DatasetFileActionsTest extends PKPTestCase
         return [
             'IPv4 address' => ['https://93.184.215.14/file'],
             'IPv6 address' => ['https://[2600:1f18:4a3:6900::1]/file'],
+            'NAT64 public address' => ['https://[64:ff9b::5db8:d70e]/file'],
         ];
     }
 
@@ -365,6 +366,14 @@ class DatasetFileActionsTest extends PKPTestCase
             'cloud metadata address' => ['https://169.254.169.254/latest/meta-data/'],
             'private network address' => ['https://10.0.0.5/file'],
             'IPv4-mapped loopback address' => ['https://[::ffff:127.0.0.1]/file'],
+            'shared address space' => ['https://100.100.100.200/latest/meta-data/'],
+            'IETF protocol assignments' => ['https://192.0.0.8/file'],
+            'benchmarking address' => ['https://198.18.0.1/file'],
+            'NAT64 private address' => ['https://[64:ff9b::a00:5]/file'],
+            'NAT64 metadata address' => ['https://[64:ff9b::a9fe:a9fe]/file'],
+            'local-use NAT64 address' => ['https://[64:ff9b:1::5db8:d70e]/file'],
+            'site-local address' => ['https://[fec0::1]/file'],
+            'multicast address' => ['https://[ff02::1]/file'],
             'host resolving to a private address' => ['https://internal.example.org/file'],
             'host that does not resolve' => ['https://unknown.example.org/file'],
             'storage without HTTPS' => ['http://storage.example.org/file'],
