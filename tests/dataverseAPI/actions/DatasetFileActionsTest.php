@@ -21,6 +21,7 @@ class DatasetFileActionsTest extends PKPTestCase
     private ?string $downloadedFileName = null;
     private ?string $downloadedMediaType = null;
     private ?string $downloadedContents = null;
+    private string $errorLog;
 
     protected function getMockedRegistryKeys(): array
     {
@@ -30,6 +31,7 @@ class DatasetFileActionsTest extends PKPTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->errorLog = (string) ini_get('error_log');
 
         Hook::add('FileManager::downloadFile', function ($hookName, $params) {
             $this->downloadedFilePath = realpath($params[0]);
@@ -40,6 +42,12 @@ class DatasetFileActionsTest extends PKPTestCase
             $params[3] = true;
             return Hook::ABORT;
         });
+    }
+
+    protected function tearDown(): void
+    {
+        ini_set('error_log', $this->errorLog);
+        parent::tearDown();
     }
 
     private function createActions(string $contents = 'research data contents', int $status = 200): DatasetFileActions
@@ -392,6 +400,7 @@ class DatasetFileActionsTest extends PKPTestCase
     #[DataProvider('storageRedirectsRefusedThroughAProxy')]
     public function testDownloadThroughAProxyIsNotRedirectedToAPrivateAddressOrWithoutHttps(string $location): void
     {
+        ini_set('error_log', '/dev/null');
         $history = [];
         $actions = $this->createActionsRespondingWith([
             new Response(303, ['Location' => $location]),

@@ -17,10 +17,12 @@ class UniquePersistentIdMigrationTest extends PKPTestCase
     use CreatesTestContext;
 
     private Context $context;
+    private string $errorLog;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->errorLog = (string) ini_get('error_log');
         if ($this->hasIndex()) {
             $this->dropIndex();
         }
@@ -31,6 +33,7 @@ class UniquePersistentIdMigrationTest extends PKPTestCase
     {
         $this->deleteTestContext($this->context);
         (new UniquePersistentIdMigration())->up();
+        ini_set('error_log', $this->errorLog);
         parent::tearDown();
     }
 
