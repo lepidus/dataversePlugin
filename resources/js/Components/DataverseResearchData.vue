@@ -65,7 +65,7 @@
 						{{ t('plugins.generic.dataverse.researchData.uploadResearchData') }}
 					</PkpButton>
 					<PkpButton
-						v-if="canPublish"
+						v-if="state.canAssociate"
 						data-cy="dataverse-associate-dataset"
 						@click="openAssociateModal"
 					>

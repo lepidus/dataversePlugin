@@ -160,7 +160,7 @@ class DatasetController extends PKPBaseController
         }
 
         if (in_array($actionName, self::EDITORIAL_DECISION_ACTIONS)) {
-            $this->addPolicy(new StageRolePolicy([Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR], null, false));
+            $this->addPolicy(self::createEditorialDecisionPolicy());
         }
 
         if (in_array($actionName, self::UNPUBLISHED_PUBLICATION_ACTIONS)) {
@@ -168,6 +168,11 @@ class DatasetController extends PKPBaseController
         }
 
         return parent::authorize($request, $args, $roleAssignments);
+    }
+
+    public static function createEditorialDecisionPolicy(): StageRolePolicy
+    {
+        return new StageRolePolicy([Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR], null, false);
     }
 
     public function get(IlluminateRequest $illuminateRequest): JsonResponse

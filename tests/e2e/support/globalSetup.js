@@ -4,6 +4,7 @@ import {configurePlugin, dataverseCredentials} from './testData.js';
 export const storageStates = {
 	manager: 'tests/e2e/.auth/dbarnes.json',
 	author: 'tests/e2e/.auth/eostrom.json',
+	sectionEditor: 'tests/e2e/.auth/dbuskins.json',
 };
 
 async function fetchCollectionName({url, apiToken}) {
@@ -43,5 +44,6 @@ export default async function globalSetup(config) {
 	const browser = await chromium.launch();
 	await saveLogin(browser, baseURL, 'dbarnes', storageStates.manager);
 	await saveLogin(browser, baseURL, 'eostrom', storageStates.author);
+	await saveLogin(browser, baseURL, 'dbuskins', storageStates.sectionEditor);
 	await browser.close();
 }

@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\dataverse\api\v1\dataverse;
 
 use APP\core\Application;
+use APP\plugins\generic\dataverse\api\v1\datasets\DatasetController;
 use APP\plugins\generic\dataverse\classes\components\forms\AssociateDatasetForm;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\components\forms\DataStatementForm;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 use PKP\core\PKPBaseController;
 use PKP\core\PKPRequest;
 use PKP\db\DAORegistry;
+use PKP\security\authorization\AuthorizationPolicy;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\authorization\UserRolesRequiredPolicy;
@@ -78,6 +80,7 @@ class DataverseController extends PKPBaseController
             'hasDataset' => !is_null($study),
             'additionalInstructions' => $configuration->getLocalizedAdditionalInstructions(),
             'canSendDeleteEmail' => $this->userHasRole(Role::ROLE_ID_MANAGER),
+            'canAssociate' => $this->canAssociateDataset(),
             'error' => null,
         ];
 
@@ -273,6 +276,14 @@ class DataverseController extends PKPBaseController
             'dataStatementUrl' => $dataStatementUrl,
             'dataverseName' => $dataverseClient->getDataverseCollectionActions()->get()->getName(),
         ]);
+    }
+
+    private function canAssociateDataset(): bool
+    {
+        $policy = DatasetController::createEditorialDecisionPolicy();
+        $policy->setAuthorizedContext($this->getAuthorizedContext());
+
+        return $policy->effect() === AuthorizationPolicy::AUTHORIZATION_PERMIT;
     }
 
     private function userHasRole(int $roleId): bool

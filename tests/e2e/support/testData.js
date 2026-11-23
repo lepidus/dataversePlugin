@@ -21,6 +21,8 @@ export const deleteDeposit = (submissionId) => runTestData('delete-dataset', Str
 export const eventLog = (submissionId) => runTestData('event-log', String(submissionId));
 export const deleteDataset = (persistentId) => runTestData('delete-dataset-by-persistent-id', persistentId);
 export const assignReviewer = (submissionId, username) => runTestData('assign-reviewer', String(submissionId), username);
+export const assignEditor = (submissionId, username, options = {}) =>
+	runTestData('assign-editor', String(submissionId), username, JSON.stringify(options));
 export const datasetMetadata = (submissionId) => runTestData('dataset-metadata', String(submissionId));
 export const configureCollectionWithRequiredMetadata = () =>
 	configurePlugin({dataverseUrl: dataverseCredentials().collectionWithRequiredMetadataUrl});

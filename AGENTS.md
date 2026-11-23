@@ -288,8 +288,10 @@ in an otherwise-200 response, which the panel renders as a notice with a retry b
 Routes that change the dataset or the draft files also run the core `PublicationCanBeEditedPolicy`, so they follow
 the same rule as editing the publication (`canEditPublication` in the workflow). Publishing or disassociating a
 dataset, or associating an existing one, runs the core `StageRolePolicy` for managers and section editors without
-recommend-only access: the users who can record the accept decision, which publishes the dataset too. That is broader
-than the panel's `canPublish`, which only shows those buttons to managers. Authors never associate a dataset: the
+recommend-only access: the users who can record the accept decision, which publishes the dataset too. For publishing
+and disassociating that is broader than the panel's `canPublish`, which only shows those buttons to managers; the
+associate button follows `canAssociate`, which `GET researchData` computes with the same policy
+(`DatasetController::createEditorialDecisionPolicy()`). Authors never associate a dataset: the
 plugin reaches Dataverse with the journal's token, so knowing a DOI in the collection would hand them someone else's
 draft. A Dataverse file id received by a route is never trusted on its own: it
 must be one of the files of the study's dataset, and the name used for the download or the event log comes from
