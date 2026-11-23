@@ -302,7 +302,7 @@ class DatasetService extends DataverseService
         }
 
         $existingStudyWithPersistentId = $dataverseStudyDao->getByPersistentId($persistentId);
-        if ($existingStudyWithPersistentId) {
+        if ($existingStudyWithPersistentId || $this->isDepositedByAnotherSubmission($submissionId, $persistentId)) {
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
         }
 
@@ -337,9 +337,21 @@ class DatasetService extends DataverseService
                     ->where('state', '!=', 'retired')->exists()) {
                 return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.depositPending'];
             }
+            if ($this->isDepositedByAnotherSubmission($submissionId, $persistentId)) {
+                return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
+            }
             $this->createStudy($submission, $persistentId);
             return ['status' => DataverseService::STATUS_SUCCESS];
         });
+    }
+
+    private function isDepositedByAnotherSubmission(int $submissionId, string $persistentId): bool
+    {
+        return Capsule::table('dataverse_deposits')
+            ->where('submission_id', '!=', $submissionId)
+            ->where('state', '!=', 'retired')
+            ->whereRaw('UPPER(persistent_id) = ?', [strtoupper($persistentId)])
+            ->exists();
     }
 
     public function publish(DataverseStudy $study): void

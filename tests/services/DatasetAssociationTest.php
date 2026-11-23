@@ -44,6 +44,7 @@ class DatasetAssociationTest extends PKPTestCase
     {
         $submissionIds = [$this->submissionId, $this->otherSubmissionId];
         Capsule::table('dataverse_studies')->whereIn('submission_id', $submissionIds)->delete();
+        Capsule::table('dataverse_deposits')->whereIn('submission_id', $submissionIds)->delete();
         foreach ($submissionIds as $submissionId) {
             DAORegistry::getDAO('SubmissionDAO')->deleteById($submissionId);
         }
@@ -70,6 +71,18 @@ class DatasetAssociationTest extends PKPTestCase
             'statement_uri' => '',
             'persistent_uri' => '',
             'persistent_id' => $persistentId,
+        ]);
+    }
+
+    private function insertDeposit(int $submissionId, string $state, string $persistentId): void
+    {
+        Capsule::table('dataverse_deposits')->insert([
+            'submission_id' => $submissionId,
+            'state' => $state,
+            'revision' => 1,
+            'persistent_id' => $persistentId,
+            'manifest' => '[]',
+            'receipts' => '[]',
         ]);
     }
 
@@ -142,5 +155,37 @@ class DatasetAssociationTest extends PKPTestCase
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getByPersistentId('DOI:10.5072/FK2.RACE02');
 
         $this->assertSame($this->otherSubmissionId, (int) $study->getSubmissionId());
+    }
+
+    public function testDatasetOfAnotherSubmissionsUnfinishedDepositIsNotAssociated(): void
+    {
+        $this->insertDeposit($this->otherSubmissionId, 'ready', strtolower(self::PERSISTENT_ID));
+
+        $result = $this->createService()->associate($this->submissionId, self::PERSISTENT_ID);
+
+        $this->assertSame('plugins.generic.dataverse.error.associate.alreadyAssociated', $result['message']);
+        $this->assertNull(DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($this->submissionId));
+    }
+
+    public function testDatasetDepositedConcurrentlyByAnotherSubmissionIsNotAssociated(): void
+    {
+        $otherSubmissionId = $this->otherSubmissionId;
+        $service = $this->createService(function () use ($otherSubmissionId) {
+            $this->insertDeposit($otherSubmissionId, 'uploading', self::PERSISTENT_ID);
+        });
+
+        $result = $service->associate($this->submissionId, self::PERSISTENT_ID);
+
+        $this->assertSame('plugins.generic.dataverse.error.associate.alreadyAssociated', $result['message']);
+        $this->assertNull(DAORegistry::getDAO('DataverseStudyDAO')->getStudyBySubmissionId($this->submissionId));
+    }
+
+    public function testDatasetOfAnotherSubmissionsRetiredDepositCanBeAssociated(): void
+    {
+        $this->insertDeposit($this->otherSubmissionId, 'retired', self::PERSISTENT_ID);
+
+        $result = $this->createService()->associate($this->submissionId, self::PERSISTENT_ID);
+
+        $this->assertSame('success', $result['status']);
     }
 }
