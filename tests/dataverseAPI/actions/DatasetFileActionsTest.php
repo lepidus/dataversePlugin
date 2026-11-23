@@ -16,6 +16,24 @@ import('plugins.generic.dataverse.classes.exception.DataverseException');
 
 class DatasetFileActionsTest extends PKPTestCase
 {
+    private $errorLog;
+    private $errorLogFile;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->errorLog = ini_get('error_log');
+        $this->errorLogFile = tempnam(sys_get_temp_dir(), 'datasetFileActionsLog');
+        ini_set('error_log', $this->errorLogFile);
+    }
+
+    protected function tearDown(): void
+    {
+        ini_set('error_log', $this->errorLog);
+        unlink($this->errorLogFile);
+        parent::tearDown();
+    }
+
     public function testArchiveUploadReturnsEveryRemoteFileReceipt(): void
     {
         $actions = $this->actions(['data' => ['files' => [
@@ -160,7 +178,6 @@ class DatasetFileActionsTest extends PKPTestCase
 
     public function testDownloadIsNotRedirectedOverAnotherScheme(): void
     {
-        ini_set('error_log', '/dev/null');
         $this->expectException(DataverseException::class);
         $this->downloadWith([
             new Response(302, ['Location' => 'http://test.dataverse.org/api/access/datafile/41']),
@@ -186,8 +203,6 @@ class DatasetFileActionsTest extends PKPTestCase
      */
     public function testDownloadIsNotRedirectedOutsideThePublicNetwork(string $location): void
     {
-        ini_set('error_log', '/dev/null');
-
         try {
             $this->downloadWith([
                 new Response(303, ['Location' => $location]),
@@ -209,6 +224,12 @@ class DatasetFileActionsTest extends PKPTestCase
             'host resolving to a private address' => ['https://internal.example.org/file'],
             'host that does not resolve' => ['https://unknown.example.org/file'],
             'storage without HTTPS' => ['http://storage.example.org/file'],
+            'shared address space' => ['https://100.64.0.5/file'],
+            'benchmarking network address' => ['https://198.18.0.5/file'],
+            'NAT64 address of a private network' => ['https://[64:ff9b::a00:5]/file'],
+            'local-use NAT64 address' => ['https://[64:ff9b:1::a00:5]/file'],
+            '6to4 address of a private network' => ['https://[2002:a00:5::1]/file'],
+            'IPv4-compatible loopback address' => ['https://[::7f00:1]/file'],
         ];
     }
 
@@ -216,6 +237,16 @@ class DatasetFileActionsTest extends PKPTestCase
     {
         $this->expectException(DataverseException::class);
         $this->downloadWith(array_fill(0, 10, new Response(302, ['Location' => '/again'])));
+    }
+
+    public function testDownloadRedirectedToANat64AddressOfAPublicNetworkIsFollowed(): void
+    {
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://[64:ff9b::5db8:d70e]/file']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertCount(2, $requests);
     }
 
     public function redirectsWithoutDestination(): array
