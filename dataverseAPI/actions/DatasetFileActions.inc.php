@@ -146,8 +146,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             $leftServer = $leftServer || !$this->isServerOrigin($currentUri);
 
             if ($leftServer) {
-                $storageOptions = $options + ['curl' => [CURLOPT_RESOLVE => [$this->resolveStorageHost($currentUri)]]];
-                $this->sendStorageRequest((string) $currentUri, $storageOptions);
+                $this->sendStorageRequest((string) $currentUri, $options + $this->getStorageConnectionOptions($currentUri));
             } else {
                 $this->nativeAPIRequest('GET', (string) $currentUri, $options, false);
             }
@@ -157,55 +156,78 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             }
 
             if ($redirectUri === '') {
-                break;
+                throw $this->failedDownload('redirect', 'missing_location');
             }
 
             try {
                 $currentUri = UriResolver::resolve($currentUri, new Uri($redirectUri));
             } catch (InvalidArgumentException $e) {
-                break;
+                throw $this->failedDownload('redirect', 'invalid_location');
             }
         }
 
-        throw new DataverseException(__(self::UNAVAILABLE_MESSAGE), self::UNAVAILABLE_STATUS_CODE);
+        throw $this->failedDownload('redirect', 'too_many_redirects');
     }
 
-    private function resolveStorageHost(UriInterface $uri): string
+    private function getStorageConnectionOptions(UriInterface $uri): array
     {
         if ($uri->getScheme() !== 'https') {
-            throw $this->refusedStorageRedirect('https_required');
+            throw $this->failedDownload('redirect_refused', 'https_required');
         }
 
         $host = trim($uri->getHost(), '[]');
-        $addresses = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : $this->resolveHostAddresses($host);
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $this->assertPublicAddresses([$host]);
+            return [];
+        }
+
+        if ($this->usesProxy()) {
+            return [];
+        }
+
+        $addresses = $this->resolveHostAddresses($host);
         if (empty($addresses)) {
-            throw $this->refusedStorageRedirect('unresolved_host');
+            throw $this->failedDownload('redirect_refused', 'unresolved_host');
         }
+        $this->assertPublicAddresses($addresses);
 
-        foreach ($addresses as $address) {
-            if (!$this->isPublicAddress($address)) {
-                throw $this->refusedStorageRedirect('non_public_address');
-            }
-        }
+        $pinnedAddresses = array_map(function (string $address): string {
+            return strpos($address, ':') !== false ? '[' . $address . ']' : $address;
+        }, $addresses);
 
-        $address = $addresses[0];
-        $port = $uri->getPort() ?? 443;
+        return ['curl' => [CURLOPT_RESOLVE => [$host . ':' . ($uri->getPort() ?? 443) . ':' . implode(',', $pinnedAddresses)]]];
+    }
 
-        return $host . ':' . $port . ':' . (strpos($address, ':') !== false ? '[' . $address . ']' : $address);
+    private function usesProxy(): bool
+    {
+        return !empty(Config::getVar('proxy', 'https_proxy'));
     }
 
     protected function resolveHostAddresses(string $host): array
     {
         $addresses = [];
-        foreach (@dns_get_record($host, DNS_A | DNS_AAAA) ?: [] as $record) {
-            if (isset($record['ip'])) {
-                $addresses[] = $record['ip'];
-            } elseif (isset($record['ipv6'])) {
-                $addresses[] = $record['ipv6'];
+        foreach ([DNS_A => 'ip', DNS_AAAA => 'ipv6'] as $recordType => $addressField) {
+            foreach (@dns_get_record($host, $recordType) ?: [] as $record) {
+                if (isset($record[$addressField])) {
+                    $addresses[] = $record[$addressField];
+                }
             }
         }
 
-        return $addresses;
+        if (empty($addresses)) {
+            $addresses = @gethostbynamel($host) ?: [];
+        }
+
+        return array_values(array_unique($addresses));
+    }
+
+    private function assertPublicAddresses(array $addresses): void
+    {
+        foreach ($addresses as $address) {
+            if (!$this->isPublicAddress($address)) {
+                throw $this->failedDownload('redirect_refused', 'non_public_address');
+            }
+        }
     }
 
     private function isPublicAddress(string $address): bool
@@ -257,12 +279,12 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         return (ord($packedAddress[$fullBytes]) & $mask) === (ord($packedNetwork[$fullBytes]) & $mask);
     }
 
-    private function refusedStorageRedirect(string $reason): DataverseException
+    private function failedDownload(string $category, string $reason): DataverseException
     {
         error_log(json_encode([
             'component' => 'dataverse',
             'operation' => 'download',
-            'category' => 'redirect_refused',
+            'category' => $category,
             'reason' => $reason,
         ]));
 

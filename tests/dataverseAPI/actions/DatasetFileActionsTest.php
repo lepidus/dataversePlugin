@@ -18,6 +18,7 @@ class DatasetFileActionsTest extends PKPTestCase
 {
     private $errorLog;
     private $errorLogFile;
+    private $httpsProxy;
 
     protected function setUp(): void
     {
@@ -25,13 +26,31 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->errorLog = ini_get('error_log');
         $this->errorLogFile = tempnam(sys_get_temp_dir(), 'datasetFileActionsLog');
         ini_set('error_log', $this->errorLogFile);
+        $this->httpsProxy = Config::getVar('proxy', 'https_proxy');
     }
 
     protected function tearDown(): void
     {
+        $this->setHttpsProxy($this->httpsProxy);
         ini_set('error_log', $this->errorLog);
         unlink($this->errorLogFile);
         parent::tearDown();
+    }
+
+    private function setHttpsProxy(?string $proxy): void
+    {
+        $config = &Config::getData();
+        $config['proxy']['https_proxy'] = $proxy;
+    }
+
+    private function loggedDownloadFailures(): array
+    {
+        $lines = file($this->errorLogFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+        return array_values(array_filter(array_map(function (string $line) {
+            $event = json_decode(substr($line, (int) strpos($line, '{')), true);
+            return ($event['operation'] ?? null) === 'download' ? [$event['category'], $event['reason']] : null;
+        }, $lines)));
     }
 
     public function testArchiveUploadReturnsEveryRemoteFileReceipt(): void
@@ -235,8 +254,23 @@ class DatasetFileActionsTest extends PKPTestCase
 
     public function testEndlessRedirectsAreNotFollowed(): void
     {
-        $this->expectException(DataverseException::class);
-        $this->downloadWith(array_fill(0, 10, new Response(302, ['Location' => '/again'])));
+        try {
+            $this->downloadWith(array_fill(0, 10, new Response(302, ['Location' => '/again'])));
+            $this->fail('The download followed every redirect.');
+        } catch (DataverseException $e) {
+            $this->assertSame([['redirect', 'too_many_redirects']], $this->loggedDownloadFailures());
+        }
+    }
+
+    public function testDownloadRedirectedToAPublicIpv6AddressIsNotPinned(): void
+    {
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://[2606:4700::1111]/file']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertSame('2606:4700::1111', trim($requests[1]['request']->getUri()->getHost(), '[]'));
+        $this->assertArrayNotHasKey('curl', $requests[1]['options']);
     }
 
     public function testDownloadRedirectedToANat64AddressOfAPublicNetworkIsFollowed(): void
@@ -249,6 +283,54 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->assertCount(2, $requests);
     }
 
+    public function testDownloadRedirectedToStoragePinsEveryResolvedAddress(): void
+    {
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://dual-stack.example.org:8443/file']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertSame(
+            ['dual-stack.example.org:8443:' . ResolvedStorageDatasetFileActions::PUBLIC_ADDRESS . ',[' . ResolvedStorageDatasetFileActions::PUBLIC_IPV6_ADDRESS . ']'],
+            $requests[1]['options']['curl'][CURLOPT_RESOLVE]
+        );
+    }
+
+    public function testStorageHostIsResolvedByTheProxyWhenOneIsConfigured(): void
+    {
+        $this->setHttpsProxy('http://proxy.example.org:3128');
+
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://unknown.example.org/file']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertSame('unknown.example.org', $requests[1]['request']->getUri()->getHost());
+        $this->assertArrayNotHasKey('curl', $requests[1]['options']);
+    }
+
+    public function storageRedirectsRefusedEvenThroughAProxy(): array
+    {
+        return [
+            'storage without HTTPS' => ['http://storage.example.org/file'],
+            'private network address' => ['https://10.0.0.5/file'],
+        ];
+    }
+
+    /**
+     * @dataProvider storageRedirectsRefusedEvenThroughAProxy
+     */
+    public function testDownloadThroughAProxyIsNotRedirectedOutsideThePublicNetwork(string $location): void
+    {
+        $this->setHttpsProxy('http://proxy.example.org:3128');
+
+        $this->expectExceptionCode(503);
+        $this->downloadWith([
+            new Response(303, ['Location' => $location]),
+            new Response(200, [], 'internal service response'),
+        ]);
+    }
+
     public function redirectsWithoutDestination(): array
     {
         return [[302], [303], [304]];
@@ -259,8 +341,12 @@ class DatasetFileActionsTest extends PKPTestCase
      */
     public function testRedirectWithoutDestinationIsNotServedAsTheFile(int $status): void
     {
-        $this->expectException(DataverseException::class);
-        $this->downloadWith([new Response($status, [], '<html>redirect</html>')]);
+        try {
+            $this->downloadWith([new Response($status, [], '<html>redirect</html>')]);
+            $this->fail('The redirect was served as the file.');
+        } catch (DataverseException $e) {
+            $this->assertSame([['redirect', 'missing_location']], $this->loggedDownloadFailures());
+        }
     }
 
     public function testTokenIsNotReattachedAfterLeavingTheServer(): void
@@ -277,9 +363,13 @@ class DatasetFileActionsTest extends PKPTestCase
 
     public function testMalformedRedirectIsReportedAsUnavailable(): void
     {
-        $this->expectException(DataverseException::class);
-        $this->expectExceptionCode(503);
-        $this->downloadWith([new Response(302, ['Location' => 'http://:'])]);
+        try {
+            $this->downloadWith([new Response(302, ['Location' => 'http://:'])]);
+            $this->fail('The malformed redirect was followed.');
+        } catch (DataverseException $e) {
+            $this->assertSame(503, $e->getCode());
+            $this->assertSame([['redirect', 'invalid_location']], $this->loggedDownloadFailures());
+        }
     }
 
     public function testExpiredStorageLinkIsNotReportedAsInvalidToken(): void
@@ -352,6 +442,7 @@ class DatasetFileActionsTest extends PKPTestCase
 class ResolvedStorageDatasetFileActions extends DatasetFileActions
 {
     public const PUBLIC_ADDRESS = '93.184.215.14';
+    public const PUBLIC_IPV6_ADDRESS = '2606:2800:21f:cb07:6820:80da:af6b:8b2c';
 
     protected function resolveHostAddresses(string $host): array
     {
@@ -359,6 +450,7 @@ class ResolvedStorageDatasetFileActions extends DatasetFileActions
             'storage.example.org' => [self::PUBLIC_ADDRESS],
             'test.dataverse.org' => [self::PUBLIC_ADDRESS],
             'internal.example.org' => [self::PUBLIC_ADDRESS, '10.0.0.5'],
+            'dual-stack.example.org' => [self::PUBLIC_ADDRESS, self::PUBLIC_IPV6_ADDRESS],
         ];
 
         return $addresses[$host] ?? [];
