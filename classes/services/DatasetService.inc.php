@@ -180,6 +180,9 @@ class DatasetService extends DataverseService
         }
 
         $study = DAORegistry::getDAO('DataverseStudyDAO')->getByPersistentId($dataset->getPersistentId());
+        if (!$study) {
+            return;
+        }
         $submission = Services::get('submission')->get($study->getSubmissionId());
 
         try {
