@@ -2,6 +2,7 @@
 
 import('lib.pkp.tests.PKPTestCase');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseEventsDispatcher');
+import('plugins.generic.dataverse.classes.entities.DatasetFile');
 
 class DataverseEventsDispatcherNoticeTest extends PKPTestCase
 {
@@ -50,7 +51,7 @@ class DataverseEventsDispatcherNoticeTest extends PKPTestCase
         $this->assertSame('https://doi.org/10.5072/&quot;&gt;&lt;img src=x onerror=alert(1)&gt;', $params['persistentUri']);
     }
 
-    public function testDataverseErrorIsEscapedInTheDataFilesSelection(): void
+    private function createSmarty(): Smarty
     {
         $smarty = new Smarty();
         $smarty->setCompileDir($this->compileDir);
@@ -58,14 +59,45 @@ class DataverseEventsDispatcherNoticeTest extends PKPTestCase
             return $content;
         });
         $smarty->registerPlugin('function', 'translate', function (array $params) {
-            return $params['key'];
+            return $params['key'] . ($params['persistentUri'] ?? '');
         });
-        $smarty->registerPlugin('function', 'fbvElement', function () {
-            return '';
+        $smarty->registerPlugin('function', 'fbvElement', function (array $params) {
+            return $params['type'] === 'checkbox' ? $params['label'] : '';
         });
+
+        return $smarty;
+    }
+
+    private function fetchTemplate(Smarty $smarty, string $template): string
+    {
+        return $smarty->fetch(dirname(__DIR__, 2) . '/templates/' . $template);
+    }
+
+    public function testDataverseErrorIsEscapedInTheDataFilesSelection(): void
+    {
+        $smarty = $this->createSmarty();
         $smarty->assign('datasetFiles', []);
         $smarty->assign('dataverseError', 'Dataverse Error: ' . self::MALICIOUS_TEXT);
 
-        $this->assertEscaped($smarty->fetch(dirname(__DIR__, 2) . '/templates/selectDataFilesForReview.tpl'));
+        $this->assertEscaped($this->fetchTemplate($smarty, 'selectDataFilesForReview.tpl'));
+    }
+
+    public function testDataFileNamesAreEscapedInTheDataFilesSelection(): void
+    {
+        $file = new DatasetFile();
+        $file->setId(1);
+        $file->setFileName(self::MALICIOUS_TEXT);
+        $smarty = $this->createSmarty();
+        $smarty->assign('datasetFiles', [$file]);
+
+        $this->assertEscaped($this->fetchTemplate($smarty, 'selectDataFilesForReview.tpl'));
+    }
+
+    public function testPersistentUriIsEscapedInTheDeleteNotice(): void
+    {
+        $smarty = $this->createSmarty();
+        $smarty->assign('persistenUri', 'https://doi.org/10.5072/"><img src=x onerror=alert(1)>');
+
+        $this->assertEscaped($this->fetchTemplate($smarty, 'editorActionDelete.tpl'));
     }
 }

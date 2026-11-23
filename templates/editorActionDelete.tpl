@@ -1,6 +1,6 @@
 <div style="margin-top: 2rem; margin-bottom: 1.5rem;">
 {fbvFormSection id="researchDataNotice" title="plugins.generic.dataverse.researchData"}
-    {translate key="plugins.generic.dataverse.researchData.deleteNotice" persistentUri=$persistenUri}
+    {translate key="plugins.generic.dataverse.researchData.deleteNotice" persistentUri=$persistenUri|escape}
 {/fbvFormSection}
 </div>
 {fbvFormSection id="researchDataDeleteChoice" label="plugins.generic.dataverse.researchData.wouldLikeToDelete" list=true required=true}
