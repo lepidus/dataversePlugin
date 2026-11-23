@@ -197,12 +197,13 @@ abstract class DataverseActions
         }
         $this->assertPublicAddresses($addresses);
 
-        $address = $addresses[0];
         $port = $uri->getPort() ?? 443;
+        $pinnedAddresses = array_map(
+            fn (string $address): string => str_contains($address, ':') ? '[' . $address . ']' : $address,
+            $addresses
+        );
 
-        return ['curl' => [CURLOPT_RESOLVE => [
-            $host . ':' . $port . ':' . (str_contains($address, ':') ? '[' . $address . ']' : $address)
-        ]]];
+        return ['curl' => [CURLOPT_RESOLVE => [$host . ':' . $port . ':' . implode(',', $pinnedAddresses)]]];
     }
 
     private function assertPublicAddresses(array $addresses): void
@@ -214,14 +215,23 @@ abstract class DataverseActions
         }
     }
 
-    protected function resolveHostAddresses(string $host): array
+    private function resolveHostAddresses(string $host): array
     {
-        $records = @dns_get_record($host, DNS_A | DNS_AAAA) ?: [];
+        $addresses = [];
+        foreach ([DNS_A => 'ip', DNS_AAAA => 'ipv6'] as $recordType => $addressField) {
+            foreach ($this->queryDnsRecords($host, $recordType) as $record) {
+                if (isset($record[$addressField])) {
+                    $addresses[] = $record[$addressField];
+                }
+            }
+        }
 
-        return array_values(array_filter(array_map(
-            fn (array $record): ?string => $record['ip'] ?? $record['ipv6'] ?? null,
-            $records
-        )));
+        return array_values(array_unique($addresses));
+    }
+
+    protected function queryDnsRecords(string $host, int $recordType): array
+    {
+        return @dns_get_record($host, $recordType) ?: [];
     }
 
     private function refusedStorageRedirect(string $reason): DataverseException

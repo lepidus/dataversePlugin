@@ -331,6 +331,23 @@ class DatasetFileActionsTest extends PKPTestCase
         );
     }
 
+    public function testDownloadRedirectedToStoragePinsEveryResolvedAddress(): void
+    {
+        $history = [];
+        $actions = $this->createActionsRespondingWith([
+            new Response(303, ['Location' => 'https://dual-stack.example.org:8443/datafile']),
+            new Response(200, [], 'content'),
+        ], $history);
+
+        $actions->download(2025434, 'Data.csv');
+
+        $this->assertSame(
+            ['dual-stack.example.org:8443:' . ResolvedStorageDatasetFileActions::PUBLIC_ADDRESS
+                . ',[' . ResolvedStorageDatasetFileActions::PUBLIC_IPV6_ADDRESS . ']'],
+            $history[1]['options']['curl'][CURLOPT_RESOLVE]
+        );
+    }
+
     #[DataProvider('publicStorageAddresses')]
     public function testDownloadRedirectedToAPublicStorageAddressIsNotPinned(string $location): void
     {
@@ -384,6 +401,7 @@ class DatasetFileActionsTest extends PKPTestCase
             'private network address' => ['https://10.0.0.5/file'],
             'IPv4-mapped loopback address' => ['https://[::ffff:127.0.0.1]/file'],
             'host resolving to a private address' => ['https://internal.example.org/file'],
+            'host resolving to a private IPv6 address' => ['https://internal-ipv6.example.org/file'],
             'host that does not resolve' => ['https://unknown.example.org/file'],
             'storage without HTTPS' => ['http://storage.example.org/file'],
         ];
@@ -406,14 +424,25 @@ class DatasetFileActionsTest extends PKPTestCase
 class ResolvedStorageDatasetFileActions extends DatasetFileActions
 {
     public const PUBLIC_ADDRESS = '93.184.215.14';
+    public const PUBLIC_IPV6_ADDRESS = '2606:2800:21f:cb07:6820:80da:af6b:8b2c';
 
-    protected function resolveHostAddresses(string $host): array
+    private const DNS_RECORDS = [
+        'storage.example.org' => [DNS_A => [['type' => 'A', 'ip' => self::PUBLIC_ADDRESS]]],
+        'test.dataverse.org' => [DNS_A => [['type' => 'A', 'ip' => self::PUBLIC_ADDRESS]]],
+        'internal.example.org' => [DNS_A => [['type' => 'A', 'ip' => self::PUBLIC_ADDRESS], ['type' => 'A', 'ip' => '10.0.0.5']]],
+        'internal-ipv6.example.org' => [
+            DNS_A => [['type' => 'A', 'ip' => self::PUBLIC_ADDRESS]],
+            DNS_AAAA => [['type' => 'AAAA', 'ipv6' => 'fd00::5']],
+        ],
+        'dual-stack.example.org' => [
+            DNS_A => [['type' => 'CNAME', 'target' => 'storage.example.org'], ['type' => 'A', 'ip' => self::PUBLIC_ADDRESS]],
+            DNS_AAAA => [['type' => 'AAAA', 'ipv6' => self::PUBLIC_IPV6_ADDRESS]],
+        ],
+    ];
+
+    protected function queryDnsRecords(string $host, int $recordType): array
     {
-        return [
-            'storage.example.org' => [self::PUBLIC_ADDRESS],
-            'test.dataverse.org' => [self::PUBLIC_ADDRESS],
-            'internal.example.org' => [self::PUBLIC_ADDRESS, '10.0.0.5'],
-        ][$host] ?? [];
+        return self::DNS_RECORDS[$host][$recordType] ?? [];
     }
 }
 
