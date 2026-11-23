@@ -216,9 +216,12 @@ Dataverse also refuses to delete a dataset while it is locked (403 "Dataset cann
 `persistentUri`, SWORD edit/statement URIs). `Repo::dataverseStudy()->getBySubmissionId()` returning null is
 the canonical "this submission has no dataset" test, used all over the dispatchers. A dataset is linked to at most one
 submission: `persistent_id` has a unique index (`UniquePersistentIdMigration`, which leaves it out and logs the
-duplicates when an install already has some), and DOIs are stored as `doi:` plus the rest in upper case
-(`DataverseStudy::normalizePersistentId()`), because Dataverse resolves a DOI in any case and PostgreSQL compares
-text case-sensitively.
+duplicates when an install already has some). The persistent ID is stored exactly as Dataverse stores it: the one
+`create()` returns, or, on association, the one `DatasetActions::findInCurrentCollection()` rebuilds from the dataset
+Dataverse found. Never rewrite it in another case: Dataverse before 6.5 looks a DOI up case-sensitively (a 404 makes
+the workflow drop the association), and the Solr `parentIdentifier` filter of the report always does. Comparisons go
+through `DataverseStudy::normalizePersistentId()` instead (`UPPER()` in SQL, because PostgreSQL compares text
+case-sensitively), so a DOI typed or stored in another case is still recognised as the same dataset.
 
 `DraftDatasetFile` is a file uploaded during the wizard but not yet deposited; its properties are described by
 `schemas/draftDatasetFile.json`, loaded via the `Schema::get::draftDatasetFile` hook.

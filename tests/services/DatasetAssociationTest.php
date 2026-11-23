@@ -22,6 +22,7 @@ class DatasetAssociationTest extends PKPTestCase
     use CreatesTestContext;
 
     private const PERSISTENT_ID = 'doi:10.5072/FK2/RACE01';
+    private const PERSISTENT_ID_IN_UPPER_CASE = 'DOI:10.5072/FK2/RACE01';
 
     private Context $context;
     private int $submissionId;
@@ -73,11 +74,11 @@ class DatasetAssociationTest extends PKPTestCase
     private function mockCollectionCheck(?callable $duringCheck = null): void
     {
         $datasetActions = Mockery::mock();
-        $datasetActions->shouldReceive('isInCurrentCollection')->andReturnUsing(function () use ($duringCheck) {
+        $datasetActions->shouldReceive('findInCurrentCollection')->andReturnUsing(function () use ($duringCheck) {
             if ($duringCheck) {
                 $duringCheck();
             }
-            return true;
+            return self::PERSISTENT_ID;
         });
 
         $client = Mockery::mock('overload:' . DataverseClient::class);
@@ -88,7 +89,7 @@ class DatasetAssociationTest extends PKPTestCase
     {
         return DB::table('dataverse_studies')
             ->whereIn('submission_id', [$this->submissionId, $this->otherSubmissionId])
-            ->where('persistent_id', self::PERSISTENT_ID)
+            ->whereRaw('UPPER(persistent_id) = ?', [self::PERSISTENT_ID_IN_UPPER_CASE])
             ->count();
     }
 
@@ -114,7 +115,28 @@ class DatasetAssociationTest extends PKPTestCase
         $this->assertSame(1, $this->countStudiesWithPersistentId());
     }
 
-    public function testAssociatedPersistentIdIsStoredInCanonicalForm(): void
+    public function testDatasetStoredInAnotherLetterCaseBeforeTheIndexIsAlreadyAssociated(): void
+    {
+        $this->mockCollectionCheck();
+        $this->insertStudy($this->otherSubmissionId, strtolower(self::PERSISTENT_ID));
+
+        $result = (new DatasetService())->associate($this->submissionId, self::PERSISTENT_ID);
+
+        $this->assertSame('plugins.generic.dataverse.error.associate.alreadyAssociated', $result['message']);
+        $this->assertSame(1, $this->countStudiesWithPersistentId());
+    }
+
+    public function testDatasetAssociatedConcurrentlyInAnotherLetterCaseIsNotAssociatedTwice(): void
+    {
+        $this->mockCollectionCheck(fn () => $this->insertStudy($this->otherSubmissionId, strtolower(self::PERSISTENT_ID)));
+
+        $result = (new DatasetService())->associate($this->submissionId, self::PERSISTENT_ID);
+
+        $this->assertSame('plugins.generic.dataverse.error.associate.alreadyAssociated', $result['message']);
+        $this->assertNull(Repo::dataverseStudy()->getBySubmissionId($this->submissionId));
+    }
+
+    public function testAssociatedPersistentIdIsStoredAsDataverseStoresIt(): void
     {
         $this->mockCollectionCheck();
 

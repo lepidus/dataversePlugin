@@ -67,16 +67,16 @@ class UniquePersistentIdMigrationTest extends PKPTestCase
         return DB::table('dataverse_studies')->where('study_id', $studyId)->value('persistent_id');
     }
 
-    public function testStoredDoisAreNormalizedAndCannotBeAssociatedTwice(): void
+    public function testStoredPersistentIdsAreKeptAndCannotBeAssociatedTwice(): void
     {
         $studyId = $this->insertStudy('doi:10.5072/fk2/migr01');
 
         (new UniquePersistentIdMigration())->up();
 
-        $this->assertSame('doi:10.5072/FK2/MIGR01', $this->storedPersistentId($studyId));
+        $this->assertSame('doi:10.5072/fk2/migr01', $this->storedPersistentId($studyId));
         $this->assertTrue($this->hasIndex());
         $this->expectException(UniqueConstraintViolationException::class);
-        $this->insertStudy('doi:10.5072/FK2/MIGR01');
+        $this->insertStudy('doi:10.5072/fk2/migr01');
     }
 
     public function testIndexIsNotCreatedWhileADatasetIsAssociatedWithTwoSubmissions(): void
@@ -88,7 +88,7 @@ class UniquePersistentIdMigrationTest extends PKPTestCase
         (new UniquePersistentIdMigration())->up();
 
         $this->assertFalse($this->hasIndex());
-        $this->assertSame('doi:10.5072/FK2/MIGR02', $this->storedPersistentId($firstStudyId));
+        $this->assertSame('doi:10.5072/fk2/migr02', $this->storedPersistentId($firstStudyId));
         $this->assertSame('doi:10.5072/FK2/MIGR02', $this->storedPersistentId($secondStudyId));
     }
 }

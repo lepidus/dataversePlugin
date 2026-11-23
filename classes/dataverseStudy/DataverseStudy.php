@@ -83,7 +83,7 @@ class DataverseStudy extends DataObject
 
     public function setPersistentId($persistentId): void
     {
-        $this->setData('persistentId', is_string($persistentId) ? self::normalizePersistentId($persistentId) : $persistentId);
+        $this->setData('persistentId', $persistentId);
     }
 
     public static function normalizePersistentId(string $persistentId): string
