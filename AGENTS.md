@@ -178,8 +178,12 @@ configured server's origin: an authenticated Native API request that Dataverse r
 keeps custom headers across origins, and `nativeAPIDownload()` follows the redirects of a file download itself, streaming
 into a write-only `sink` and sending the token only to that origin, since Dataverse sends downloads to the storage
 (e.g. S3) with a 303. Once a download leaves that origin, every hop must be HTTPS to a host whose addresses are all
-public (`FILTER_FLAG_GLOBAL_RANGE`), and the connection is pinned to the checked address with `CURLOPT_RESOLVE`, so a
-redirect cannot make the server fetch an internal service. Transport errors are logged only through that JSON line,
+public (`FILTER_FLAG_GLOBAL_RANGE`, plus the IPv4 address embedded in a NAT64 `64:ff9b::/96` address; local-use NAT64
+and 6to4 addresses are refused), so a redirect cannot make the server fetch an internal service. A host name is
+resolved with separate A and AAAA queries (`dns_get_record()`, which ignores `/etc/hosts`) and the connection is pinned
+to every checked address with `CURLOPT_RESOLVE`; an IP address is not pinned, since there is nothing to resolve. With a
+`[proxy] https_proxy`, the proxy resolves the host, so the host name is neither resolved nor pinned locally: only the
+HTTPS and IP address checks apply, and the proxy is what limits where the server can connect. Transport errors are logged only through that JSON line,
 never with the Guzzle message, which carries the request URL and therefore the storage signature.
 
 Failures throw `DataverseException`, logged as a JSON line with the operation and

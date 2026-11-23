@@ -193,6 +193,10 @@ abstract class DataverseActions
             return [];
         }
 
+        if ($this->sendsThroughHttpsProxy()) {
+            return [];
+        }
+
         $addresses = $this->resolveHostAddresses($host);
         if (empty($addresses)) {
             throw $this->refusedStorageRedirect('The storage host of a Dataverse file download could not be resolved');
@@ -206,6 +210,13 @@ abstract class DataverseActions
         );
 
         return ['curl' => [CURLOPT_RESOLVE => [$host . ':' . $port . ':' . implode(',', $pinnedAddresses)]]];
+    }
+
+    private function sendsThroughHttpsProxy(): bool
+    {
+        $proxy = $this->client->getConfig('proxy');
+
+        return !empty(is_array($proxy) ? ($proxy['https'] ?? null) : $proxy);
     }
 
     private function assertPublicAddresses(array $addresses): void
