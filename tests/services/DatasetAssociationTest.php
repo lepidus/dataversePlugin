@@ -86,6 +86,17 @@ class DatasetAssociationTest extends PKPTestCase
         $client->shouldReceive('getDatasetActions')->andReturn($datasetActions);
     }
 
+    private function insertDeposit(int $submissionId, string $state, string $persistentId): void
+    {
+        DB::table('dataverse_deposits')->insert([
+            'submission_id' => $submissionId,
+            'state' => $state,
+            'persistent_id' => $persistentId,
+            'manifest' => '[]',
+            'receipts' => '[]',
+        ]);
+    }
+
     private function countStudiesWithPersistentId(): int
     {
         return DB::table('dataverse_studies')
@@ -137,5 +148,36 @@ class DatasetAssociationTest extends PKPTestCase
 
         $this->assertSame('success', $result['status']);
         $this->assertSame($lowerCasePersistentId, Repo::dataverseStudy()->getBySubmissionId($this->submissionId)->getPersistentId());
+    }
+
+    public function testDatasetOfAnUnfinishedDepositOfAnotherSubmissionIsAlreadyAssociated(): void
+    {
+        $this->mockCollectionCheck();
+        $this->insertDeposit($this->otherSubmissionId, 'ready', self::PERSISTENT_ID);
+
+        $result = (new DatasetService())->associate($this->submissionId, strtolower(self::PERSISTENT_ID));
+
+        $this->assertSame('plugins.generic.dataverse.error.associate.alreadyAssociated', $result['message']);
+        $this->assertNull(Repo::dataverseStudy()->getBySubmissionId($this->submissionId));
+    }
+
+    public function testDatasetDepositedConcurrentlyForAnotherSubmissionIsNotAssociated(): void
+    {
+        $this->mockCollectionCheck(fn () => $this->insertDeposit($this->otherSubmissionId, 'uploading', self::PERSISTENT_ID));
+
+        $result = (new DatasetService())->associate($this->submissionId, self::PERSISTENT_ID);
+
+        $this->assertSame('plugins.generic.dataverse.error.associate.alreadyAssociated', $result['message']);
+        $this->assertNull(Repo::dataverseStudy()->getBySubmissionId($this->submissionId));
+    }
+
+    public function testDatasetOfARetiredDepositOfAnotherSubmissionCanBeAssociated(): void
+    {
+        $this->mockCollectionCheck();
+        $this->insertDeposit($this->otherSubmissionId, 'retired', self::PERSISTENT_ID);
+
+        $result = (new DatasetService())->associate($this->submissionId, self::PERSISTENT_ID);
+
+        $this->assertSame('success', $result['status']);
     }
 }

@@ -313,7 +313,7 @@ class DatasetService extends DataverseService
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.invalidPersistentId'];
         }
 
-        if (Repo::dataverseStudy()->getByPersistentId($persistentId)) {
+        if ($this->isPersistentIdTaken($persistentId, $submissionId)) {
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
         }
 
@@ -337,6 +337,16 @@ class DatasetService extends DataverseService
         }
     }
 
+    private function isPersistentIdTaken(string $persistentId, int $submissionId): bool
+    {
+        return Repo::dataverseStudy()->getByPersistentId($persistentId)
+            || DB::table('dataverse_deposits')
+                ->where('submission_id', '!=', $submissionId)
+                ->where('state', '!=', 'retired')
+                ->whereRaw('UPPER(persistent_id) = ?', [DataverseStudy::normalizePersistentId($persistentId)])
+                ->exists();
+    }
+
     private function createAssociation(Submission $submission, string $persistentId): array
     {
         $submissionId = $submission->getId();
@@ -346,6 +356,9 @@ class DatasetService extends DataverseService
             if (Repo::dataverseStudy()->getBySubmissionId($submissionId)
                 || DB::table('dataverse_deposits')->where('submission_id', $submissionId)->where('state', '!=', 'retired')->exists()) {
                 return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.depositPending'];
+            }
+            if ($this->isPersistentIdTaken($persistentId, $submissionId)) {
+                return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
             }
             $this->createStudy($submission, $persistentId);
             return ['status' => DataverseService::STATUS_SUCCESS];
