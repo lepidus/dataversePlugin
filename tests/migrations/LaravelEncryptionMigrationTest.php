@@ -29,6 +29,7 @@ class LaravelEncryptionMigrationTest extends PKPTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        (new DataverseMigration())->up();
         $this->configData = Config::getData();
         $config = &Config::getData();
         $config['security']['api_key_secret'] = 'dataverse-test-legacy-secret';
