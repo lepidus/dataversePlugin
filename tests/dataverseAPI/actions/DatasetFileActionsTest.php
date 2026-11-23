@@ -369,6 +369,7 @@ class DatasetFileActionsTest extends PKPTestCase
         return [
             'IPv4 address' => ['https://93.184.215.14/datafile'],
             'IPv6 address' => ['https://[2606:4700:4700::1111]/datafile'],
+            'NAT64 address of a public network' => ['https://[64:ff9b::5db8:d70e]/datafile'],
         ];
     }
 
@@ -400,6 +401,9 @@ class DatasetFileActionsTest extends PKPTestCase
             'cloud metadata address' => ['https://169.254.169.254/latest/meta-data/'],
             'private network address' => ['https://10.0.0.5/file'],
             'IPv4-mapped loopback address' => ['https://[::ffff:127.0.0.1]/file'],
+            'NAT64 address of a private network' => ['https://[64:ff9b::a00:5]/file'],
+            'local-use NAT64 address' => ['https://[64:ff9b:1::5db8:d70e]/file'],
+            '6to4 address' => ['https://[2002:a00:5::1]/file'],
             'host resolving to a private address' => ['https://internal.example.org/file'],
             'host resolving to a private IPv6 address' => ['https://internal-ipv6.example.org/file'],
             'host that does not resolve' => ['https://unknown.example.org/file'],

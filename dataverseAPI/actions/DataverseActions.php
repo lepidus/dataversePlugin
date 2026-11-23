@@ -42,6 +42,8 @@ abstract class DataverseActions
         'write' => 30,
     ];
     private const MIN_REQUEST_TIMEOUT = 1;
+    private const NAT64_PREFIX = '0064ff9b0000000000000000';
+    private const TRANSLATED_IPV4_PREFIXES = ['0064ff9b0001', '2002'];
     private const MAX_REQUEST_TIMEOUT = 300;
 
     public function __construct(
@@ -209,10 +211,30 @@ abstract class DataverseActions
     private function assertPublicAddresses(array $addresses): void
     {
         foreach ($addresses as $address) {
-            if (!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE)) {
+            if (!$this->isPublicAddress($address)) {
                 throw $this->refusedStorageRedirect('Dataverse redirected a file download to a non-public address');
             }
         }
+    }
+
+    private function isPublicAddress(string $address): bool
+    {
+        if (!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE)) {
+            return false;
+        }
+
+        $hexAddress = bin2hex(inet_pton($address));
+        if (str_starts_with($hexAddress, self::NAT64_PREFIX)) {
+            return $this->isPublicAddress(inet_ntop(hex2bin(substr($hexAddress, strlen(self::NAT64_PREFIX)))));
+        }
+
+        foreach (self::TRANSLATED_IPV4_PREFIXES as $prefix) {
+            if (str_starts_with($hexAddress, $prefix)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function resolveHostAddresses(string $host): array
