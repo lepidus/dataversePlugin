@@ -303,6 +303,19 @@ class DatasetFileActionsTest extends PKPTestCase
         );
     }
 
+    public function testDownloadRedirectedToStoragePinsEveryResolvedAddress(): void
+    {
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://dual-stack.example.org:8443/file']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertSame(
+            ['dual-stack.example.org:8443:' . ResolvedStorageDatasetFileActions::PUBLIC_ADDRESS . ',[2600:1f18:4a3:6900::1]'],
+            $requests[1]['options']['curl'][CURLOPT_RESOLVE]
+        );
+    }
+
     /**
      * @dataProvider publicAddressLiterals
      */
@@ -430,6 +443,7 @@ class ResolvedStorageDatasetFileActions extends DatasetFileActions
             'storage.example.org' => [self::PUBLIC_ADDRESS],
             'test.dataverse.org' => [self::PUBLIC_ADDRESS],
             'internal.example.org' => [self::PUBLIC_ADDRESS, '10.0.0.5'],
+            'dual-stack.example.org' => [self::PUBLIC_ADDRESS, '2600:1f18:4a3:6900::1'],
         ][$host] ?? [];
     }
 }

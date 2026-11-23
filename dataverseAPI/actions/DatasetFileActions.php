@@ -225,10 +225,12 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         }
 
         $this->assertPublicAddresses($addresses);
-        $address = $addresses[0];
-        $port = $uri->getPort() ?? 443;
+        $pinnedAddresses = array_map(
+            fn (string $address): string => str_contains($address, ':') ? '[' . $address . ']' : $address,
+            $addresses
+        );
 
-        return [CURLOPT_RESOLVE => [$host . ':' . $port . ':' . (str_contains($address, ':') ? '[' . $address . ']' : $address)]];
+        return [CURLOPT_RESOLVE => [$host . ':' . ($uri->getPort() ?? 443) . ':' . implode(',', $pinnedAddresses)]];
     }
 
     private function assertPublicAddresses(array $addresses): void
@@ -242,12 +244,12 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
 
     protected function resolveHostAddresses(string $host): array
     {
-        $records = @dns_get_record($host, DNS_A | DNS_AAAA) ?: [];
+        $records = array_merge(@dns_get_record($host, DNS_A) ?: [], @dns_get_record($host, DNS_AAAA) ?: []);
 
-        return array_values(array_filter(array_map(
+        return array_values(array_unique(array_filter(array_map(
             fn (array $record): ?string => $record['ip'] ?? $record['ipv6'] ?? null,
             $records
-        )));
+        ))));
     }
 
     private function isPublicAddress(string $address): bool
