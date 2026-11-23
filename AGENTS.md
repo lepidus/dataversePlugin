@@ -261,7 +261,10 @@ deposit tried again; `DatasetService` reports those with the error from Datavers
 `error.datasetDeposit`), and only failures that leave `creating` or `uploading` behind as `error.depositPending`.
 Deleting or disassociating a dataset retires a `complete` operation, and so does finding that its dataset is gone from
 Dataverse (`DatasetService::removeMissingDataset()`), so a new deposit or a manual association can follow; an
-association is refused while any operation is not retired.
+association is refused while any operation of the submission is not retired, and also when the persistent ID belongs to
+an operation of another submission that is not retired: that deposit has not created its study yet, so only
+`dataverse_deposits` knows the dataset is taken, and a retry would fail on the unique index or, after a new file
+selection, delete the dataset in Dataverse.
 
 ### Services
 

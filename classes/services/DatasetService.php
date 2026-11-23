@@ -386,13 +386,24 @@ class DatasetService extends DataverseService
                 return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.depositPending'];
             }
 
-            if (Repo::dataverseStudy()->getByPersistentId($persistentId)) {
+            if (Repo::dataverseStudy()->getByPersistentId($persistentId) || $this->isBeingDeposited($persistentId)) {
                 return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
             }
 
             $this->createStudy($submission, $persistentId);
             return ['status' => DataverseService::STATUS_SUCCESS];
         });
+    }
+
+    private function isBeingDeposited(string $persistentId): bool
+    {
+        $normalizedPersistentId = DataverseStudy::normalizePersistentId($persistentId);
+
+        return DB::table('dataverse_deposits')
+            ->where('state', '!=', 'retired')
+            ->whereRaw('UPPER(persistent_id) = ?', [strtoupper($persistentId)])
+            ->pluck('persistent_id')
+            ->contains(fn (string $depositedPersistentId): bool => DataverseStudy::normalizePersistentId($depositedPersistentId) === $normalizedPersistentId);
     }
 
     private function hasActiveDeposit(int $submissionId): bool

@@ -136,6 +136,41 @@ class DatasetAssociationTest extends PKPTestCase
         $this->assertNull(Repo::dataverseStudy()->getBySubmissionId($this->submissionId));
     }
 
+    public function testDatasetOfAnUnfinishedDepositOfAnotherSubmissionIsNotAssociated(): void
+    {
+        $this->mockCollectionCheck();
+        DB::table('dataverse_deposits')->insert([
+            'submission_id' => $this->otherSubmissionId,
+            'state' => 'ready',
+            'revision' => 3,
+            'persistent_id' => strtolower(self::PERSISTENT_ID),
+            'manifest' => '[]',
+            'receipts' => '{}',
+        ]);
+
+        $result = (new DatasetService())->associate($this->submissionId, self::PERSISTENT_ID);
+
+        $this->assertSame('plugins.generic.dataverse.error.associate.alreadyAssociated', $result['message']);
+        $this->assertNull(Repo::dataverseStudy()->getBySubmissionId($this->submissionId));
+    }
+
+    public function testDatasetOfARetiredDepositOfAnotherSubmissionIsAssociated(): void
+    {
+        $this->mockCollectionCheck();
+        DB::table('dataverse_deposits')->insert([
+            'submission_id' => $this->otherSubmissionId,
+            'state' => 'retired',
+            'revision' => 5,
+            'persistent_id' => self::PERSISTENT_ID,
+            'manifest' => '[]',
+            'receipts' => '{}',
+        ]);
+
+        $result = (new DatasetService())->associate($this->submissionId, self::PERSISTENT_ID);
+
+        $this->assertSame('success', $result['status']);
+    }
+
     public function testAssociatedPersistentIdIsStoredAsDataverseStoresIt(): void
     {
         $this->mockCollectionCheck();
