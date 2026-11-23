@@ -72,6 +72,16 @@ write_timeout = 30
 
 Values must be whole numbers of seconds between 1 and 300, written without a leading zero (the application reads `060` as an octal number); any other value, such as `on` or `1.5`, falls back to the default. Files are deposited one after the other in the same request, so before increasing a limit, check that the PHP and web server request limits cover the time of all uploads together. A request that reaches its limit is reported as a timeout: Dataverse may still have completed the operation.
 
+#### File downloads from storage
+
+When Dataverse keeps files in an S3-compatible storage with download redirects enabled, it sends file downloads to that storage. The plugin only follows the redirect to an HTTPS address on the public internet: a storage reached over plain HTTP, or at a private, loopback or link-local address (such as a MinIO or Ceph server on the institution's internal network), makes the download fail. In that case, disable download redirects for that store in Dataverse (`dataverse.files.<id>.download-redirect=false`), so Dataverse itself serves the files.
+
+When the application sends its requests through a proxy (`https_proxy` in the `[proxy]` section of `config.inc.php`), the proxy resolves the storage host name, so the application server does not need to resolve it. In that case the proxy is what limits the addresses the server can reach, and it should not give access to the internal network.
+
+#### Datasets associated with more than one submission
+
+A dataset can be associated with only one submission. If an installation already has a dataset associated with more than one submission, the upgrade (`php tools/upgrade.php upgrade`) lists the persistent IDs involved in its output (or in the server error log, when the plugin is updated through the Plugin Gallery) and does not create the database index that enforces that rule. Disassociate the dataset from the extra submissions and run the upgrade again.
+
 ### Use
 
 A "Research Data" deposit dialog is shown in the "Files" step of the Submission proccess.

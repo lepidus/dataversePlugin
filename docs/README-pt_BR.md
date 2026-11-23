@@ -74,6 +74,16 @@ write_timeout = 30
 
 Os valores devem ser números inteiros de segundos entre 1 e 300, escritos sem zero à esquerda (a aplicação lê `060` como número octal); qualquer outro valor, como `on` ou `1.5`, usa o padrão. Os arquivos são depositados um após o outro na mesma requisição, então, antes de aumentar um limite, verifique se os limites de requisição do PHP e do servidor web cobrem o tempo de todos os envios juntos. Uma requisição que atinge o limite é informada como tempo esgotado: o Dataverse pode ter concluído a operação mesmo assim.
 
+#### Download de arquivos do armazenamento
+
+Quando o Dataverse guarda os arquivos num armazenamento compatível com S3 e com o redirecionamento de downloads ativado, ele envia o download dos arquivos para esse armazenamento. O plugin só segue o redirecionamento para um endereço HTTPS na internet pública: um armazenamento acessado por HTTP sem criptografia, ou num endereço privado, de loopback ou link-local (como um servidor MinIO ou Ceph na rede interna da instituição), faz o download falhar. Nesse caso, desative o redirecionamento de downloads desse armazenamento no Dataverse (`dataverse.files.<id>.download-redirect=false`), para que o próprio Dataverse entregue os arquivos.
+
+Quando a aplicação envia as requisições por um proxy (`https_proxy` na seção `[proxy]` do `config.inc.php`), quem resolve o nome do servidor de armazenamento é o proxy, então o servidor da aplicação não precisa resolvê-lo. Nesse caso, é o proxy que limita os endereços que o servidor alcança, e ele não deve dar acesso à rede interna.
+
+#### Datasets associados a mais de uma submissão
+
+Um dataset só pode ser associado a uma submissão. Se a instalação já tiver um dataset associado a mais de uma submissão, a atualização (`php tools/upgrade.php upgrade`) lista os identificadores persistentes envolvidos na sua saída (ou no log de erros do servidor, quando o plugin é atualizado pela Galeria de Plugins) e não cria o índice do banco de dados que garante essa regra. Desassocie o dataset das submissões excedentes e execute a atualização novamente.
+
 ### Uso
 
 Uma seção chamada "Dados de pesquisa" é adicionada ao passo "Arquivos" durante o processo de submissão. Além disso, os metadados do conjunto de dados devem ser preenchidos no passo "Para editores".

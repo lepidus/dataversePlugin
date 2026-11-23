@@ -72,6 +72,16 @@ write_timeout = 30
 
 Los valores deben ser números enteros de segundos entre 1 y 300, escritos sin cero a la izquierda (la aplicación lee `060` como un número octal); cualquier otro valor, como `on` o `1.5`, usa el predeterminado. Los archivos se depositan uno tras otro en la misma solicitud, por lo que, antes de aumentar un límite, verifique que los límites de solicitud de PHP y del servidor web cubran el tiempo de todas las cargas juntas. Una solicitud que alcanza su límite se informa como tiempo agotado: Dataverse puede haber completado la operación de todos modos.
 
+#### Descarga de archivos desde el almacenamiento
+
+Cuando Dataverse guarda los archivos en un almacenamiento compatible con S3 y con la redirección de descargas activada, envía la descarga de los archivos a ese almacenamiento. El módulo solo sigue la redirección hacia una dirección HTTPS en internet pública: un almacenamiento al que se accede por HTTP sin cifrado, o en una dirección privada, de loopback o de enlace local (como un servidor MinIO o Ceph en la red interna de la institución), hace que la descarga falle. En ese caso, desactive la redirección de descargas de ese almacenamiento en Dataverse (`dataverse.files.<id>.download-redirect=false`), para que el propio Dataverse sirva los archivos.
+
+Cuando la aplicación envía sus solicitudes a través de un proxy (`https_proxy` en la sección `[proxy]` del `config.inc.php`), es el proxy quien resuelve el nombre del servidor de almacenamiento, por lo que el servidor de la aplicación no necesita resolverlo. En ese caso, es el proxy el que limita las direcciones que el servidor alcanza, y no debe dar acceso a la red interna.
+
+#### Datasets asociados a más de un envío
+
+Un dataset solo puede asociarse a un envío. Si la instalación ya tiene un dataset asociado a más de un envío, la actualización (`php tools/upgrade.php upgrade`) lista los identificadores persistentes involucrados en su salida (o en el registro de errores del servidor, cuando el módulo se actualiza desde la Galería de módulos) y no crea el índice de la base de datos que garantiza esa regla. Desasocie el dataset de los envíos sobrantes y ejecute la actualización de nuevo.
+
 ### Uso
 
 Se añade una sección llamada "Datos de investigación" al paso "Archivos" durante el proceso de envío. Además, los metadatos del conjunto de datos deben completarse en el paso "Para los editores/as".
