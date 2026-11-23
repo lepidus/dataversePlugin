@@ -161,7 +161,7 @@ abstract class DataverseActions
             $uri = $this->resolveRedirect($uri, $response);
         }
 
-        throw DataverseException::fromTransferException(
+        throw $this->failedDownloadRedirect(
             new TooManyRedirectsException('Too many redirects downloading a Dataverse file', new Request('GET', $uri))
         );
     }
@@ -269,14 +269,19 @@ abstract class DataverseActions
 
     private function refusedStorageRedirect(string $reason): DataverseException
     {
+        return $this->failedDownloadRedirect(new TransferException($reason), 'redirect_refused');
+    }
+
+    private function failedDownloadRedirect(TransferException $exception, string $category = 'redirect'): DataverseException
+    {
         error_log(json_encode([
             'component' => 'dataverse',
             'operation' => 'download',
-            'category' => 'redirect_refused',
-            'reason' => $reason,
+            'category' => $category,
+            'reason' => $exception->getMessage(),
         ]));
 
-        return DataverseException::fromTransferException(new TransferException($reason));
+        return DataverseException::fromTransferException($exception);
     }
 
     private function resolveRedirect(string $uri, ResponseInterface $response): string
@@ -288,7 +293,7 @@ abstract class DataverseActions
         }
 
         if ((string) $location === '') {
-            throw DataverseException::fromTransferException(
+            throw $this->failedDownloadRedirect(
                 new TransferException('Dataverse redirected a file download without a valid destination')
             );
         }

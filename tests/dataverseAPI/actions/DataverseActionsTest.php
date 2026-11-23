@@ -454,6 +454,49 @@ class DataverseActionsTest extends PKPTestCase
         $this->assertStringNotContainsString('storage-secret', $log);
     }
 
+    #[DataProvider('failedDownloadRedirects')]
+    public function testFailedDownloadRedirectIsLoggedWithItsReason(array $responses, string $reason): void
+    {
+        $logPath = tempnam(sys_get_temp_dir(), 'dataverseLog');
+        $sinkPath = tempnam(sys_get_temp_dir(), 'dataverseSink');
+        $errorLog = ini_set('error_log', $logPath);
+        $client = new Client(['handler' => HandlerStack::create(new MockHandler($responses))]);
+        $actions = new ConcreteDataverseActions($this->configuration, $client);
+
+        try {
+            try {
+                $actions->nativeAPIDownload('https://test.dataverse.org/api/access/datafile/1', $sinkPath);
+                $this->fail('The download did not fail');
+            } catch (DataverseException $exception) {
+                $this->assertSame(503, $exception->getCode());
+            }
+            $log = file_get_contents($logPath);
+        } finally {
+            ini_set('error_log', $errorLog);
+            unlink($logPath);
+            unlink($sinkPath);
+        }
+
+        $this->assertStringContainsString(
+            '{"component":"dataverse","operation":"download","category":"redirect","reason":"' . $reason . '"}',
+            $log
+        );
+    }
+
+    public static function failedDownloadRedirects(): array
+    {
+        return [
+            'redirect without a destination' => [
+                [new Response(303, ['Location' => ''])],
+                'Dataverse redirected a file download without a valid destination',
+            ],
+            'too many redirects' => [
+                array_fill(0, 6, new Response(302, ['Location' => 'https://test.dataverse.org/api/access/datafile/1'])),
+                'Too many redirects downloading a Dataverse file',
+            ],
+        ];
+    }
+
     public function testNativeApiRequestIsNotRedirectedWithTheApiTokenToAnotherOrigin(): void
     {
         $redirectedRequests = [];
