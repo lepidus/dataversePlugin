@@ -63,6 +63,16 @@ Authors, moderators, editors or managers can also edit the dataset, before publi
 
 In OJS, reviewers can have access to research data files during the review process. Reviewers access to these files can be restricted on Workflow Settings, so they can only see research data when they agree to review the submission.
 
+### Research data downloads
+
+When Dataverse redirects a file download to its storage (for example, S3), the plugin only follows the redirect over HTTPS and to public network addresses. Downloads from storage served over HTTP or from a private network address fail, and the plugin reports the research data repository as unavailable. In that case, disable the download redirect of that store in Dataverse (`dataverse.files.<id>.download-redirect=false`), so Dataverse serves the files itself.
+
+If the application uses a proxy (`https_proxy` in the `[proxy]` section of `config.inc.php`), the storage host name is resolved by the proxy. The plugin still requires HTTPS and refuses private addresses written in the redirect, but it cannot check the addresses the proxy resolves, so restrict the destinations the proxy can reach.
+
+### Datasets associated with more than one submission
+
+A dataset can only be associated with one submission. When updating the plugin, if a dataset is already associated with more than one submission, the update logs the line `Dataverse: these datasets are associated with more than one submission` with their persistent IDs and does not create the database index that enforces this rule. Keep each of those datasets in a single submission, disassociating it from the others on the Research Data tab, and then run `php tools/upgrade.php upgrade` again.
+
 ## Development Instructions:
 
 1. Clone the Dataverse plugin repository
