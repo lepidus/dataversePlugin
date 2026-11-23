@@ -231,6 +231,9 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         }
 
         $addresses = $this->resolveHostAddresses($host);
+        if (empty($addresses) && $this->usesProxy()) {
+            return [];
+        }
         if (empty($addresses)) {
             throw $this->refusedStorageRedirect('unresolved_host');
         }
@@ -242,6 +245,21 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         );
 
         return [CURLOPT_RESOLVE => [$host . ':' . ($uri->getPort() ?? 443) . ':' . implode(',', $pinnedAddresses)]];
+    }
+
+    private function usesProxy(): bool
+    {
+        if (Config::getVar('proxy', 'https_proxy')) {
+            return true;
+        }
+
+        foreach (['https_proxy', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY'] as $variable) {
+            if (getenv($variable)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function assertPublicAddresses(array $addresses): void

@@ -316,6 +316,41 @@ class DatasetFileActionsTest extends PKPTestCase
         );
     }
 
+    private function downloadThroughProxy(string $location): array
+    {
+        $previousProxy = getenv('https_proxy');
+        putenv('https_proxy=http://proxy.example.org:3128');
+
+        try {
+            return $this->downloadWith([
+                new Response(303, ['Location' => $location]),
+                new Response(200, [], 'content'),
+            ]);
+        } finally {
+            putenv($previousProxy === false ? 'https_proxy' : 'https_proxy=' . $previousProxy);
+        }
+    }
+
+    public function testDownloadThroughAProxyFollowsStorageTheProxyResolves(): void
+    {
+        [$requests] = $this->downloadThroughProxy('https://unknown.example.org/file');
+
+        $this->assertSame('https://unknown.example.org/file', (string) $requests[1]['request']->getUri());
+        $this->assertArrayNotHasKey(CURLOPT_RESOLVE, $requests[1]['options']['curl']);
+    }
+
+    public function testDownloadThroughAProxyIsNotRedirectedToAHostResolvingToAPrivateAddress(): void
+    {
+        $previousErrorLog = ini_set('error_log', '/dev/null');
+        $this->expectException(DataverseException::class);
+
+        try {
+            $this->downloadThroughProxy('https://internal.example.org/file');
+        } finally {
+            ini_set('error_log', $previousErrorLog);
+        }
+    }
+
     /**
      * @dataProvider publicAddressLiterals
      */
