@@ -331,6 +331,30 @@ class DatasetFileActionsTest extends PKPTestCase
         );
     }
 
+    #[DataProvider('publicStorageAddresses')]
+    public function testDownloadRedirectedToAPublicStorageAddressIsNotPinned(string $location): void
+    {
+        $history = [];
+        $actions = $this->createActionsRespondingWith([
+            new Response(303, ['Location' => $location]),
+            new Response(200, [], 'content'),
+        ], $history);
+
+        $actions->download(2025434, 'Data.csv');
+
+        $this->assertSame($location, (string) $history[1]['request']->getUri());
+        $this->assertArrayNotHasKey('curl', $history[1]['options']);
+        $this->assertSame('content', $this->downloadedContents);
+    }
+
+    public static function publicStorageAddresses(): array
+    {
+        return [
+            'IPv4 address' => ['https://93.184.215.14/datafile'],
+            'IPv6 address' => ['https://[2606:4700:4700::1111]/datafile'],
+        ];
+    }
+
     #[DataProvider('storageRedirectsOutsideThePublicNetwork')]
     public function testDownloadIsNotRedirectedOutsideThePublicNetwork(string $location): void
     {

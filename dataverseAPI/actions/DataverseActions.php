@@ -145,7 +145,7 @@ abstract class DataverseActions
             if (!$leftServer) {
                 $options['headers']['X-Dataverse-key'] = $this->apiToken;
             } else {
-                $options['curl'] = [CURLOPT_RESOLVE => [$this->resolveStorageHost(new Uri($uri))]];
+                $options += $this->getStorageRequestOptions(new Uri($uri));
             }
 
             $response = $leftServer
@@ -179,28 +179,39 @@ abstract class DataverseActions
         }
     }
 
-    private function resolveStorageHost(UriInterface $uri): string
+    private function getStorageRequestOptions(UriInterface $uri): array
     {
         if ($uri->getScheme() !== 'https') {
             throw $this->refusedStorageRedirect('Dataverse redirected a file download to a storage without HTTPS');
         }
 
         $host = trim($uri->getHost(), '[]');
-        $addresses = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : $this->resolveHostAddresses($host);
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $this->assertPublicAddresses([$host]);
+            return [];
+        }
+
+        $addresses = $this->resolveHostAddresses($host);
         if (empty($addresses)) {
             throw $this->refusedStorageRedirect('The storage host of a Dataverse file download could not be resolved');
         }
+        $this->assertPublicAddresses($addresses);
 
+        $address = $addresses[0];
+        $port = $uri->getPort() ?? 443;
+
+        return ['curl' => [CURLOPT_RESOLVE => [
+            $host . ':' . $port . ':' . (str_contains($address, ':') ? '[' . $address . ']' : $address)
+        ]]];
+    }
+
+    private function assertPublicAddresses(array $addresses): void
+    {
         foreach ($addresses as $address) {
             if (!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE)) {
                 throw $this->refusedStorageRedirect('Dataverse redirected a file download to a non-public address');
             }
         }
-
-        $address = $addresses[0];
-        $port = $uri->getPort() ?? 443;
-
-        return $host . ':' . $port . ':' . (str_contains($address, ':') ? '[' . $address . ']' : $address);
     }
 
     protected function resolveHostAddresses(string $host): array
