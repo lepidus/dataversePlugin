@@ -249,6 +249,7 @@ class DatasetFileActionsTest extends PKPTestCase
             'local-use NAT64 address' => ['https://[64:ff9b:1::a00:5]/file'],
             '6to4 address of a private network' => ['https://[2002:a00:5::1]/file'],
             'IPv4-compatible loopback address' => ['https://[::7f00:1]/file'],
+            'site-local address' => ['https://[fec0::5]/file'],
         ];
     }
 
@@ -296,7 +297,7 @@ class DatasetFileActionsTest extends PKPTestCase
         );
     }
 
-    public function testStorageHostIsResolvedByTheProxyWhenOneIsConfigured(): void
+    public function testStorageHostTheServerCannotResolveIsLeftToTheProxy(): void
     {
         $this->setHttpsProxy('http://proxy.example.org:3128');
 
@@ -309,11 +310,44 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->assertArrayNotHasKey('curl', $requests[1]['options']);
     }
 
+    public function testStorageHostIsStillPinnedWhenAProxyIsConfigured(): void
+    {
+        $this->setHttpsProxy('http://proxy.example.org:3128');
+
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://storage.example.org/file']),
+            new Response(200, [], 'content'),
+        ]);
+
+        $this->assertSame(
+            ['storage.example.org:443:' . ResolvedStorageDatasetFileActions::PUBLIC_ADDRESS],
+            $requests[1]['options']['curl'][CURLOPT_RESOLVE]
+        );
+    }
+
+    public function testProxyFromTheEnvironmentResolvesTheStorageHostTheServerCannotResolve(): void
+    {
+        $previousProxy = getenv('https_proxy');
+        putenv('https_proxy=http://proxy.example.org:3128');
+
+        try {
+            [$requests] = $this->downloadWith([
+                new Response(303, ['Location' => 'https://unknown.example.org/file']),
+                new Response(200, [], 'content'),
+            ]);
+        } finally {
+            putenv($previousProxy === false ? 'https_proxy' : 'https_proxy=' . $previousProxy);
+        }
+
+        $this->assertArrayNotHasKey('curl', $requests[1]['options']);
+    }
+
     public function storageRedirectsRefusedEvenThroughAProxy(): array
     {
         return [
             'storage without HTTPS' => ['http://storage.example.org/file'],
             'private network address' => ['https://10.0.0.5/file'],
+            'host resolving to a private address' => ['https://internal.example.org/file'],
         ];
     }
 
