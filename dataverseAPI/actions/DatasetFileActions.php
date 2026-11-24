@@ -29,6 +29,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         '192.0.0.0/24',
         '198.18.0.0/15',
         '64:ff9b:1::/48',
+        '2002::/16',
         'fec0::/10',
         'ff00::/8',
     ];

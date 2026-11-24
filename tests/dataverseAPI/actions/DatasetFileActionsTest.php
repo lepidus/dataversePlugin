@@ -407,6 +407,7 @@ class DatasetFileActionsTest extends PKPTestCase
             'NAT64 private address' => ['https://[64:ff9b::a00:5]/file'],
             'NAT64 metadata address' => ['https://[64:ff9b::a9fe:a9fe]/file'],
             'local-use NAT64 address' => ['https://[64:ff9b:1::5db8:d70e]/file'],
+            '6to4 address' => ['https://[2002:5db8:d70e::1]/file'],
             'site-local address' => ['https://[fec0::1]/file'],
             'multicast address' => ['https://[ff02::1]/file'],
             'host resolving to a private address' => ['https://internal.example.org/file'],
