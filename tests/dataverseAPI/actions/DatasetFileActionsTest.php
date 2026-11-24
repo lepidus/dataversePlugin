@@ -22,6 +22,9 @@ class DatasetFileActionsTest extends PKPTestCase
     private ?string $downloadedMediaType = null;
     private ?string $downloadedContents = null;
     private string $errorLog;
+    private array $proxyEnvironment = [];
+
+    private const PROXY_VARIABLES = ['https_proxy', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY', 'no_proxy', 'NO_PROXY'];
 
     protected function getMockedRegistryKeys(): array
     {
@@ -32,6 +35,10 @@ class DatasetFileActionsTest extends PKPTestCase
     {
         parent::setUp();
         $this->errorLog = (string) ini_get('error_log');
+        foreach (self::PROXY_VARIABLES as $variable) {
+            $this->proxyEnvironment[$variable] = getenv($variable);
+            putenv($variable);
+        }
 
         Hook::add('FileManager::downloadFile', function ($hookName, $params) {
             $this->downloadedFilePath = realpath($params[0]);
@@ -47,6 +54,9 @@ class DatasetFileActionsTest extends PKPTestCase
     protected function tearDown(): void
     {
         ini_set('error_log', $this->errorLog);
+        foreach ($this->proxyEnvironment as $variable => $value) {
+            putenv($value === false ? $variable : $variable . '=' . $value);
+        }
         parent::tearDown();
     }
 
@@ -397,6 +407,57 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->assertSame('content', $this->downloadedContents);
     }
 
+    public function testDownloadThroughAnEnvironmentProxyIsRedirectedToAStorageTheServerCannotResolve(): void
+    {
+        putenv('HTTPS_PROXY=http://proxy.example.org:3128');
+        $history = [];
+        $actions = $this->createActionsRespondingWith([
+            new Response(303, ['Location' => 'https://unknown.example.org/datafile']),
+            new Response(200, [], 'content'),
+        ], $history);
+
+        $actions->download(2025434, 'Data.csv');
+
+        $this->assertArrayNotHasKey('curl', $history[1]['options']);
+        $this->assertSame('content', $this->downloadedContents);
+    }
+
+    public function testDownloadThroughAProxyPinsTheStorageAddressesTheServerResolves(): void
+    {
+        $history = [];
+        $actions = $this->createActionsRespondingWith([
+            new Response(303, ['Location' => 'https://storage.example.org/datafile']),
+            new Response(200, [], 'content'),
+        ], $history, ResolvedStorageDatasetFileActions::class, ['proxy' => ['https' => 'http://proxy.example.org:3128']]);
+
+        $actions->download(2025434, 'Data.csv');
+
+        $this->assertSame(
+            ['storage.example.org:443:' . ResolvedStorageDatasetFileActions::PUBLIC_ADDRESS],
+            $history[1]['options']['curl'][CURLOPT_RESOLVE]
+        );
+    }
+
+    public function testDownloadIsNotRedirectedToAnUnresolvedStorageThatBypassesTheProxy(): void
+    {
+        ini_set('error_log', '/dev/null');
+        putenv('no_proxy=localhost, .example.org');
+        $history = [];
+        $actions = $this->createActionsRespondingWith([
+            new Response(303, ['Location' => 'https://unknown.example.org/datafile']),
+            new Response(200, [], 'internal service response'),
+        ], $history, ResolvedStorageDatasetFileActions::class, ['proxy' => ['https' => 'http://proxy.example.org:3128']]);
+
+        try {
+            $actions->download(2025434, 'Data.csv');
+            $this->fail('The download followed the redirect to a host outside the proxy');
+        } catch (DataverseException $e) {
+            $this->assertSame(503, $e->getCode());
+        }
+
+        $this->assertCount(1, $history);
+    }
+
     #[DataProvider('storageRedirectsRefusedThroughAProxy')]
     public function testDownloadThroughAProxyIsNotRedirectedToAPrivateAddressOrWithoutHttps(string $location): void
     {
@@ -421,6 +482,7 @@ class DatasetFileActionsTest extends PKPTestCase
     {
         return [
             'private network address' => ['https://10.0.0.5/file'],
+            'host resolving to a private address' => ['https://internal.example.org/file'],
             'storage without HTTPS' => ['http://storage.example.org/file'],
         ];
     }

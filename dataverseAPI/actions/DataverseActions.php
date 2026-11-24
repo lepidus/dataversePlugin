@@ -13,6 +13,7 @@ use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriComparator;
 use GuzzleHttp\Psr7\UriResolver;
 use GuzzleHttp\Psr7\Utils;
+use GuzzleHttp\Utils as GuzzleUtils;
 use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -193,11 +194,10 @@ abstract class DataverseActions
             return [];
         }
 
-        if ($this->sendsThroughHttpsProxy()) {
+        $addresses = $this->resolveHostAddresses($host);
+        if (empty($addresses) && $this->sendsThroughHttpsProxy($host)) {
             return [];
         }
-
-        $addresses = $this->resolveHostAddresses($host);
         if (empty($addresses)) {
             throw $this->refusedStorageRedirect('The storage host of a Dataverse file download could not be resolved');
         }
@@ -212,11 +212,33 @@ abstract class DataverseActions
         return ['curl' => [CURLOPT_RESOLVE => [$host . ':' . $port . ':' . implode(',', $pinnedAddresses)]]];
     }
 
-    private function sendsThroughHttpsProxy(): bool
+    private function sendsThroughHttpsProxy(string $host): bool
     {
         $proxy = $this->client->getConfig('proxy');
+        $configuredProxy = is_array($proxy) ? ($proxy['https'] ?? null) : $proxy;
+        $environmentProxy = $this->getEnvironmentVariable('https_proxy', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY');
+        if (empty($configuredProxy) && empty($environmentProxy)) {
+            return false;
+        }
 
-        return !empty(is_array($proxy) ? ($proxy['https'] ?? null) : $proxy);
+        $noProxyHosts = array_merge(
+            is_array($proxy) ? (array) ($proxy['no'] ?? []) : [],
+            array_map('trim', explode(',', (string) $this->getEnvironmentVariable('no_proxy', 'NO_PROXY')))
+        );
+
+        return !GuzzleUtils::isHostInNoProxy($host, array_values(array_filter($noProxyHosts)));
+    }
+
+    private function getEnvironmentVariable(string ...$names): ?string
+    {
+        foreach ($names as $name) {
+            $value = getenv($name);
+            if (is_string($value) && $value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     private function assertPublicAddresses(array $addresses): void

@@ -76,7 +76,7 @@ Values must be whole numbers of seconds between 1 and 300, written without a lea
 
 When Dataverse keeps files in an S3-compatible storage with download redirects enabled, it sends file downloads to that storage. The plugin only follows the redirect to an HTTPS address on the public internet: a storage reached over plain HTTP, or at a private, loopback or link-local address (such as a MinIO or Ceph server on the institution's internal network), makes the download fail. In that case, disable download redirects for that store in Dataverse (`dataverse.files.<id>.download-redirect=false`), so Dataverse itself serves the files.
 
-When the application sends its requests through a proxy (`https_proxy` in the `[proxy]` section of `config.inc.php`), the proxy resolves the storage host name, so the application server does not need to resolve it. In that case the proxy is what limits the addresses the server can reach, and it should not give access to the internal network.
+When the application sends its requests through a proxy (`https_proxy` in the `[proxy]` section of `config.inc.php`, or the `https_proxy` and `all_proxy` environment variables), the storage host is still checked whenever the application server can resolve its name. A host the server cannot resolve is left to the proxy, unless it is listed in `no_proxy`; in that case the proxy is what limits the addresses the server can reach, and it should not give access to the internal network.
 
 #### Datasets associated with more than one submission
 

@@ -76,7 +76,7 @@ Los valores deben ser números enteros de segundos entre 1 y 300, escritos sin c
 
 Cuando Dataverse guarda los archivos en un almacenamiento compatible con S3 y con la redirección de descargas activada, envía la descarga de los archivos a ese almacenamiento. El módulo solo sigue la redirección hacia una dirección HTTPS en internet pública: un almacenamiento al que se accede por HTTP sin cifrado, o en una dirección privada, de loopback o de enlace local (como un servidor MinIO o Ceph en la red interna de la institución), hace que la descarga falle. En ese caso, desactive la redirección de descargas de ese almacenamiento en Dataverse (`dataverse.files.<id>.download-redirect=false`), para que el propio Dataverse sirva los archivos.
 
-Cuando la aplicación envía sus solicitudes a través de un proxy (`https_proxy` en la sección `[proxy]` del `config.inc.php`), es el proxy quien resuelve el nombre del servidor de almacenamiento, por lo que el servidor de la aplicación no necesita resolverlo. En ese caso, es el proxy el que limita las direcciones que el servidor alcanza, y no debe dar acceso a la red interna.
+Cuando la aplicación envía sus solicitudes a través de un proxy (`https_proxy` en la sección `[proxy]` del `config.inc.php`, o las variables de entorno `https_proxy` y `all_proxy`), el servidor de almacenamiento se sigue verificando siempre que el servidor de la aplicación puede resolver su nombre. Un nombre que el servidor no puede resolver queda a cargo del proxy, salvo que figure en `no_proxy`; en ese caso, es el proxy el que limita las direcciones que el servidor alcanza, y no debe dar acceso a la red interna.
 
 #### Datasets asociados a más de un envío
 

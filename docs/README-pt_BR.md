@@ -78,7 +78,7 @@ Os valores devem ser números inteiros de segundos entre 1 e 300, escritos sem z
 
 Quando o Dataverse guarda os arquivos num armazenamento compatível com S3 e com o redirecionamento de downloads ativado, ele envia o download dos arquivos para esse armazenamento. O plugin só segue o redirecionamento para um endereço HTTPS na internet pública: um armazenamento acessado por HTTP sem criptografia, ou num endereço privado, de loopback ou link-local (como um servidor MinIO ou Ceph na rede interna da instituição), faz o download falhar. Nesse caso, desative o redirecionamento de downloads desse armazenamento no Dataverse (`dataverse.files.<id>.download-redirect=false`), para que o próprio Dataverse entregue os arquivos.
 
-Quando a aplicação envia as requisições por um proxy (`https_proxy` na seção `[proxy]` do `config.inc.php`), quem resolve o nome do servidor de armazenamento é o proxy, então o servidor da aplicação não precisa resolvê-lo. Nesse caso, é o proxy que limita os endereços que o servidor alcança, e ele não deve dar acesso à rede interna.
+Quando a aplicação envia as requisições por um proxy (`https_proxy` na seção `[proxy]` do `config.inc.php`, ou as variáveis de ambiente `https_proxy` e `all_proxy`), o servidor de armazenamento continua sendo verificado sempre que o servidor da aplicação consegue resolver o nome dele. Um nome que o servidor não consegue resolver fica a cargo do proxy, a menos que esteja em `no_proxy`; nesse caso, é o proxy que limita os endereços que o servidor alcança, e ele não deve dar acesso à rede interna.
 
 #### Datasets associados a mais de uma submissão
 
