@@ -14,6 +14,27 @@ use PKP\tests\PKPTestCase;
 
 class DatasetFileActionsTest extends PKPTestCase
 {
+    private const PROXY_VARIABLES = ['https_proxy', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY', 'no_proxy', 'NO_PROXY'];
+
+    private array $proxyEnvironment = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        foreach (self::PROXY_VARIABLES as $variable) {
+            $this->proxyEnvironment[$variable] = getenv($variable);
+            putenv($variable);
+        }
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->proxyEnvironment as $variable => $value) {
+            putenv($value === false ? $variable : $variable . '=' . $value);
+        }
+        parent::tearDown();
+    }
+
     public function testUploadWaitsUntilIngestLockIsReleased(): void
     {
         $history = [];
@@ -318,17 +339,12 @@ class DatasetFileActionsTest extends PKPTestCase
 
     private function downloadThroughProxy(string $location): array
     {
-        $previousProxy = getenv('https_proxy');
         putenv('https_proxy=http://proxy.example.org:3128');
 
-        try {
-            return $this->downloadWith([
-                new Response(303, ['Location' => $location]),
-                new Response(200, [], 'content'),
-            ]);
-        } finally {
-            putenv($previousProxy === false ? 'https_proxy' : 'https_proxy=' . $previousProxy);
-        }
+        return $this->downloadWith([
+            new Response(303, ['Location' => $location]),
+            new Response(200, [], 'content'),
+        ]);
     }
 
     public function testDownloadThroughAProxyFollowsStorageTheProxyResolves(): void
@@ -337,6 +353,19 @@ class DatasetFileActionsTest extends PKPTestCase
 
         $this->assertSame('https://unknown.example.org/file', (string) $requests[1]['request']->getUri());
         $this->assertArrayNotHasKey(CURLOPT_RESOLVE, $requests[1]['options']['curl']);
+    }
+
+    public function testDownloadIsNotRedirectedToAnUnresolvedStorageThatBypassesTheProxy(): void
+    {
+        putenv('no_proxy=localhost, .example.org');
+        $previousErrorLog = ini_set('error_log', '/dev/null');
+        $this->expectException(DataverseException::class);
+
+        try {
+            $this->downloadThroughProxy('https://unknown.example.org/file');
+        } finally {
+            ini_set('error_log', $previousErrorLog);
+        }
     }
 
     public function testDownloadThroughAProxyIsNotRedirectedToAHostResolvingToAPrivateAddress(): void

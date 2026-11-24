@@ -9,6 +9,7 @@ use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetFileAct
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use GuzzleHttp\Psr7\Utils;
+use GuzzleHttp\Utils as GuzzleUtils;
 use InvalidArgumentException;
 use PKP\config\Config;
 use PKP\core\PKPString;
@@ -232,7 +233,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         }
 
         $addresses = $this->resolveHostAddresses($host);
-        if (empty($addresses) && $this->usesProxy()) {
+        if (empty($addresses) && $this->sendsThroughProxy($host)) {
             return [];
         }
         if (empty($addresses)) {
@@ -248,19 +249,34 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         return [CURLOPT_RESOLVE => [$host . ':' . ($uri->getPort() ?? 443) . ':' . implode(',', $pinnedAddresses)]];
     }
 
-    private function usesProxy(): bool
+    private function sendsThroughProxy(string $host): bool
     {
-        if (Config::getVar('proxy', 'https_proxy')) {
-            return true;
+        $clientProxy = $this->client->getConfig('proxy');
+        $configuredProxy = Config::getVar('proxy', 'https_proxy')
+            ?: (is_array($clientProxy) ? ($clientProxy['https'] ?? null) : $clientProxy);
+        $environmentProxy = $this->getEnvironmentVariable('https_proxy', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY');
+        if (empty($configuredProxy) && empty($environmentProxy)) {
+            return false;
         }
 
-        foreach (['https_proxy', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY'] as $variable) {
-            if (getenv($variable)) {
-                return true;
+        $noProxyHosts = array_merge(
+            is_array($clientProxy) ? (array) ($clientProxy['no'] ?? []) : [],
+            array_map('trim', explode(',', (string) $this->getEnvironmentVariable('no_proxy', 'NO_PROXY')))
+        );
+
+        return !GuzzleUtils::isHostInNoProxy($host, array_values(array_filter($noProxyHosts)));
+    }
+
+    private function getEnvironmentVariable(string ...$names): ?string
+    {
+        foreach ($names as $name) {
+            $value = getenv($name);
+            if (is_string($value) && $value !== '') {
+                return $value;
             }
         }
 
-        return false;
+        return null;
     }
 
     private function assertPublicAddresses(array $addresses): void

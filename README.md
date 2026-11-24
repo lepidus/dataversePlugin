@@ -110,7 +110,7 @@ In OJS, reviewers can have access to research data files during the review proce
 
 When Dataverse sends a file download to an external storage (for example, Amazon S3), the plugin only follows the redirect to an HTTPS address whose IP addresses are all public, and connects to the address it checked. Storage served over HTTP or from a private network address cannot be downloaded through the plugin.
 
-If the server reaches the internet through a proxy (`[proxy] https_proxy` in `config.inc.php` or the `https_proxy`/`HTTPS_PROXY`/`all_proxy` environment variables), the proxy resolves the storage host itself, so the connection cannot be pinned to the address the plugin checked, and a host the server cannot resolve is left for the proxy to resolve. In that case, the proxy is responsible for refusing internal addresses.
+If the server reaches the internet through a proxy (`[proxy] https_proxy` in `config.inc.php` or the `https_proxy`/`HTTPS_PROXY`/`all_proxy` environment variables), the proxy resolves the storage host itself, so the connection cannot be pinned to the address the plugin checked, and a host the server cannot resolve is left for the proxy to resolve, unless it is listed in `no_proxy`, which makes the download fail. In that case, the proxy is responsible for refusing internal addresses.
 
 ### Upgrading
 

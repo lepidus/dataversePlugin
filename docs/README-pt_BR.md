@@ -114,7 +114,7 @@ No OJS, avaliadores podem receber acesso aos arquivos de dados de pesquisa duran
 
 Quando o Dataverse envia o download de um arquivo para um armazenamento externo (por exemplo, Amazon S3), o plugin só segue o redirecionamento para um endereço HTTPS cujos IPs sejam todos públicos, e se conecta ao endereço que verificou. Arquivos em armazenamento servido por HTTP ou em endereço de rede privada não podem ser baixados pelo plugin.
 
-Se o servidor acessa a internet por um proxy (`[proxy] https_proxy` no `config.inc.php` ou as variáveis de ambiente `https_proxy`/`HTTPS_PROXY`/`all_proxy`), o próprio proxy resolve o host de armazenamento, então a conexão não pode ser fixada ao endereço que o plugin verificou, e um host que o servidor não consegue resolver fica para o proxy resolver. Nesse caso, cabe ao proxy recusar endereços internos.
+Se o servidor acessa a internet por um proxy (`[proxy] https_proxy` no `config.inc.php` ou as variáveis de ambiente `https_proxy`/`HTTPS_PROXY`/`all_proxy`), o próprio proxy resolve o host de armazenamento, então a conexão não pode ser fixada ao endereço que o plugin verificou, e um host que o servidor não consegue resolver fica para o proxy resolver, a menos que esteja em `no_proxy`, caso em que o download falha. Nesse caso, cabe ao proxy recusar endereços internos.
 
 ### Atualização
 
