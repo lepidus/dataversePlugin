@@ -67,7 +67,7 @@ In OJS, reviewers can have access to research data files during the review proce
 
 When Dataverse redirects a file download to its storage (for example, S3), the plugin only follows the redirect over HTTPS and to public network addresses. Downloads from storage served over HTTP or from a private network address fail, and the plugin reports the research data repository as unavailable. In that case, disable the download redirect of that store in Dataverse (`dataverse.files.<id>.download-redirect=false`), so Dataverse serves the files itself.
 
-If the application uses a proxy (`https_proxy` in the `[proxy]` section of `config.inc.php`, or the `https_proxy` or `all_proxy` environment variables), the plugin still resolves and checks the storage host when the server can resolve it. When it cannot, the proxy resolves the host: the plugin still requires HTTPS and refuses private addresses written in the redirect, but it cannot check the addresses the proxy resolves, so restrict the destinations the proxy can reach.
+If the application uses a proxy (`https_proxy` in the `[proxy]` section of `config.inc.php`, or the `https_proxy` or `all_proxy` environment variables), the plugin still resolves and checks the storage host when the server can resolve it. When it cannot, the proxy resolves the host: the plugin still requires HTTPS and refuses private addresses written in the redirect, but it cannot check the addresses the proxy resolves, so restrict the destinations the proxy can reach. A host the server cannot resolve that is listed in `no_proxy` is refused, since it would not go through the proxy.
 
 ### Datasets associated with more than one submission
 

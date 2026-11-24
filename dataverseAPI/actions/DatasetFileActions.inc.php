@@ -182,7 +182,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         }
 
         $addresses = $this->resolveHostAddresses($host);
-        if (empty($addresses) && $this->usesProxy()) {
+        if (empty($addresses) && $this->sendsThroughProxy($host)) {
             return [];
         }
         if (empty($addresses)) {
@@ -197,19 +197,33 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         return ['curl' => [CURLOPT_RESOLVE => [$host . ':' . ($uri->getPort() ?? 443) . ':' . implode(',', $pinnedAddresses)]]];
     }
 
-    private function usesProxy(): bool
+    private function sendsThroughProxy(string $host): bool
     {
-        if (Config::getVar('proxy', 'https_proxy')) {
-            return true;
+        $proxy = $this->client->getConfig('proxy');
+        $configuredProxy = is_array($proxy) ? ($proxy['https'] ?? null) : $proxy;
+        $environmentProxy = $this->getEnvironmentVariable('https_proxy', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY');
+        if (empty($configuredProxy) && empty($environmentProxy)) {
+            return false;
         }
 
-        foreach (['https_proxy', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY'] as $variable) {
-            if (getenv($variable)) {
-                return true;
+        $noProxyHosts = array_merge(
+            is_array($proxy) ? (array) ($proxy['no'] ?? []) : [],
+            array_map('trim', explode(',', (string) $this->getEnvironmentVariable('no_proxy', 'NO_PROXY')))
+        );
+
+        return !\GuzzleHttp\is_host_in_noproxy($host, array_values(array_filter($noProxyHosts)));
+    }
+
+    private function getEnvironmentVariable(string ...$names): ?string
+    {
+        foreach ($names as $name) {
+            $value = getenv($name);
+            if (is_string($value) && $value !== '') {
+                return $value;
             }
         }
 
-        return false;
+        return null;
     }
 
     protected function resolveHostAddresses(string $host): array

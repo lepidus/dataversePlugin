@@ -18,7 +18,10 @@ class DatasetFileActionsTest extends PKPTestCase
 {
     private $errorLog;
     private $errorLogFile;
-    private $httpsProxy;
+    private $proxy;
+    private $proxyEnvironment = [];
+
+    private const PROXY_VARIABLES = ['https_proxy', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY', 'no_proxy', 'NO_PROXY'];
 
     protected function setUp(): void
     {
@@ -26,21 +29,26 @@ class DatasetFileActionsTest extends PKPTestCase
         $this->errorLog = ini_get('error_log');
         $this->errorLogFile = tempnam(sys_get_temp_dir(), 'datasetFileActionsLog');
         ini_set('error_log', $this->errorLogFile);
-        $this->httpsProxy = Config::getVar('proxy', 'https_proxy');
+        $this->proxy = null;
+        foreach (self::PROXY_VARIABLES as $variable) {
+            $this->proxyEnvironment[$variable] = getenv($variable);
+            putenv($variable);
+        }
     }
 
     protected function tearDown(): void
     {
-        $this->setHttpsProxy($this->httpsProxy);
+        foreach ($this->proxyEnvironment as $variable => $value) {
+            putenv($value === false ? $variable : $variable . '=' . $value);
+        }
         ini_set('error_log', $this->errorLog);
         unlink($this->errorLogFile);
         parent::tearDown();
     }
 
-    private function setHttpsProxy(?string $proxy): void
+    private function setHttpsProxy(string $proxy, array $noProxy = []): void
     {
-        $config = &Config::getData();
-        $config['proxy']['https_proxy'] = $proxy;
+        $this->proxy = ['https' => $proxy, 'no' => $noProxy];
     }
 
     private function loggedDownloadFailures(): array
@@ -151,7 +159,11 @@ class DatasetFileActionsTest extends PKPTestCase
         $configuration = new DataverseConfiguration();
         $configuration->setDataverseUrl('https://test.dataverse.org/dataverse/test');
         $configuration->setAPIToken('test-token');
-        $actions = new ResolvedStorageDatasetFileActions($configuration, new Client(['handler' => $stack]));
+        $clientConfig = ['handler' => $stack];
+        if ($this->proxy) {
+            $clientConfig['proxy'] = $this->proxy;
+        }
+        $actions = new ResolvedStorageDatasetFileActions($configuration, new Client($clientConfig));
 
         $downloadArguments = null;
         HookRegistry::register('FileManager::downloadFile', function ($hookName, $args) use (&$downloadArguments) {
@@ -327,19 +339,37 @@ class DatasetFileActionsTest extends PKPTestCase
 
     public function testProxyFromTheEnvironmentResolvesTheStorageHostTheServerCannotResolve(): void
     {
-        $previousProxy = getenv('https_proxy');
-        putenv('https_proxy=http://proxy.example.org:3128');
+        putenv('HTTPS_PROXY=http://proxy.example.org:3128');
 
-        try {
-            [$requests] = $this->downloadWith([
-                new Response(303, ['Location' => 'https://unknown.example.org/file']),
-                new Response(200, [], 'content'),
-            ]);
-        } finally {
-            putenv($previousProxy === false ? 'https_proxy' : 'https_proxy=' . $previousProxy);
-        }
+        [$requests] = $this->downloadWith([
+            new Response(303, ['Location' => 'https://unknown.example.org/file']),
+            new Response(200, [], 'content'),
+        ]);
 
         $this->assertArrayNotHasKey('curl', $requests[1]['options']);
+    }
+
+    public function testUnresolvedStorageHostThatBypassesTheEnvironmentProxyIsNotFollowed(): void
+    {
+        putenv('https_proxy=http://proxy.example.org:3128');
+        putenv('no_proxy=localhost, .example.org');
+
+        $this->expectExceptionCode(503);
+        $this->downloadWith([
+            new Response(303, ['Location' => 'https://unknown.example.org/file']),
+            new Response(200, [], 'internal service response'),
+        ]);
+    }
+
+    public function testUnresolvedStorageHostThatBypassesTheConfiguredProxyIsNotFollowed(): void
+    {
+        $this->setHttpsProxy('http://proxy.example.org:3128', ['unknown.example.org']);
+
+        $this->expectExceptionCode(503);
+        $this->downloadWith([
+            new Response(303, ['Location' => 'https://unknown.example.org/file']),
+            new Response(200, [], 'internal service response'),
+        ]);
     }
 
     public function storageRedirectsRefusedEvenThroughAProxy(): array
