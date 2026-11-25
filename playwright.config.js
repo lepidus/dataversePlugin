@@ -11,6 +11,7 @@ export default defineConfig({
 		? [['list'], ['junit', {outputFile: 'results/e2e-junit.xml'}]]
 		: 'list',
 	globalSetup: './tests/e2e/support/globalSetup.js',
+	globalTeardown: './tests/e2e/support/globalTeardown.js',
 	use: {
 		baseURL: process.env.BASE_URL ?? 'http://localhost:8000',
 		trace: 'retain-on-failure',

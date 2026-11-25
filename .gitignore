@@ -1,6 +1,5 @@
 .vscode/settings.json
 node_modules/
-tests/e2e/.auth/
 test-results/
 playwright-report/
 results/
