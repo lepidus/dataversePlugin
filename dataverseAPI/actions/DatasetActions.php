@@ -160,19 +160,21 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
     public function create(Dataset $dataset): DatasetIdentifier
     {
         $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->createDatasetPackage();
-
-        $uri = $this->getCurrentDataverseURI() . '/datasets';
-        $options = [
-            'headers' => ['Content-Type' => 'application/json'],
-            'body' => Utils::tryFopen($packager->getPackagePath(), 'rb')
-        ];
-        $response = $this->nativeAPIRequest('POST', $uri, $options);
+        try {
+            $packager->createDatasetPackage();
+            $uri = $this->getCurrentDataverseURI() . '/datasets';
+            $options = [
+                'headers' => ['Content-Type' => 'application/json'],
+                'body' => Utils::tryFopen($packager->getPackagePath(), 'rb')
+            ];
+            $response = $this->nativeAPIRequest('POST', $uri, $options);
+        } finally {
+            $packager->clear();
+        }
 
         $jsonContent = json_decode($response->getBody(), true);
         $datasetIdentifier = new DatasetIdentifier();
         $datasetIdentifier->setAllData($jsonContent['data']);
-        $packager->clear();
 
         return $datasetIdentifier;
     }
@@ -180,18 +182,20 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
     public function update(Dataset $dataset): void
     {
         $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->createDatasetPackage();
-
-        $uri = $this->createNativeAPIURI(
-            ['datasets', ':persistentId', 'versions', ':draft'],
-            ['persistentId' => $dataset->getPersistentId()]
-        );
-        $options = [
-            'headers' => ['Content-Type' => 'application/json'],
-            'body' => Utils::tryFopen($packager->getPackagePath(), 'rb')
-        ];
-        $this->nativeAPIRequest('PUT', $uri, $options);
-        $packager->clear();
+        try {
+            $packager->createDatasetPackage();
+            $uri = $this->createNativeAPIURI(
+                ['datasets', ':persistentId', 'versions', ':draft'],
+                ['persistentId' => $dataset->getPersistentId()]
+            );
+            $options = [
+                'headers' => ['Content-Type' => 'application/json'],
+                'body' => Utils::tryFopen($packager->getPackagePath(), 'rb')
+            ];
+            $this->nativeAPIRequest('PUT', $uri, $options);
+        } finally {
+            $packager->clear();
+        }
     }
 
     public function delete(string $persistendId): void
