@@ -53,8 +53,8 @@ class DraftDatasetFileForm extends FormComponent
         $termsOfUse = $configuration->getLocalizedData('termsOfUse', $locale);
 
         return [
-            'termsOfUseUrl' => $termsOfUse,
-            'dataverseName' => (new DataStatementService())->getDataverseName() ?? '',
+            'termsOfUseUrl' => htmlspecialchars($termsOfUse ?? '', ENT_QUOTES),
+            'dataverseName' => htmlspecialchars((new DataStatementService())->getDataverseName() ?? '', ENT_QUOTES),
         ];
     }
 }

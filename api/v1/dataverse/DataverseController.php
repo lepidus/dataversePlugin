@@ -194,8 +194,8 @@ class DataverseController extends PKPBaseController
             'publishUrl' => $publishUrl,
             'disassociateUrl' => $disassociateUrl,
             'publishConfirmMessage' => __('plugins.generic.dataverse.modal.confirmDatasetPublish', [
-                'serverName' => $dataverseClient->getDataverseCollectionActions()->getRoot()->getName(),
-                'serverUrl' => $serverUrl,
+                'serverName' => htmlspecialchars($dataverseClient->getDataverseCollectionActions()->getRoot()->getName(), ENT_QUOTES),
+                'serverUrl' => htmlspecialchars($serverUrl, ENT_QUOTES),
             ]),
             'forms' => [
                 'datasetMetadata' => (new DatasetMetadataForm($datasetUrl, 'PUT', $dataset, 'workflow'))->getConfig(),
@@ -273,7 +273,7 @@ class DataverseController extends PKPBaseController
         return __('emails.datasetDeleteNotification.body', [
             'submissionTitle' => $submission->getCurrentPublication()->getLocalizedFullTitle(null, 'html'),
             'dataStatementUrl' => $dataStatementUrl,
-            'dataverseName' => $dataverseClient->getDataverseCollectionActions()->get()->getName(),
+            'dataverseName' => htmlspecialchars($dataverseClient->getDataverseCollectionActions()->get()->getName(), ENT_QUOTES),
         ]);
     }
 
