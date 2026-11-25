@@ -31,6 +31,8 @@ use PKP\security\Role;
 
 class DataverseController extends PKPBaseController
 {
+    private const PUBLICATION_LOCK_TYPES = ['Workflow', 'finalizePublication'];
+
     public function getHandlerPath(): string
     {
         return 'dataverse';
@@ -156,6 +158,7 @@ class DataverseController extends PKPBaseController
         $dataverseClient = new DataverseClient();
         $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
         $datasetIsPublished = $dataset->isPublished();
+        $lockTypes = $this->getDatasetLockTypes($dataverseClient, $dataset);
 
         $datasetUrl = $this->apiUrl(
             'datasets/' . $study->getId(),
@@ -183,7 +186,9 @@ class DataverseController extends PKPBaseController
             'persistentUri' => $study->getPersistentUri(),
             'dataset' => $dataset->getAllData(),
             'datasetIsPublished' => $datasetIsPublished,
-            'datasetInReview' => $this->isDatasetInReview($dataverseClient, $dataset),
+            'datasetInReview' => in_array('InReview', $lockTypes),
+            'datasetIsBeingPublished' => !$datasetIsPublished
+                && !empty(array_intersect(self::PUBLICATION_LOCK_TYPES, $lockTypes)),
             'citation' => $this->getCitation($dataverseClient, $study, $datasetIsPublished),
             'datasetUrl' => $datasetUrl,
             'publishUrl' => $publishUrl,
@@ -236,17 +241,11 @@ class DataverseController extends PKPBaseController
         ))->getConfig();
     }
 
-    private function isDatasetInReview(DataverseClient $dataverseClient, Dataset $dataset): bool
+    private function getDatasetLockTypes(DataverseClient $dataverseClient, Dataset $dataset): array
     {
         $locks = $dataverseClient->getDatasetActions()->getDatasetLocks($dataset->getDatasetId());
 
-        foreach ($locks as $lock) {
-            if ($lock['lockType'] == 'InReview') {
-                return true;
-            }
-        }
-
-        return false;
+        return array_column($locks, 'lockType');
     }
 
     private function getCitation(DataverseClient $dataverseClient, DataverseStudy $study, bool $datasetIsPublished): string

@@ -34,7 +34,7 @@
 						{{ t('plugins.generic.dataverse.researchData.disassociate') }}
 					</PkpButton>
 					<PkpButton
-						v-if="canPublish && !state.datasetIsPublished"
+						v-if="canPublish && !state.datasetIsPublished && !state.datasetIsBeingPublished"
 						data-cy="dataverse-publish-dataset"
 						@click="openPublishDatasetDialog"
 					>
@@ -101,6 +101,7 @@ const {useDataChanged} = pkp.modules.useDataChanged;
 
 const PUBLISH_REFRESH_DELAY = 2500;
 const PUBLISH_REFRESH_ATTEMPTS = 4;
+const PUBLISH_REFRESH_TIMEOUT = 120000;
 
 const props = defineProps({
 	submission: {type: Object, required: true},
@@ -269,13 +270,14 @@ async function publishDataset(url) {
 			return;
 		}
 
-		for (let attempt = 0; attempt < PUBLISH_REFRESH_ATTEMPTS; attempt++) {
+		const deadline = Date.now() + PUBLISH_REFRESH_TIMEOUT;
+		for (let attempt = 1; Date.now() < deadline; attempt++) {
 			await new Promise((resolve) =>
 				setTimeout(resolve, PUBLISH_REFRESH_DELAY),
 			);
 			await load();
 
-			if (state.value?.datasetIsPublished) {
+			if (!isWaitingForPublication(attempt)) {
 				break;
 			}
 		}
@@ -284,6 +286,15 @@ async function publishDataset(url) {
 	}
 
 	await triggerDataChange();
+}
+
+function isWaitingForPublication(attempt) {
+	const currentState = state.value;
+	if (!currentState || currentState.error || currentState.datasetIsPublished) {
+		return false;
+	}
+
+	return currentState.datasetIsBeingPublished || attempt < PUBLISH_REFRESH_ATTEMPTS;
 }
 
 function confirmDatasetAction({title, message, label, url, method}) {

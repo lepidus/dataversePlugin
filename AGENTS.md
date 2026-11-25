@@ -327,6 +327,11 @@ append two items to the `publication` menu (`getMenuItems`) and to render the ma
 both. Dataset changes call `triggerDataChange()` (from `useDataChanged`) rather than reloading the page, so the
 rest of the workflow picks up the publication's new data availability statement.
 
+Publishing a dataset can be asynchronous: when the server runs a pre-publish workflow, `:publish` answers
+`WORKFLOW_IN_PROGRESS` and the dataset stays a draft under a `Workflow` (or `finalizePublication`) lock until it is
+released (about 30 s on demo.dataverse.org, and sometimes never). `GET researchData` reports that lock as
+`datasetIsBeingPublished`, and after a publish the panel keeps reloading, for up to two minutes, while it is set.
+
 There is no per-item badge with the research data file count: the 3.5 side menu overwrites `badge` and
 computing the count would mean calling Dataverse before the menu is built.
 
