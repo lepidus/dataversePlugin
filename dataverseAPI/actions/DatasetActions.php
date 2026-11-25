@@ -130,12 +130,11 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
 
     private function formatCitation(string $citation, string $persistentUrl): string
     {
-        $escapedUrl = htmlspecialchars($persistentUrl, ENT_QUOTES);
-        $citation = str_replace(
-            $escapedUrl,
-            '<a href="' . $escapedUrl . '">' . $escapedUrl . '</a>',
-            htmlspecialchars($citation, ENT_QUOTES)
-        );
+        $citation = htmlspecialchars($citation, ENT_QUOTES);
+        if (preg_match('#^https?://#i', $persistentUrl)) {
+            $escapedUrl = htmlspecialchars($persistentUrl, ENT_QUOTES);
+            $citation = str_replace($escapedUrl, '<a href="' . $escapedUrl . '">' . $escapedUrl . '</a>', $citation);
+        }
 
         return preg_replace('/,+.UNF[^]]+]/', '', $citation);
     }

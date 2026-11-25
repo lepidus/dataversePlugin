@@ -111,6 +111,21 @@ class DatasetActionsTest extends PKPTestCase
         );
     }
 
+    public function testCitationLinksOnlyHttpPersistentUrls(): void
+    {
+        $persistentUrl = 'javascript:alert(document.domain)';
+        $actions = $this->createActions([
+            new Response(200, [], json_encode([
+                'persistentUrl' => $persistentUrl,
+                'datasetVersion' => ['citation' => 'Author, 2026, "Data", ' . $persistentUrl . ', Demo Dataverse, V1'],
+            ])),
+        ]);
+
+        $citation = $actions->getCitation('doi:10.12345/FK2/ABCDEFG', true)['citation'];
+
+        $this->assertSame('Author, 2026, &quot;Data&quot;, ' . $persistentUrl . ', Demo Dataverse, V1', $citation);
+    }
+
     public function testUpdateSendsRequiredMetadataRequestThroughGivenClient(): void
     {
         $actions = $this->createActions([
