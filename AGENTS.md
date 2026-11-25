@@ -255,9 +255,10 @@ size, SHA-256) and the receipt of every confirmed upload. `DepositWorkflow` writ
 — `reserved` → `creating` → `ready` ⇄ `uploading` → `finalizing` → `complete` — through `DepositRepository`, whose
 transitions only succeed for the expected state and revision. A retry in `ready` sends the dataset metadata again
 (`DatasetActions::update()`, so edits made after the interruption are kept), reuses the persistent ID and skips
-uploaded files. A retry whose file selection changed adopts it while still `reserved`; in `ready` it deletes the partial
-dataset (a 404 counts as deleted), retires the operation and starts over, unless the Dataverse URL changed, which
-needs reconciliation. A request that finds `creating` or `uploading` is refused, because a lost response does not prove
+uploaded files. A retry whose file selection changed adopts it while still `reserved`; in `ready` it moves to `discarding`
+before deleting the partial dataset (a 404 counts as deleted), so no other request can upload to it meanwhile, then
+retires the operation and starts over, unless the Dataverse URL changed, which needs reconciliation. A request that
+finds `discarding` repeats the deletion before anything else, since a lost response leaves its outcome unknown. A request that finds `creating` or `uploading` is refused, because a lost response does not prove
 the mutation failed; those records are reconciled by hand (see the README). A 4xx response does prove it:
 `DataverseException::wasRejected()` is true for it, and for every `UploadNotSentException`, which
 `DatasetFileActions::add()` raises when the ingest wait fails or Dataverse rejects the upload. A rejected creation retires
