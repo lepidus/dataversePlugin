@@ -105,4 +105,53 @@ class DataverseCollectionActionsTest extends PKPTestCase
             array_column($flattenedFields, 'name')
         );
     }
+
+    public function testRequiredMetadataIgnoresFieldsWhoseNameIsNotAnIdentifier(): void
+    {
+        $configuration = new DataverseConfiguration();
+        $configuration->setDataverseUrl('https://test.dataverse.org/dataverses/testDataverse');
+        $configuration->setAPIToken('apiToken');
+        $responseBody = json_encode([
+            'data' => [[
+                'name' => 'custom',
+                'displayName' => 'Custom Metadata',
+                'fields' => [
+                    ['name' => 'x||constructor.constructor("alert(1)")()', 'isRequired' => true],
+                    [
+                        'name' => 'grant',
+                        'isRequired' => false,
+                        'childFields' => [
+                            ['name' => 'grantNumber', 'isRequired' => true],
+                            ['name' => 'grant}}{{alert(2)', 'isRequired' => true],
+                        ],
+                    ],
+                    ['name' => 'customRequiredField', 'isRequired' => true],
+                ],
+            ]],
+        ]);
+        $response = new DataverseResponse(200, 'OK', $responseBody);
+
+        $actions = new class ($configuration, new Client(), $response) extends DataverseCollectionActions {
+            private $metadataResponse;
+
+            public function __construct($configuration, $client, $metadataResponse)
+            {
+                parent::__construct($configuration, $client);
+                $this->metadataResponse = $metadataResponse;
+            }
+
+            public function nativeAPIRequest(
+                string $method,
+                string $uri,
+                array $options = [],
+                bool $returnResponse = true
+            ): ?DataverseResponse {
+                return $this->metadataResponse;
+            }
+        };
+
+        $flattenedFields = $actions->getFlattenedFields($actions->getRequiredMetadata());
+
+        $this->assertSame(['grantNumber', 'customRequiredField'], array_column($flattenedFields, 'name'));
+    }
 }
