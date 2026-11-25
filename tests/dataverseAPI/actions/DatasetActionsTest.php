@@ -8,6 +8,7 @@ use PKP\tests\PKPTestCase;
 use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfiguration;
 use APP\plugins\generic\dataverse\classes\entities\Dataset;
 use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
+use APP\plugins\generic\dataverse\classes\exception\DataverseException;
 use APP\plugins\generic\dataverse\dataverseAPI\actions\DatasetActions;
 
 class DatasetActionsTest extends PKPTestCase
@@ -67,6 +68,23 @@ class DatasetActionsTest extends PKPTestCase
 
         $this->assertEquals('doi:10.12345/FK2/ABCDEFG', $identifier->getPersistentId());
         $this->assertEquals(0, $this->mockHandler->count());
+    }
+
+    public function testRejectedCreationLeavesNoDatasetPackageBehind(): void
+    {
+        $packagesBefore = glob(sys_get_temp_dir() . '/dataverse*') ?: [];
+        $actions = $this->createActions([
+            $this->requiredMetadataResponse(),
+            new Response(400, [], json_encode(['status' => 'ERROR', 'message' => 'Invalid license'])),
+        ]);
+
+        try {
+            $actions->create($this->createTestDataset());
+            $this->fail('The rejected creation did not throw');
+        } catch (DataverseException $e) {
+        }
+
+        $this->assertSame($packagesBefore, glob(sys_get_temp_dir() . '/dataverse*') ?: []);
     }
 
     public function testPublishedCitationEscapesDatasetMetadata(): void
