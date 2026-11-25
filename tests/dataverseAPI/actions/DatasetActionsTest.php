@@ -32,6 +32,39 @@ class DatasetActionsTest extends PKPTestCase
         );
     }
 
+    public function testCitationLinksOnlyHttpPersistentUrls(): void
+    {
+        $persistentUrl = 'javascript:alert(document.domain)';
+        $actions = $this->createActions([
+            new Response(200, [], json_encode([
+                'persistentUrl' => $persistentUrl,
+                'datasetVersion' => ['citation' => 'Author, 2026, "Data", ' . $persistentUrl . ', Demo Dataverse, V1'],
+            ])),
+        ]);
+
+        $citation = $actions->getCitation('doi:10.12345/FK2/ABCDEFG', true)['citation'];
+
+        $this->assertSame('Author, 2026, &quot;Data&quot;, ' . $persistentUrl . ', Demo Dataverse, V1', $citation);
+    }
+
+    public function testCitationLinksHttpsPersistentUrl(): void
+    {
+        $persistentUrl = 'https://doi.org/10.12345/FK2/ABCDEFG';
+        $actions = $this->createActions([
+            new Response(200, [], json_encode([
+                'persistentUrl' => $persistentUrl,
+                'datasetVersion' => ['citation' => 'Author, 2026, "Data", ' . $persistentUrl . ', Demo Dataverse, V1'],
+            ])),
+        ]);
+
+        $citation = $actions->getCitation('doi:10.12345/FK2/ABCDEFG', true)['citation'];
+
+        $this->assertSame(
+            'Author, 2026, &quot;Data&quot;, <a href="' . $persistentUrl . '">' . $persistentUrl . '</a>, Demo Dataverse, V1',
+            $citation
+        );
+    }
+
     private const DATASET_IDENTIFIERS = ['protocol' => 'doi', 'authority' => '10.12345', 'identifier' => 'FK2/ABCDEFG'];
 
     private array $collectionRequests = [];
