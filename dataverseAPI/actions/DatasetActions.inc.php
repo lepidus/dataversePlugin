@@ -123,6 +123,10 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
     {
         $citation = preg_replace('/,+.UNF[^]]+]/', '', $citation);
         $escapedCitation = htmlspecialchars($citation, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        if (!preg_match('#^https?://#i', $persistentUrl)) {
+            return $escapedCitation;
+        }
+
         $escapedPersistentUrl = htmlspecialchars($persistentUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         return str_replace(

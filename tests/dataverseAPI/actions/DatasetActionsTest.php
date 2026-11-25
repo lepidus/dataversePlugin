@@ -43,6 +43,35 @@ class DatasetActionsTest extends PKPTestCase
         return new Response(200, [], json_encode(['status' => 'OK', 'data' => $items]));
     }
 
+    private function formatCitation(string $citation, string $persistentUrl): string
+    {
+        $method = new ReflectionMethod(DatasetActions::class, 'formatCitation');
+        $method->setAccessible(true);
+
+        return $method->invoke($this->createActions([]), $citation, $persistentUrl);
+    }
+
+    public function testCitationLinksOnlyHttpPersistentUrls(): void
+    {
+        $persistentUrl = 'javascript:alert(document.domain)';
+
+        $citation = $this->formatCitation('Author, 2026, "Data", ' . $persistentUrl . ', Demo Dataverse, V1', $persistentUrl);
+
+        $this->assertSame('Author, 2026, &quot;Data&quot;, ' . $persistentUrl . ', Demo Dataverse, V1', $citation);
+    }
+
+    public function testCitationLinksHttpsPersistentUrl(): void
+    {
+        $persistentUrl = 'https://doi.org/10.12345/FK2/ABCDEFG';
+
+        $citation = $this->formatCitation('Author, 2026, "Data", ' . $persistentUrl . ', Demo Dataverse, V1', $persistentUrl);
+
+        $this->assertSame(
+            'Author, 2026, &quot;Data&quot;, <a href="' . $persistentUrl . '">' . $persistentUrl . '</a>, Demo Dataverse, V1',
+            $citation
+        );
+    }
+
     public function testDatasetOwnedByTheConfiguredCollectionIsInTheCollection(): void
     {
         $actions = $this->createActions([
