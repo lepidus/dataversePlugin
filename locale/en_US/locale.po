@@ -87,6 +87,9 @@ msgstr "Please enter a API token."
 msgid "plugins.generic.dataverse.settings.termsOfUseRequired"
 msgstr "Please enter the URLs for the terms of use."
 
+msgid "plugins.generic.dataverse.settings.termsOfUseNotValid"
+msgstr "Please enter the terms of use as http:// or https:// URLs."
+
 msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
 msgstr "Research data and galley have the same file. Make sure the files are added in the proper section."
 

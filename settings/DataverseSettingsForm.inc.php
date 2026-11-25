@@ -54,6 +54,13 @@ class DataverseSettingsForm extends Form
             FORM_VALIDATOR_REQUIRED_VALUE,
             'plugins.generic.dataverse.settings.termsOfUseRequired'
         ));
+        $this->addCheck(new FormValidatorCustom(
+            $this,
+            'termsOfUse',
+            FORM_VALIDATOR_OPTIONAL_VALUE,
+            'plugins.generic.dataverse.settings.termsOfUseNotValid',
+            [$this, 'termsOfUseAreHttpUrls']
+        ));
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
 
@@ -65,6 +72,24 @@ class DataverseSettingsForm extends Form
                 'plugins.generic.dataverse.settings.datasetPublishRequired'
             ));
         }
+    }
+
+    public function termsOfUseAreHttpUrls($termsOfUse): bool
+    {
+        foreach ((array) $termsOfUse as $url) {
+            if ($url !== '' && !self::isHttpUrl($url)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static function isHttpUrl($url): bool
+    {
+        return is_string($url)
+            && filter_var($url, FILTER_VALIDATE_URL) !== false
+            && preg_match('#^https?://#i', $url) === 1;
     }
 
     public function initData(): void
