@@ -13,6 +13,7 @@ class DataStatementDispatcher extends DataverseDispatcher
         HookRegistry::register('SubmissionHandler::saveSubmit', [$this, 'saveDataStatement']);
         HookRegistry::register('Schema::get::publication', [$this, 'addDataStatementToPublicationSchema']);
         HookRegistry::register('Publication::validate', [$this, 'validateDataStatementProps']);
+        HookRegistry::register('Publication::edit', [$this, 'clearUnusedDataStatementFields']);
         HookRegistry::register('Templates::Preprint::Details', [$this, 'viewDataStatement']);
         HookRegistry::register('Templates::Article::Details', [$this, 'viewDataStatement']);
     }
@@ -242,6 +243,22 @@ class DataStatementDispatcher extends DataverseDispatcher
             $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.required')];
         } elseif (!$this->allAreURLs($dataStatementUrls)) {
             $errors['dataStatementUrls'] = [__('plugins.generic.dataverse.dataStatement.repoAvailable.urls.urlFormat')];
+        }
+
+        return false;
+    }
+
+    public function clearUnusedDataStatementFields(string $hookName, array $args): bool
+    {
+        $publication = &$args[0];
+        $dataStatementTypes = (array) $publication->getData('dataStatementTypes');
+
+        if (!in_array(DATA_STATEMENT_TYPE_REPO_AVAILABLE, $dataStatementTypes)) {
+            $publication->unsetData('dataStatementUrls');
+        }
+
+        if (!in_array(DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE, $dataStatementTypes)) {
+            $publication->unsetData('dataStatementReason');
         }
 
         return false;
