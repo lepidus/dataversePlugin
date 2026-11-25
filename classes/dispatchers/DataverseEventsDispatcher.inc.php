@@ -152,8 +152,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return;
         }
 
-        $shouldPublish = $request->getUserVar('shouldPublishResearchData');
-        if (!is_null($shouldPublish) && $shouldPublish == 0) {
+        if (!$this->editorChose($request, 'shouldPublishResearchData')) {
             return;
         }
 
@@ -168,8 +167,7 @@ class DataverseEventsDispatcher extends DataverseDispatcher
             return;
         }
 
-        $shouldDelete = $request->getUserVar('shouldDeleteResearchData');
-        if (!is_null($shouldDelete) && $shouldDelete == 0) {
+        if (!$this->editorChose($request, 'shouldDeleteResearchData')) {
             return;
         }
 
@@ -179,6 +177,11 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         } catch (PublishedDatasetException $e) {
             return;
         }
+    }
+
+    private function editorChose($request, string $choice): bool
+    {
+        return (string) $request->getUserVar($choice) === '1';
     }
 
     public function addDatasetPublishNoticeInPost(string $hookName, \PKP\components\forms\FormComponent $form): void

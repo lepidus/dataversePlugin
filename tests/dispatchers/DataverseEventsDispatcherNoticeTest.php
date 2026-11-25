@@ -1,6 +1,7 @@
 <?php
 
 import('lib.pkp.tests.PKPTestCase');
+import('lib.pkp.classes.core.PKPRequest');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseEventsDispatcher');
 import('plugins.generic.dataverse.classes.entities.DatasetFile');
 
@@ -49,6 +50,26 @@ class DataverseEventsDispatcherNoticeTest extends PKPTestCase
 
         $this->assertSame('&lt;img src=x onerror=alert(1)&gt;', $params['serverName']);
         $this->assertSame('https://doi.org/10.5072/&quot;&gt;&lt;img src=x onerror=alert(1)&gt;', $params['persistentUri']);
+    }
+
+    public function editorChoices(): array
+    {
+        return [
+            'question not shown' => [null, false],
+            'answered no' => ['0', false],
+            'answered yes' => ['1', true],
+        ];
+    }
+
+    /**
+     * @dataProvider editorChoices
+     */
+    public function testDecisionActsOnTheResearchDataOnlyWhenTheEditorChoseIt(?string $answer, bool $expected): void
+    {
+        $request = $this->getMockBuilder(PKPRequest::class)->onlyMethods(['getUserVar'])->getMock();
+        $request->method('getUserVar')->with('shouldDeleteResearchData')->willReturn($answer);
+
+        $this->assertSame($expected, $this->invoke('editorChose', $request, 'shouldDeleteResearchData'));
     }
 
     private function createSmarty(): Smarty
