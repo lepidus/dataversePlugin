@@ -28,7 +28,10 @@ class DataStatementService
             if (!is_null($this->dataverseName)) {
                 $types[DATA_STATEMENT_TYPE_DATAVERSE_SUBMITTED] = __(
                     'plugins.generic.dataverse.dataStatement.submissionDeposit',
-                    ['dataverseName' => $this->dataverseName, 'dataverseUrl' => $dataverseUrl]
+                    [
+                        'dataverseName' => htmlspecialchars($this->dataverseName, ENT_QUOTES),
+                        'dataverseUrl' => htmlspecialchars($dataverseUrl, ENT_QUOTES),
+                    ]
                 );
             }
         }
