@@ -32,6 +32,14 @@ class NativeAPIDatasetPackagerTest extends PKPTestCase
         $this->assertMatchesRegularExpression('/\/tmp\/dataverse.+/', $packageDirPath);
     }
 
+    public function testPackageIsReadableOnlyByItsOwner(): void
+    {
+        $this->packager = new NativeAPIDatasetPackager(new Dataset());
+        $this->packager->createDatasetPackage();
+
+        $this->assertSame(0700, fileperms($this->packager->getPackageDirPath()) & 0777);
+    }
+
     public function testNativeAPIPackagerBuildsPrimitiveMetadata(): void
     {
         $dataset = new Dataset();

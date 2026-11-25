@@ -72,6 +72,26 @@ class DatasetActionsTest extends PKPTestCase
         );
     }
 
+    public function testRejectedCreationLeavesNoDatasetPackageBehind(): void
+    {
+        import('plugins.generic.dataverse.classes.entities.Dataset');
+        import('plugins.generic.dataverse.classes.exception.DataverseException');
+        $packagesBefore = glob(sys_get_temp_dir() . '/dataverse*') ?: [];
+        $dataset = new Dataset();
+        $dataset->setTitle('Research data');
+        $actions = $this->createActions([
+            new Response(400, [], json_encode(['status' => 'ERROR', 'message' => 'Invalid license'])),
+        ]);
+
+        try {
+            $actions->create($dataset);
+            $this->fail('The rejected creation did not throw');
+        } catch (DataverseException $e) {
+        }
+
+        $this->assertSame($packagesBefore, glob(sys_get_temp_dir() . '/dataverse*') ?: []);
+    }
+
     public function testDatasetOwnedByTheConfiguredCollectionIsInTheCollection(): void
     {
         $actions = $this->createActions([
