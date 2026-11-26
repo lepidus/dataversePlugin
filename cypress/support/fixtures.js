@@ -297,16 +297,14 @@ function pollDatasetRelease(studyId, submissionId, attemptsLeft) {
             return;
         }
 
-        expect(attemptsLeft, 'Dataset release attempts left').to.be.greaterThan(0);
-        cy.wait(3000);
-        pollDatasetRelease(studyId, submissionId, attemptsLeft - 1);
+        expect(attemptsLeft, `Dataset state for submission ${submissionId}: ${body.versionState}`).to.be.greaterThan(0);
+        return cy.wait(3000).then(() => pollDatasetRelease(studyId, submissionId, attemptsLeft - 1));
     });
 }
 
 export function waitForDatasetRelease(fixture, attemptsLeft = 40) {
-    return cy.getDataverseStudyForTest(fixture.id).then((studyId) => {
-        pollDatasetRelease(studyId, fixture.id, attemptsLeft);
-    });
+    return cy.getDataverseStudyForTest(fixture.id)
+        .then((studyId) => pollDatasetRelease(studyId, fixture.id, attemptsLeft));
 }
 
 export function publishDatasetFixture(fixture) {
@@ -319,8 +317,9 @@ export function publishDatasetFixture(fixture) {
                 headers: {...headers, 'X-Http-Method-Override': 'PUT'},
             }).then(({body}) => {
                 expect(body.versionState, 'Published fixture state').to.equal('RELEASED');
-                fixture.datasetReleased = true;
-                waitForDatasetRelease(fixture);
+                return waitForDatasetRelease(fixture).then(() => {
+                    fixture.datasetReleased = true;
+                });
             });
         });
     });
