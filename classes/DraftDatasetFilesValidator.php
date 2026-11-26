@@ -32,6 +32,18 @@ class DraftDatasetFilesValidator
         return $contains;
     }
 
+    public function getMissingFileNames(array $draftDatasetFiles, int $contextId): array
+    {
+        $storage = new DraftFileStorage();
+        $missing = [];
+        foreach ($draftDatasetFiles as $draft) {
+            if ($storage->resolve($draft, $contextId) === null) {
+                $missing[] = $draft->getFileName();
+            }
+        }
+        return $missing;
+    }
+
     public function datasetHasReadmeFile(array $draftDatasetFiles, ?int $contextId = null): bool
     {
         $storage = new DraftFileStorage();

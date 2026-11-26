@@ -173,6 +173,10 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
 
             if (empty($draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.researchData.required')];
+            } elseif ($missing = $validator->getMissingFileNames($draftDatasetFiles, $submission->getContextId())) {
+                $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.researchDataFileMissing', [
+                    'fileNames' => implode(', ', $missing),
+                ])];
             } elseif ($this->galleyContainsResearchData($submission, $draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.notification.galleyContainsResearchData')];
             } elseif (!$validator->datasetHasReadmeFile($draftDatasetFiles, $submission->getContextId())) {
