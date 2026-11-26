@@ -128,6 +128,9 @@ msgstr "Metadatos de datos de investigación actualizados"
 msgid  "plugins.generic.dataverse.log.researchDataPublished"
 msgstr "Datos de investigación publicados"
 
+msgid "plugins.generic.dataverse.log.researchDataPublicationAccepted"
+msgstr "Dataverse aceptó la solicitud de publicación de los datos de investigación"
+
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Datos de investigación eliminados"
 

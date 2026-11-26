@@ -29,7 +29,7 @@
                     v-if="!datasetIsPublished"
                     id="publishDatasetButton"
                     @click="openPublishDatasetModal"
-                    :disabled="dataverseIsUnavailable || datasetIsPublished"
+                    :disabled="dataverseIsUnavailable || datasetIsPublished || datasetPublicationPending"
                 >
                     {translate key="plugins.generic.dataverse.researchData.publish"}
                 </pkp-button>

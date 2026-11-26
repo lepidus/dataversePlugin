@@ -19,6 +19,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             fileFormErrors: [],
             hasDepositedDataset: false,
             datasetIsLoading: true,
+            datasetPublicationPending: false,
             isLoading: false,
             latestGetRequest: '',
             flagMounted: false,
@@ -170,6 +171,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
 
         openPublishDatasetModal() {
+            if (this.datasetPublicationPending) {
+                return;
+            }
+
             this.openDialog({
                 name: 'publishDataset',
                 title: this.publishDatasetLabel,
@@ -190,7 +195,8 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                                 error: this.ajaxErrorCallback,
                                 success: function (r, textStatus, xhr) {
                                     if (xhr.status === 202) {
-                                        self.refreshDataset();
+                                        self.datasetPublicationPending = true;
+                                        self.waitForDatasetPublication();
                                     } else {
                                         setTimeout(() => {
                                             self.dataset = r;
@@ -270,10 +276,27 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 			});
         },
 
+        waitForDatasetPublication(attemptsLeft = 10) {
+            setTimeout(() => {
+                this.refreshDataset()
+                    .done((dataset) => {
+                        if (dataset.versionState === 'RELEASED' || attemptsLeft === 1) {
+                            this.datasetPublicationPending = false;
+                            return;
+                        }
+
+                        this.waitForDatasetPublication(attemptsLeft - 1);
+                    })
+                    .fail(() => {
+                        this.datasetPublicationPending = false;
+                    });
+            }, 3000);
+        },
+
         refreshDataset() {
             const self = this;
             this.datasetIsLoading = true;
-            $.ajax({
+            return $.ajax({
                 url: this.components.datasetMetadata.action,
                 type: 'GET',
                 success(r) {

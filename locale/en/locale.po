@@ -125,6 +125,9 @@ msgstr "Research data metadata updated"
 msgid  "plugins.generic.dataverse.log.researchDataPublished"
 msgstr "Research data published"
 
+msgid "plugins.generic.dataverse.log.researchDataPublicationAccepted"
+msgstr "Dataverse accepted the request to publish the research data"
+
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Research data deleted"
 
