@@ -101,19 +101,31 @@ test('accepting the submission publishes its research data when the editor choos
 				const publicationEvent = eventLog(submission.id).find(({message}) =>
 					message === 'Research data published' || message.startsWith('Error publishing research data in Dataverse:')
 				);
-				message = publicationEvent?.message ?? 'No research data publication event recorded';
+				if (!publicationEvent) {
+					message = 'No research data publication event recorded';
+				} else if (publicationEvent.message === 'Research data published') {
+					message = 'OJS recorded successful publication';
+				} else {
+					const reason = publicationEvent.message.split(': ').slice(1).join(': ');
+					if (/lock|ingest/i.test(reason)) {
+						message = 'OJS recorded a publication error mentioning a lock or ingest';
+					} else if (/not permitted|permission|forbidden|not authorized|not allowed/i.test(reason)) {
+						message = 'OJS recorded a publication error mentioning permission';
+					} else {
+						message = 'OJS recorded a publication error';
+					}
+				}
 			} catch {
 				// Preserve the original failure if the fixture cannot read the event log.
 			}
 			let versionState = 'unavailable';
 			try {
-				versionState = datasetMetadata(submission.id).versionState ?? 'unknown';
+				const state = datasetMetadata(submission.id).versionState;
+				versionState = ['DRAFT', 'RELEASED', 'DEACCESSIONED', 'ARCHIVED'].includes(state) ? state : 'unknown';
 			} catch {
 				// Preserve the original failure if the diagnostic request also fails.
 			}
-			const token = process.env.DATAVERSE_API_TOKEN;
-			const publicMessage = token ? message.split(token).join('[redacted]') : message;
-			throw new Error(`${publicMessage}. Dataverse version state: ${versionState}`, {cause: error});
+			throw new Error(`${message}. Dataverse version state: ${versionState}`, {cause: error});
 		}
 	} finally {
 		configurePlugin();
