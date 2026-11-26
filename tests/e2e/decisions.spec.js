@@ -1,7 +1,7 @@
 import {expect, test} from '@playwright/test';
 import {logIn, storageStates} from './support/globalSetup.js';
 import {openResearchData} from './support/researchData.js';
-import {assignReviewer, configurePlugin, createSubmission, deleteDataset, deleteDeposit} from './support/testData.js';
+import {assignReviewer, configurePlugin, createSubmission, deleteDataset} from './support/testData.js';
 
 const DATASET_PUBLISH_SUBMISSION_ACCEPTED = 1;
 const isJournal = () => process.env.PKP_APPLICATION === 'ojs2';
@@ -22,8 +22,7 @@ test.beforeEach(({page}) => {
 
 test.afterEach(() => {
 	while (createdSubmissions.length) {
-		const {id, persistentId} = createdSubmissions.pop();
-		deleteDeposit(id);
+		const {persistentId} = createdSubmissions.pop();
 		deleteDataset(persistentId);
 	}
 });
