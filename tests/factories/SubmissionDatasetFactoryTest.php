@@ -129,7 +129,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $draftDatasetFile->setId(rand());
         $draftDatasetFile->setData('submissionId', $this->submission->getId());
         $draftDatasetFile->setData('userId', $this->user->getId());
-        $draftDatasetFile->setData('fileId', rand());
+        $draftDatasetFile->setFileId($this->temporaryFile->getId());
         $draftDatasetFile->setData('fileName', 'test.pdf');
         $this->draftDatasetFile = $draftDatasetFile;
 
@@ -150,7 +150,8 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
             ->setMethods(['getTemporaryFile'])
             ->getMock();
 
-        $this->temporaryFile = new TemporaryFile();
+        $this->temporaryFile = $this->createPartialMock(TemporaryFile::class, ['getFilePath']);
+        $this->temporaryFile->method('getFilePath')->willReturn(__FILE__);
         $this->temporaryFile->setId(rand());
         $this->temporaryFile->setServerFileName('sample.pdf');
         $this->temporaryFile->setOriginalFileName('sample.pdf');
@@ -223,6 +224,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $repository->method('getBySubmissionId')->willReturn(new LazyCollection([$readme, $data]));
         $repository->expects($this->never())->method('delete');
         $temporaryFileDAO = $this->createMock(TemporaryFileDAO::class);
+        $temporaryFileDAO->method('getExpiredFiles')->willReturn([]);
         $temporaryFileDAO->method('getTemporaryFile')->willReturnCallback(function ($id) {
             return $id === 10 ? $this->temporaryFile : null;
         });

@@ -8,7 +8,12 @@ export function requestFixture(options, expectedStatus = 200) {
     return cy.request({...options, failOnStatusCode: false, log: false}).then((response) => {
         const error = typeof response.body?.error === 'string' && /^[a-zA-Z0-9_.]+$/.test(response.body.error)
             ? response.body.error : '';
-        expect(response.status, `Fixture API ${options.method || 'GET'} response ${error}`).to.equal(expectedStatus);
+        const status = expect(response.status, `Fixture API ${options.method || 'GET'} response ${error}`);
+        if (Array.isArray(expectedStatus)) {
+            status.to.be.oneOf(expectedStatus);
+        } else {
+            status.to.equal(expectedStatus);
+        }
         return response;
     });
 }
@@ -297,16 +302,17 @@ function pollDatasetRelease(studyId, submissionId, attemptsLeft) {
             return;
         }
 
-        expect(attemptsLeft, 'Dataset release attempts left').to.be.greaterThan(0);
-        cy.wait(3000);
-        pollDatasetRelease(studyId, submissionId, attemptsLeft - 1);
+        const versionState = ['DRAFT', 'DEACCESSIONED', 'ARCHIVED'].includes(body.versionState)
+            ? body.versionState
+            : 'unknown';
+        expect(attemptsLeft, `Dataset state for submission ${submissionId}: ${versionState}`).to.be.greaterThan(0);
+        return cy.wait(3000).then(() => pollDatasetRelease(studyId, submissionId, attemptsLeft - 1));
     });
 }
 
 export function waitForDatasetRelease(fixture, attemptsLeft = 40) {
-    return cy.getDataverseStudyForTest(fixture.id).then((studyId) => {
-        pollDatasetRelease(studyId, fixture.id, attemptsLeft);
-    });
+    return cy.getDataverseStudyForTest(fixture.id)
+        .then((studyId) => pollDatasetRelease(studyId, fixture.id, attemptsLeft));
 }
 
 export function publishDatasetFixture(fixture) {
@@ -317,10 +323,10 @@ export function publishDatasetFixture(fixture) {
             requestFixture({
                 method: 'POST', url: `${api}/datasets/${studyId}/publish?submissionId=${fixture.id}`,
                 headers: {...headers, 'X-Http-Method-Override': 'PUT'},
-            }).then(({body}) => {
-                expect(body.versionState, 'Published fixture state').to.equal('RELEASED');
-                fixture.datasetReleased = true;
-                waitForDatasetRelease(fixture);
+            }, [200, 202]).then(() => {
+                return waitForDatasetRelease(fixture).then(() => {
+                    fixture.datasetReleased = true;
+                });
             });
         });
     });

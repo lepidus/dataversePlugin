@@ -3,11 +3,11 @@
 namespace APP\plugins\generic\dataverse\classes;
 
 use PKP\config\Config;
-use PKP\file\TemporaryFileManager;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftFileStorage;
 
 class DraftDatasetFilesValidator
 {
-    public function galleyContainsResearchData(array $galleyFiles, array $datasetFiles): bool
+    public function galleyContainsResearchData(array $galleyFiles, array $datasetFilePaths): bool
     {
         $filesDir = Config::getVar('files', 'files_dir');
         $contains = false;
@@ -15,11 +15,12 @@ class DraftDatasetFilesValidator
         foreach ($galleyFiles as $galleyFile) {
             $galleyFilePath = $filesDir . '/' . $galleyFile->getData('path');
 
-            foreach ($datasetFiles as $datasetFile) {
-                $datasetFilePath = $datasetFile->getFilePath();
+            foreach ($datasetFilePaths as $datasetFilePath) {
 
                 if (
-                    filesize($galleyFilePath) == filesize($datasetFilePath)
+                    is_file($galleyFilePath) && is_file($datasetFilePath)
+                    && is_readable($galleyFilePath) && is_readable($datasetFilePath)
+                    && filesize($galleyFilePath) == filesize($datasetFilePath)
                     && md5_file($galleyFilePath) == md5_file($datasetFilePath)
                 ) {
                     $contains = true;
@@ -31,29 +32,38 @@ class DraftDatasetFilesValidator
         return $contains;
     }
 
-    public function datasetHasReadmeFile(array $draftDatasetFiles): bool
+    public function getMissingFileNames(array $draftDatasetFiles, int $contextId): array
     {
-        $temporaryFileManager = new TemporaryFileManager();
+        $storage = new DraftFileStorage();
+        $missing = [];
+        foreach ($draftDatasetFiles as $draft) {
+            if ($storage->resolve($draft, $contextId) === null) {
+                $missing[] = $draft->getFileName();
+            }
+        }
+        return $missing;
+    }
+
+    public function datasetHasReadmeFile(array $draftDatasetFiles, ?int $contextId = null): bool
+    {
+        $storage = new DraftFileStorage();
 
         foreach ($draftDatasetFiles as $file) {
-            $tempFile = $temporaryFileManager->getFile(
-                $file->getData('fileId'),
-                $file->getData('userId')
-            );
+            $source = $storage->resolve($file, $contextId);
 
-            if (is_null($tempFile)) {
+            if ($source === null) {
                 continue;
             }
 
             $fileName = strtolower($file->getFileName());
-            $fileType = $tempFile->getData('filetype');
+            $fileType = $source['mimeType'];
 
             if (
                 $this->filenameHasReadmeKeyword($fileName)
                 && ($fileType == 'application/pdf' || $fileType == 'text/plain')
-                && is_file($tempFile->getFilePath())
-                && is_readable($tempFile->getFilePath())
-                && filesize($tempFile->getFilePath()) > 0
+                && is_file($source['path'])
+                && is_readable($source['path'])
+                && filesize($source['path']) > 0
             ) {
                 return true;
             }
@@ -62,20 +72,17 @@ class DraftDatasetFilesValidator
         return false;
     }
 
-    public function datasetHasNonReadmeFile(array $datasetFiles): bool
+    public function datasetHasNonReadmeFile(array $datasetFiles, ?int $contextId = null): bool
     {
-        $temporaryFileManager = new TemporaryFileManager();
+        $storage = new DraftFileStorage();
         $validator = new ResearchDataFileValidator();
 
         foreach ($datasetFiles as $file) {
-            $tempFile = $temporaryFileManager->getFile(
-                $file->getData('fileId'),
-                $file->getData('userId')
-            );
+            $source = $storage->resolve($file, $contextId);
 
             if (
-                $tempFile !== null
-                && $validator->containsResearchData($tempFile->getFilePath(), $file->getFileName())
+                $source !== null
+                && $validator->containsResearchData($source['path'], $file->getFileName())
             ) {
                 return true;
             }

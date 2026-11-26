@@ -46,6 +46,14 @@ class DatasetActionsTest extends PKPTestCase
         return new DatasetActions($configuration, new Client(['handler' => $stack]));
     }
 
+    public function testPublishReturnsTheStatusReceivedFromDataverse(): void
+    {
+        $actions = $this->createActions([new Response(202, [], '{"status":"OK"}')]);
+
+        $this->assertSame(202, $actions->publish('doi:10.5072/FK2/TEST'));
+        $this->assertSame('POST', $this->collectionRequests[0]['request']->getMethod());
+    }
+
     private function ownersResponse(?array $isPartOf): Response
     {
         return new Response(200, [], json_encode(['status' => 'OK', 'data' => ['id' => 1, 'isPartOf' => $isPartOf]]));

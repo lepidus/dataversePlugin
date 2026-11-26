@@ -7,7 +7,10 @@ use PKP\core\Core;
 use APP\core\Application;
 use PKP\security\Validation;
 use APP\core\Services;
+use PKP\file\PrivateFileManager;
 use PKP\file\TemporaryFileManager;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftFileStorage;
+use Throwable;
 use PKP\log\event\SubmissionFileEventLogEntry;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\security\authorization\PublicationNotPublishedPolicy;
@@ -126,17 +129,16 @@ class DraftDatasetFileHandler extends APIHandler
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
 
-        $temporaryFileManager = new TemporaryFileManager();
-        $file = $temporaryFileManager->getFile($draftDatasetFile->getFileId(), $draftDatasetFile->getUserId());
-
-        if (!$file) {
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+        $file = (new DraftFileStorage())->resolve($draftDatasetFile, $submission->getContextId());
+        if (!$file || !(new PrivateFileManager())->downloadByPath(
+            $file['path'],
+            $file['mimeType'],
+            false,
+            $draftDatasetFile->getFileName()
+        )) {
             return $response->withStatus(404)->withJsonError('api.404.resourceNotFound');
         }
-
-        $filePath = $temporaryFileManager->getBasePath() . $file->getServerFileName();
-        $fileType = $file->getData('filetype');
-        $fileName = $draftDatasetFile->getData('fileName');
-        $temporaryFileManager->downloadByPath($filePath, $fileType, false, $fileName);
 
         return $response->withStatus(200);
     }
@@ -164,7 +166,13 @@ class DraftDatasetFileHandler extends APIHandler
 
         $draftDatasetFile = Repo::draftDatasetFile()->newDataObject();
         $draftDatasetFile->setAllData($params);
-        $draftDatasetFile->setId(Repo::draftDatasetFile()->add($draftDatasetFile));
+        try {
+            Repo::draftDatasetFile()->addFromTemporaryFile($draftDatasetFile, $file->getFilePath());
+        } catch (Throwable $e) {
+            error_log('Could not store Dataverse draft file for submission ' . $submission->getId()
+                . ': ' . get_class($e));
+            return $response->withStatus(500)->withJsonError('api.files.400.uploadFailed');
+        }
 
         $this->createFileEventLog($draftDatasetFile, 'plugins.generic.dataverse.log.researchDataFileAdded');
         $draftDatasetFileProps = $this->getFullProperties($draftDatasetFile);

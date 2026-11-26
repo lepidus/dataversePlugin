@@ -16,6 +16,8 @@
 namespace APP\plugins\generic\dataverse;
 
 use PKP\plugins\GenericPlugin;
+use PKP\plugins\Hook;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftFileStorage;
 use PKP\plugins\PluginRegistry;
 use APP\core\Application;
 use PKP\linkAction\LinkAction;
@@ -36,6 +38,13 @@ class DataversePlugin extends GenericPlugin
 
         if (Application::isUnderMaintenance()) {
             return true;
+        }
+
+        if ($success) {
+            Hook::add('Submission::delete', static function (string $hookName, array $params): bool {
+                (new DraftFileStorage())->removeSubmissionFiles($params[0]->getContextId(), $params[0]->getId());
+                return Hook::CONTINUE;
+            });
         }
 
         $dataverseConfigurationDAO = new DataverseConfigurationDAO();

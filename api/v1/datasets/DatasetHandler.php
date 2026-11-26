@@ -395,8 +395,10 @@ class DatasetHandler extends APIHandler
                 return $response->withStatus(403)->withJsonError('api.dataset.403.alreadyPublished');
             }
 
-            $dataverseClient->getDatasetActions()->publish($study->getPersistentId());
-            $dataset->setVersionState(Dataset::VERSION_STATE_RELEASED);
+            $status = $dataverseClient->getDatasetActions()->publish($study->getPersistentId());
+            if ($status !== 202) {
+                $dataset->setVersionState(Dataset::VERSION_STATE_RELEASED);
+            }
         } catch (DataverseException $e) {
             $error = $e->getMessage();
             $message = 'plugins.generic.dataverse.error.publishFailed';
@@ -413,7 +415,7 @@ class DatasetHandler extends APIHandler
 
         return $response->withJson(
             $dataset->getAllData(),
-            200
+            $status === 202 ? 202 : 200
         );
     }
 
@@ -432,11 +434,18 @@ class DatasetHandler extends APIHandler
         }
 
         $datasetFilesValidator = new DraftDatasetFilesValidator();
-        if (!$datasetFilesValidator->datasetHasReadmeFile($draftDatasetFiles)) {
+        $missing = $datasetFilesValidator->getMissingFileNames($draftDatasetFiles, $submission->getContextId());
+        if ($missing) {
+            return $response->withStatus(404)->withJsonError(
+                'plugins.generic.dataverse.error.researchDataFileMissing',
+                ['fileNames' => implode(', ', $missing)]
+            );
+        }
+        if (!$datasetFilesValidator->datasetHasReadmeFile($draftDatasetFiles, $submission->getContextId())) {
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.readmeFile.required');
         }
 
-        if (!$datasetFilesValidator->datasetHasNonReadmeFile($draftDatasetFiles)) {
+        if (!$datasetFilesValidator->datasetHasNonReadmeFile($draftDatasetFiles, $submission->getContextId())) {
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.notSolelyReadmeFile');
         }
 

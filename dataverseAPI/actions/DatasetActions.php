@@ -185,13 +185,16 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         $this->nativeAPIRequest('DELETE', $uri);
     }
 
-    public function publish(string $persistendId): void
+    public function publish(string $persistendId): int
     {
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId', 'actions', ':publish'],
             ['persistentId' => $persistendId, 'type' => 'major']
         );
 
-        $this->nativeAPIRequest('POST', $uri);
+        $status = $this->nativeAPIRequest('POST', $uri)->getStatusCode();
+        error_log(json_encode(['component' => 'dataverse', 'operation' => 'publish', 'status' => $status]));
+
+        return $status;
     }
 }

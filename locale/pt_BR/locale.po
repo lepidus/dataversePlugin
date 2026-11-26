@@ -128,6 +128,9 @@ msgstr "Metadados dos dados de pesquisa atualizados"
 msgid  "plugins.generic.dataverse.log.researchDataPublished"
 msgstr "Dados de pesquisa publicados"
 
+msgid "plugins.generic.dataverse.log.researchDataPublicationAccepted"
+msgstr "O Dataverse aceitou a solicitação de publicação dos dados de pesquisa"
+
 msgid  "plugins.generic.dataverse.log.researchDataDeleted"
 msgstr "Dados de pesquisa excluídos"
 
@@ -610,6 +613,9 @@ msgstr "O depósito não foi confirmado. Entre em contato com a revista para ver
 
 msgid "plugins.generic.dataverse.error.depositPending.author"
 msgstr "O depósito não foi confirmado. Entre em contato com a revista para verificar o depósito existente antes de tentar novamente."
+
+msgid "plugins.generic.dataverse.error.researchDataFileMissing"
+msgstr "Arquivos de dados de pesquisa que não estão mais disponíveis: {$fileNames}. Exclua-os e envie-os novamente antes de submeter os dados de pesquisa."
 
 msgid "plugins.generic.dataverse.error.sourceFileMissing"
 msgstr "Um arquivo selecionado para o depósito não está mais disponível. Reenvie o arquivo ausente antes de depositar os dados de pesquisa."

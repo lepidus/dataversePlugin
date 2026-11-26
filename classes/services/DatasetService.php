@@ -349,7 +349,7 @@ class DatasetService extends DataverseService
                 return;
             }
 
-            $dataverseClient->getDatasetActions()->publish($study->getPersistentId());
+            $status = $dataverseClient->getDatasetActions()->publish($study->getPersistentId());
         } catch (DataverseException $e) {
             $this->registerAndNotifyError(
                 $submission,
@@ -361,7 +361,9 @@ class DatasetService extends DataverseService
 
         $this->registerEventLog(
             $submission,
-            'plugins.generic.dataverse.log.researchDataPublished',
+            $status === 202
+                ? 'plugins.generic.dataverse.log.researchDataPublicationAccepted'
+                : 'plugins.generic.dataverse.log.researchDataPublished',
             [],
             SubmissionEventLogEntry::SUBMISSION_LOG_METADATA_PUBLISH
         );

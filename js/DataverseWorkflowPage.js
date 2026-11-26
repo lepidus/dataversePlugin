@@ -19,6 +19,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             fileFormErrors: [],
             hasDepositedDataset: false,
             datasetIsLoading: true,
+            datasetPublicationPending: false,
             isLoading: false,
             latestGetRequest: '',
             flagMounted: false,
@@ -170,6 +171,10 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
         },
 
         openPublishDatasetModal() {
+            if (this.datasetPublicationPending) {
+                return;
+            }
+
             this.openDialog({
                 name: 'publishDataset',
                 title: this.publishDatasetLabel,
@@ -188,10 +193,15 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                                     'X-Http-Method-Override': 'PUT',
                                 },
                                 error: this.ajaxErrorCallback,
-                                success: function (r) {
-                                    setTimeout(() => {
-                                        self.dataset = r;
-                                    }, 2500);
+                                success: function (r, textStatus, xhr) {
+                                    if (xhr.status === 202) {
+                                        self.datasetPublicationPending = true;
+                                        self.waitForDatasetPublication();
+                                    } else {
+                                        setTimeout(() => {
+                                            self.dataset = r;
+                                        }, 2500);
+                                    }
                                     self.$modal.hide('publishDataset');
                                 },
                             });
@@ -266,14 +276,35 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 			});
         },
 
-        refreshDataset() {
+        waitForDatasetPublication(attemptsLeft = 10) {
+            setTimeout(() => {
+                this.refreshDataset(true)
+                    .done((dataset) => {
+                        if (dataset.versionState === 'RELEASED' || attemptsLeft === 1) {
+                            this.datasetPublicationPending = false;
+                            return;
+                        }
+
+                        this.waitForDatasetPublication(attemptsLeft - 1);
+                    })
+                    .fail(() => {
+                        this.datasetPublicationPending = false;
+                    });
+            }, 3000);
+        },
+
+        refreshDataset(onlyIfReleased = false) {
             const self = this;
-            this.datasetIsLoading = true;
-            $.ajax({
+            if (!onlyIfReleased) {
+                this.datasetIsLoading = true;
+            }
+            return $.ajax({
                 url: this.components.datasetMetadata.action,
                 type: 'GET',
                 success(r) {
-                    self.dataset = r;
+                    if (!onlyIfReleased || r.versionState === 'RELEASED') {
+                        self.dataset = r;
+                    }
                 },
                 error(xhr) {
                     if (xhr.status === 404) {
@@ -284,7 +315,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                     self.markDataverseUnavailable(xhr);
                 },
                 complete() {
-                    self.datasetIsLoading = false;
+                    if (!onlyIfReleased) {
+                        self.datasetIsLoading = false;
+                    }
                 }
             });
         },

@@ -6,6 +6,8 @@ use APP\publication\Publication;
 use PKP\plugins\Hook;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftFileStorage;
+use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
 
 class DraftDatasetFileRepositoryTest extends DatabaseTestCase
 {
@@ -85,6 +87,69 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
         return $draftDatasetFile;
     }
 
+    /**
+     * @dataProvider draftUploadTypes
+     */
+    public function testAttachedFileSurvivesLossOfTemporarySource(string $name, string $contents, bool $isReadme): void
+    {
+        $repository = Repo::draftDatasetFile();
+        $draft = $repository->newDataObject();
+        $draft->setSubmissionId($this->firstSubmissionId);
+        $draft->setUserId(200);
+        $draft->setFileId(302);
+        $draft->setFileName($name);
+        $source = tempnam(sys_get_temp_dir(), 'dataverse-');
+        $this->assertNotFalse($source);
+        $storage = new DraftFileStorage();
+
+        try {
+            file_put_contents($source, $contents);
+            $repository->addFromTemporaryFile($draft, $source);
+            unlink($source);
+
+            $stored = $repository->get($draft->getId());
+            $storedSource = $storage->resolve($stored, $this->contextId);
+            $this->assertSame(302, $storedSource['id']);
+            $this->assertSame($contents, file_get_contents($storedSource['path']));
+
+            $validator = new DraftDatasetFilesValidator();
+            $this->assertSame($isReadme, $validator->datasetHasReadmeFile([$stored], $this->contextId));
+            $this->assertSame(!$isReadme, $validator->datasetHasNonReadmeFile([$stored], $this->contextId));
+
+            $repository->delete($stored);
+            $this->assertNull($repository->get($stored->getId()));
+            $this->assertFileDoesNotExist($storedSource['path']);
+        } finally {
+            if (is_file($source)) {
+                unlink($source);
+            }
+            $storage->removeSubmissionFiles($this->contextId, $this->firstSubmissionId);
+        }
+    }
+
+    public function testFailedCopyDoesNotLeaveADraftRow(): void
+    {
+        $repository = Repo::draftDatasetFile();
+        $draft = $repository->newDataObject();
+        $draft->setSubmissionId($this->firstSubmissionId);
+        $draft->setUserId(200);
+        $draft->setFileId(302);
+        $draft->setFileName('README.txt');
+        $source = tempnam(sys_get_temp_dir(), 'dataverse-');
+        $this->assertNotFalse($source);
+        unlink($source);
+
+        try {
+            $repository->addFromTemporaryFile($draft, $source);
+            $this->fail('Attaching a missing source must fail');
+        } catch (RuntimeException $error) {
+            $this->assertSame('Could not store a Dataverse draft file.', $error->getMessage());
+            $this->assertCount(1, $repository->getBySubmissionId($this->firstSubmissionId));
+        } finally {
+            (new DraftFileStorage())->removeSubmissionFiles($this->contextId, $this->firstSubmissionId);
+        }
+    }
+
     public function testGetNewDataObject(): void
     {
         $draftDatasetFile = Repo::draftDatasetFile()->newDataObject();
@@ -143,5 +208,13 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
         $retrievedDatasetFile = $retrievedFiles[$firstDraftDatasetFile->getId()];
         $this->assertCount(1, $retrievedFiles);
         $this->assertEquals($firstDraftDatasetFile->getAllData(), $retrievedDatasetFile->getAllData());
+    }
+
+    public static function draftUploadTypes(): array
+    {
+        return [
+            'README' => ['README.txt', "Research data documentation.\n", true],
+            'research data' => ['data.csv', "sample,value\n1,42\n", false],
+        ];
     }
 }
