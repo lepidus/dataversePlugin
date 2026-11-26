@@ -381,7 +381,7 @@ describe('Dataverse Plugin - Workflow features', function () {
 		cy.get('div[data-modal="publishDataset"]').contains(publishMsg);
 		cy.intercept('POST', /\/api\/v1\/datasets\/\d+\/publish(?:\?|$)/).as('publishResearchData');
         cy.get('div[data-modal="publishDataset"] button:contains("Yes")').click();
-        cy.wait('@publishResearchData').its('response.statusCode').should('eq', 200);
+        cy.wait('@publishResearchData').its('response.statusCode').should('be.oneOf', [200, 202]);
         cy.then(() => waitForDatasetRelease(fixture));
         cy.reload();
 

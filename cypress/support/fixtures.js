@@ -8,7 +8,12 @@ export function requestFixture(options, expectedStatus = 200) {
     return cy.request({...options, failOnStatusCode: false, log: false}).then((response) => {
         const error = typeof response.body?.error === 'string' && /^[a-zA-Z0-9_.]+$/.test(response.body.error)
             ? response.body.error : '';
-        expect(response.status, `Fixture API ${options.method || 'GET'} response ${error}`).to.equal(expectedStatus);
+        const status = expect(response.status, `Fixture API ${options.method || 'GET'} response ${error}`);
+        if (Array.isArray(expectedStatus)) {
+            status.to.be.oneOf(expectedStatus);
+        } else {
+            status.to.equal(expectedStatus);
+        }
         return response;
     });
 }
@@ -318,8 +323,7 @@ export function publishDatasetFixture(fixture) {
             requestFixture({
                 method: 'POST', url: `${api}/datasets/${studyId}/publish?submissionId=${fixture.id}`,
                 headers: {...headers, 'X-Http-Method-Override': 'PUT'},
-            }).then(({body}) => {
-                expect(body.versionState, 'Published fixture state').to.equal('RELEASED');
+            }, [200, 202]).then(() => {
                 return waitForDatasetRelease(fixture).then(() => {
                     fixture.datasetReleased = true;
                 });
