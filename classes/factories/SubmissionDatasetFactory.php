@@ -6,8 +6,6 @@ use APP\submission\Submission;
 use APP\plugins\generic\dataverse\classes\exception\MissingDepositFileException;
 use APP\author\Author;
 use APP\core\Application;
-use PKP\file\TemporaryFile;
-use PKP\file\TemporaryFileManager;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\factories\DatasetFactory;
 use APP\plugins\generic\dataverse\classes\entities\DatasetAuthor;
@@ -15,7 +13,7 @@ use APP\plugins\generic\dataverse\classes\entities\DatasetContact;
 use APP\plugins\generic\dataverse\classes\entities\DatasetFile;
 use APP\plugins\generic\dataverse\classes\entities\DatasetRelatedPublication;
 use APP\plugins\generic\dataverse\classes\exception\DataverseException;
-use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFile;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftFileStorage;
 use APP\plugins\generic\dataverse\classes\APACitation;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\dataverseAPI\DataverseClient;
@@ -168,31 +166,19 @@ class SubmissionDatasetFactory extends DatasetFactory
             return [];
         }
 
-        $temporaryFiles = array_map(
-            function (DraftDatasetFile $draftDatasetFile) {
-                $temporaryFileManager = new TemporaryFileManager();
-                $file = $temporaryFileManager->getFile(
-                    $draftDatasetFile->getData('fileId'),
-                    $draftDatasetFile->getData('userId')
-                );
-                if (!is_null($file)) {
-                    return $file;
-                }
+        $storage = new DraftFileStorage();
+        $datasetFiles = [];
+        foreach ($draftDatasetFiles as $draftFileId => $draftDatasetFile) {
+            $source = $storage->resolve($draftDatasetFile, $this->submission->getContextId());
+            if ($source === null) {
                 throw new MissingDepositFileException(__('plugins.generic.dataverse.error.sourceFileMissing'));
-            },
-            $draftDatasetFiles
-        );
-
-        $datasetFiles = array_map(
-            function (TemporaryFile $temporaryFile) {
-                $datasetFile = new DatasetFile();
-                $datasetFile->setId($temporaryFile->getId());
-                $datasetFile->setOriginalFileName($temporaryFile->getOriginalFileName());
-                $datasetFile->setPath($temporaryFile->getFilePath());
-                return $datasetFile;
-            },
-            $temporaryFiles
-        );
+            }
+            $datasetFile = new DatasetFile();
+            $datasetFile->setId($source['id']);
+            $datasetFile->setOriginalFileName($source['name']);
+            $datasetFile->setPath($source['path']);
+            $datasetFiles[$draftFileId] = $datasetFile;
+        }
 
         return $datasetFiles;
     }

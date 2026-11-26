@@ -5,7 +5,7 @@ namespace APP\plugins\generic\dataverse\classes\dispatchers;
 use PKP\plugins\Hook;
 use APP\core\Application;
 use APP\template\TemplateManager;
-use PKP\file\TemporaryFileManager;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftFileStorage;
 use PKP\db\DAORegistry;
 use APP\plugins\generic\dataverse\classes\components\listPanel\DatasetFilesListPanel;
 use APP\plugins\generic\dataverse\classes\dispatchers\DataverseDispatcher;
@@ -175,9 +175,9 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.researchData.required')];
             } elseif ($this->galleyContainsResearchData($submission, $draftDatasetFiles)) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.notification.galleyContainsResearchData')];
-            } elseif (!$validator->datasetHasReadmeFile($draftDatasetFiles)) {
+            } elseif (!$validator->datasetHasReadmeFile($draftDatasetFiles, $submission->getContextId())) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.readmeFile.required')];
-            } elseif (!$validator->datasetHasNonReadmeFile($draftDatasetFiles)) {
+            } elseif (!$validator->datasetHasNonReadmeFile($draftDatasetFiles, $submission->getContextId())) {
                 $errors['datasetFiles'] = [__('plugins.generic.dataverse.error.notSolelyReadmeFile')];
             }
         }
@@ -197,15 +197,16 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             return false;
         }
 
-        $temporaryFileManager = new TemporaryFileManager();
-        $datasetFiles = array_map(function ($draftFile) use ($temporaryFileManager) {
-            return $temporaryFileManager->getFile(
-                $draftFile->getData('fileId'),
-                $draftFile->getData('userId')
-            );
-        }, $draftDatasetFiles);
+        $storage = new DraftFileStorage();
+        $datasetFilePaths = [];
+        foreach ($draftDatasetFiles as $draftFile) {
+            $source = $storage->resolve($draftFile, $submission->getContextId());
+            if ($source !== null) {
+                $datasetFilePaths[] = $source['path'];
+            }
+        }
 
         $validator = new DraftDatasetFilesValidator();
-        return $validator->galleyContainsResearchData($submissionFiles, $datasetFiles);
+        return $validator->galleyContainsResearchData($submissionFiles, $datasetFilePaths);
     }
 }

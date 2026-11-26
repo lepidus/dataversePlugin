@@ -432,11 +432,11 @@ class DatasetHandler extends APIHandler
         }
 
         $datasetFilesValidator = new DraftDatasetFilesValidator();
-        if (!$datasetFilesValidator->datasetHasReadmeFile($draftDatasetFiles)) {
+        if (!$datasetFilesValidator->datasetHasReadmeFile($draftDatasetFiles, $submission->getContextId())) {
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.readmeFile.required');
         }
 
-        if (!$datasetFilesValidator->datasetHasNonReadmeFile($draftDatasetFiles)) {
+        if (!$datasetFilesValidator->datasetHasNonReadmeFile($draftDatasetFiles, $submission->getContextId())) {
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.notSolelyReadmeFile');
         }
 
