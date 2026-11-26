@@ -188,10 +188,14 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                                     'X-Http-Method-Override': 'PUT',
                                 },
                                 error: this.ajaxErrorCallback,
-                                success: function (r) {
-                                    setTimeout(() => {
-                                        self.dataset = r;
-                                    }, 2500);
+                                success: function (r, textStatus, xhr) {
+                                    if (xhr.status === 202) {
+                                        self.refreshDataset();
+                                    } else {
+                                        setTimeout(() => {
+                                            self.dataset = r;
+                                        }, 2500);
+                                    }
                                     self.$modal.hide('publishDataset');
                                 },
                             });

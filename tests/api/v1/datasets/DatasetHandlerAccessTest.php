@@ -158,6 +158,27 @@ class DatasetHandlerAccessTest extends PKPTestCase
         return $reviewAssignment;
     }
 
+    public function testAcceptedPublicationDoesNotReportTheDraftAsReleased(): void
+    {
+        $dataset = new Dataset();
+        $dataset->setVersionState(Dataset::VERSION_STATE_DRAFT);
+        $actions = Mockery::mock();
+        $actions->shouldReceive('get')->once()->with($this->study->getPersistentId())->andReturn($dataset);
+        $actions->shouldReceive('publish')->once()->with($this->study->getPersistentId())->andReturn(202);
+        Mockery::mock('overload:' . DataverseClient::class)
+            ->shouldReceive('getDatasetActions')->andReturn($actions);
+
+        $response = $this->createHandler()->publishDataset(
+            $this->createRequest(),
+            new APIResponse(),
+            ['studyId' => self::STUDY_ID]
+        );
+
+        $this->assertSame(202, $response->getStatusCode());
+        $body = json_decode((string) $response->getBody(), true);
+        $this->assertSame(Dataset::VERSION_STATE_DRAFT, $body['versionState']);
+    }
+
     public function testStudyOfAnotherSubmissionIsNotFound(): void
     {
         $this->study->setSubmissionId(99);

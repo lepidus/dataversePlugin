@@ -349,7 +349,9 @@ class DatasetService extends DataverseService
                 return;
             }
 
-            $dataverseClient->getDatasetActions()->publish($study->getPersistentId());
+            if ($dataverseClient->getDatasetActions()->publish($study->getPersistentId()) === 202) {
+                return;
+            }
         } catch (DataverseException $e) {
             $this->registerAndNotifyError(
                 $submission,

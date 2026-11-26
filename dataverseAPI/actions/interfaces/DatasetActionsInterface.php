@@ -17,5 +17,5 @@ interface DatasetActionsInterface
 
     public function delete(string $persistendId): void;
 
-    public function publish(string $persistendId): void;
+    public function publish(string $persistendId): int;
 }
