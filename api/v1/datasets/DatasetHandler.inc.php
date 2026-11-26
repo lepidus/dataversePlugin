@@ -377,6 +377,13 @@ class DatasetHandler extends APIHandler
 
         import('plugins.generic.dataverse.classes.DraftDatasetFilesValidator');
         $datasetFilesValidator = new DraftDatasetFilesValidator();
+        $missing = $datasetFilesValidator->getMissingFileNames($draftDatasetFiles);
+        if ($missing) {
+            return $response->withStatus(404)->withJsonError(
+                'plugins.generic.dataverse.error.researchDataFileMissing',
+                ['fileNames' => implode(', ', $missing)]
+            );
+        }
         if (!$datasetFilesValidator->datasetHasReadmeFile($draftDatasetFiles)) {
             return $response->withStatus(404)->withJsonError('plugins.generic.dataverse.error.readmeFileRequired');
         }

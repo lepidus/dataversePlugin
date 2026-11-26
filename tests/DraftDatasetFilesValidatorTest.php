@@ -146,6 +146,7 @@ class DraftDatasetFilesValidatorTest extends PKPTestCase
             $this->assertTrue($validator->datasetHasNonReadmeFile([$readme, $dataZip]));
             $this->assertFalse($validator->datasetHasNonReadmeFile([$missing]));
             $this->assertFalse($validator->datasetHasReadmeFile([$missing]));
+            $this->assertSame([$missing->getFileName()], $validator->getMissingFileNames([$missing]));
         } finally {
             $daos = & DAORegistry::getDAOs();
             if ($previous === null) {

@@ -168,6 +168,9 @@ msgstr "Error al depositar los datos de investigación en Dataverse: {$error}<br
 msgid "plugins.generic.dataverse.error.depositPending"
 msgstr "El depósito no se ha confirmado. Contacte con la revista para verificar el depósito existente antes de volver a intentarlo."
 
+msgid "plugins.generic.dataverse.error.researchDataFileMissing"
+msgstr "Archivos de datos de investigación que ya no están disponibles: {$fileNames}. Elimínelos y vuelva a cargarlos antes de enviar los datos de investigación."
+
 msgid "plugins.generic.dataverse.error.sourceFileMissing"
 msgstr "Un archivo seleccionado para el depósito ya no está disponible. Vuelva a cargar el archivo faltante antes de depositar los datos de investigación."
 

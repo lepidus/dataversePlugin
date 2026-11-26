@@ -117,6 +117,14 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($form->submission->getId());
 
         $validator = new DraftDatasetFilesValidator();
+        $missing = $validator->getMissingFileNames($draftDatasetFiles);
+        if ($missing) {
+            $form->addError('dataverseStep2ValidationError', __('plugins.generic.dataverse.error.researchDataFileMissing', [
+                'fileNames' => htmlspecialchars(implode(', ', $missing), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+            ]));
+            $form->addErrorField('dataverseStep2ValidationError');
+            return;
+        }
         if (!$validator->datasetHasReadmeFile($draftDatasetFiles)) {
             $form->addError('dataverseStep2ValidationError', __("plugins.generic.dataverse.error.readmeFileRequired"));
             $form->addErrorField('dataverseStep2ValidationError');
