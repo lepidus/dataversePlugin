@@ -4,6 +4,7 @@ import('lib.pkp.tests.DatabaseTestCase');
 import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
 import('lib.pkp.classes.db.DAO');
 import('lib.pkp.classes.file.TemporaryFile');
+import('plugins.generic.dataverse.classes.DraftDatasetFilesValidator');
 
 class DraftDatasetFileDAOTest extends DatabaseTestCase
 {
@@ -62,7 +63,10 @@ class DraftDatasetFileDAOTest extends DatabaseTestCase
         $this->assertEquals($this->draftDatasetFile, $draftDatasetFileFromDB);
     }
 
-    public function testAttachedUploadSurvivesRemovalOfItsTemporaryFile(): void
+    /**
+     * @dataProvider draftUploadTypes
+     */
+    public function testAttachedUploadSurvivesRemovalOfItsTemporaryFile(string $name, string $contents, bool $isReadme): void
     {
         $submissionDao = DAORegistry::getDAO('SubmissionDAO');
         $submission = $submissionDao->newDataObject();
@@ -70,7 +74,7 @@ class DraftDatasetFileDAOTest extends DatabaseTestCase
         $submissionId = $submissionDao->insertObject($submission);
         $draft = $this->createTestDraftDatasetFile();
         $draft->setSubmissionId($submissionId);
-        $draft->setFileName('README.txt');
+        $draft->setFileName($name);
         $storage = new DraftDatasetFileStorage();
         $uploadPath = tempnam(sys_get_temp_dir(), 'dataverse-draft-test-');
         $upload = $this->getMockBuilder(TemporaryFile::class)->onlyMethods(['getFilePath'])->getMock();
@@ -79,16 +83,20 @@ class DraftDatasetFileDAOTest extends DatabaseTestCase
         $upload->setUserId($draft->getUserId());
 
         try {
-            file_put_contents($uploadPath, 'Research data documentation');
+            file_put_contents($uploadPath, $contents);
             $this->draftDatasetFileDAO->attachUpload($draft, $upload);
             unlink($uploadPath);
 
             $savedDraft = $this->draftDatasetFileDAO->getById($draft->getId());
             $source = $storage->getSource($savedDraft);
             $this->assertInstanceOf(StoredDraftDatasetSource::class, $source);
-            $this->assertSame('Research data documentation', file_get_contents($source->getFilePath()));
-            $this->assertSame('README.txt', $source->getOriginalFileName());
+            $this->assertSame($contents, file_get_contents($source->getFilePath()));
+            $this->assertSame($name, $source->getOriginalFileName());
             $this->assertSame($draft->getFileId(), (int) $source->getId());
+
+            $validator = new DraftDatasetFilesValidator();
+            $this->assertSame($isReadme, $validator->datasetHasReadmeFile([$savedDraft]));
+            $this->assertSame(!$isReadme, $validator->datasetHasNonReadmeFile([$savedDraft]));
 
             $this->draftDatasetFileDAO->deleteById($draft->getId());
             $this->assertFileDoesNotExist($source->getFilePath());
@@ -107,5 +115,13 @@ class DraftDatasetFileDAOTest extends DatabaseTestCase
                 unlink($uploadPath);
             }
         }
+    }
+
+    public static function draftUploadTypes(): array
+    {
+        return [
+            'README' => ['README.txt', "Research data documentation.\n", true],
+            'research data' => ['data.csv', "sample,value\n1,42\n", false],
+        ];
     }
 }
