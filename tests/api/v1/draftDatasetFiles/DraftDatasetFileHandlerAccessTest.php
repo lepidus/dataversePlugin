@@ -147,17 +147,22 @@ class DraftDatasetFileHandlerAccessTest extends PKPTestCase
 
     public function testDraftIsCreatedOnTheAuthorizedSubmission(): void
     {
-        $this->temporaryFileDAO->method('getTemporaryFile')->willReturn($this->createTemporaryFile());
+        $upload = $this->createTemporaryFile();
+        $this->temporaryFileDAO->expects($this->once())->method('getTemporaryFile')
+            ->with(self::TEMPORARY_FILE_ID, self::USER_ID)->willReturn($upload);
         $this->draftDatasetFileDAO->method('newDataObject')->willReturn(new DraftDatasetFile());
         $this->draftDatasetFileDAO->expects($this->once())
-            ->method('insertObject')
+            ->method('attachUpload')
             ->with($this->callback(function (DraftDatasetFile $draftDatasetFile) {
                 return $draftDatasetFile->getSubmissionId() === self::SUBMISSION_ID
-                    && $draftDatasetFile->getUserId() === self::USER_ID;
-            }))
-            ->willReturn(7);
+                    && $draftDatasetFile->getUserId() === self::USER_ID
+                    && $draftDatasetFile->getFileId() === self::TEMPORARY_FILE_ID;
+            }), $this->identicalTo($upload))
+            ->willReturnCallback(function (DraftDatasetFile $draftDatasetFile): void {
+                $draftDatasetFile->setId(7);
+            });
 
-        $this->createHandler()->add(
+        $response = $this->createHandler()->add(
             $this->createSlimRequest(
                 ['submissionId' => self::OTHER_SUBMISSION_ID],
                 ['datasetFile' => ['temporaryFileId' => self::TEMPORARY_FILE_ID]]
@@ -165,6 +170,7 @@ class DraftDatasetFileHandlerAccessTest extends PKPTestCase
             new APIResponse(),
             []
         );
+        $this->assertSame(200, $response->getStatusCode());
     }
 
     public function testDraftOfAnotherSubmissionIsNotDeleted(): void
