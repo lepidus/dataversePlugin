@@ -14,7 +14,9 @@ Esta é uma implementação inspirada no [plugin Dataverse original para o OJS 2
 
 Este plugin é compatível com as seguintes aplicações PKP:
 
-- OPS e OJS nas versões 3.3 e 3.4
+- OJS e OPS 3.5: versões 4.x do plugin (branch `main`).
+- OJS e OPS 3.4: versões 3.4.x do plugin (branch `stable-3_4_0`).
+- OJS e OPS 3.3: versões 2.x do plugin (branch `stable-3_3_0`).
 
 Verifique a última versão compatível com a sua aplicação na [Página de Versões](https://github.com/lepidus/dataversePlugin/releases).
 
