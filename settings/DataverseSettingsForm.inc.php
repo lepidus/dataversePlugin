@@ -48,18 +48,18 @@ class DataverseSettingsForm extends Form
             'plugins.generic.dataverse.settings.dataverseUrlNotValid',
             [$this, 'validateConfiguration']
         ));
-        $this->addCheck(new FormValidator(
-            $this,
-            'termsOfUse',
-            FORM_VALIDATOR_REQUIRED_VALUE,
-            'plugins.generic.dataverse.settings.termsOfUseRequired'
-        ));
         $this->addCheck(new FormValidatorCustom(
             $this,
             'termsOfUse',
             FORM_VALIDATOR_OPTIONAL_VALUE,
             'plugins.generic.dataverse.settings.termsOfUseNotValid',
             [$this, 'termsOfUseAreHttpUrls']
+        ));
+        $this->addCheck(new FormValidator(
+            $this,
+            'termsOfUse',
+            FORM_VALIDATOR_REQUIRED_VALUE,
+            'plugins.generic.dataverse.settings.termsOfUseRequired'
         ));
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));

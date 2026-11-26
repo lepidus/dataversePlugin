@@ -264,4 +264,11 @@ class DataverseSettingsFormTest extends DatabaseTestCase
 
         $this->assertTrue($form->isValid());
     }
+
+    public function testTermsOfUseStayRequiredInTheBrowser(): void
+    {
+        $form = $this->createForm();
+
+        $this->assertContains('required', $form->cssValidation['termsOfUse']);
+    }
 }
