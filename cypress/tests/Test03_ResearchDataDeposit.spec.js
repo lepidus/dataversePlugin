@@ -305,7 +305,8 @@ describe('Research data deposit', function () {
 		cy.waitJQuery();
 		cy.get('#publication-button').should('have.attr', 'aria-selected', 'true');
 		cy.get('button[aria-controls="datasetTab"]').click();
-		cy.get('button').contains('Upload research data').should('not.exist');
+		cy.get('#datasetTab').should('be.visible');
+		cy.get('#datasetTab').contains('button', 'Upload research data').should('not.exist');
 		cy.get('button:contains("Unpublish"), button:contains("Unpost")').click();
 		cy.get('div[data-modal="confirmUnpublish"] button:contains("Unpublish"), div[data-modal="confirmUnpublish"] button:contains("Unpost")').click();
 		cy.wait(1000);
