@@ -93,9 +93,11 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
         return $draftDatasetFile;
     }
 
-    public function testAttachedUploadSurvivesCoreTemporaryFileDeletion(): void
+    /**
+     * @dataProvider draftUploadTypes
+     */
+    public function testAttachedUploadSurvivesCoreTemporaryFileDeletion(string $name, string $contents, bool $isReadme): void
     {
-        $contents = "Instructions for the research data.\n";
         $username = uniqid('dataverse');
         $user = Repo::user()->newDataObject([
             'userName' => $username,
@@ -112,7 +114,7 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
         $temporaryFile = $dao->newDataObject();
         $temporaryFile->setUserId($userId);
         $temporaryFile->setServerFileName(uniqid('dataverse-', true) . '.txt');
-        $temporaryFile->setOriginalFileName('README.txt');
+        $temporaryFile->setOriginalFileName($name);
         $temporaryFile->setFileType('text/plain');
         $temporaryFile->setFileSize(strlen($contents));
         $temporaryFile->setDateUploaded(Core::getCurrentDate());
@@ -137,7 +139,10 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
             $source = $storage->getFile($reloadedDraft);
             $this->assertSame($temporaryId, $source->getId());
             $this->assertSame($contents, file_get_contents($source->getFilePath()));
-            $this->assertTrue((new DraftDatasetFilesValidator())->datasetHasReadmeFile([$reloadedDraft]));
+
+            $validator = new DraftDatasetFilesValidator();
+            $this->assertSame($isReadme, $validator->datasetHasReadmeFile([$reloadedDraft]));
+            $this->assertSame(!$isReadme, $validator->datasetHasNonReadmeFile([$reloadedDraft]));
 
             Repo::draftDatasetFile()->delete($reloadedDraft);
             $this->assertNull(Repo::draftDatasetFile()->get($id));
@@ -211,5 +216,13 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
         $retrievedDatasetFile = $retrievedFiles[$firstDraftDatasetFile->getId()];
         $this->assertCount(1, $retrievedFiles);
         $this->assertEquals($firstDraftDatasetFile->getAllData(), $retrievedDatasetFile->getAllData());
+    }
+
+    public static function draftUploadTypes(): array
+    {
+        return [
+            'README' => ['README.txt', "Research data documentation.\n", true],
+            'research data' => ['data.csv', "sample,value\n1,42\n", false],
+        ];
     }
 }
