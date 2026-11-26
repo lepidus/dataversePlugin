@@ -165,6 +165,9 @@ msgstr "Error depositing research data to Dataverse: {$error}<br>"
 msgid "plugins.generic.dataverse.error.depositPending"
 msgstr "The deposit has not been confirmed. Contact the journal to check the existing deposit before trying again."
 
+msgid "plugins.generic.dataverse.error.researchDataFileMissing"
+msgstr "Research data files no longer available: {$fileNames}. Delete them and upload them again before submitting the research data."
+
 msgid "plugins.generic.dataverse.error.sourceFileMissing"
 msgstr "A selected deposit file is no longer available. Replace the missing file before depositing the research data."
 

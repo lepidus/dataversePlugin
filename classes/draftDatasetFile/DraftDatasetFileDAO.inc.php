@@ -1,6 +1,9 @@
 <?php
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 import('lib.pkp.classes.db.SchemaDAO');
+import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileStorage');
 import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFile');
 
 class DraftDatasetFileDAO extends SchemaDAO
@@ -37,20 +40,51 @@ class DraftDatasetFileDAO extends SchemaDAO
         return $this->retrieveFiles($queryResults);
     }
 
+    public function attachUpload(DraftDatasetFile $draft, TemporaryFile $source): void
+    {
+        $storage = new DraftDatasetFileStorage();
+        $storedContext = null;
+        try {
+            Capsule::connection()->transaction(function () use ($draft, $source, $storage, &$storedContext) {
+                $submission = Capsule::table('submissions')
+                    ->where('submission_id', $draft->getSubmissionId())->lockForUpdate()->first();
+                if (!$submission) {
+                    throw new DraftDatasetFileStorageException('The submission no longer exists.');
+                }
+                $draft->setId($this->insertObject($draft));
+                $storage->store($draft, $source, (int) $submission->context_id);
+                $storedContext = (int) $submission->context_id;
+            });
+        } catch (Throwable $error) {
+            if ($storedContext !== null) {
+                $storage->remove($draft, $storedContext);
+            }
+            throw $error;
+        }
+    }
+
     public function deleteById($objectId)
+    {
+        $draft = $this->getById($objectId);
+        if ($draft !== null) {
+            $this->removeDraft($draft);
+        }
+    }
+
+    public function deleteBySubmissionId($submissionId, ?int $contextId = null)
+    {
+        foreach ($this->getBySubmissionId($submissionId) as $draft) {
+            $this->removeDraft($draft, $contextId);
+        }
+    }
+
+    private function removeDraft(DraftDatasetFile $draft, ?int $contextId = null): void
     {
         $this->update(
             "DELETE FROM $this->tableName WHERE $this->primaryKeyColumn = ?",
-            [(int) $objectId]
+            [(int) $draft->getId()]
         );
-    }
-
-    public function deleteBySubmissionId($submissionId)
-    {
-        $this->update(
-            "DELETE FROM $this->tableName WHERE submission_id = ?",
-            [(int) $submissionId]
-        );
+        (new DraftDatasetFileStorage())->remove($draft, $contextId);
     }
 
     public function _fromRow($primaryRow)

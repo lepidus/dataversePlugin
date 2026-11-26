@@ -1,6 +1,6 @@
 <?php
 
-import('lib.pkp.classes.file.TemporaryFileManager');
+import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileStorage');
 import('plugins.generic.dataverse.classes.ResearchDataFileValidator');
 
 class DraftDatasetFilesValidator
@@ -29,15 +29,25 @@ class DraftDatasetFilesValidator
         return $contains;
     }
 
+    public function getMissingFileNames(array $draftDatasetFiles): array
+    {
+        $storage = new DraftDatasetFileStorage();
+        $missing = [];
+        foreach ($draftDatasetFiles as $draft) {
+            $source = $storage->getSource($draft);
+            if ($source === null || !is_file($source->getFilePath()) || !is_readable($source->getFilePath())) {
+                $missing[] = $draft->getFileName();
+            }
+        }
+        return $missing;
+    }
+
     public function datasetHasReadmeFile(array $datasetFiles): bool
     {
-        $temporaryFileManager = new TemporaryFileManager();
+        $storage = new DraftDatasetFileStorage();
 
         foreach ($datasetFiles as $file) {
-            $tempFile = $temporaryFileManager->getFile(
-                $file->getData('fileId'),
-                $file->getData('userId')
-            );
+            $tempFile = $storage->getSource($file);
 
             if (is_null($tempFile)) {
                 continue;
@@ -62,14 +72,11 @@ class DraftDatasetFilesValidator
 
     public function datasetHasNonReadmeFile(array $datasetFiles): bool
     {
-        $temporaryFileManager = new TemporaryFileManager();
+        $storage = new DraftDatasetFileStorage();
         $validator = new ResearchDataFileValidator();
 
         foreach ($datasetFiles as $file) {
-            $tempFile = $temporaryFileManager->getFile(
-                $file->getData('fileId'),
-                $file->getData('userId')
-            );
+            $tempFile = $storage->getSource($file);
 
             if (
                 $tempFile !== null

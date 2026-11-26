@@ -155,7 +155,11 @@ class DraftDatasetFileGridHandler extends GridHandler
         $form->readInputData();
 
         if ($form->validate()) {
-            $fileId = $form->execute();
+            try {
+                $form->execute();
+            } catch (DraftDatasetFileStorageException $e) {
+                return new JSONMessage(false, __('common.uploadFailed'));
+            }
 
             return DAO::getDataChangedEvent();
         }

@@ -13,6 +13,8 @@
  * @brief dataverse plugin class
  */
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 import('lib.pkp.classes.plugins.GenericPlugin');
 import('classes.notification.NotificationManager');
 import('plugins.generic.dataverse.classes.dataverseConfiguration.DataverseConfigurationDAO');
@@ -26,6 +28,8 @@ class DataversePlugin extends GenericPlugin
         $dataverseConfigurationDAO = new DataverseConfigurationDAO();
         $context = Application::get()->getRequest()->getContext();
         $this->registerDAOClasses();
+        HookRegistry::register('Schema::get::draftDatasetFile', [$this, 'loadDraftDatasetFileSchema']);
+        HookRegistry::register('Submission::delete', [$this, 'removeSubmissionDrafts']);
 
         if (!is_null($context) and $dataverseConfigurationDAO->hasConfiguration($context->getId())) {
             $this->loadDispatcherClasses();
@@ -33,6 +37,34 @@ class DataversePlugin extends GenericPlugin
         }
 
         return $success;
+    }
+
+    public function removeSubmissionDrafts(string $hookName, array $params): bool
+    {
+        if (!Capsule::schema()->hasTable('draft_dataset_files')) {
+            return false;
+        }
+        $submission = $params[0];
+        DAORegistry::getDAO('DraftDatasetFileDAO')->deleteBySubmissionId(
+            $submission->getId(),
+            $submission->getContextId()
+        );
+        return false;
+    }
+
+    public function loadDraftDatasetFileSchema($hookname, $params): bool
+    {
+        $schema = &$params[0];
+        $draftDatasetFileSchemaFile = __DIR__ . '/schemas/draftDatasetFile.json';
+
+        if (file_exists($draftDatasetFileSchemaFile)) {
+            $schema = json_decode(file_get_contents($draftDatasetFileSchemaFile));
+            if (!$schema) {
+                fatalError('Schema failed to decode. This usually means it is invalid JSON. Requested: ' . $draftDatasetFileSchemaFile . '. Last JSON error: ' . json_last_error());
+            }
+        }
+
+        return false;
     }
 
     private function loadDispatcherClasses(): void

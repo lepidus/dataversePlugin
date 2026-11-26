@@ -1,6 +1,7 @@
 <?php
 
 import('lib.pkp.classes.form.Form');
+import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
 
 class DraftDatasetFileForm extends Form
 {
@@ -71,7 +72,6 @@ class DraftDatasetFileForm extends Form
     {
         $this->readUserVars([
             'temporaryFileId',
-            'submissionId',
             'termsOfUse'
         ]);
     }
@@ -87,16 +87,19 @@ class DraftDatasetFileForm extends Form
             $user->getId()
         );
 
-        import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileDAO');
+        if (!$temporaryFile) {
+            throw new DraftDatasetFileStorageException('The research data upload has expired.');
+        }
+
         $draftDatasetFileDAO = new DraftDatasetFileDAO();
         $draftDatasetFile = $draftDatasetFileDAO->newDataObject();
-        $draftDatasetFile->setData('submissionId', $this->getData('submissionId'));
+        $draftDatasetFile->setSubmissionId($this->getSubmissionId());
         $draftDatasetFile->setData('userId', $user->getId());
         $draftDatasetFile->setData('fileId', $temporaryFile->getId());
         $draftDatasetFile->setData('fileName', $temporaryFile->getOriginalFileName());
-        $draftDatasetFileDAO->insertObject($draftDatasetFile);
+        $draftDatasetFileDAO->attachUpload($draftDatasetFile, $temporaryFile);
 
-        $submission = Services::get('submission')->get($this->getData('submissionId'));
+        $submission = Services::get('submission')->get($this->getSubmissionId());
 
         import('lib.pkp.classes.log.SubmissionLog');
         import('lib.pkp.classes.log.SubmissionFileEventLogEntry');
