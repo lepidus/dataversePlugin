@@ -587,8 +587,7 @@ describe('Research data deposit', function () {
 		cy.get('#submitStep4Form button.submitFormButton').click();
 		cy.get('button.pkpModalConfirmButton').click();
 
-		cy.waitJQuery();
-		cy.get('h2:contains("Submission complete")');
+		cy.contains('h2', 'Submission complete', {timeout: 60000}).should('be.visible');
 
 		cy.logout();
 
