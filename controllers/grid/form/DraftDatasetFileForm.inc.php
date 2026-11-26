@@ -53,9 +53,11 @@ class DraftDatasetFileForm extends Form
         $configuration = DAORegistry::getDAO('DataverseConfigurationDAO')->get($contextId);
         $termsOfUse = $configuration->getLocalizedData('termsOfUse', $locale);
 
+        import('plugins.generic.dataverse.settings.DataverseSettingsForm');
+
         return [
-            'termsOfUseURL' => $termsOfUse,
-            'dataverseName' => $dataverseCollection->getName()
+            'termsOfUseURL' => DataverseSettingsForm::isHttpUrl($termsOfUse) ? htmlspecialchars($termsOfUse, ENT_QUOTES) : '',
+            'dataverseName' => htmlspecialchars($dataverseCollection->getName(), ENT_QUOTES)
         ];
     }
 

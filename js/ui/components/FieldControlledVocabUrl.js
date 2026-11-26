@@ -48,7 +48,7 @@ const template = pkp.Vue.compile(`
                     {{ __('common.none') }}
                 </span>
                 <pkp-badge v-else v-for="item in currentSelected" :key="item.value">
-                    <a v-if="isValidUrl(item.label)" :href="item.label" target="_new">{{ item.label }}</a>
+                    <a v-if="isValidUrl(item.label)" :href="item.label" target="_blank" rel="noopener noreferrer">{{ item.label }}</a>
                     <span v-else>{{ item.label }}</span>
                     <button
                         class="pkpFormField--autosuggest__valueButton"
@@ -79,7 +79,7 @@ const template = pkp.Vue.compile(`
                     {{ __('common.none') }}
                 </span>
                 <pkp-badge v-else v-for="item in currentSelected" :key="item.value">
-                    <a v-if="isValidUrl(item.label)" :href="item.label" target="_new">{{ item.label }}</a>
+                    <a v-if="isValidUrl(item.label)" :href="item.label" target="_blank" rel="noopener noreferrer">{{ item.label }}</a>
                     <span v-else>{{ item.label }}</span>
                     <button
                         class="pkpFormField--autosuggest__valueButton"

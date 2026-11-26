@@ -231,4 +231,44 @@ class DataverseSettingsFormTest extends DatabaseTestCase
         $this->assertSame('', $form->getData('apiToken'));
         $this->assertContains(__('plugins.generic.dataverse.settings.tokenRequired'), $form->getErrorsArray());
     }
+
+    public function unsafeTermsOfUse(): array
+    {
+        return [
+            'javascript scheme' => ['javascript:alert(document.domain)'],
+            'attribute breakout' => ['https://example.org/" onmouseover="alert(1)'],
+            'relative path' => ['/terms'],
+        ];
+    }
+
+    /**
+     * @dataProvider unsafeTermsOfUse
+     */
+    public function testTermsOfUseMustBeAnHttpUrl(string $termsOfUse): void
+    {
+        $form = $this->submitForm(array_merge(
+            $this->validSettings(),
+            ['csrfToken' => self::CSRF_TOKEN, 'termsOfUse' => ['en_US' => $termsOfUse]]
+        ));
+
+        $this->assertFalse($form->isValid());
+        $this->assertContains(__('plugins.generic.dataverse.settings.termsOfUseNotValid'), $form->getErrorsArray());
+    }
+
+    public function testTermsOfUseMayBeLeftBlankInOtherLocales(): void
+    {
+        $form = $this->submitForm(array_merge(
+            $this->validSettings(),
+            ['csrfToken' => self::CSRF_TOKEN, 'termsOfUse' => ['en_US' => 'https://demo.dataverse.org/terms', 'fr_CA' => '']]
+        ));
+
+        $this->assertTrue($form->isValid());
+    }
+
+    public function testTermsOfUseStayRequiredInTheBrowser(): void
+    {
+        $form = $this->createForm();
+
+        $this->assertContains('required', $form->cssValidation['termsOfUse']);
+    }
 }

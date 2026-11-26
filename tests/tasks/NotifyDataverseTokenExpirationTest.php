@@ -40,10 +40,27 @@ class NotifyDataverseTokenExpirationTest extends PKPTestCase
 
         $this->assertEquals($expectedRecipients, $recipients);
     }
+
+    public function testNamesCannotAddMarkupToTheEmail(): void
+    {
+        $task = $this->createTestableClass();
+        $context = new TokenExpirationRecipientContext(42, 'Primary Contact', 'contact@example.org');
+
+        $params = $task->getEmailParams($context, '<a href="https://attacker.example">Renew here</a>', '2026-12-31');
+
+        $this->assertSame('&lt;a href=&quot;https://attacker.example&quot;&gt;Renew here&lt;/a&gt;', $params['dataverseName']);
+        $this->assertSame('Journal &amp; &lt;b&gt;Knowledge&lt;/b&gt;', $params['contextName']);
+        $this->assertSame('2026-12-31', $params['keyExpirationDate']);
+    }
 }
 
 class TestableNotifyDataverseTokenExpiration extends NotifyDataverseTokenExpiration
 {
+    public function getEmailParams($context, string $dataverseName, string $tokenExpirationDate): array
+    {
+        return $this->createEmailParams($context, $dataverseName, $tokenExpirationDate);
+    }
+
     public $usersByRole = [];
     public $managerUserGroups = [];
     public $usersByUserGroup = [];
@@ -135,5 +152,10 @@ class TokenExpirationRecipientContext
     public function getData(string $key): string
     {
         return $this->data[$key];
+    }
+
+    public function getLocalizedName(): string
+    {
+        return 'Journal & <b>Knowledge</b>';
     }
 }

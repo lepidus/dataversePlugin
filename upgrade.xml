@@ -8,4 +8,7 @@
     <migration
         class="plugins.generic.dataverse.classes.migration.DepositMigration"
     />
+    <migration
+        class="plugins.generic.dataverse.classes.migration.UniquePersistentIdMigration"
+    />
 </install>

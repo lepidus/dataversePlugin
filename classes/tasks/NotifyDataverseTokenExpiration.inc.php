@@ -51,12 +51,17 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
         $email->setRecipients($recipients);
 
-        $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
-        $email->sendWithParams([
-            'contextName' => $context->getLocalizedName(),
-            'dataverseName' => $dataverseCollection->getName(),
+        $dataverseName = $dataverseClient->getDataverseCollectionActions()->get()->getName();
+        $email->sendWithParams($this->createEmailParams($context, $dataverseName, $tokenExpirationDate));
+    }
+
+    protected function createEmailParams($context, string $dataverseName, string $tokenExpirationDate): array
+    {
+        return [
+            'contextName' => htmlspecialchars($context->getLocalizedName(), ENT_QUOTES),
+            'dataverseName' => htmlspecialchars($dataverseName, ENT_QUOTES),
             'keyExpirationDate' => $tokenExpirationDate
-        ]);
+        ];
     }
 
     protected function getNotificationRecipients($context): array

@@ -38,7 +38,7 @@ trait ReportTestsHelperTrait
         $study = $studyDAO->newDataObject();
         $study->setAllData([
             'submissionId' => $submissionId,
-            'persistentId' => 'testId',
+            'persistentId' => 'testId' . $submissionId,
             'persistentUri' => 'testUri',
             'editUri' => 'testEditUri',
             'editMediaUri' => 'testEditMediaUri',

@@ -81,4 +81,9 @@ class DataverseStudy extends DataObject
     {
         $this->setData('persistentId', $persistentId);
     }
+
+    public static function isSamePersistentId(string $persistentId, string $otherPersistentId): bool
+    {
+        return strcasecmp($persistentId, $otherPersistentId) === 0;
+    }
 }

@@ -16,7 +16,7 @@ class NativeAPIDatasetPackager
         $this->dataverseMetadata = new DataverseMetadata();
         $this->packageDirPath = tempnam('/tmp', 'dataverse');
         unlink($this->packageDirPath);
-        mkdir($this->packageDirPath);
+        mkdir($this->packageDirPath, 0700);
         $this->dataset = $dataset;
     }
 

@@ -20,7 +20,7 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         return $datasetFactory->getDataset();
     }
 
-    public function isInCurrentCollection(string $persistentId): bool
+    public function findInCurrentCollection(string $persistentId): ?string
     {
         $uri = $this->createNativeAPIURI(
             ['datasets', ':persistentId'],
@@ -28,6 +28,19 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
         );
         $dataset = json_decode($this->nativeAPIRequest('GET', $uri)->getBody(), true)['data'] ?? [];
 
+        if (!$this->isInCurrentCollection($dataset)) {
+            return null;
+        }
+
+        if (!isset($dataset['protocol'], $dataset['authority'], $dataset['identifier'])) {
+            return $persistentId;
+        }
+
+        return $dataset['protocol'] . ':' . $dataset['authority'] . ($dataset['separator'] ?? '/') . $dataset['identifier'];
+    }
+
+    private function isInCurrentCollection(array $dataset): bool
+    {
         if (!array_key_exists('isPartOf', $dataset)) {
             return $this->collectionTreeContainsDataset($this->dataverseAlias, (int) ($dataset['id'] ?? 0));
         }
@@ -110,6 +123,10 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
     {
         $citation = preg_replace('/,+.UNF[^]]+]/', '', $citation);
         $escapedCitation = htmlspecialchars($citation, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        if (!preg_match('#^https?://#i', $persistentUrl)) {
+            return $escapedCitation;
+        }
+
         $escapedPersistentUrl = htmlspecialchars($persistentUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         return str_replace(
@@ -134,19 +151,21 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
     public function create(Dataset $dataset): DatasetIdentifier
     {
         $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->createDatasetPackage();
-
-        $uri = $this->getCurrentDataverseURI() . '/datasets';
-        $options = [
-            'headers' => ['Content-Type' => 'application/json'],
-            'body' => GuzzleHttp\Psr7\Utils::tryFopen($packager->getPackagePath(), 'rb')
-        ];
-        $response = $this->nativeAPIRequest('POST', $uri, $options);
+        try {
+            $packager->createDatasetPackage();
+            $uri = $this->getCurrentDataverseURI() . '/datasets';
+            $options = [
+                'headers' => ['Content-Type' => 'application/json'],
+                'body' => GuzzleHttp\Psr7\Utils::tryFopen($packager->getPackagePath(), 'rb')
+            ];
+            $response = $this->nativeAPIRequest('POST', $uri, $options);
+        } finally {
+            $packager->clear();
+        }
 
         $jsonContent = json_decode($response->getBody(), true);
         $datasetIdentifier = new DatasetIdentifier();
         $datasetIdentifier->setAllData($jsonContent['data']);
-        $packager->clear();
 
         return $datasetIdentifier;
     }
@@ -154,18 +173,20 @@ class DatasetActions extends DataverseActions implements DatasetActionsInterface
     public function update(Dataset $dataset): void
     {
         $packager = new NativeAPIDatasetPackager($dataset);
-        $packager->createDatasetPackage();
-
-        $uri = $this->createNativeAPIURI(
-            ['datasets', ':persistentId', 'versions', ':draft'],
-            ['persistentId' => $dataset->getPersistentId()]
-        );
-        $options = [
-            'headers' => ['Content-Type' => 'application/json'],
-            'body' => GuzzleHttp\Psr7\Utils::tryFopen($packager->getPackagePath(), 'rb')
-        ];
-        $this->nativeAPIRequest('PUT', $uri, $options);
-        $packager->clear();
+        try {
+            $packager->createDatasetPackage();
+            $uri = $this->createNativeAPIURI(
+                ['datasets', ':persistentId', 'versions', ':draft'],
+                ['persistentId' => $dataset->getPersistentId()]
+            );
+            $options = [
+                'headers' => ['Content-Type' => 'application/json'],
+                'body' => GuzzleHttp\Psr7\Utils::tryFopen($packager->getPackagePath(), 'rb')
+            ];
+            $this->nativeAPIRequest('PUT', $uri, $options);
+        } finally {
+            $packager->clear();
+        }
     }
 
     public function delete(string $persistendId): void

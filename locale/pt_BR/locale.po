@@ -90,6 +90,9 @@ msgstr "Por favor, informe uma chave de API para Dataverse."
 msgid "plugins.generic.dataverse.settings.termsOfUseRequired"
 msgstr "Por favor, informe as URLs para os termos de uso."
 
+msgid "plugins.generic.dataverse.settings.termsOfUseNotValid"
+msgstr "Por favor, informe os termos de uso como URLs http:// ou https://."
+
 msgid "plugins.generic.dataverse.notification.galleyContainsResearchData"
 msgstr "Dados de pesquisa e composição final possuem o mesmo arquivo. Certifique-se de que os arquivos sejam adicionados na seção apropriada."
 

@@ -81,4 +81,15 @@ class DataStatementUrlTemplatesTest extends PKPTestCase
         $this->assertSame(2, substr_count($html, '<a href='));
         $this->assertStringNotContainsString('<script', $html);
     }
+
+    /**
+     * @dataProvider templatesWithDataStatementUrls
+     */
+    public function testLinksDoNotGiveTheOpenedPageAccessToTheOpener(string $template): void
+    {
+        $html = $this->renderTemplate($template, [self::REPOSITORY_URL]);
+
+        $this->assertStringContainsString('target="_blank" rel="noopener noreferrer"', $html);
+        $this->assertStringNotContainsString('target="_new"', $html);
+    }
 }
