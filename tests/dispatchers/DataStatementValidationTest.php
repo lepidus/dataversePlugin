@@ -114,4 +114,65 @@ class DataStatementValidationTest extends DatabaseTestCase
             $errors['dataStatementUrls'] ?? null
         );
     }
+
+    private function editPublication(int $publicationId, array $params): Publication
+    {
+        $publicationDAO = DAORegistry::getDAO('PublicationDAO');
+        $publication = $publicationDAO->getById($publicationId);
+        $newPublication = $publicationDAO->newDataObject();
+        $newPublication->_data = array_merge($publication->_data, $params);
+
+        $this->dispatcher->clearUnusedDataStatementFields('Publication::edit', [&$newPublication, $publication, $params, null]);
+        $publicationDAO->updateObject($newPublication);
+
+        return $publicationDAO->getById($publicationId);
+    }
+
+    public function testUrlsAreDiscardedWhenTheTypeIsNotAvailableInRepository(): void
+    {
+        $publicationId = $this->insertPublicationAvailableInRepository();
+
+        $publication = $this->editPublication($publicationId, [
+            'dataStatementTypes' => [DATA_STATEMENT_TYPE_IN_MANUSCRIPT],
+            'dataStatementUrls' => [self::SCRIPT_URL],
+        ]);
+
+        $this->assertSame([DATA_STATEMENT_TYPE_IN_MANUSCRIPT], $publication->getData('dataStatementTypes'));
+        $this->assertNull($publication->getData('dataStatementUrls'));
+    }
+
+    public function testUrlsSentAloneAreDiscardedWhenTheSavedTypeIsNotAvailableInRepository(): void
+    {
+        $publicationId = $this->insertPublicationAvailableInRepository();
+        $this->editPublication($publicationId, ['dataStatementTypes' => [DATA_STATEMENT_TYPE_ON_DEMAND]]);
+
+        $publication = $this->editPublication($publicationId, ['dataStatementUrls' => [self::SCRIPT_URL]]);
+
+        $this->assertNull($publication->getData('dataStatementUrls'));
+    }
+
+    public function testReasonIsDiscardedWhenTheTypeIsNotPubliclyUnavailable(): void
+    {
+        $publicationId = $this->insertPublicationAvailableInRepository();
+
+        $publication = $this->editPublication($publicationId, [
+            'dataStatementReason' => ['en_US' => 'Sensitive data'],
+        ]);
+
+        $this->assertNull($publication->getData('dataStatementReason'));
+        $this->assertSame([self::REPOSITORY_URL], $publication->getData('dataStatementUrls'));
+    }
+
+    public function testUrlsAndReasonAreKeptForTheirTypes(): void
+    {
+        $publicationId = $this->insertPublicationAvailableInRepository();
+
+        $publication = $this->editPublication($publicationId, [
+            'dataStatementTypes' => [DATA_STATEMENT_TYPE_REPO_AVAILABLE, DATA_STATEMENT_TYPE_PUBLICLY_UNAVAILABLE],
+            'dataStatementReason' => ['en_US' => 'Sensitive data'],
+        ]);
+
+        $this->assertSame([self::REPOSITORY_URL], $publication->getData('dataStatementUrls'));
+        $this->assertSame('Sensitive data', $publication->getData('dataStatementReason', 'en_US'));
+    }
 }
