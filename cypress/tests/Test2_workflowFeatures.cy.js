@@ -42,11 +42,11 @@ describe('Dataverse Plugin - Workflow features', function () {
             if (dataset) {
                 depositDatasetFixture(fixture);
             }
-            if (released) {
-                publishDatasetFixture(fixture);
-            }
             if (published) {
                 publishSubmissionFixture(fixture);
+            }
+            if (released) {
+                publishDatasetFixture(fixture);
             }
         });
         if (permission) {
