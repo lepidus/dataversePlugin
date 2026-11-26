@@ -301,7 +301,9 @@ describe('Research data deposit', function () {
 
 		cy.get('div.pkpWorkflow__publishModal button:contains("Publish"), .pkp_modal_panel button:contains("Post")').click();
 
-		cy.get('button[aria-controls="publication"]').click();
+		cy.get('button:contains("Unpublish"), button:contains("Unpost")').should('be.visible');
+		cy.waitJQuery();
+		cy.get('#publication-button').should('have.attr', 'aria-selected', 'true');
 		cy.get('button[aria-controls="datasetTab"]').click();
 		cy.get('button').contains('Upload research data').should('not.exist');
 		cy.get('button:contains("Unpublish"), button:contains("Unpost")').click();
