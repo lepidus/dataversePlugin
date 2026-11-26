@@ -181,6 +181,6 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
             return false;
         }
 
-        return $validator->galleyContainsResearchData($submissionFiles, $validator->getTemporaryFiles($draftDatasetFiles));
+        return $validator->galleyContainsResearchData($submissionFiles, $validator->getSourceFiles($draftDatasetFiles));
     }
 }

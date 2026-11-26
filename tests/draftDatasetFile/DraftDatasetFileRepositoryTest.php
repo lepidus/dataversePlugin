@@ -1,6 +1,11 @@
 <?php
 
 use PKP\tests\DatabaseTestCase;
+use PKP\core\Core;
+use PKP\db\DAORegistry;
+use PKP\file\TemporaryFileManager;
+use APP\plugins\generic\dataverse\classes\DraftDatasetFilesValidator;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFileStorage;
 use APP\submission\Submission;
 use APP\publication\Publication;
 use PKP\plugins\Hook;
@@ -86,6 +91,66 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
         $draftDatasetFile->setId($id);
 
         return $draftDatasetFile;
+    }
+
+    public function testAttachedUploadSurvivesCoreTemporaryFileDeletion(): void
+    {
+        $contents = "Instructions for the research data.\n";
+        $username = uniqid('dataverse');
+        $user = Repo::user()->newDataObject([
+            'userName' => $username,
+            'email' => $username . '@example.org',
+            'password' => 'not-used',
+            'givenName' => ['en' => 'Dataverse'],
+            'familyName' => ['en' => 'Tester'],
+            'dateRegistered' => Core::getCurrentDate(),
+        ]);
+        $userId = Repo::user()->add($user);
+        $user->setId($userId);
+        $manager = new TemporaryFileManager();
+        $dao = DAORegistry::getDAO('TemporaryFileDAO');
+        $temporaryFile = $dao->newDataObject();
+        $temporaryFile->setUserId($userId);
+        $temporaryFile->setServerFileName(uniqid('dataverse-', true) . '.txt');
+        $temporaryFile->setOriginalFileName('README.txt');
+        $temporaryFile->setFileType('text/plain');
+        $temporaryFile->setFileSize(strlen($contents));
+        $temporaryFile->setDateUploaded(Core::getCurrentDate());
+        $manager->writeFile($temporaryFile->getFilePath(), $contents);
+        $temporaryId = $dao->insertObject($temporaryFile);
+        $temporaryFile->setId($temporaryId);
+        $submission = Repo::submission()->get($this->firstSubmissionId);
+        $storage = new DraftDatasetFileStorage();
+        $draft = Repo::draftDatasetFile()->newDataObject();
+        $draft->setSubmissionId($submission->getId());
+        $draft->setUserId($userId);
+        $draft->setFileId($temporaryId);
+        $draft->setFileName($temporaryFile->getOriginalFileName());
+
+        try {
+            $id = Repo::draftDatasetFile()->addFromUpload($draft, $submission, $temporaryFile);
+            $reloadedDraft = Repo::draftDatasetFile()->get($id);
+
+            $manager->deleteById($temporaryId, $userId);
+            $this->assertFileDoesNotExist($temporaryFile->getFilePath());
+
+            $source = $storage->getFile($reloadedDraft);
+            $this->assertSame($temporaryId, $source->getId());
+            $this->assertSame($contents, file_get_contents($source->getFilePath()));
+            $this->assertTrue((new DraftDatasetFilesValidator())->datasetHasReadmeFile([$reloadedDraft]));
+
+            Repo::draftDatasetFile()->delete($reloadedDraft);
+            $this->assertNull(Repo::draftDatasetFile()->get($id));
+            $this->assertFileDoesNotExist($source->getFilePath());
+        } finally {
+            if ($manager->getFile($temporaryId, $userId)) {
+                $manager->deleteById($temporaryId, $userId);
+            }
+            if ($draft->getId() !== null && Repo::draftDatasetFile()->get($draft->getId())) {
+                Repo::draftDatasetFile()->delete($draft);
+            }
+            Repo::user()->delete($user);
+        }
     }
 
     public function testGetNewDataObject(): void
