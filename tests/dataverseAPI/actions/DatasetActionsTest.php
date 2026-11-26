@@ -32,6 +32,41 @@ class DatasetActionsTest extends PKPTestCase
         );
     }
 
+    public function testCitationLinksOnlyHttpPersistentUrls(): void
+    {
+        $persistentUrl = 'javascript:alert(document.domain)';
+        $actions = $this->createActions([
+            new Response(200, [], json_encode([
+                'persistentUrl' => $persistentUrl,
+                'datasetVersion' => ['citation' => 'Author, 2026, "Data", ' . $persistentUrl . ', Demo Dataverse, V1'],
+            ])),
+        ]);
+
+        $citation = $actions->getCitation('doi:10.12345/FK2/ABCDEFG', true)['citation'];
+
+        $this->assertSame('Author, 2026, &quot;Data&quot;, ' . $persistentUrl . ', Demo Dataverse, V1', $citation);
+    }
+
+    public function testCitationLinksHttpsPersistentUrl(): void
+    {
+        $persistentUrl = 'https://doi.org/10.12345/FK2/ABCDEFG';
+        $actions = $this->createActions([
+            new Response(200, [], json_encode([
+                'persistentUrl' => $persistentUrl,
+                'datasetVersion' => ['citation' => 'Author, 2026, "Data", ' . $persistentUrl . ', Demo Dataverse, V1'],
+            ])),
+        ]);
+
+        $citation = $actions->getCitation('doi:10.12345/FK2/ABCDEFG', true)['citation'];
+
+        $this->assertSame(
+            'Author, 2026, &quot;Data&quot;, <a href="' . $persistentUrl . '">' . $persistentUrl . '</a>, Demo Dataverse, V1',
+            $citation
+        );
+    }
+
+    private const DATASET_IDENTIFIERS = ['protocol' => 'doi', 'authority' => '10.12345', 'identifier' => 'FK2/ABCDEFG'];
+
     private array $collectionRequests = [];
 
     private function createActions(array $responses): DatasetActions
@@ -56,7 +91,7 @@ class DatasetActionsTest extends PKPTestCase
 
     private function ownersResponse(?array $isPartOf): Response
     {
-        return new Response(200, [], json_encode(['status' => 'OK', 'data' => ['id' => 1, 'isPartOf' => $isPartOf]]));
+        return new Response(200, [], json_encode(['status' => 'OK', 'data' => self::DATASET_IDENTIFIERS + ['id' => 1, 'isPartOf' => $isPartOf]]));
     }
 
     public function testDatasetOwnedByTheConfiguredCollectionIsInTheCollection(): void
@@ -65,9 +100,9 @@ class DatasetActionsTest extends PKPTestCase
             $this->ownersResponse(['type' => 'DATAVERSE', 'identifier' => 'testDataverse', 'isPartOf' => ['type' => 'DATAVERSE', 'identifier' => 'root']]),
         ]);
 
-        $this->assertTrue($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+        $this->assertSame('doi:10.12345/FK2/ABCDEFG', $actions->findInCurrentCollection('doi:10.12345/fk2/abcdefg'));
         $this->assertSame(
-            'https://test.dataverse.org/api/datasets/:persistentId?persistentId=doi%3A10.12345%2FFK2%2FABCDEFG&returnOwners=true',
+            'https://test.dataverse.org/api/datasets/:persistentId?persistentId=doi%3A10.12345%2Ffk2%2Fabcdefg&returnOwners=true',
             (string) $this->collectionRequests[0]['request']->getUri()
         );
     }
@@ -82,7 +117,7 @@ class DatasetActionsTest extends PKPTestCase
             ]),
         ]);
 
-        $this->assertTrue($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+        $this->assertSame('doi:10.12345/FK2/ABCDEFG', $actions->findInCurrentCollection('doi:10.12345/fk2/abcdefg'));
     }
 
     public function testDatasetOfAnotherCollectionIsNotInTheCollection(): void
@@ -91,19 +126,19 @@ class DatasetActionsTest extends PKPTestCase
             $this->ownersResponse(['type' => 'DATAVERSE', 'identifier' => 'otherDataverse', 'isPartOf' => ['type' => 'DATAVERSE', 'identifier' => 'root']]),
         ]);
 
-        $this->assertFalse($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+        $this->assertNull($actions->findInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
     }
 
     public function testDatasetWithoutOwnersIsNotInTheCollection(): void
     {
         $actions = $this->createActions([$this->ownersResponse(null)]);
 
-        $this->assertFalse($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+        $this->assertNull($actions->findInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
     }
 
     private function datasetResponseWithoutOwners(int $datasetId): Response
     {
-        return new Response(200, [], json_encode(['status' => 'OK', 'data' => ['id' => $datasetId]]));
+        return new Response(200, [], json_encode(['status' => 'OK', 'data' => self::DATASET_IDENTIFIERS + ['id' => $datasetId]]));
     }
 
     private function contentsResponse(array $items): Response
@@ -119,7 +154,7 @@ class DatasetActionsTest extends PKPTestCase
             $this->contentsResponse([['type' => 'dataset', 'id' => 77]]),
         ]);
 
-        $this->assertTrue($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+        $this->assertSame('doi:10.12345/FK2/ABCDEFG', $actions->findInCurrentCollection('doi:10.12345/fk2/abcdefg'));
         $this->assertSame('https://test.dataverse.org/api/dataverses/5/contents', (string) end($this->collectionRequests)['request']->getUri());
     }
 
@@ -131,6 +166,6 @@ class DatasetActionsTest extends PKPTestCase
             $this->contentsResponse([['type' => 'dataset', 'id' => 2]]),
         ]);
 
-        $this->assertFalse($actions->isInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
+        $this->assertNull($actions->findInCurrentCollection('doi:10.12345/FK2/ABCDEFG'));
     }
 }

@@ -15,7 +15,7 @@ class SelectDataFilesForReviewForm extends FormComponent
         $datasetFilesOptions = array_map(function ($file) {
             return [
                 'value' => $file->getId(),
-                'label' => $file->getFileName(),
+                'label' => htmlspecialchars($file->getFileName(), ENT_QUOTES),
             ];
         }, $datasetFiles);
 

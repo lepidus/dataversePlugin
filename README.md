@@ -106,6 +106,16 @@ Authors, moderators, editors or managers can also edit the dataset, before publi
 
 In OJS, reviewers can have access to research data files during the review process. Reviewers access to these files can be restricted on Workflow Settings, so they can only see research data when they agree to review the submission.
 
+### Downloading research data files
+
+When Dataverse sends a file download to an external storage (for example, Amazon S3), the plugin only follows the redirect to an HTTPS address whose IP addresses are all public, and connects to the address it checked. Storage served over HTTP or from a private network address cannot be downloaded through the plugin.
+
+If the server reaches the internet through a proxy (`[proxy] https_proxy` in `config.inc.php` or the `https_proxy`/`HTTPS_PROXY`/`all_proxy` environment variables), the proxy resolves the storage host itself, so the connection cannot be pinned to the address the plugin checked, and a host the server cannot resolve is left for the proxy to resolve, unless it is listed in `no_proxy`, which makes the download fail. In that case, the proxy is responsible for refusing internal addresses.
+
+### Upgrading
+
+Each dataset can be associated with only one submission. The upgrade (`php tools/upgrade.php upgrade`) creates a unique index on the persistent ID of the associated datasets. If a dataset is already associated with more than one submission, the index is not created and the persistent IDs are written to the PHP error log: disassociate the dataset from the extra submissions and run the upgrade again.
+
 ## Development Instructions:
 
 1. Clone the Dataverse plugin repository

@@ -1,5 +1,6 @@
 <?php
 
+use PKP\facades\Locale;
 use PKP\tests\PKPTestCase;
 use PKP\security\Role;
 use APP\plugins\generic\dataverse\classes\tasks\NotifyDataverseTokenExpiration;
@@ -55,10 +56,27 @@ class NotifyDataverseTokenExpirationTest extends PKPTestCase
 
         $this->assertEquals($expectedRecipients, $recipients);
     }
+
+    public function testCollectionNameCannotAddMarkupToTheEmail(): void
+    {
+        Locale::registerPath(dirname(__DIR__, 2) . '/locale');
+        $task = $this->createTestableClass();
+        $context = new TestableContext(42, 'Primary Contact', 'contact@example.org');
+
+        $body = $task->getEmailBody($context, '<a href="https://attacker.example">Renew here</a>', '2026-12-31');
+
+        $this->assertStringContainsString('&lt;a href=&quot;https://attacker.example&quot;&gt;Renew here&lt;/a&gt;', $body);
+        $this->assertStringNotContainsString('<a href="https://attacker.example">', $body);
+    }
 }
 
 class TestableNotifyDataverseTokenExpiration extends NotifyDataverseTokenExpiration
 {
+    public function getEmailBody($context, string $dataverseName, string $tokenExpirationDate): string
+    {
+        return $this->createEmailBody($context, $dataverseName, $tokenExpirationDate);
+    }
+
     public array $usersByRole = [];
     public array $managerUserGroups = [];
     public array $usersByUserGroup = [];
@@ -150,5 +168,10 @@ class TestableContext
     public function getData(string $key): string
     {
         return $this->data[$key];
+    }
+
+    public function getLocalizedName(): string
+    {
+        return 'Journal of Public Knowledge';
     }
 }

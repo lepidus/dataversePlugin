@@ -35,7 +35,7 @@ class DAO extends \PKP\db\DAO
     public function getByPersistentId(string $persistentId): ?DataverseStudy
     {
         $result = DB::table($this->table)
-            ->where('persistent_id', $persistentId)
+            ->whereRaw('UPPER(persistent_id) = ?', [DataverseStudy::normalizePersistentId($persistentId)])
             ->first();
 
         return is_null($result) ? null : $this->fromRow(get_object_vars($result));

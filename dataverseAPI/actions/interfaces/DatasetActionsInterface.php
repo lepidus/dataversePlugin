@@ -9,7 +9,7 @@ interface DatasetActionsInterface
 {
     public function get(string $persistendId): Dataset;
 
-    public function isInCurrentCollection(string $persistentId): bool;
+    public function findInCurrentCollection(string $persistentId): ?string;
 
     public function create(Dataset $dataset): DatasetIdentifier;
 

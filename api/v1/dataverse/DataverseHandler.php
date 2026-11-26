@@ -56,7 +56,7 @@ class DataverseHandler extends APIHandler
             $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
             $dataverseName = $dataverseCollection->getName();
 
-            return $response->withJson(['dataverseName' => $dataverseName], 200);
+            return $response->withJson(['dataverseName' => htmlspecialchars($dataverseName, ENT_QUOTES)], 200);
         } catch (DataverseException $e) {
             error_log('Dataverse API error while getting dataverse name: ' . $e->getMessage());
             return $response
@@ -72,7 +72,7 @@ class DataverseHandler extends APIHandler
             $rootDataverseCollection = $dataverseClient->getDataverseCollectionActions()->getRoot();
             $rootDataverseName = $rootDataverseCollection->getName();
 
-            return $response->withJson(['rootDataverseName' => $rootDataverseName], 200);
+            return $response->withJson(['rootDataverseName' => htmlspecialchars($rootDataverseName, ENT_QUOTES)], 200);
         } catch (DataverseException $e) {
             error_log('Dataverse API error while getting root name: ' . $e->getMessage());
             return $response

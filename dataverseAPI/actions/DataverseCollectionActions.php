@@ -183,7 +183,7 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         $filteredFields = [];
 
         foreach ($fields as $key => $field) {
-            if (in_array($field['name'], $metadataToFilter)) {
+            if (in_array($field['name'], $metadataToFilter) || !$this->isFieldName($field['name'] ?? null)) {
                 continue;
             }
 
@@ -202,13 +202,20 @@ class DataverseCollectionActions extends DataverseActions implements DataverseCo
         if (isset($field['childFields']) && is_array($field['childFields'])) {
             $field['childFields'] = array_filter(
                 $field['childFields'],
-                fn ($child) => $child['isRequired'] && !in_array($child['name'], $metadataToFilter)
+                fn ($child) => $child['isRequired']
+                    && !in_array($child['name'], $metadataToFilter)
+                    && $this->isFieldName($child['name'] ?? null)
             );
 
             $hasRequiredChildren = !empty($field['childFields']);
         }
 
         return ($field['isRequired'] ?? false) || $hasRequiredChildren;
+    }
+
+    private function isFieldName($name): bool
+    {
+        return is_string($name) && preg_match('/^[A-Za-z][A-Za-z0-9]*$/', $name) === 1;
     }
 
     public function getFlattenedFields(array $metadataBlocks): array

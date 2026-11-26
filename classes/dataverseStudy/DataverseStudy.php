@@ -85,4 +85,9 @@ class DataverseStudy extends DataObject
     {
         $this->setData('persistentId', $persistentId);
     }
+
+    public static function normalizePersistentId(string $persistentId): string
+    {
+        return strtoupper($persistentId);
+    }
 }

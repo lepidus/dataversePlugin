@@ -62,15 +62,19 @@ class NotifyDataverseTokenExpiration extends ScheduledTask
         $email->to($recipients);
         $email->subject($emailTemplate->getLocalizedData('subject'));
 
-        $dataverseCollection = $dataverseClient->getDataverseCollectionActions()->get();
-        $emailBody = __('emails.dataverseTokenExpiration.body', [
-            'contextName' => $context->getLocalizedName(),
-            'dataverseName' => $dataverseCollection->getName(),
-            'keyExpirationDate' => $tokenExpirationDate
-        ]);
-        $email->body($emailBody);
+        $dataverseName = $dataverseClient->getDataverseCollectionActions()->get()->getName();
+        $email->body($this->createEmailBody($context, $dataverseName, $tokenExpirationDate));
 
         Mail::send($email);
+    }
+
+    protected function createEmailBody($context, string $dataverseName, string $tokenExpirationDate): string
+    {
+        return __('emails.dataverseTokenExpiration.body', [
+            'contextName' => htmlspecialchars($context->getLocalizedName(), ENT_QUOTES),
+            'dataverseName' => htmlspecialchars($dataverseName, ENT_QUOTES),
+            'keyExpirationDate' => $tokenExpirationDate
+        ]);
     }
 
     protected function getNotificationRecipients($context): array

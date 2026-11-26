@@ -59,7 +59,7 @@ const template = pkp.Vue.compile(`
                     :key="item.value"
                     class="pkpAutosuggest__selection"
                 >
-                    <a v-if="isValidUrl(item.label)" :href="item.label" target="_new">{{ item.label }}</a>
+                    <a v-if="isValidUrl(item.label)" :href="item.label" target="_blank" rel="noopener noreferrer">{{ item.label }}</a>
                     <span v-else>{{ item.label }}</span>
                     <button
                         v-if="!isDisabled"

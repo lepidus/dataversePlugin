@@ -51,27 +51,12 @@ class DataverseCollectionActionsTest extends PKPTestCase
         );
     }
 
-    public function testRequiredMetadataExcludesPublicationRelationType(): void
+    private function createActionsAnswering(array $metadataBlocks): DataverseCollectionActions
     {
         $configuration = new DataverseConfiguration();
         $configuration->setDataverseUrl('https://test.dataverse.org/dataverses/testDataverse');
         $configuration->setAPIToken('apiToken');
-        $responseBody = json_encode([
-            'data' => [[
-                'name' => 'citation',
-                'displayName' => 'Citation Metadata',
-                'fields' => [
-                    [
-                        'name' => 'publicationRelationType',
-                        'isRequired' => true,
-                    ],
-                    [
-                        'name' => 'customRequiredField',
-                        'isRequired' => true,
-                    ],
-                ],
-            ]],
-        ]);
+        $responseBody = json_encode(['data' => $metadataBlocks]);
         $response = new DataverseResponse(200, 'OK', $responseBody);
         $cache = new class () {
             public function getContents()
@@ -125,12 +110,47 @@ class DataverseCollectionActionsTest extends PKPTestCase
             }
         };
 
-        $requiredMetadata = $actions->getRequiredMetadata();
-        $flattenedFields = $actions->getFlattenedFields($requiredMetadata);
 
-        $this->assertSame(
-            ['customRequiredField'],
-            array_column($flattenedFields, 'name')
-        );
+        return $actions;
+    }
+
+    public function testRequiredMetadataExcludesPublicationRelationType(): void
+    {
+        $actions = $this->createActionsAnswering([[
+            'name' => 'citation',
+            'displayName' => 'Citation Metadata',
+            'fields' => [
+                ['name' => 'publicationRelationType', 'isRequired' => true],
+                ['name' => 'customRequiredField', 'isRequired' => true],
+            ],
+        ]]);
+
+        $flattenedFields = $actions->getFlattenedFields($actions->getRequiredMetadata());
+
+        $this->assertSame(['customRequiredField'], array_column($flattenedFields, 'name'));
+    }
+
+    public function testRequiredMetadataIgnoresFieldsWhoseNameIsNotAnIdentifier(): void
+    {
+        $actions = $this->createActionsAnswering([[
+            'name' => 'custom',
+            'displayName' => 'Custom Metadata',
+            'fields' => [
+                ['name' => 'x||constructor.constructor("alert(1)")()', 'isRequired' => true],
+                [
+                    'name' => 'grant',
+                    'isRequired' => false,
+                    'childFields' => [
+                        ['name' => 'grantNumber', 'isRequired' => true],
+                        ['name' => 'grant}}{{alert(2)', 'isRequired' => true],
+                    ],
+                ],
+                ['name' => 'customRequiredField', 'isRequired' => true],
+            ],
+        ]]);
+
+        $flattenedFields = $actions->getFlattenedFields($actions->getRequiredMetadata());
+
+        $this->assertSame(['grantNumber', 'customRequiredField'], array_column($flattenedFields, 'name'));
     }
 }

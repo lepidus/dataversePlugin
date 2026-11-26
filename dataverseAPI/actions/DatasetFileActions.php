@@ -9,17 +9,31 @@ use APP\plugins\generic\dataverse\dataverseAPI\actions\interfaces\DatasetFileAct
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use GuzzleHttp\Psr7\Utils;
+use GuzzleHttp\Utils as GuzzleUtils;
 use InvalidArgumentException;
 use PKP\config\Config;
 use PKP\core\PKPString;
 use PKP\file\FileManager;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
 
 class DatasetFileActions extends DataverseActions implements DatasetFileActionsInterface
 {
     protected const INGEST_WAIT_TIMEOUT_SECONDS = 30;
 
     private const MAX_DOWNLOAD_REDIRECTS = 5;
+
+    private const IPV4_EMBEDDING_PREFIXES = ['::ffff:0:0/96', '64:ff9b::/96'];
+
+    private const NON_GLOBAL_RANGES = [
+        '100.64.0.0/10',
+        '192.0.0.0/24',
+        '198.18.0.0/15',
+        '64:ff9b:1::/48',
+        '2002::/16',
+        'fec0::/10',
+        'ff00::/8',
+    ];
 
     public function getByDatasetId(string $persistentId): array
     {
@@ -183,7 +197,7 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
             $leftServer = $leftServer || !$this->isServerOrigin($currentUri);
 
             if ($leftServer) {
-                $this->sendStorageRequest((string) $currentUri, $options);
+                $this->sendStorageRequest((string) $currentUri, $options + ['curl' => $this->getStorageCurlOptions($currentUri)]);
             } else {
                 $this->nativeAPIRequest('GET', (string) $currentUri, $options, false);
             }
@@ -204,6 +218,144 @@ class DatasetFileActions extends DataverseActions implements DatasetFileActionsI
         }
 
         throw new DataverseException(__(self::UNAVAILABLE_MESSAGE), self::UNAVAILABLE_STATUS_CODE);
+    }
+
+    private function getStorageCurlOptions(UriInterface $uri): array
+    {
+        if ($uri->getScheme() !== 'https') {
+            throw $this->refusedStorageRedirect('https_required');
+        }
+
+        $host = trim($uri->getHost(), '[]');
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $this->assertPublicAddresses([$host]);
+            return [];
+        }
+
+        $addresses = $this->resolveHostAddresses($host);
+        if (empty($addresses) && $this->sendsThroughProxy($host)) {
+            return [];
+        }
+        if (empty($addresses)) {
+            throw $this->refusedStorageRedirect('unresolved_host');
+        }
+
+        $this->assertPublicAddresses($addresses);
+        $pinnedAddresses = array_map(
+            fn (string $address): string => str_contains($address, ':') ? '[' . $address . ']' : $address,
+            $addresses
+        );
+
+        return [CURLOPT_RESOLVE => [$host . ':' . ($uri->getPort() ?? 443) . ':' . implode(',', $pinnedAddresses)]];
+    }
+
+    private function sendsThroughProxy(string $host): bool
+    {
+        $clientProxy = $this->client->getConfig('proxy');
+        $configuredProxy = Config::getVar('proxy', 'https_proxy')
+            ?: (is_array($clientProxy) ? ($clientProxy['https'] ?? null) : $clientProxy);
+        $environmentProxy = $this->getEnvironmentVariable('https_proxy', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY');
+        if (empty($configuredProxy) && empty($environmentProxy)) {
+            return false;
+        }
+
+        $noProxyHosts = array_merge(
+            is_array($clientProxy) ? (array) ($clientProxy['no'] ?? []) : [],
+            array_map('trim', explode(',', (string) $this->getEnvironmentVariable('no_proxy', 'NO_PROXY')))
+        );
+
+        return !GuzzleUtils::isHostInNoProxy($host, array_values(array_filter($noProxyHosts)));
+    }
+
+    private function getEnvironmentVariable(string ...$names): ?string
+    {
+        foreach ($names as $name) {
+            $value = getenv($name);
+            if (is_string($value) && $value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    private function assertPublicAddresses(array $addresses): void
+    {
+        foreach ($addresses as $address) {
+            if (!$this->isPublicAddress($address)) {
+                throw $this->refusedStorageRedirect('non_public_address');
+            }
+        }
+    }
+
+    protected function resolveHostAddresses(string $host): array
+    {
+        $records = array_merge(@dns_get_record($host, DNS_A) ?: [], @dns_get_record($host, DNS_AAAA) ?: []);
+
+        return array_values(array_unique(array_filter(array_map(
+            fn (array $record): ?string => $record['ip'] ?? $record['ipv6'] ?? null,
+            $records
+        ))));
+    }
+
+    private function isPublicAddress(string $address): bool
+    {
+        $packedAddress = inet_pton($address);
+        if ($packedAddress === false) {
+            return false;
+        }
+
+        foreach (self::IPV4_EMBEDDING_PREFIXES as $prefix) {
+            if (strlen($packedAddress) === 16 && $this->isInRange($packedAddress, $prefix)) {
+                return $this->isPublicAddress(inet_ntop(substr($packedAddress, 12)));
+            }
+        }
+
+        foreach (self::NON_GLOBAL_RANGES as $range) {
+            if ($this->isInRange($packedAddress, $range)) {
+                return false;
+            }
+        }
+
+        $flags = defined('FILTER_FLAG_GLOBAL_RANGE')
+            ? FILTER_FLAG_GLOBAL_RANGE
+            : FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+
+        return filter_var($address, FILTER_VALIDATE_IP, $flags) !== false;
+    }
+
+    private function isInRange(string $packedAddress, string $range): bool
+    {
+        [$network, $prefixLength] = explode('/', $range);
+        $packedNetwork = inet_pton($network);
+        if (strlen($packedNetwork) !== strlen($packedAddress)) {
+            return false;
+        }
+
+        $fullBytes = intdiv((int) $prefixLength, 8);
+        $remainingBits = (int) $prefixLength % 8;
+        if (substr($packedAddress, 0, $fullBytes) !== substr($packedNetwork, 0, $fullBytes)) {
+            return false;
+        }
+        if ($remainingBits === 0) {
+            return true;
+        }
+
+        $mask = (0xff << (8 - $remainingBits)) & 0xff;
+
+        return (ord($packedAddress[$fullBytes]) & $mask) === (ord($packedNetwork[$fullBytes]) & $mask);
+    }
+
+    private function refusedStorageRedirect(string $reason): DataverseException
+    {
+        error_log(json_encode([
+            'component' => 'dataverse',
+            'operation' => 'download',
+            'category' => 'redirect_refused',
+            'reason' => $reason,
+        ]));
+
+        return new DataverseException(__(self::UNAVAILABLE_MESSAGE), self::UNAVAILABLE_STATUS_CODE);
     }
 
     private function sendStorageRequest(string $uri, array $options): void

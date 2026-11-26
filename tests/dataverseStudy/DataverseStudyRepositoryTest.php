@@ -98,6 +98,12 @@ class DataverseStudyRepositoryTest extends DatabaseTestCase
         $this->assertEquals($this->study->getAllData(), $dataverseStudy->getAllData());
     }
 
+    public function testGetByPersistentIdIgnoresLetterCase(): void
+    {
+        $dataverseStudy = Repo::dataverseStudy()->getByPersistentId(strtolower($this->study->getPersistentId()));
+        $this->assertEquals($this->study->getAllData(), $dataverseStudy->getAllData());
+    }
+
     public function testUpdateDataverseStudy(): void
     {
         $newPersistentId = "https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.40123/FK2/WYSIWYG";
