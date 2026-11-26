@@ -297,7 +297,10 @@ function pollDatasetRelease(studyId, submissionId, attemptsLeft) {
             return;
         }
 
-        expect(attemptsLeft, `Dataset state for submission ${submissionId}: ${body.versionState}`).to.be.greaterThan(0);
+        const versionState = ['DRAFT', 'DEACCESSIONED', 'ARCHIVED'].includes(body.versionState)
+            ? body.versionState
+            : 'unknown';
+        expect(attemptsLeft, `Dataset state for submission ${submissionId}: ${versionState}`).to.be.greaterThan(0);
         return cy.wait(3000).then(() => pollDatasetRelease(studyId, submissionId, attemptsLeft - 1));
     });
 }
