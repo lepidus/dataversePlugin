@@ -85,4 +85,13 @@ class DataverseStudy extends DataObject
     {
         $this->setData('persistentId', $persistentId);
     }
+
+    public static function normalizePersistentId(string $persistentId): string
+    {
+        if (stripos($persistentId, 'doi:') !== 0) {
+            return $persistentId;
+        }
+
+        return 'doi:' . strtoupper(substr($persistentId, strlen('doi:')));
+    }
 }

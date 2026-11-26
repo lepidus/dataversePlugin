@@ -16,6 +16,7 @@
   "plugins.generic.dataverse.researchData.disassociate.description",
   "plugins.generic.dataverse.researchData.label.draft",
   "plugins.generic.dataverse.researchData.label.inReview",
+  "plugins.generic.dataverse.researchData.label.publishing",
   "plugins.generic.dataverse.researchData.label.unpublished",
   "plugins.generic.dataverse.researchData.noResearchData",
   "plugins.generic.dataverse.researchData.publish",

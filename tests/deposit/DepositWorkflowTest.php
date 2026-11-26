@@ -250,6 +250,85 @@ class DepositWorkflowTest extends TestCase
         $this->assertSame($changedManifest, json_decode($repository->operation['manifest'], true));
     }
 
+    public function testConcurrentRequestCannotAdvanceTheDepositWhileItsDatasetIsDiscarded(): void
+    {
+        $repository = new MemoryDepositRepository();
+        $workflow = new DepositWorkflow($repository);
+        $this->interruptAfterCreatingTheDataset($workflow, 'doi:10.1234/FIRST');
+        $concurrentRequestAdvanced = null;
+        $discard = function () use ($repository, &$concurrentRequestAdvanced): void {
+            try {
+                $repository->transition(1, 'ready', 'uploading');
+                $concurrentRequestAdvanced = true;
+            } catch (RuntimeException $e) {
+                $concurrentRequestAdvanced = false;
+            }
+        };
+
+        $workflow->run(
+            1,
+            [['sourceId' => 8, 'sha256' => 'def', 'size' => 3, 'name' => 'other.csv']],
+            fn () => 'doi:10.1234/SECOND',
+            fn () => [['id' => 11]],
+            fn () => null,
+            null,
+            $discard
+        );
+
+        $this->assertFalse($concurrentRequestAdvanced);
+    }
+
+    public function testDiscardWithLostResponseIsFinishedByTheNextAttempt(): void
+    {
+        $repository = new MemoryDepositRepository();
+        $workflow = new DepositWorkflow($repository);
+        $this->interruptAfterCreatingTheDataset($workflow, 'doi:10.1234/FIRST');
+        $changedManifest = [['sourceId' => 8, 'sha256' => 'def', 'size' => 3, 'name' => 'other.csv']];
+        try {
+            $workflow->run(
+                1,
+                $changedManifest,
+                fn () => $this->fail('Created before the discard finished'),
+                fn () => $this->fail('Upload'),
+                fn () => $this->fail('Complete'),
+                null,
+                fn () => throw new DataverseException('Response lost after the remote deletion')
+            );
+        } catch (DataverseException $e) {
+        }
+        $discarded = [];
+
+        $workflow->run(
+            1,
+            $this->manifest,
+            fn () => 'doi:10.1234/SECOND',
+            fn () => [['id' => 11]],
+            fn () => null,
+            null,
+            function (string $persistentId) use (&$discarded): void {
+                $discarded[] = $persistentId;
+            }
+        );
+
+        $this->assertSame(['doi:10.1234/FIRST'], $discarded);
+        $this->assertSame('complete', $repository->operation['state']);
+        $this->assertSame('doi:10.1234/SECOND', $repository->operation['persistent_id']);
+    }
+
+    private function interruptAfterCreatingTheDataset(DepositWorkflow $workflow, string $persistentId): void
+    {
+        try {
+            $workflow->run(
+                1,
+                $this->manifest,
+                fn () => $persistentId,
+                fn () => throw new UploadNotSentException('data.zip', new DataverseException('Ingest still running')),
+                fn () => null
+            );
+        } catch (UploadNotSentException $e) {
+        }
+    }
+
     public function testPartialDatasetInAnotherRepositoryNeedsReconciliation(): void
     {
         $repository = new MemoryDepositRepository();

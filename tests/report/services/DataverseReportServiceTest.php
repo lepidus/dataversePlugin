@@ -350,7 +350,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
 
     public function testCountsDatasetFilesOnlyOfTheContextDatasets(): void
     {
-        $this->createTestSubmission(Submission::STATUS_QUEUED, null, true);
+        $submission = $this->createTestSubmission(Submission::STATUS_QUEUED, null, true);
         $otherContext = $this->createTestContext();
 
         try {
@@ -379,7 +379,7 @@ class DataverseReportServiceTest extends DatabaseTestCase
             $this->mockSearchBuilder($reportService, $filteredIds);
 
             $this->assertEquals(3, $reportService->countDatasetFiles());
-            $this->assertEquals(['testId'], $filteredIds);
+            $this->assertEquals(['testId' . $submission->getId()], $filteredIds);
         } finally {
             $this->deleteTestContext($otherContext);
         }

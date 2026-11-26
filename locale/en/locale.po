@@ -339,6 +339,9 @@ msgstr "Draft"
 msgid "plugins.generic.dataverse.researchData.label.unpublished"
 msgstr "Unpublished"
 
+msgid "plugins.generic.dataverse.researchData.label.publishing"
+msgstr "Publishing"
+
 msgid "plugins.generic.dataverse.researchData.label.inReview"
 msgstr "In Review"
 

@@ -69,7 +69,7 @@
                         {{ error }}
                     </notification>
                 </template>
-                <h4 class="submissionWizard__reviewPanel__item__header">
+                <h4 class="submissionWizard__reviewPanel__item__header" v-pre>
                     {$field.displayName|escape}
                 </h4>
                 <div class="submissionWizard__reviewPanel__item__value">

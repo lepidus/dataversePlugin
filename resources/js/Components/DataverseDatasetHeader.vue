@@ -26,6 +26,16 @@
 					</span>
 				</span>
 			</template>
+			<span
+				v-if="state.datasetIsBeingPublished"
+				class="flex items-center"
+				data-cy="dataverse-status-publishing"
+			>
+				<span class="h-[1em] w-[1em] rounded-full bg-success" aria-hidden="true" />
+				<span class="ms-1 text-base-normal">
+					{{ t('plugins.generic.dataverse.researchData.label.publishing') }}
+				</span>
+			</span>
 			<span v-if="state.datasetInReview" class="flex items-center" data-cy="dataverse-status-in-review">
 				<span class="h-[1em] w-[1em] rounded-full bg-success" aria-hidden="true" />
 				<span class="ms-1 text-base-normal">

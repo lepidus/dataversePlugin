@@ -41,7 +41,7 @@ class DatasetController extends PKPBaseController
 {
     private const PUBLICATION_WRITE_ACTIONS = ['add', 'associate', 'edit', 'addFile', 'deleteFile', 'delete'];
 
-    private const EDITORIAL_DECISION_ACTIONS = ['publish', 'disassociate'];
+    private const EDITORIAL_DECISION_ACTIONS = ['publish', 'associate', 'disassociate'];
 
     private const UNPUBLISHED_PUBLICATION_ACTIONS = ['add', 'associate'];
 
@@ -94,9 +94,6 @@ class DatasetController extends PKPBaseController
             Route::post('', $this->add(...))
                 ->name('dataset.add');
 
-            Route::post('associate', $this->associate(...))
-                ->name('dataset.associate');
-
             Route::post('{studyId}/file', $this->addFile(...))
                 ->name('dataset.addFile')
                 ->whereNumber('studyId');
@@ -121,6 +118,9 @@ class DatasetController extends PKPBaseController
                 Role::ROLE_ID_SUB_EDITOR,
             ]),
         ])->group(function () {
+            Route::post('associate', $this->associate(...))
+                ->name('dataset.associate');
+
             Route::put('{studyId}/publish', $this->publish(...))
                 ->name('dataset.publish')
                 ->whereNumber('studyId');
@@ -160,7 +160,7 @@ class DatasetController extends PKPBaseController
         }
 
         if (in_array($actionName, self::EDITORIAL_DECISION_ACTIONS)) {
-            $this->addPolicy(new StageRolePolicy([Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR], null, false));
+            $this->addPolicy(self::createEditorialDecisionPolicy());
         }
 
         if (in_array($actionName, self::UNPUBLISHED_PUBLICATION_ACTIONS)) {
@@ -168,6 +168,11 @@ class DatasetController extends PKPBaseController
         }
 
         return parent::authorize($request, $args, $roleAssignments);
+    }
+
+    public static function createEditorialDecisionPolicy(): StageRolePolicy
+    {
+        return new StageRolePolicy([Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR], null, false);
     }
 
     public function get(IlluminateRequest $illuminateRequest): JsonResponse

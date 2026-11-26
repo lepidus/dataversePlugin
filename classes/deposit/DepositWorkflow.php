@@ -25,7 +25,9 @@ class DepositWorkflow
         ?callable $discard = null
     ): void {
         $operation = $this->repository->reserve($submissionId, $manifest);
-        if (json_decode($operation['manifest'], true, 512, JSON_THROW_ON_ERROR) !== $manifest) {
+        if ($operation['state'] === 'discarding') {
+            $operation = $this->finishDiscard($submissionId, $operation, $manifest, $discard);
+        } elseif (json_decode($operation['manifest'], true, 512, JSON_THROW_ON_ERROR) !== $manifest) {
             $operation = $this->adoptManifest($submissionId, $operation, $manifest, $discard);
         }
         if ($operation['state'] === 'complete') {
@@ -88,15 +90,36 @@ class DepositWorkflow
             return array_merge($operation, ['manifest' => $encodedManifest]);
         }
 
-        $sameRepository = array_unique(array_column($storedManifest, 'repository'))
-            === array_unique(array_column($manifest, 'repository'));
-        if ($operation['state'] !== 'ready' || !$operation['persistent_id'] || !$sameRepository || !$discard) {
+        if (
+            $operation['state'] !== 'ready'
+            || !$operation['persistent_id']
+            || !$this->isSameRepository($storedManifest, $manifest)
+            || !$discard
+        ) {
             throw new RuntimeException('The deposit file selection changed; reconciliation is required.');
         }
 
+        $this->repository->transition($submissionId, 'ready', 'discarding');
+
+        return $this->finishDiscard($submissionId, $operation, $manifest, $discard);
+    }
+
+    private function finishDiscard(int $submissionId, array $operation, array $manifest, ?callable $discard): array
+    {
+        $storedManifest = json_decode($operation['manifest'], true, 512, JSON_THROW_ON_ERROR);
+        if (!$operation['persistent_id'] || !$this->isSameRepository($storedManifest, $manifest) || !$discard) {
+            throw new RuntimeException('The partial dataset is being discarded; reconciliation is required.');
+        }
+
         $discard($operation['persistent_id']);
-        $this->repository->transition($submissionId, 'ready', 'retired');
+        $this->repository->transition($submissionId, 'discarding', 'retired');
 
         return $this->repository->reserve($submissionId, $manifest);
+    }
+
+    private function isSameRepository(array $storedManifest, array $manifest): bool
+    {
+        return array_unique(array_column($storedManifest, 'repository'))
+            === array_unique(array_column($manifest, 'repository'));
     }
 }

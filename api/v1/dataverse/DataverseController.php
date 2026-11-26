@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\dataverse\api\v1\dataverse;
 
 use APP\core\Application;
+use APP\plugins\generic\dataverse\api\v1\datasets\DatasetController;
 use APP\plugins\generic\dataverse\classes\components\forms\AssociateDatasetForm;
 use APP\plugins\generic\dataverse\classes\components\forms\DatasetMetadataForm;
 use APP\plugins\generic\dataverse\classes\components\forms\DataStatementForm;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 use PKP\core\PKPBaseController;
 use PKP\core\PKPRequest;
 use PKP\db\DAORegistry;
+use PKP\security\authorization\AuthorizationPolicy;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\authorization\UserRolesRequiredPolicy;
@@ -29,6 +31,8 @@ use PKP\security\Role;
 
 class DataverseController extends PKPBaseController
 {
+    private const PUBLICATION_LOCK_TYPES = ['Workflow', 'finalizePublication'];
+
     public function getHandlerPath(): string
     {
         return 'dataverse';
@@ -78,6 +82,7 @@ class DataverseController extends PKPBaseController
             'hasDataset' => !is_null($study),
             'additionalInstructions' => $configuration->getLocalizedAdditionalInstructions(),
             'canSendDeleteEmail' => $this->userHasRole(Role::ROLE_ID_MANAGER),
+            'canAssociate' => $this->canAssociateDataset(),
             'error' => null,
         ];
 
@@ -153,6 +158,7 @@ class DataverseController extends PKPBaseController
         $dataverseClient = new DataverseClient();
         $dataset = $dataverseClient->getDatasetActions()->get($study->getPersistentId());
         $datasetIsPublished = $dataset->isPublished();
+        $lockTypes = $this->getDatasetLockTypes($dataverseClient, $dataset);
 
         $datasetUrl = $this->apiUrl(
             'datasets/' . $study->getId(),
@@ -180,14 +186,16 @@ class DataverseController extends PKPBaseController
             'persistentUri' => $study->getPersistentUri(),
             'dataset' => $dataset->getAllData(),
             'datasetIsPublished' => $datasetIsPublished,
-            'datasetInReview' => $this->isDatasetInReview($dataverseClient, $dataset),
+            'datasetInReview' => in_array('InReview', $lockTypes),
+            'datasetIsBeingPublished' => !$datasetIsPublished
+                && !empty(array_intersect(self::PUBLICATION_LOCK_TYPES, $lockTypes)),
             'citation' => $this->getCitation($dataverseClient, $study, $datasetIsPublished),
             'datasetUrl' => $datasetUrl,
             'publishUrl' => $publishUrl,
             'disassociateUrl' => $disassociateUrl,
             'publishConfirmMessage' => __('plugins.generic.dataverse.modal.confirmDatasetPublish', [
-                'serverName' => $dataverseClient->getDataverseCollectionActions()->getRoot()->getName(),
-                'serverUrl' => $serverUrl,
+                'serverName' => htmlspecialchars($dataverseClient->getDataverseCollectionActions()->getRoot()->getName(), ENT_QUOTES),
+                'serverUrl' => htmlspecialchars($serverUrl, ENT_QUOTES),
             ]),
             'forms' => [
                 'datasetMetadata' => (new DatasetMetadataForm($datasetUrl, 'PUT', $dataset, 'workflow'))->getConfig(),
@@ -233,17 +241,11 @@ class DataverseController extends PKPBaseController
         ))->getConfig();
     }
 
-    private function isDatasetInReview(DataverseClient $dataverseClient, Dataset $dataset): bool
+    private function getDatasetLockTypes(DataverseClient $dataverseClient, Dataset $dataset): array
     {
         $locks = $dataverseClient->getDatasetActions()->getDatasetLocks($dataset->getDatasetId());
 
-        foreach ($locks as $lock) {
-            if ($lock['lockType'] == 'InReview') {
-                return true;
-            }
-        }
-
-        return false;
+        return array_column($locks, 'lockType');
     }
 
     private function getCitation(DataverseClient $dataverseClient, DataverseStudy $study, bool $datasetIsPublished): string
@@ -271,8 +273,16 @@ class DataverseController extends PKPBaseController
         return __('emails.datasetDeleteNotification.body', [
             'submissionTitle' => $submission->getCurrentPublication()->getLocalizedFullTitle(null, 'html'),
             'dataStatementUrl' => $dataStatementUrl,
-            'dataverseName' => $dataverseClient->getDataverseCollectionActions()->get()->getName(),
+            'dataverseName' => htmlspecialchars($dataverseClient->getDataverseCollectionActions()->get()->getName(), ENT_QUOTES),
         ]);
+    }
+
+    private function canAssociateDataset(): bool
+    {
+        $policy = DatasetController::createEditorialDecisionPolicy();
+        $policy->setAuthorizedContext($this->getAuthorizedContext());
+
+        return $policy->effect() === AuthorizationPolicy::AUTHORIZATION_PERMIT;
     }
 
     private function userHasRole(int $roleId): bool

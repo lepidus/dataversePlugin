@@ -177,7 +177,15 @@ the caller. `nativeAPIRequest(..., false)` never reads the body. The API token (
 configured server's origin: an authenticated Native API request that Dataverse redirects elsewhere fails, because Guzzle
 keeps custom headers across origins, and `nativeAPIDownload()` follows the redirects of a file download itself, streaming
 into a write-only `sink` and sending the token only to that origin, since Dataverse sends downloads to the storage
-(e.g. S3) with a 303.
+(e.g. S3) with a 303. Once a download leaves that origin, every hop must be HTTPS to a host whose addresses are all
+public (`FILTER_FLAG_GLOBAL_RANGE`, plus the IPv4 address embedded in a NAT64 `64:ff9b::/96` address; local-use NAT64
+and 6to4 addresses are refused), so a redirect cannot make the server fetch an internal service. A host name is
+resolved with separate A and AAAA queries (`dns_get_record()`, which ignores `/etc/hosts`) and the connection is pinned
+to every checked address with `CURLOPT_RESOLVE`; an IP address is not pinned, since there is nothing to resolve. Behind a
+proxy (`[proxy] https_proxy`, or the `https_proxy`/`all_proxy` environment variables libcurl reads) the host is still
+resolved, checked and pinned; only a host the server cannot resolve is left to the proxy, unpinned, and never one listed
+in `no_proxy` (environment or the client's `proxy.no`), because libcurl connects to those directly. Transport errors are logged only through that JSON line,
+never with the Guzzle message, which carries the request URL and therefore the storage signature.
 
 Failures throw `DataverseException`, logged as a JSON line with the operation and
 `getFailureCategory()` (`timeout`, `connection`, `authentication` or `http`) and the HTTP status Dataverse returned, if any. A timeout means the outcome is unknown,
@@ -211,7 +219,14 @@ Dataverse also refuses to delete a dataset while it is locked (403 "Dataset cann
 
 `DataverseStudy` is the local link between a submission and its deposited dataset (`persistentId`,
 `persistentUri`, SWORD edit/statement URIs). `Repo::dataverseStudy()->getBySubmissionId()` returning null is
-the canonical "this submission has no dataset" test, used all over the dispatchers.
+the canonical "this submission has no dataset" test, used all over the dispatchers. A dataset is linked to at most one
+submission: `persistent_id` has a unique index (`UniquePersistentIdMigration`, which leaves it out and logs the
+duplicates when an install already has some). The persistent ID is stored exactly as Dataverse stores it: the one
+`create()` returns, or, on association, the one `DatasetActions::findInCurrentCollection()` rebuilds from the dataset
+Dataverse found. Never rewrite it in another case: Dataverse before 6.5 looks a DOI up case-sensitively (a 404 makes
+the workflow drop the association), and the Solr `parentIdentifier` filter of the report always does. Comparisons go
+through `DataverseStudy::normalizePersistentId()` instead (`UPPER()` in SQL, because PostgreSQL compares text
+case-sensitively), so a DOI typed or stored in another case is still recognised as the same dataset.
 
 `DraftDatasetFile` is a file uploaded during the wizard but not yet deposited; its properties are described by
 `schemas/draftDatasetFile.json`, loaded via the `Schema::get::draftDatasetFile` hook.
@@ -240,9 +255,10 @@ size, SHA-256) and the receipt of every confirmed upload. `DepositWorkflow` writ
 — `reserved` → `creating` → `ready` ⇄ `uploading` → `finalizing` → `complete` — through `DepositRepository`, whose
 transitions only succeed for the expected state and revision. A retry in `ready` sends the dataset metadata again
 (`DatasetActions::update()`, so edits made after the interruption are kept), reuses the persistent ID and skips
-uploaded files. A retry whose file selection changed adopts it while still `reserved`; in `ready` it deletes the partial
-dataset (a 404 counts as deleted), retires the operation and starts over, unless the Dataverse URL changed, which
-needs reconciliation. A request that finds `creating` or `uploading` is refused, because a lost response does not prove
+uploaded files. A retry whose file selection changed adopts it while still `reserved`; in `ready` it moves to `discarding`
+before deleting the partial dataset (a 404 counts as deleted), so no other request can upload to it meanwhile, then
+retires the operation and starts over, unless the Dataverse URL changed, which needs reconciliation. A request that
+finds `discarding` repeats the deletion before anything else, since a lost response leaves its outcome unknown. A request that finds `creating` or `uploading` is refused, because a lost response does not prove
 the mutation failed; those records are reconciled by hand (see the README). A 4xx response does prove it:
 `DataverseException::wasRejected()` is true for it, and for every `UploadNotSentException`, which
 `DatasetFileActions::add()` raises when the ingest wait fails or Dataverse rejects the upload. A rejected creation retires
@@ -251,7 +267,10 @@ deposit tried again; `DatasetService` reports those with the error from Datavers
 `error.datasetDeposit`), and only failures that leave `creating` or `uploading` behind as `error.depositPending`.
 Deleting or disassociating a dataset retires a `complete` operation, and so does finding that its dataset is gone from
 Dataverse (`DatasetService::removeMissingDataset()`), so a new deposit or a manual association can follow; an
-association is refused while any operation is not retired.
+association is refused while any operation of the submission is not retired, and also when the persistent ID belongs to
+an operation of another submission that is not retired: that deposit has not created its study yet, so only
+`dataverse_deposits` knows the dataset is taken, and a retry would fail on the unique index or, after a new file
+selection, delete the dataset in Dataverse.
 
 ### Services
 
@@ -280,9 +299,13 @@ in an otherwise-200 response, which the panel renders as a notice with a retry b
 
 Routes that change the dataset or the draft files also run the core `PublicationCanBeEditedPolicy`, so they follow
 the same rule as editing the publication (`canEditPublication` in the workflow). Publishing or disassociating a
-dataset runs the core `StageRolePolicy` for managers and section editors without recommend-only access: the users
-who can record the accept decision, which publishes the dataset too. That is broader than the panel's `canPublish`,
-which only shows those buttons to managers. A Dataverse file id received by a route is never trusted on its own: it
+dataset, or associating an existing one, runs the core `StageRolePolicy` for managers and section editors without
+recommend-only access: the users who can record the accept decision, which publishes the dataset too. For publishing
+and disassociating that is broader than the panel's `canPublish`, which only shows those buttons to managers; the
+associate button follows `canAssociate`, which `GET researchData` computes with the same policy
+(`DatasetController::createEditorialDecisionPolicy()`). Authors never associate a dataset: the
+plugin reaches Dataverse with the journal's token, so knowing a DOI in the collection would hand them someone else's
+draft. A Dataverse file id received by a route is never trusted on its own: it
 must be one of the files of the study's dataset, and the name used for the download or the event log comes from
 Dataverse, not from the request. Reviewers, unless they are also assigned to the submission, only download the
 files selected for review, and only after accepting the review when the context restricts reviewer file access;
@@ -304,6 +327,11 @@ append two items to the `publication` menu (`getMenuItems`) and to render the ma
 (`getPrimaryItems`). Both dashboards — editorial and author — go through the same code, so the panels appear on
 both. Dataset changes call `triggerDataChange()` (from `useDataChanged`) rather than reloading the page, so the
 rest of the workflow picks up the publication's new data availability statement.
+
+Publishing a dataset can be asynchronous: when the server runs a pre-publish workflow, `:publish` answers
+`WORKFLOW_IN_PROGRESS` and the dataset stays a draft under a `Workflow` (or `finalizePublication`) lock until it is
+released (about 30 s on demo.dataverse.org, and sometimes never). `GET researchData` reports that lock as
+`datasetIsBeingPublished`, and after a publish the panel keeps reloading, for up to two minutes, while it is set.
 
 There is no per-item badge with the research data file count: the 3.5 side menu overwrites `badge` and
 computing the count would mean calling Dataverse before the menu is built.

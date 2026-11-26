@@ -342,6 +342,9 @@ msgstr "Versión preliminar"
 msgid "plugins.generic.dataverse.researchData.label.unpublished"
 msgstr "Sin publicar"
 
+msgid "plugins.generic.dataverse.researchData.label.publishing"
+msgstr "Publicando"
+
 msgid "plugins.generic.dataverse.researchData.label.inReview"
 msgstr "En revisión"
 

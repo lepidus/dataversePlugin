@@ -3,6 +3,7 @@ import {storageStates} from './support/globalSetup.js';
 import {addResearchDataFile, openPanel, openResearchData} from './support/researchData.js';
 import {
 	REQUIRED_METADATA_LABELS,
+	assignEditor,
 	configureCollectionWithRequiredMetadata,
 	configurePlugin,
 	createSubmission,
@@ -221,6 +222,47 @@ test.describe('as the author', () => {
 		panel = await openResearchData(page, withoutResearchData);
 		await expect(panel.getByText('It is not possible to send research data.')).toBeVisible();
 		await expect(panel.locator('[data-cy="dataverse-upload-research-data"]')).toHaveCount(0);
+		await expect(panel.locator('[data-cy="dataverse-associate-dataset"]')).toHaveCount(0);
+	});
+
+	test('a dataset cannot be associated by the author', async ({page}) => {
+		const submission = createWorkflowSubmission('submitted');
+		const panel = await openResearchData(page, submission);
+
+		await expect(panel.locator('[data-cy="dataverse-upload-research-data"]')).toBeVisible();
+		await expect(panel.locator('[data-cy="dataverse-associate-dataset"]')).toHaveCount(0);
+
+		const csrfToken = await page.evaluate(() => pkp.currentUser.csrfToken);
+		const response = await page.request.post(
+			`index.php/publicknowledge/api/v1/datasets/associate?submissionId=${submission.id}`,
+			{headers: {'X-Csrf-Token': csrfToken}, data: {datasetPersistentId: 'doi:10.5072/FK2/U6AEZM'}},
+		);
+		expect(response.status()).toBe(401);
+	});
+});
+
+test.describe('as the section editor', () => {
+	test.use({storageState: storageStates.sectionEditor});
+	test.beforeEach(({page}) => {
+		page.dashboard = DASHBOARDS.manager;
+	});
+
+	test('a dataset can be associated by the section editor assigned to the submission', async ({page}) => {
+		const submission = createWorkflowSubmission('submitted');
+		assignEditor(submission.id, 'dbuskins');
+		const panel = await openResearchData(page, submission);
+
+		await expect(panel.locator('[data-cy="dataverse-associate-dataset"]')).toBeVisible();
+		await panel.locator('[data-cy="dataverse-associate-dataset"]').click();
+		await expect(page.locator('[data-cy="dataverse-associate-form"]')).toBeVisible();
+	});
+
+	test('a dataset cannot be associated by a section editor who can only recommend', async ({page}) => {
+		const submission = createWorkflowSubmission('submitted');
+		assignEditor(submission.id, 'dbuskins', {recommendOnly: true});
+		const panel = await openResearchData(page, submission);
+
+		await expect(panel.locator('[data-cy="dataverse-upload-research-data"]')).toBeVisible();
 		await expect(panel.locator('[data-cy="dataverse-associate-dataset"]')).toHaveCount(0);
 	});
 });

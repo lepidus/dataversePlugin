@@ -57,7 +57,7 @@ class DataStatementForm extends FormComponent
                     [
                         'value' => true,
                         'label' => __('plugins.generic.dataverse.dataStatement.researchDataSubmitted', [
-                            'dataverseName' => (new DataStatementService())->getDataverseName() ?? '',
+                            'dataverseName' => htmlspecialchars((new DataStatementService())->getDataverseName() ?? '', ENT_QUOTES),
                         ]),
                         'disabled' => true,
                     ],

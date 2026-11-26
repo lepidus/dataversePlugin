@@ -41,6 +41,7 @@ $output = match ($command) {
     'configure' => configure($context, json_decode($argv[2] ?? '{}', true)),
     'create-submission' => createSubmission($context, $argv[2] ?? 'details', json_decode($argv[3] ?? '{}', true)),
     'assign-reviewer' => assignReviewer((int) ($argv[2] ?? 0), $argv[3] ?? ''),
+    'assign-editor' => assignEditor($context, (int) ($argv[2] ?? 0), $argv[3] ?? '', json_decode($argv[4] ?? '{}', true)),
     'dataset-metadata' => datasetMetadata((int) ($argv[2] ?? 0)),
     'delete-dataset' => deleteDataset((int) ($argv[2] ?? 0)),
     'event-log' => eventLog((int) ($argv[2] ?? 0)),
@@ -262,6 +263,26 @@ function assignReviewer(int $submissionId, string $username): array
     ]));
 
     return ['reviewAssignmentId' => $reviewAssignmentId];
+}
+
+function assignEditor($context, int $submissionId, string $username, array $options): array
+{
+    $editor = Repo::user()->getByUsername($username, true);
+    $editorGroup = UserGroup::withContextIds([$context->getId()])
+        ->withRoleIds([Role::ROLE_ID_SUB_EDITOR])
+        ->withUserIds([$editor->getId()])
+        ->get()
+        ->first();
+
+    $stageAssignment = Repo::stageAssignment()->build(
+        $submissionId,
+        $editorGroup->id,
+        $editor->getId(),
+        $options['recommendOnly'] ?? false,
+        true
+    );
+
+    return ['stageAssignmentId' => $stageAssignment->id];
 }
 
 function datasetMetadata(int $submissionId): array

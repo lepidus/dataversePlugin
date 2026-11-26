@@ -74,6 +74,16 @@ write_timeout = 30
 
 Os valores devem ser números inteiros de segundos entre 1 e 300, escritos sem zero à esquerda (a aplicação lê `060` como número octal); qualquer outro valor, como `on` ou `1.5`, usa o padrão. Os arquivos são depositados um após o outro na mesma requisição, então, antes de aumentar um limite, verifique se os limites de requisição do PHP e do servidor web cobrem o tempo de todos os envios juntos. Uma requisição que atinge o limite é informada como tempo esgotado: o Dataverse pode ter concluído a operação mesmo assim.
 
+#### Download de arquivos do armazenamento
+
+Quando o Dataverse guarda os arquivos num armazenamento compatível com S3 e com o redirecionamento de downloads ativado, ele envia o download dos arquivos para esse armazenamento. O plugin só segue o redirecionamento para um endereço HTTPS na internet pública: um armazenamento acessado por HTTP sem criptografia, ou num endereço privado, de loopback ou link-local (como um servidor MinIO ou Ceph na rede interna da instituição), faz o download falhar. Nesse caso, desative o redirecionamento de downloads desse armazenamento no Dataverse (`dataverse.files.<id>.download-redirect=false`), para que o próprio Dataverse entregue os arquivos.
+
+Quando a aplicação envia as requisições por um proxy (`https_proxy` na seção `[proxy]` do `config.inc.php`, ou as variáveis de ambiente `https_proxy` e `all_proxy`), o servidor de armazenamento continua sendo verificado sempre que o servidor da aplicação consegue resolver o nome dele. Um nome que o servidor não consegue resolver fica a cargo do proxy, a menos que esteja em `no_proxy`; nesse caso, é o proxy que limita os endereços que o servidor alcança, e ele não deve dar acesso à rede interna.
+
+#### Datasets associados a mais de uma submissão
+
+Um dataset só pode ser associado a uma submissão. Se a instalação já tiver um dataset associado a mais de uma submissão, a atualização (`php tools/upgrade.php upgrade`) lista os identificadores persistentes envolvidos na sua saída (ou no log de erros do servidor, quando o plugin é atualizado pela Galeria de Plugins) e não cria o índice do banco de dados que garante essa regra. Desassocie o dataset das submissões excedentes e execute a atualização novamente.
+
 ### Uso
 
 Uma seção chamada "Dados de pesquisa" é adicionada ao passo "Arquivos" durante o processo de submissão. Além disso, os metadados do conjunto de dados devem ser preenchidos no passo "Para editores".
@@ -91,7 +101,7 @@ Antes de enviar cada arquivo, o plugin espera até 30 segundos para que o Datave
 No OJS, avaliadores podem receber acesso aos arquivos de dados de pesquisa durante o processo de avaliação. O acesso dos avaliadores à esses arquivos pode ser restringido nas Configurações do Fluxo de Trabalho, para que eles visualizem os arquivos apenas quando aceitarem avaliar a submissão.
 
 #### Depósitos interrompidos
-O plugin registra cada etapa do depósito antes de chamar o Dataverse. Se um depósito for interrompido depois que o conjunto de dados foi criado, uma nova tentativa reutiliza o mesmo conjunto de dados: envia os metadados de novo, para que alterações feitas nesse meio-tempo sejam mantidas, e envia apenas os arquivos que ainda não foram confirmados. Se os arquivos de dados de pesquisa foram alterados nesse meio-tempo, o conjunto de dados parcial é excluído e o depósito recomeça com a nova seleção. Quando o Dataverse recusa uma etapa (uma licença inválida ou um token expirado, por exemplo), nada foi alterado lá, o erro é exibido e o depósito pode ser tentado novamente depois de corrigida a causa. Quando o resultado de uma etapa é desconhecido — a requisição atingiu o limite de tempo ou o processo parou durante a criação do conjunto de dados ou o envio de um arquivo —, novas tentativas para aquela submissão são recusadas com uma mensagem pedindo para entrar em contato com a equipe editorial, para que o plugin nunca crie um conjunto de dados duplicado nem envie um arquivo duas vezes.
+O plugin registra cada etapa do depósito antes de chamar o Dataverse. Se um depósito for interrompido depois que o conjunto de dados foi criado, uma nova tentativa reutiliza o mesmo conjunto de dados: envia os metadados de novo, para que alterações feitas nesse meio-tempo sejam mantidas, e envia apenas os arquivos que ainda não foram confirmados. Se os arquivos de dados de pesquisa foram alterados nesse meio-tempo, o conjunto de dados parcial é excluído e o depósito recomeça com a nova seleção; se essa exclusão for interrompida, a tentativa seguinte a conclui antes de criar um novo conjunto de dados. Quando o Dataverse recusa uma etapa (uma licença inválida ou um token expirado, por exemplo), nada foi alterado lá, o erro é exibido e o depósito pode ser tentado novamente depois de corrigida a causa. Quando o resultado de uma etapa é desconhecido — a requisição atingiu o limite de tempo ou o processo parou durante a criação do conjunto de dados ou o envio de um arquivo —, novas tentativas para aquela submissão são recusadas com uma mensagem pedindo para entrar em contato com a equipe editorial, para que o plugin nunca crie um conjunto de dados duplicado nem envie um arquivo duas vezes.
 
 Esses depósitos devem ser conciliados por um administrador, diretamente no banco de dados, apenas para a submissão afetada:
 
@@ -99,7 +109,7 @@ Esses depósitos devem ser conciliados por um administrador, diretamente no banc
 2. No estado `creating`, verifique no Dataverse se o conjunto de dados foi criado. Se foi, salve o seu identificador persistente em `persistent_id` e siga para o passo 4. Se o Dataverse comprovar que nada foi criado, mude o estado para `retired` e incremente `revision`, restrito ao `submission_id`, ao `state` e à `revision` inspecionados: o próximo depósito começa do início.
 3. No estado `uploading`, verifique quais arquivos do manifesto chegaram ao conjunto de dados e registre os seus ids do Dataverse em `receipts`; um arquivo que não chegou ao Dataverse fica sem recibo.
 4. Com `persistent_id` preenchido, em uma única transação restrita ao `submission_id`, ao `state` e à `revision` inspecionados, mude o estado para `ready` e incremente `revision`; depois, tente o depósito novamente pelo painel "Dados de pesquisa".
-5. Se a URL do Dataverse mudou depois que o conjunto de dados foi criado, o depósito não pode continuar na nova coleção: mantenha ou exclua o conjunto de dados na anterior conforme o caso e, depois, mude o estado para `retired` e incremente `revision`.
+5. Se a URL do Dataverse mudou depois que o conjunto de dados foi criado, o depósito não pode continuar na nova coleção: mantenha ou exclua o conjunto de dados na anterior conforme o caso e, depois, mude o estado para `retired` e incremente `revision`. O mesmo vale para um depósito que ficou no estado `discarding`.
 
 ## Instruções para Desenvolvimento:
 

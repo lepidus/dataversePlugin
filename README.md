@@ -72,6 +72,16 @@ write_timeout = 30
 
 Values must be whole numbers of seconds between 1 and 300, written without a leading zero (the application reads `060` as an octal number); any other value, such as `on` or `1.5`, falls back to the default. Files are deposited one after the other in the same request, so before increasing a limit, check that the PHP and web server request limits cover the time of all uploads together. A request that reaches its limit is reported as a timeout: Dataverse may still have completed the operation.
 
+#### File downloads from storage
+
+When Dataverse keeps files in an S3-compatible storage with download redirects enabled, it sends file downloads to that storage. The plugin only follows the redirect to an HTTPS address on the public internet: a storage reached over plain HTTP, or at a private, loopback or link-local address (such as a MinIO or Ceph server on the institution's internal network), makes the download fail. In that case, disable download redirects for that store in Dataverse (`dataverse.files.<id>.download-redirect=false`), so Dataverse itself serves the files.
+
+When the application sends its requests through a proxy (`https_proxy` in the `[proxy]` section of `config.inc.php`, or the `https_proxy` and `all_proxy` environment variables), the storage host is still checked whenever the application server can resolve its name. A host the server cannot resolve is left to the proxy, unless it is listed in `no_proxy`; in that case the proxy is what limits the addresses the server can reach, and it should not give access to the internal network.
+
+#### Datasets associated with more than one submission
+
+A dataset can be associated with only one submission. If an installation already has a dataset associated with more than one submission, the upgrade (`php tools/upgrade.php upgrade`) lists the persistent IDs involved in its output (or in the server error log, when the plugin is updated through the Plugin Gallery) and does not create the database index that enforces that rule. Disassociate the dataset from the extra submissions and run the upgrade again.
+
 ### Use
 
 A "Research Data" deposit dialog is shown in the "Files" step of the Submission proccess.
@@ -89,7 +99,7 @@ Before each file upload, the plugin waits up to 30 seconds for Dataverse to fini
 In OJS, reviewers can have access to research data files during the review process. Reviewers access to these files can be restricted on Workflow Settings, so they can only see research data when they agree to review the submission.
 
 #### Interrupted deposits
-The plugin records every deposit step before calling Dataverse. If a deposit is interrupted after the dataset was created, a new attempt reuses the same dataset: it sends the metadata again, so changes made in the meantime are kept, and sends only the files that were not confirmed yet. If the research data files were changed in the meantime, the partial dataset is deleted and the deposit starts again with the new selection. When Dataverse rejects a step (an invalid license or an expired token, for example), nothing was changed there, the error is shown, and the deposit can be tried again once the cause is fixed. When the result of a step is unknown — the request timed out or the process stopped while creating the dataset or sending a file — new attempts for that submission are refused with a message asking to contact the editorial team, so the plugin never creates a duplicate dataset or sends a file twice.
+The plugin records every deposit step before calling Dataverse. If a deposit is interrupted after the dataset was created, a new attempt reuses the same dataset: it sends the metadata again, so changes made in the meantime are kept, and sends only the files that were not confirmed yet. If the research data files were changed in the meantime, the partial dataset is deleted and the deposit starts again with the new selection; if that deletion is interrupted, the next attempt finishes it before creating a new dataset. When Dataverse rejects a step (an invalid license or an expired token, for example), nothing was changed there, the error is shown, and the deposit can be tried again once the cause is fixed. When the result of a step is unknown — the request timed out or the process stopped while creating the dataset or sending a file — new attempts for that submission are refused with a message asking to contact the editorial team, so the plugin never creates a duplicate dataset or sends a file twice.
 
 These deposits must be reconciled by an administrator, directly in the database, for the affected submission only:
 
@@ -97,7 +107,7 @@ These deposits must be reconciled by an administrator, directly in the database,
 2. For the state `creating`, find in Dataverse whether the dataset was created. If it was, save its persistent ID in `persistent_id` and go on to step 4. If Dataverse proves nothing was created, set the state to `retired` and increment `revision`, restricted to the `submission_id`, the inspected `state` and `revision`: the next deposit starts from the beginning.
 3. For the state `uploading`, find which files of the manifest reached the dataset and record their Dataverse ids in `receipts`; a file that did not reach Dataverse stays without a receipt.
 4. With `persistent_id` filled in, in a single transaction restricted to the `submission_id`, the inspected `state` and `revision`, set the state to `ready` and increment `revision`, then try the deposit again from the "Research data" panel.
-5. If the Dataverse URL changed after the dataset was created, the deposit cannot go on in the new collection: keep or delete the dataset in the previous one as needed, then set the state to `retired` and increment `revision`.
+5. If the Dataverse URL changed after the dataset was created, the deposit cannot go on in the new collection: keep or delete the dataset in the previous one as needed, then set the state to `retired` and increment `revision`. The same applies to a deposit left in the state `discarding`.
 
 ## Development Instructions:
 

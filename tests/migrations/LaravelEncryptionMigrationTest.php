@@ -5,6 +5,7 @@ use APP\plugins\generic\dataverse\classes\dataverseConfiguration\DataverseConfig
 use APP\plugins\generic\dataverse\classes\migrations\DataverseMigration;
 use APP\plugins\generic\dataverse\classes\migrations\DepositMigration;
 use APP\plugins\generic\dataverse\classes\migrations\LaravelEncryptionMigration;
+use APP\plugins\generic\dataverse\classes\migrations\UniquePersistentIdMigration;
 use APP\plugins\generic\dataverse\DataversePlugin;
 use APP\plugins\generic\dataverse\DataverseSettingsForm;
 use APP\plugins\generic\dataverse\tests\helpers\CreatesTestContext;
@@ -28,6 +29,7 @@ class LaravelEncryptionMigrationTest extends PKPTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        (new DataverseMigration())->up();
         $this->configData = Config::getData();
         $config = &Config::getData();
         $config['security']['api_key_secret'] = 'dataverse-test-legacy-secret';
@@ -199,7 +201,7 @@ class LaravelEncryptionMigrationTest extends PKPTestCase
 
     public function testInstallerRunsAllMigrationsForEveryInstalledVersion(): void
     {
-        $migrations = [LaravelEncryptionMigration::class, DepositMigration::class];
+        $migrations = [LaravelEncryptionMigration::class, DepositMigration::class, UniquePersistentIdMigration::class];
 
         $tree = (new PKPXMLParser())->parse(dirname(__DIR__, 2) . '/upgrade.xml');
         foreach (['3.4.5.1', '3.4.5.2', '3.4.5.3', '4.0.0.0', '4.0.0.1'] as $version) {

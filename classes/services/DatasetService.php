@@ -26,6 +26,7 @@ use APP\plugins\generic\dataverse\classes\exception\UploadNotSentException;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
 use APP\plugins\generic\dataverse\classes\deposit\DepositRepository;
 use APP\plugins\generic\dataverse\classes\deposit\DepositWorkflow;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Throwable;
@@ -114,7 +115,11 @@ class DatasetService extends DataverseService
         }
 
         $study = Repo::dataverseStudy()->getBySubmissionId($submissionId);
-        if (!$study || $study->getPersistentId() !== $completedOperation->persistent_id) {
+        if (
+            !$study
+            || DataverseStudy::normalizePersistentId($study->getPersistentId())
+                !== DataverseStudy::normalizePersistentId((string) $completedOperation->persistent_id)
+        ) {
             throw new RuntimeException('The completed deposit association changed.');
         }
     }
@@ -348,14 +353,25 @@ class DatasetService extends DataverseService
         }
 
         try {
-            $isInCurrentCollection = (new DataverseClient())->getDatasetActions()->isInCurrentCollection($persistentId);
+            $storedPersistentId = (new DataverseClient())->getDatasetActions()->findInCurrentCollection($persistentId);
         } catch (DataverseException $e) {
             return ['status' => DataverseService::STATUS_NOT_FOUND, 'message' => 'plugins.generic.dataverse.error.associate.notFound'];
         }
 
-        if (!$isInCurrentCollection) {
+        if (is_null($storedPersistentId)) {
             return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.outsideCollection'];
         }
+
+        try {
+            return $this->createAssociation($submission, $storedPersistentId);
+        } catch (UniqueConstraintViolationException $e) {
+            return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
+        }
+    }
+
+    private function createAssociation(Submission $submission, string $persistentId): array
+    {
+        $submissionId = $submission->getId();
 
         return DB::transaction(function () use ($submission, $submissionId, $persistentId): array {
             (new DepositRepository())->lockSubmission($submissionId);
@@ -370,9 +386,24 @@ class DatasetService extends DataverseService
                 return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.depositPending'];
             }
 
+            if (Repo::dataverseStudy()->getByPersistentId($persistentId) || $this->isBeingDeposited($persistentId)) {
+                return ['status' => DataverseService::STATUS_ERROR, 'message' => 'plugins.generic.dataverse.error.associate.alreadyAssociated'];
+            }
+
             $this->createStudy($submission, $persistentId);
             return ['status' => DataverseService::STATUS_SUCCESS];
         });
+    }
+
+    private function isBeingDeposited(string $persistentId): bool
+    {
+        $normalizedPersistentId = DataverseStudy::normalizePersistentId($persistentId);
+
+        return DB::table('dataverse_deposits')
+            ->where('state', '!=', 'retired')
+            ->whereRaw('UPPER(persistent_id) = ?', [strtoupper($persistentId)])
+            ->pluck('persistent_id')
+            ->contains(fn (string $depositedPersistentId): bool => DataverseStudy::normalizePersistentId($depositedPersistentId) === $normalizedPersistentId);
     }
 
     private function hasActiveDeposit(int $submissionId): bool

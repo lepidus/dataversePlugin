@@ -13,6 +13,7 @@ use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriComparator;
 use GuzzleHttp\Psr7\UriResolver;
 use GuzzleHttp\Psr7\Utils;
+use GuzzleHttp\Utils as GuzzleUtils;
 use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -42,6 +43,8 @@ abstract class DataverseActions
         'write' => 30,
     ];
     private const MIN_REQUEST_TIMEOUT = 1;
+    private const NAT64_PREFIX = '0064ff9b0000000000000000';
+    private const TRANSLATED_IPV4_PREFIXES = ['0064ff9b0001', '2002'];
     private const MAX_REQUEST_TIMEOUT = 300;
 
     public function __construct(
@@ -144,6 +147,8 @@ abstract class DataverseActions
             ];
             if (!$leftServer) {
                 $options['headers']['X-Dataverse-key'] = $this->apiToken;
+            } else {
+                $options += $this->getStorageRequestOptions(new Uri($uri));
             }
 
             $response = $leftServer
@@ -157,7 +162,7 @@ abstract class DataverseActions
             $uri = $this->resolveRedirect($uri, $response);
         }
 
-        throw DataverseException::fromTransferException(
+        throw $this->failedDownloadRedirect(
             new TooManyRedirectsException('Too many redirects downloading a Dataverse file', new Request('GET', $uri))
         );
     }
@@ -177,6 +182,130 @@ abstract class DataverseActions
         }
     }
 
+    private function getStorageRequestOptions(UriInterface $uri): array
+    {
+        if ($uri->getScheme() !== 'https') {
+            throw $this->refusedStorageRedirect('Dataverse redirected a file download to a storage without HTTPS');
+        }
+
+        $host = trim($uri->getHost(), '[]');
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $this->assertPublicAddresses([$host]);
+            return [];
+        }
+
+        $addresses = $this->resolveHostAddresses($host);
+        if (empty($addresses) && $this->sendsThroughHttpsProxy($host)) {
+            return [];
+        }
+        if (empty($addresses)) {
+            throw $this->refusedStorageRedirect('The storage host of a Dataverse file download could not be resolved');
+        }
+        $this->assertPublicAddresses($addresses);
+
+        $port = $uri->getPort() ?? 443;
+        $pinnedAddresses = array_map(
+            fn (string $address): string => str_contains($address, ':') ? '[' . $address . ']' : $address,
+            $addresses
+        );
+
+        return ['curl' => [CURLOPT_RESOLVE => [$host . ':' . $port . ':' . implode(',', $pinnedAddresses)]]];
+    }
+
+    private function sendsThroughHttpsProxy(string $host): bool
+    {
+        $proxy = $this->client->getConfig('proxy');
+        $configuredProxy = is_array($proxy) ? ($proxy['https'] ?? null) : $proxy;
+        $environmentProxy = $this->getEnvironmentVariable('https_proxy', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY');
+        if (empty($configuredProxy) && empty($environmentProxy)) {
+            return false;
+        }
+
+        $noProxyHosts = array_merge(
+            is_array($proxy) ? (array) ($proxy['no'] ?? []) : [],
+            array_map('trim', explode(',', (string) $this->getEnvironmentVariable('no_proxy', 'NO_PROXY')))
+        );
+
+        return !GuzzleUtils::isHostInNoProxy($host, array_values(array_filter($noProxyHosts)));
+    }
+
+    private function getEnvironmentVariable(string ...$names): ?string
+    {
+        foreach ($names as $name) {
+            $value = getenv($name);
+            if (is_string($value) && $value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    private function assertPublicAddresses(array $addresses): void
+    {
+        foreach ($addresses as $address) {
+            if (!$this->isPublicAddress($address)) {
+                throw $this->refusedStorageRedirect('Dataverse redirected a file download to a non-public address');
+            }
+        }
+    }
+
+    private function isPublicAddress(string $address): bool
+    {
+        if (!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE)) {
+            return false;
+        }
+
+        $hexAddress = bin2hex(inet_pton($address));
+        if (str_starts_with($hexAddress, self::NAT64_PREFIX)) {
+            return $this->isPublicAddress(inet_ntop(hex2bin(substr($hexAddress, strlen(self::NAT64_PREFIX)))));
+        }
+
+        foreach (self::TRANSLATED_IPV4_PREFIXES as $prefix) {
+            if (str_starts_with($hexAddress, $prefix)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function resolveHostAddresses(string $host): array
+    {
+        $addresses = [];
+        foreach ([DNS_A => 'ip', DNS_AAAA => 'ipv6'] as $recordType => $addressField) {
+            foreach ($this->queryDnsRecords($host, $recordType) as $record) {
+                if (isset($record[$addressField])) {
+                    $addresses[] = $record[$addressField];
+                }
+            }
+        }
+
+        return array_values(array_unique($addresses));
+    }
+
+    protected function queryDnsRecords(string $host, int $recordType): array
+    {
+        return @dns_get_record($host, $recordType) ?: [];
+    }
+
+    private function refusedStorageRedirect(string $reason): DataverseException
+    {
+        return $this->failedDownloadRedirect(new TransferException($reason), 'redirect_refused');
+    }
+
+    private function failedDownloadRedirect(TransferException $exception, string $category = 'redirect'): DataverseException
+    {
+        error_log(json_encode([
+            'component' => 'dataverse',
+            'operation' => 'download',
+            'category' => $category,
+            'reason' => $exception->getMessage(),
+        ]));
+
+        return DataverseException::fromTransferException($exception);
+    }
+
     private function resolveRedirect(string $uri, ResponseInterface $response): string
     {
         try {
@@ -186,7 +315,7 @@ abstract class DataverseActions
         }
 
         if ((string) $location === '') {
-            throw DataverseException::fromTransferException(
+            throw $this->failedDownloadRedirect(
                 new TransferException('Dataverse redirected a file download without a valid destination')
             );
         }
