@@ -12,7 +12,9 @@ Para comprender mejor la instalación y el uso del módulo, vea nuestro vídeo i
 
 Este plugin es compatible con las siguientes aplicaciones PKP:
 
-- OPS y OJS en las versiones 3.3 y 3.4.
+- OJS y OPS 3.5: versiones 4.x del plugin (rama `main`).
+- OJS y OPS 3.4: versiones 3.4.x del plugin (rama `stable-3_4_0`).
+- OJS y OPS 3.3: versiones 2.x del plugin (rama `stable-3_3_0`).
 
 Consulte la última versión compatible con su aplicación en la [Página de Versiones](https://github.com/lepidus/dataversePlugin/releases).
 

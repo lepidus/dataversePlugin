@@ -12,7 +12,9 @@ For a better understanding of the installation and use of this plugin, check our
 
 This plugin is compatible with the following PKP applications:
 
-- OPS and OJS versions 3.3 and 3.4.
+- OJS and OPS 3.5: plugin versions 4.x (branch `main`).
+- OJS and OPS 3.4: plugin versions 3.4.x (branch `stable-3_4_0`).
+- OJS and OPS 3.3: plugin versions 2.x (branch `stable-3_3_0`).
 
 Check the latest compatible version for your application on the [Releases page](https://github.com/lepidus/dataversePlugin/releases).
 
