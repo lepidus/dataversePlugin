@@ -278,7 +278,7 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
 
         waitForDatasetPublication(attemptsLeft = 10) {
             setTimeout(() => {
-                this.refreshDataset()
+                this.refreshDataset(true)
                     .done((dataset) => {
                         if (dataset.versionState === 'RELEASED' || attemptsLeft === 1) {
                             this.datasetPublicationPending = false;
@@ -293,14 +293,18 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
             }, 3000);
         },
 
-        refreshDataset() {
+        refreshDataset(onlyIfReleased = false) {
             const self = this;
-            this.datasetIsLoading = true;
+            if (!onlyIfReleased) {
+                this.datasetIsLoading = true;
+            }
             return $.ajax({
                 url: this.components.datasetMetadata.action,
                 type: 'GET',
                 success(r) {
-                    self.dataset = r;
+                    if (!onlyIfReleased || r.versionState === 'RELEASED') {
+                        self.dataset = r;
+                    }
                 },
                 error(xhr) {
                     if (xhr.status === 404) {
@@ -311,7 +315,9 @@ var DataverseWorkflowPage = $.extend(true, {}, pkp.controllers.WorkflowPage, {
                     self.markDataverseUnavailable(xhr);
                 },
                 complete() {
-                    self.datasetIsLoading = false;
+                    if (!onlyIfReleased) {
+                        self.datasetIsLoading = false;
+                    }
                 }
             });
         },
