@@ -224,6 +224,7 @@ class SubmissionDatasetFactoryTest extends PKPTestCase
         $repository->method('getBySubmissionId')->willReturn(new LazyCollection([$readme, $data]));
         $repository->expects($this->never())->method('delete');
         $temporaryFileDAO = $this->createMock(TemporaryFileDAO::class);
+        $temporaryFileDAO->method('getExpiredFiles')->willReturn([]);
         $temporaryFileDAO->method('getTemporaryFile')->willReturnCallback(function ($id) {
             return $id === 10 ? $this->temporaryFile : null;
         });
