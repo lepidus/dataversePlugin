@@ -3,14 +3,14 @@
 namespace APP\plugins\generic\dataverse\classes;
 
 use PKP\config\Config;
-use PKP\file\TemporaryFile;
-use PKP\file\TemporaryFileManager;
+use PKP\file\PKPFile;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFileStorage;
 
 class DraftDatasetFilesValidator
 {
     private const README_FILE_TYPES = ['application/pdf', 'text/plain'];
 
-    private array $temporaryFiles = [];
+    private array $sourceFiles = [];
 
     public function galleyContainsResearchData(array $galleyFiles, array $datasetFiles): bool
     {
@@ -34,9 +34,9 @@ class DraftDatasetFilesValidator
         return false;
     }
 
-    public function getTemporaryFiles(array $draftDatasetFiles): array
+    public function getSourceFiles(array $draftDatasetFiles): array
     {
-        return array_map(fn ($draftDatasetFile) => $this->getTemporaryFile($draftDatasetFile), $draftDatasetFiles);
+        return array_map(fn ($draftDatasetFile) => $this->getSourceFile($draftDatasetFile), $draftDatasetFiles);
     }
 
     public function getMissingFileNames(array $draftDatasetFiles): array
@@ -44,7 +44,7 @@ class DraftDatasetFilesValidator
         $missingFileNames = [];
 
         foreach ($draftDatasetFiles as $draftDatasetFile) {
-            $temporaryFile = $this->getTemporaryFile($draftDatasetFile);
+            $temporaryFile = $this->getSourceFile($draftDatasetFile);
             if (is_null($temporaryFile) || !is_file($temporaryFile->getFilePath())) {
                 $missingFileNames[] = $draftDatasetFile->getFileName();
             }
@@ -56,7 +56,7 @@ class DraftDatasetFilesValidator
     public function datasetHasReadmeFile(array $draftDatasetFiles): bool
     {
         foreach ($draftDatasetFiles as $draftDatasetFile) {
-            $temporaryFile = $this->getTemporaryFile($draftDatasetFile);
+            $temporaryFile = $this->getSourceFile($draftDatasetFile);
             if (is_null($temporaryFile)) {
                 continue;
             }
@@ -81,7 +81,7 @@ class DraftDatasetFilesValidator
         $researchDataFileValidator = new ResearchDataFileValidator();
 
         foreach ($draftDatasetFiles as $draftDatasetFile) {
-            $temporaryFile = $this->getTemporaryFile($draftDatasetFile);
+            $temporaryFile = $this->getSourceFile($draftDatasetFile);
             if (
                 !is_null($temporaryFile)
                 && $researchDataFileValidator->containsResearchData($temporaryFile->getFilePath(), $draftDatasetFile->getFileName())
@@ -93,14 +93,14 @@ class DraftDatasetFilesValidator
         return false;
     }
 
-    private function getTemporaryFile($draftDatasetFile): ?TemporaryFile
+    private function getSourceFile($draftDatasetFile): ?PKPFile
     {
-        $fileId = $draftDatasetFile->getData('fileId');
+        $draftId = $draftDatasetFile->getId();
 
-        if (!array_key_exists($fileId, $this->temporaryFiles)) {
-            $this->temporaryFiles[$fileId] = (new TemporaryFileManager())->getFile($fileId, $draftDatasetFile->getData('userId'));
+        if (!array_key_exists($draftId, $this->sourceFiles)) {
+            $this->sourceFiles[$draftId] = (new DraftDatasetFileStorage())->getFile($draftDatasetFile);
         }
 
-        return $this->temporaryFiles[$fileId];
+        return $this->sourceFiles[$draftId];
     }
 }

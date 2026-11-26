@@ -1,7 +1,7 @@
 import {expect, test} from '@playwright/test';
 import {logIn, storageStates} from './support/globalSetup.js';
 import {openResearchData} from './support/researchData.js';
-import {assignReviewer, configurePlugin, createSubmission, deleteDataset, deleteDeposit} from './support/testData.js';
+import {assignReviewer, configurePlugin, createSubmission, datasetMetadata, deleteDataset, eventLog} from './support/testData.js';
 
 const DATASET_PUBLISH_SUBMISSION_ACCEPTED = 1;
 const isJournal = () => process.env.PKP_APPLICATION === 'ojs2';
@@ -22,8 +22,7 @@ test.beforeEach(({page}) => {
 
 test.afterEach(() => {
 	while (createdSubmissions.length) {
-		const {id, persistentId} = createdSubmissions.pop();
-		deleteDeposit(id);
+		const {persistentId} = createdSubmissions.pop();
 		deleteDataset(persistentId);
 	}
 });
@@ -90,11 +89,44 @@ test('accepting the submission publishes its research data when the editor choos
 		await page.getByRole('radio', {name: 'Yes'}).check();
 		await recordDecision(page, 'has been accepted for publication and sent to the copyediting stage');
 
-		await expect(async () => {
-			const panel = await openResearchData(page, submission);
-			await expect(page.locator('[data-cy="dataverse-dataset-header"] [data-cy="dataverse-citation"]')).toContainText(/, V1$/);
-			await expect(page.locator('[data-cy="dataverse-dataset-header"]').getByText('Draft', {exact: true})).toHaveCount(0, {timeout: 1000});
-		}).toPass({timeout: 90000});
+		try {
+			await expect(async () => {
+				const panel = await openResearchData(page, submission);
+				await expect(page.locator('[data-cy="dataverse-dataset-header"] [data-cy="dataverse-citation"]')).toContainText(/, V1$/);
+				await expect(page.locator('[data-cy="dataverse-dataset-header"]').getByText('Draft', {exact: true})).toHaveCount(0, {timeout: 1000});
+			}).toPass({timeout: 90000});
+		} catch (error) {
+			let message = 'Publication history unavailable';
+			try {
+				const publicationEvent = eventLog(submission.id).find(({message}) =>
+					message === 'Research data published' || message.startsWith('Error publishing research data in Dataverse:')
+				);
+				if (!publicationEvent) {
+					message = 'No research data publication event recorded';
+				} else if (publicationEvent.message === 'Research data published') {
+					message = 'OJS recorded successful publication';
+				} else {
+					const reason = publicationEvent.message.split(': ').slice(1).join(': ');
+					if (/lock|ingest/i.test(reason)) {
+						message = 'OJS recorded a publication error mentioning a lock or ingest';
+					} else if (/not permitted|permission|forbidden|not authorized|not allowed/i.test(reason)) {
+						message = 'OJS recorded a publication error mentioning permission';
+					} else {
+						message = 'OJS recorded a publication error';
+					}
+				}
+			} catch {
+				// Preserve the original failure if the fixture cannot read the event log.
+			}
+			let versionState = 'unavailable';
+			try {
+				const state = datasetMetadata(submission.id).versionState;
+				versionState = ['DRAFT', 'RELEASED', 'DEACCESSIONED', 'ARCHIVED'].includes(state) ? state : 'unknown';
+			} catch {
+				// Preserve the original failure if the diagnostic request also fails.
+			}
+			throw new Error(`${message}. Dataverse version state: ${versionState}`, {cause: error});
+		}
 	} finally {
 		configurePlugin();
 	}

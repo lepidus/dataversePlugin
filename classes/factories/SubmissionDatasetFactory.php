@@ -5,8 +5,7 @@ namespace APP\plugins\generic\dataverse\classes\factories;
 use APP\submission\Submission;
 use APP\author\Author;
 use APP\core\Application;
-use PKP\file\TemporaryFile;
-use PKP\file\TemporaryFileManager;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFileStorage;
 use APP\plugins\generic\dataverse\classes\DataverseMetadata;
 use APP\plugins\generic\dataverse\classes\factories\DatasetFactory;
 use APP\plugins\generic\dataverse\classes\entities\DatasetAuthor;
@@ -165,32 +164,21 @@ class SubmissionDatasetFactory extends DatasetFactory
             return [];
         }
 
-        $temporaryFiles = array_map(
-            function (DraftDatasetFile $draftDatasetFile) {
-                $temporaryFileManager = new TemporaryFileManager();
-                $file = $temporaryFileManager->getFile(
-                    $draftDatasetFile->getData('fileId'),
-                    $draftDatasetFile->getData('userId')
-                );
-                if (is_null($file)) {
-                    throw new MissingDepositFileException($draftDatasetFile->getFileName());
-                }
-                return $file;
-            },
-            $draftDatasetFiles
-        );
+        $storage = new DraftDatasetFileStorage();
+        $contextId = $this->submission->getData('contextId');
 
-        $datasetFiles = array_map(
-            function (TemporaryFile $temporaryFile) {
-                $datasetFile = new DatasetFile();
-                $datasetFile->setId($temporaryFile->getId());
-                $datasetFile->setOriginalFileName($temporaryFile->getOriginalFileName());
-                $datasetFile->setPath($temporaryFile->getFilePath());
-                return $datasetFile;
-            },
-            $temporaryFiles
-        );
+        return array_map(function (DraftDatasetFile $draftDatasetFile) use ($storage, $contextId) {
+            $source = $storage->getFile($draftDatasetFile, $contextId);
+            if ($source === null) {
+                throw new MissingDepositFileException($draftDatasetFile->getFileName());
+            }
 
-        return $datasetFiles;
+            $datasetFile = new DatasetFile();
+            $datasetFile->setId($source->getId());
+            $datasetFile->setOriginalFileName($source->getOriginalFileName());
+            $datasetFile->setPath($source->getFilePath());
+
+            return $datasetFile;
+        }, $draftDatasetFiles);
     }
 }

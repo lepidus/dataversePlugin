@@ -4,6 +4,9 @@ namespace APP\plugins\generic\dataverse\api\v1\draftDatasetFiles;
 
 use APP\core\Application;
 use APP\plugins\generic\dataverse\classes\facades\Repo;
+use APP\plugins\generic\dataverse\classes\draftDatasetFile\DraftDatasetFileStorage;
+use PKP\file\FileManager;
+use Throwable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request as IlluminateRequest;
 use Illuminate\Http\Response;
@@ -114,20 +117,16 @@ class DraftDatasetFileController extends PKPBaseController
             return response()->json(['error' => __('api.404.resourceNotFound')], Response::HTTP_NOT_FOUND);
         }
 
-        $temporaryFileManager = new TemporaryFileManager();
-        $file = $temporaryFileManager->getFile($draftDatasetFile->getFileId(), $draftDatasetFile->getUserId());
-
-        if (!$file) {
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+        $file = (new DraftDatasetFileStorage())->getFile($draftDatasetFile, $submission->getData('contextId'));
+        if (!$file || !(new FileManager())->downloadByPath(
+            $file->getFilePath(),
+            $file->getFileType(),
+            false,
+            $draftDatasetFile->getFileName()
+        )) {
             return response()->json(['error' => __('api.404.resourceNotFound')], Response::HTTP_NOT_FOUND);
         }
-
-        $filePath = $temporaryFileManager->getBasePath() . $file->getServerFileName();
-        $temporaryFileManager->downloadByPath(
-            $filePath,
-            $file->getData('filetype'),
-            false,
-            $draftDatasetFile->getData('fileName')
-        );
 
         exit;
     }
@@ -161,7 +160,15 @@ class DraftDatasetFileController extends PKPBaseController
 
         $draftDatasetFile = Repo::draftDatasetFile()->newDataObject();
         $draftDatasetFile->setAllData($params);
-        $draftDatasetFile->setId(Repo::draftDatasetFile()->add($draftDatasetFile));
+        try {
+            Repo::draftDatasetFile()->addFromUpload($draftDatasetFile, $submission, $file);
+        } catch (Throwable $error) {
+            error_log('Dataverse draft storage failed: submission=' . $submission->getId() . ' exception=' . get_class($error));
+            return response()->json(
+                ['error' => __('common.uploadFailed')],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
 
         $this->createFileEventLog($draftDatasetFile, 'plugins.generic.dataverse.log.researchDataFileAdded');
 
