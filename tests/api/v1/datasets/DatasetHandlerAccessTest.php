@@ -63,6 +63,7 @@ class DatasetHandlerAccessTest extends PKPTestCase
 
         $this->submission = new Submission();
         $this->submission->setId(23);
+        $this->submission->setData('contextId', 1);
         $this->submission->setData('selectedDataFilesForReview', [self::DATASET_FILE_ID]);
 
         $this->study = new DataverseStudy();
@@ -406,6 +407,28 @@ class DatasetHandlerAccessTest extends PKPTestCase
             'datasetLicense' => 'CC0 1.0',
             'datasetRelationType' => 'IsSupplementTo',
         ], $extraParams);
+    }
+
+    public function testDepositReportsAnUnavailableDraftFileBeforeContactingDataverse(): void
+    {
+        Locale::registerPath(dirname(__DIR__, 4) . '/locale');
+        $drafts = ['README.txt', 'Data.csv', 'Missing.csv'];
+        $draftRepository = Mockery::mock(DraftDatasetFileRepository::class);
+        $draftRepository->shouldReceive('getBySubmissionId')->once()
+            ->andReturn(LazyCollection::make($drafts));
+        app()->instance(DraftDatasetFileRepository::class, $draftRepository);
+        $validator = Mockery::mock('overload:' . DraftDatasetFilesValidator::class);
+        $validator->shouldReceive('getMissingFileNames')->once()->with($drafts, 1)
+            ->andReturn(['Missing.csv']);
+        $validator->shouldNotReceive('datasetHasReadmeFile');
+        Mockery::mock('overload:' . DatasetService::class)->shouldNotReceive('deposit');
+
+        $response = $this->createHandler()->addDataset($this->createRequest(), new APIResponse(), []);
+
+        $this->assertSame(404, $response->getStatusCode());
+        $error = json_decode((string) $response->getBody(), true);
+        $this->assertSame('plugins.generic.dataverse.error.researchDataFileMissing', $error['error']);
+        $this->assertStringContainsString('Missing.csv', $error['errorMessage']);
     }
 
     public function testAddIgnoresParamsThatAreNotMetadataFields(): void
