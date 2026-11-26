@@ -1,6 +1,6 @@
 <?php
 
-import('lib.pkp.classes.file.TemporaryFileManager');
+import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileStorage');
 import('plugins.generic.dataverse.classes.DraftDatasetFilesValidator');
 import('plugins.generic.dataverse.classes.dispatchers.DataverseDispatcher');
 import('plugins.generic.dataverse.classes.services.DataStatementService');
@@ -96,13 +96,8 @@ class DraftDatasetFilesDispatcher extends DataverseDispatcher
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
         $draftDatasetFiles = $draftDatasetFileDAO->getBySubmissionId($form->submission->getId());
 
-        $datasetFiles = array_map(function (DraftDatasetFile $draftFile) {
-            $temporaryFileManager = new TemporaryFileManager();
-            return $temporaryFileManager->getFile(
-                $draftFile->getData('fileId'),
-                $draftFile->getData('userId')
-            );
-        }, $draftDatasetFiles);
+        $storage = new DraftDatasetFileStorage();
+        $datasetFiles = array_filter(array_map([$storage, 'getSource'], $draftDatasetFiles));
 
         $validator = new DraftDatasetFilesValidator();
         if ($validator->galleyContainsResearchData($galleyFiles, $datasetFiles)) {

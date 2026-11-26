@@ -105,7 +105,11 @@ class DraftDatasetFileHandler extends APIHandler
         $draftDatasetFileDAO = DAORegistry::getDAO('DraftDatasetFileDAO');
         $draftDatasetFile = $draftDatasetFileDAO->newDataObject();
         $draftDatasetFile->setAllData($params);
-        $draftDatasetFile->setId($draftDatasetFileDAO->insertObject($draftDatasetFile));
+        try {
+            $draftDatasetFileDAO->attachUpload($draftDatasetFile, $file);
+        } catch (DraftDatasetFileStorageException $e) {
+            return $response->withStatus(500)->withJsonError('common.uploadFailed');
+        }
 
         $draftDatasetFileProps = $this->getFullProperties($draftDatasetFile);
 

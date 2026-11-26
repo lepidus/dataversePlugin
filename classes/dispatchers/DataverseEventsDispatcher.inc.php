@@ -14,7 +14,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
     protected function registerHooks(): void
     {
         HookRegistry::register('SubmissionHandler::saveSubmit', array($this, 'datasetDepositOnSubmission'));
-        HookRegistry::register('Schema::get::draftDatasetFile', array($this, 'loadDraftDatasetFileSchema'));
         HookRegistry::register('Schema::get::submission', array($this, 'modifySubmissionSchema'));
         HookRegistry::register('LoadComponentHandler', array($this, 'setupDataverseHandlers'));
         HookRegistry::register('Dispatcher::dispatch', array($this, 'setupDataverseAPIHandlers'));
@@ -515,21 +514,6 @@ class DataverseEventsDispatcher extends DataverseDispatcher
         $router->setHandler($handler);
         $handler->getApp()->run();
         exit;
-    }
-
-    public function loadDraftDatasetFileSchema($hookname, $params): bool
-    {
-        $schema = &$params[0];
-        $draftDatasetFileSchemaFile = BASE_SYS_DIR . '/plugins/generic/dataverse/schemas/draftDatasetFile.json';
-
-        if (file_exists($draftDatasetFileSchemaFile)) {
-            $schema = json_decode(file_get_contents($draftDatasetFileSchemaFile));
-            if (!$schema) {
-                fatalError('Schema failed to decode. This usually means it is invalid JSON. Requested: ' . $draftDatasetFileSchemaFile . '. Last JSON error: ' . json_last_error());
-            }
-        }
-
-        return false;
     }
 
     public function setupDataverseHandlers($hookName, $params): bool

@@ -130,26 +130,19 @@ class SubmissionDatasetFactory extends DatasetFactory
             return [];
         }
 
-        $temporaryFiles = array_map(function (DraftDatasetFile $draftDatasetFile) {
-            import('lib.pkp.classes.file.TemporaryFileManager');
-            $temporaryFileManager = new TemporaryFileManager();
-            $file = $temporaryFileManager->getFile(
-                $draftDatasetFile->getData('fileId'),
-                $draftDatasetFile->getData('userId')
-            );
-            if (is_null($file)) {
+        import('plugins.generic.dataverse.classes.draftDatasetFile.DraftDatasetFileStorage');
+        $storage = new DraftDatasetFileStorage();
+        $datasetFiles = array_map(function (DraftDatasetFile $draft) use ($storage) {
+            $source = $storage->getSource($draft);
+            if ($source === null) {
                 throw new MissingDepositFileException(__('plugins.generic.dataverse.error.sourceFileMissing'));
             }
-            return $file;
-        }, $draftDatasetFiles);
-
-        $datasetFiles = array_map(function (TemporaryFile $temporaryFile) {
             $datasetFile = new DatasetFile();
-            $datasetFile->setId($temporaryFile->getId());
-            $datasetFile->setOriginalFileName($temporaryFile->getOriginalFileName());
-            $datasetFile->setPath($temporaryFile->getFilePath());
+            $datasetFile->setId($source->getId());
+            $datasetFile->setOriginalFileName($source->getOriginalFileName());
+            $datasetFile->setPath($source->getFilePath());
             return $datasetFile;
-        }, $temporaryFiles);
+        }, $draftDatasetFiles);
 
         return $datasetFiles;
     }
