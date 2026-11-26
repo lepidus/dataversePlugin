@@ -1,6 +1,7 @@
 <?php
 
 use PKP\tests\DatabaseTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PKP\core\Core;
 use PKP\db\DAORegistry;
 use PKP\file\TemporaryFileManager;
@@ -93,9 +94,7 @@ class DraftDatasetFileRepositoryTest extends DatabaseTestCase
         return $draftDatasetFile;
     }
 
-    /**
-     * @dataProvider draftUploadTypes
-     */
+    #[DataProvider('draftUploadTypes')]
     public function testAttachedUploadSurvivesCoreTemporaryFileDeletion(string $name, string $contents, bool $isReadme): void
     {
         $username = uniqid('dataverse');
