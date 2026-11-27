@@ -26,6 +26,23 @@ La instancia de OJS/OPS debe tener la clave de la aplicación (`app_key`, en la 
 
 Esto es necesario para utilizar las credenciales de API proporcionadas, que se almacenan cifradas en la base de datos. Cambiar la clave después hace ilegibles las credenciales almacenadas, que deben introducirse nuevamente en la configuración del plugin.
 
+## Datos intercambiados con Dataverse
+
+El módulo solo se conecta al repositorio Dataverse definido en su configuración, con el token de API guardado allí. No se envía nada antes de guardar una dirección de Dataverse y un token de API.
+
+Cuando se depositan datos de investigación, y cada vez que se modifican los metadatos o los archivos del dataset en el flujo editorial, el módulo envía a Dataverse:
+
+- los archivos de datos de investigación cargados para el envío;
+- los metadatos del dataset tomados del envío: título, resumen, palabras clave, la materia, la licencia y el idioma elegidos para el dataset y cualquier otro metadato que exija la colección de Dataverse;
+- los nombres, las afiliaciones y los ORCID iD de los autores del envío;
+- el nombre, el correo electrónico y la afiliación del contacto del dataset, que es el contacto principal del envío (o el usuario que realizó el envío, cuando no lo hay);
+- el depositante, formado por el nombre del usuario que realizó el envío y el nombre de la revista o del servidor;
+- la cita del artículo o del preprint, como publicación relacionada del dataset.
+
+Según la configuración del módulo y las decisiones editoriales, el módulo también solicita a Dataverse que publique o elimine el dataset. Un dataset publicado se hace público en Dataverse de acuerdo con las políticas del propio repositorio.
+
+Desde Dataverse, el módulo recibe los metadatos, la cita y los archivos del dataset, que se muestran en el flujo editorial, a los revisores y en la página pública del artículo o del preprint; el nombre, las licencias y los campos de metadatos obligatorios de la colección; y la fecha de expiración del token de API, que se comprueba a diario para avisar a los administradores antes de que el token expire.
+
 ## Instalación
 
 ### Instrucciones

@@ -30,6 +30,23 @@ A instância do OJS/OPS deve ter a chave da aplicação (`app_key`, na seção `
 
 Isso é necessário para utilizar as credenciais de API fornecidas, que são armazenadas criptografadas no banco de dados. Trocar a chave depois torna as credenciais armazenadas ilegíveis, e elas precisam ser informadas novamente nas configurações do plugin.
 
+## Dados trocados com o Dataverse
+
+O plugin só se conecta ao repositório Dataverse configurado nas suas configurações, usando o token de API salvo ali. Nada é enviado antes de um endereço do Dataverse e um token de API serem salvos.
+
+Quando dados de pesquisa são depositados, e sempre que os metadados ou os arquivos do dataset são alterados no fluxo editorial, o plugin envia ao Dataverse:
+
+- os arquivos de dados de pesquisa enviados para a submissão;
+- os metadados do dataset obtidos da submissão: título, resumo, palavras-chave, o assunto, a licença e o idioma escolhidos para o dataset e quaisquer outros metadados exigidos pela coleção do Dataverse;
+- os nomes, as afiliações e os ORCID iDs dos autores da submissão;
+- o nome, o e-mail e a afiliação do contato do dataset, que é o contato principal da submissão (ou o usuário que submeteu, quando não há um);
+- o depositante, formado pelo nome do usuário que submeteu e pelo nome da revista ou do servidor;
+- a citação do artigo ou do preprint, como publicação relacionada ao dataset.
+
+Conforme as configurações do plugin e as decisões editoriais, o plugin também pede ao Dataverse que publique ou exclua o dataset. Um dataset publicado se torna público no Dataverse de acordo com as políticas do próprio repositório.
+
+Do Dataverse, o plugin recebe os metadados, a citação e os arquivos do dataset, exibidos no fluxo editorial, aos avaliadores e na página pública do artigo ou do preprint; o nome, as licenças e os campos de metadados obrigatórios da coleção; e a data de expiração do token de API, verificada diariamente para avisar os administradores antes que o token expire.
+
 ## Instalação
 
 Este plugin está disponível para instalação através da [Galeria de Plugins da PKP](https://docs.pkp.sfu.ca/plugin-inventory/en/). Para fazer a instalação, siga os seguintes passos:

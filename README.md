@@ -28,6 +28,23 @@ The OJS/OPS instance must have the application key (`app_key`, in the `[general]
 
 This is required to use the API credentials provided, that are stored encrypted in the database. Changing the key afterwards makes the stored credentials unreadable, and they must be entered again in the plugin settings.
 
+## Data exchanged with Dataverse
+
+The plugin only connects to the Dataverse repository configured in its settings, using the API token saved there. Nothing is sent before a Dataverse URL and an API token are saved.
+
+When research data is deposited, and whenever the dataset metadata or files are changed in the workflow, the plugin sends to Dataverse:
+
+- the research data files uploaded for the submission;
+- the dataset metadata taken from the submission: title, abstract, keywords, the subject, license and language chosen for the dataset, and any other metadata the Dataverse collection requires;
+- the names, affiliations and ORCID iDs of the submission's authors;
+- the name, email address and affiliation of the dataset contact, who is the submission's primary contact (or the submitting user, when there is none);
+- the depositor, made of the submitting user's name and the journal or server name;
+- the citation of the article or preprint, as the dataset's related publication.
+
+Depending on the plugin settings and on editorial decisions, the plugin also asks Dataverse to publish or delete the dataset. A published dataset is made public by Dataverse according to that repository's own policies.
+
+From Dataverse, the plugin receives the dataset metadata, citation and files, shown in the workflow, to reviewers and on the public article or preprint page; the collection's name, licenses and required metadata fields; and the API token's expiration date, checked daily to warn administrators before the token expires.
+
 ## Installation
 
 This plugin is available for installation via the [PKP Plugin Gallery](https://docs.pkp.sfu.ca/plugin-inventory/en/). For installation, follow these steps:
